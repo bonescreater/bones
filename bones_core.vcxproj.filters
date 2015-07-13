@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="base">
+      <UniqueIdentifier>{812f5ca3-435a-4732-92d8-8489f5bdde58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bone">
+      <UniqueIdentifier>{239a6fa3-bfc1-4fce-9878-5fb581b30a7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bone\facade">
+      <UniqueIdentifier>{40e24cfd-a1ae-489d-b1d1-f530f6dcae8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bone\win32">
+      <UniqueIdentifier>{14aff335-91f1-4ee3-999d-ccc7fdcbec74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bone\naked">
+      <UniqueIdentifier>{501ad653-d803-4635-846f-2cbfcd09b305}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xml">
+      <UniqueIdentifier>{d4b9aa30-47a9-4c8f-8702-b65b6791730c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="bones\core\accelerator.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\accelerator_manager.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\event.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\event_dispatcher.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\focus_controller.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\helper.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\mouse_controller.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\point.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\rect.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\ref.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\root_view.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\size.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\view.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\shirt.cpp">
+      <Filter>bone\facade</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\block.cpp">
+      <Filter>bone\facade</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\core.cpp" />
+    <ClCompile Include="bones\core\xml_controller.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\simple_css.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\class_descriptor.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\encoding.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\logging.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\text.cpp">
+      <Filter>bone\facade</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\shape.cpp">
+      <Filter>bone\facade</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\area.cpp">
+      <Filter>bone\naked</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\widget.cpp">
+      <Filter>bone\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\panel.cpp">
+      <Filter>bone\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\pixmap.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bones\core\accelerator.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\accelerator_manager.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\color.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\event.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\event_dispatcher.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\focus_controller.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\helper.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\keyboard_codes.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\mouse_controller.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\point.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\rect.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\ref.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\root_view.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\size.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\view.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\shirt.h">
+      <Filter>bone\facade</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\block.h">
+      <Filter>bone\facade</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\core.h" />
+    <ClInclude Include="bones\core\xml_controller.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\simple_css.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\xml_types.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\class_descriptor.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\encoding.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\logging.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\text.h">
+      <Filter>bone\facade</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\shape.h">
+      <Filter>bone\facade</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\area.h">
+      <Filter>bone\naked</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\widget.h">
+      <Filter>bone\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\panel.h">
+      <Filter>bone\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\pixmap.h">
+      <Filter>base</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

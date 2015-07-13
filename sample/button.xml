@@ -1,0 +1,20 @@
+<bones>
+<head>
+<link type = "css" file = "button.css"></link>
+  <link type ='script' module ='button' file ='button.lua'></link>
+</head>
+<body>
+	                <area>
+                    <event name ="onPrepare" module ="button" func ="onPrepare"></event>
+                    <event name ="onSizeChanged" module ="button" func ="onSizeChanged"></event>
+                    <event name ="onMouseDown" phase ="capture" module ="button" func ="onMouseDown"></event>
+                    <event name ="onMouseUp" phase ="capture" module ="button" func ="onMouseUp"></event>
+                    <event name ="onMouseMove" phase ="capture" module ="button" func ="onMouseMove"></event>
+                    <event name ="onMouseLeave" phase ="capture" module ="button" func ="onMouseLeave"></event>
+                    <event name ="onMouseEnter" phase ="capture" module ="button" func ="onMouseEnter"></event>
+                  	<block id ="normal" class = "b"></block>
+                    <text class="t"></text>
+                    <shape></shape>
+                  </area>
+</body>
+</bones>

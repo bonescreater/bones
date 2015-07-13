@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="bones\main.cpp" />
+    <ClCompile Include="bones\script_parser.cpp">
+      <Filter>lua</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\lua_check.cpp">
+      <Filter>lua</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\lua_context.cpp">
+      <Filter>lua</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\lua_area.cpp">
+      <Filter>lua\proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\lua_block.cpp">
+      <Filter>lua\proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\lua_event.cpp">
+      <Filter>lua\proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\lua_meta_table.cpp">
+      <Filter>lua\proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\lua_text.cpp">
+      <Filter>lua\proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\lua_shape.cpp">
+      <Filter>lua\proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\lua_panel.cpp">
+      <Filter>lua\proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\bones_export.cpp">
+      <Filter>api</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bones\bones.h" />
+    <ClInclude Include="bones\bones_api.h">
+      <Filter>api</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\script_parser.h">
+      <Filter>lua</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_check.h">
+      <Filter>lua</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_context.h">
+      <Filter>lua</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_area.h">
+      <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_block.h">
+      <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_event.h">
+      <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_meta_table.h">
+      <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_text.h">
+      <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_shape.h">
+      <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_panel.h">
+      <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\bones_export.h">
+      <Filter>api</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="api">
+      <UniqueIdentifier>{4bda7803-394f-47cd-abf7-a6f4cd672bbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lua">
+      <UniqueIdentifier>{e345b7ae-52c6-43d4-a53d-97a5cf3ccba1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lua\proxy">
+      <UniqueIdentifier>{7494eebf-848d-422a-9f5e-97b0867e2157}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
