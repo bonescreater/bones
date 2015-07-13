@@ -1,5 +1,4 @@
 build/
 *.sdf
-*.sln
 *.opensdf
 out/

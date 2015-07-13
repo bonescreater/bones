@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rd", "3rd", "{A7E8DC8D-8E3C-4961-884E-15842AA5E223}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "skia", "skia.vcxproj", "{EC5BD0C9-C2A7-4EAA-A6F8-E74FF9E79B9F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bones", "bones.vcxproj", "{1251ADA2-B795-46B1-8F13-581D62B92A26}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sample", "sample.vcxproj", "{9F4116C8-4682-471A-8F47-BC4CD726B4F2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lua", "lua.vcxproj", "{B94FCB1D-8AEC-429B-A379-3D30FC70F073}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rapidxml", "rapidxml", "{B491C035-4E7D-49CB-93A2-3A3540EDAF07}"
+	ProjectSection(SolutionItems) = preProject
+		rapidxml\rapidxml.hpp = rapidxml\rapidxml.hpp
+		rapidxml\rapidxml_iterators.hpp = rapidxml\rapidxml_iterators.hpp
+		rapidxml\rapidxml_print.hpp = rapidxml\rapidxml_print.hpp
+		rapidxml\rapidxml_utils.hpp = rapidxml\rapidxml_utils.hpp
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bones_core", "bones_core.vcxproj", "{6AC0EE58-B2CD-4490-8147-89020B15F518}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EC5BD0C9-C2A7-4EAA-A6F8-E74FF9E79B9F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EC5BD0C9-C2A7-4EAA-A6F8-E74FF9E79B9F}.Debug|Win32.Build.0 = Debug|Win32
+		{EC5BD0C9-C2A7-4EAA-A6F8-E74FF9E79B9F}.Release|Win32.ActiveCfg = Release|Win32
+		{EC5BD0C9-C2A7-4EAA-A6F8-E74FF9E79B9F}.Release|Win32.Build.0 = Release|Win32
+		{1251ADA2-B795-46B1-8F13-581D62B92A26}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1251ADA2-B795-46B1-8F13-581D62B92A26}.Debug|Win32.Build.0 = Debug|Win32
+		{1251ADA2-B795-46B1-8F13-581D62B92A26}.Release|Win32.ActiveCfg = Release|Win32
+		{1251ADA2-B795-46B1-8F13-581D62B92A26}.Release|Win32.Build.0 = Release|Win32
+		{9F4116C8-4682-471A-8F47-BC4CD726B4F2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9F4116C8-4682-471A-8F47-BC4CD726B4F2}.Debug|Win32.Build.0 = Debug|Win32
+		{9F4116C8-4682-471A-8F47-BC4CD726B4F2}.Release|Win32.ActiveCfg = Release|Win32
+		{9F4116C8-4682-471A-8F47-BC4CD726B4F2}.Release|Win32.Build.0 = Release|Win32
+		{B94FCB1D-8AEC-429B-A379-3D30FC70F073}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B94FCB1D-8AEC-429B-A379-3D30FC70F073}.Debug|Win32.Build.0 = Debug|Win32
+		{B94FCB1D-8AEC-429B-A379-3D30FC70F073}.Release|Win32.ActiveCfg = Release|Win32
+		{B94FCB1D-8AEC-429B-A379-3D30FC70F073}.Release|Win32.Build.0 = Release|Win32
+		{6AC0EE58-B2CD-4490-8147-89020B15F518}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6AC0EE58-B2CD-4490-8147-89020B15F518}.Debug|Win32.Build.0 = Debug|Win32
+		{6AC0EE58-B2CD-4490-8147-89020B15F518}.Release|Win32.ActiveCfg = Release|Win32
+		{6AC0EE58-B2CD-4490-8147-89020B15F518}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EC5BD0C9-C2A7-4EAA-A6F8-E74FF9E79B9F} = {A7E8DC8D-8E3C-4961-884E-15842AA5E223}
+		{B94FCB1D-8AEC-429B-A379-3D30FC70F073} = {A7E8DC8D-8E3C-4961-884E-15842AA5E223}
+		{B491C035-4E7D-49CB-93A2-3A3540EDAF07} = {A7E8DC8D-8E3C-4961-884E-15842AA5E223}
+	EndGlobalSection
+EndGlobal
