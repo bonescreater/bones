@@ -41,6 +41,8 @@ BONES_API_IMPORT(bool) BonesStartUp(const BonesConfig & config);
 //
 BONES_API_IMPORT(void) BonesShutDown();
 
+BONES_API_IMPORT(void) BonesUpdate();
+
 BONES_API_IMPORT(const wchar_t *) BonesGetVersion();
 
 BONES_API_IMPORT(bool) BonesLoadXMLString(const char * data);

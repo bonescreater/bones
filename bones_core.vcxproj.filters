@@ -100,6 +100,12 @@
     <ClCompile Include="bones\core\pixmap.cpp">
       <Filter>base</Filter>
     </ClCompile>
+    <ClCompile Include="bones\core\animation_manager.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\animation.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\core\accelerator.h">
@@ -188,6 +194,12 @@
       <Filter>bone\win32</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\pixmap.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\animation_manager.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\animation.h">
       <Filter>base</Filter>
     </ClInclude>
   </ItemGroup>

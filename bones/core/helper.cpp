@@ -9,6 +9,7 @@
 namespace bones
 {
 
+
 SkRect Helper::ToSkRect(const Rect & rect)
 {
     SkRect r;
@@ -47,6 +48,37 @@ HMODULE Helper::GetModuleFromAddress(void * address)
     HMODULE module = 0;
     GetModuleHandleEx(flags, (LPCWSTR)address, &module);
     return module;
+}
+
+uint64_t Helper::GetTickCount()
+{
+    typedef ULONGLONG(WINAPI *TF64)();
+    typedef DWORD(WINAPI *TF32)();
+    static FARPROC tf = nullptr;
+    static bool higher_os = false;
+    if (!tf)
+    {
+        if (higher_os = Helper::DWMSupport())
+            tf = GetProcAddress(GetModuleHandle(L"kernel32.dll"), "GetTickCount64");
+        else
+            tf = GetProcAddress(GetModuleHandle(L"kernel32.dll"), "GetTickCount");
+        assert(tf);
+    }
+    if (!tf)
+        return 0;
+
+    return higher_os ? ((TF64)tf)() : ((TF32)tf)();
+}
+
+bool Helper::DWMSupport()
+{
+    HMODULE dwm_module = NULL;
+
+    if (!dwm_module)
+        dwm_module = ::GetModuleHandle(L"dwmapi.dll");
+    if (!dwm_module)
+        dwm_module = ::LoadLibrary(L"dwmapi.dll");
+    return !!dwm_module;
 }
 
 bool Helper::DWMEnabled()

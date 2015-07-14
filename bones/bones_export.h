@@ -7,6 +7,8 @@ BONES_API_EXPORT(bool) BonesStartUp(const bones::Core::Config & config);
 
 BONES_API_EXPORT(void) BonesShutDown();
 
+BONES_API_EXPORT(void) BonesUpdate();
+
 BONES_API_EXPORT(const wchar_t *) BonesGetVersion();
 
 BONES_API_EXPORT(bool) BonesLoadXMLString(const char * data);

@@ -46,6 +46,12 @@ BONES_API_EXPORT(void) BonesShutDown()
     Core::ShutDown();
 }
 
+BONES_API_EXPORT(void) BonesUpdate()
+{
+    using namespace bones;
+    Core::Update();
+}
+
 BONES_API_EXPORT(const wchar_t *) BonesGetVersion()
 {
     static const wchar_t * version =

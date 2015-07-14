@@ -65,7 +65,8 @@ int main()
         }
         else
         {
-            ::Sleep(30);
+            BonesUpdate();
+            ::Sleep(5);
         }
     }
     BonesShutDown();
