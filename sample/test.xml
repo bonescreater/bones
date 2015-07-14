@@ -1,15 +1,16 @@
 ﻿    <?xml version='1.0' encoding='utf-8' ?>  
     <bones>  
 	    <head>
-      <link type ='css' file ='./sample/test.css'></link>
-        <link type ='script' module ='test' file ='sample\test.lua'></link>
-      <link type ='xml' module ='button' file ='sample/button.xml'></link>
+      <link type ='css' file ='../../sample/test.css'></link>
+        <link type ='script' module ='test' file ='../../sample\test.lua'></link>
+      <link type ='xml' module ='button' file ='../../sample/button.xml'></link>
       
         <style>
           .p
           {
           content:Bones;
           hit-test: caption 0px 0px 200px 20px;
+          color: #ffffffff;
           }
           .btn1
           {
@@ -28,7 +29,7 @@
 
               <button id ="btn1" class ="b11   b12"></button>
               <button id ="close" class = "   b11     b12  b13"></button>
-              <panel class ="p1 p2 p"></panel>
+              <panel class ="p1 p2"></panel>
               <event name ="onPrepare" module ="test" func ="onPrepare"></event>
 			      </panel>
         </body>  

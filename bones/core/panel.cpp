@@ -106,6 +106,11 @@ void Panel::setCursor(Cursor cursor)
     cursor_ = cursor;
 }
 
+void Panel::setColor(Color color)
+{
+    root_->setColor(color);
+}
+
 LRESULT Panel::handleNCCreate(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     root_ = AdoptRef(new RootView);

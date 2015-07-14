@@ -11,7 +11,7 @@ namespace bones
 {
 
 RootView::RootView()
-:delegate_(nullptr), mouse_(this), focus_(this)
+:delegate_(nullptr), mouse_(this), focus_(this), color_(0)
 {
     ;
 }
@@ -25,6 +25,12 @@ RootView::~RootView()
 void RootView::setDelegate(Delegate * delegate)
 {
     delegate_ = delegate;
+}
+
+void RootView::setColor(Color color)
+{
+    color_ = color;
+    inval();
 }
 
 bool RootView::isVisible() const
@@ -111,7 +117,7 @@ void RootView::handleEvent(KeyEvent & e)
 
 void RootView::onDraw(SkCanvas & canvas)
 {  
-    canvas.drawColor(0, SkXfermode::kSrc_Mode);
+    canvas.drawColor(color_, SkXfermode::kSrc_Mode);
 }
 
 bool RootView::notifyInval(const Rect & inval)

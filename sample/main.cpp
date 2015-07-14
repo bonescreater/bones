@@ -19,13 +19,13 @@ bool TestClose(BonesCObject co, BonesArg * arg, size_t arg_count, void * userdat
 int main()
 {
     BonesConfig config;
-    config.log_file = L"./sample/test.log";
+    config.log_file = L"./test.log";
     config.log_level = kBONES_LOG_LEVEL_VERBOSE;
 
     BonesStartUp(config);
     wprintf(L"%s", BonesGetVersion());
 
-    auto f = fopen("sample\\test.xml", "rb");
+    auto f = fopen("..\\..\\sample\\test.xml", "rb");
     fseek(f, 0, SEEK_END);
     size_t len = ftell(f);
     char * xml = (char *)malloc(len + 1);

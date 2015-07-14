@@ -42,6 +42,8 @@ public:
 
     void setCursor(Cursor cursor);
 
+    void setColor(Color color);
+
     const char * getClassName() const override;
 
     RootView * getRootView() const;

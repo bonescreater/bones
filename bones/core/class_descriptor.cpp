@@ -483,6 +483,14 @@ static void PanelHitTest(Ref * ob, const CSSParams & params)
     v->setNCArea(nc, r);
 }
 
+static void PanelSetColor(Ref * ob, const CSSParams & params)
+{
+    if (params.empty() || !ob)
+        return;
+    auto v = static_cast<Panel *>(ob);
+    v->setColor(CSSStrToColor(params[0]));
+}
+
 ClassDescriptor::ClassDescriptor()
 {
     registerArea();
@@ -519,7 +527,6 @@ void ClassDescriptor::registerBlock()
 {
     //view已经register上了
     auto & table = multi_class_tables_[kClassBlock];
-    registerView(table);
     registerShirt(table);
     table[kDescColor] = &BlockSetColor;
     table[kDescLinearGradient] = &BlockSetLinearGradient;
@@ -528,8 +535,7 @@ void ClassDescriptor::registerBlock()
 
 void ClassDescriptor::registerText()
 {
-    auto & table = multi_class_tables_[kClassText];
-    registerView(table);
+    auto & table = multi_class_tables_[kClassText];   
     registerShirt(table);
     table[kDescColor] = &TextSetColor;
     table[kDescContent] = &TextSetContent;
@@ -538,7 +544,6 @@ void ClassDescriptor::registerText()
 void ClassDescriptor::registerShape()
 {
     auto & table = multi_class_tables_[kClassShape];
-    registerView(table);
     registerShirt(table);
     table[kDescBorder] = &ShapeSetBorder;
 
@@ -556,6 +561,7 @@ void ClassDescriptor::registerPanel()
     registerWidget(table);
     table[kDescCursor] = &PanelSetCursor;
     table[kDescHitTest] = &PanelHitTest;
+    table[kDescColor] = &PanelSetColor;
 }
 
 void ClassDescriptor::registerView(CSSClassTable & table)
@@ -569,6 +575,7 @@ void ClassDescriptor::registerView(CSSClassTable & table)
 
 void ClassDescriptor::registerShirt(CSSClassTable & table)
 {
+    registerView(table);
     table[kDescOpacity] = &ShirtSetOpacity;
 }
 

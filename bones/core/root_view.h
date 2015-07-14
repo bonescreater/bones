@@ -28,6 +28,8 @@ public:
 
     void setDelegate(Delegate * delegate);
 
+    void setColor(Color color);
+
     void draw();
 
     const Rect & getDirtyRect() const;
@@ -76,6 +78,7 @@ private:
     Pixmap back_buffer_;
     Delegate * delegate_;
     Rect dirty_;
+    Color color_;
 };
 
 
