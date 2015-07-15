@@ -75,7 +75,7 @@ static void PostToLO(void * co, const char * method_name)
     lua_pop(l, 2);
 }
 
-static void OnEvent(Area & sender, Event & e)
+static void OnEvent(Ref & sender, Event & e)
 {
     const char * method = nullptr;
     switch (e.type())
@@ -120,7 +120,7 @@ static void OnEvent(Area & sender, Event & e)
         PostToLO(&sender, e, method);
 }
 
-static void OnSizeChanged(Area & sender)
+static void OnSizeChanged(Ref & sender)
 {
     PostToLO(&sender, kMethodOnSizeChanged);
 }

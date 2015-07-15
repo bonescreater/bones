@@ -17,9 +17,13 @@ public:
 
     void add(Ref * ref, Animation * ani);
 
+    void remove(Ref * ref, Animation * ani);
+
+    void remove(Ref * ref);
+
     void removeAll();
 
-    void run(uint64_t current);
+    void run(uint64_t delta);
 protected:
     AnimationManager();
 private:

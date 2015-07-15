@@ -19,6 +19,9 @@
     <Filter Include="xml">
       <UniqueIdentifier>{d4b9aa30-47a9-4c8f-8702-b65b6791730c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="animation">
+      <UniqueIdentifier>{0f919624-cdfc-46f1-8f9a-65c89def5b9d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bones\core\accelerator.cpp">

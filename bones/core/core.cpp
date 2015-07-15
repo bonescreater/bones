@@ -50,7 +50,7 @@ void Core::Update()
     //防止死循环
     auto frame_count = Helper::GetTickCount();
     auto delta = frame_count - current;
-    if (delta < 5)
+    if (delta < 1)
         return;
 
     AnimationManager::Get()->run(delta);
