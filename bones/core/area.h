@@ -12,8 +12,8 @@ namespace bones
 class Area : public View
 {
 public:
-    typedef std::function <void(Ref & sender, Event & e)> CFEvent;
-    typedef std::function <void(Ref & sender)> CFNotifyOnSizeChanged;
+    typedef std::function <void(Ref * sender, Event & e)> CFEvent;
+    typedef std::function <void(Ref * sender)> CFNotifyOnSizeChanged;
 
     Area();
 

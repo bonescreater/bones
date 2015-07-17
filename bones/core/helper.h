@@ -26,8 +26,6 @@ public:
 
     static uint64_t GetTickCount();
 
-    static bool DWMSupport();
-
     static bool DWMEnabled();
 
     static bool ExtendFrameInfoClientArea(HWND hwnd,

@@ -16,6 +16,11 @@ void Shirt::setOpacity(float opacity)
     inval();
 }
 
+float Shirt::getOpacity() const
+{
+    return opacity_;
+}
+
 bool Shirt::isFocusable() const
 {
     return false;

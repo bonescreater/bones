@@ -37,7 +37,7 @@ static EventType ToEventType(const char * name)
     return kET_CUSTOM;
 }
 
-static void PostToLO(void * co, Event & e, const char * method_name)
+static void PostToLO(Ref * co, Event & e, const char * method_name)
 {
     auto l = LuaContext::State();
     LUA_STACK_AUTO_CHECK(l);
@@ -60,7 +60,7 @@ static void PostToLO(void * co, Event & e, const char * method_name)
     lua_pop(l, 2);
 }
 
-static void PostToLO(void * co, const char * method_name)
+static void PostToLO(Ref * co, const char * method_name)
 {
     auto l = LuaContext::State();
     LUA_STACK_AUTO_CHECK(l);
@@ -75,7 +75,7 @@ static void PostToLO(void * co, const char * method_name)
     lua_pop(l, 2);
 }
 
-static void OnEvent(Ref & sender, Event & e)
+static void OnEvent(Ref * sender, Event & e)
 {
     const char * method = nullptr;
     switch (e.type())
@@ -117,12 +117,12 @@ static void OnEvent(Ref & sender, Event & e)
         break;
     }
     if (method)
-        PostToLO(&sender, e, method);
+        PostToLO(sender, e, method);
 }
 
-static void OnSizeChanged(Ref & sender)
+static void OnSizeChanged(Ref * sender)
 {
-    PostToLO(&sender, kMethodOnSizeChanged);
+    PostToLO(sender, kMethodOnSizeChanged);
 }
 
 void LuaArea::Create(Area * co)

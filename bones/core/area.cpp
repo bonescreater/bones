@@ -96,12 +96,12 @@ void Area::onWheel(WheelEvent & e)
 
 void Area::onSizeChanged()
 {
-    on_size_changed_ ? on_size_changed_(*this): 0;
+    on_size_changed_ ? on_size_changed_(this): 0;
 }
 
 void Area::pushEvent(Event & e)
 {
-    delegates_[e.phase()][e.type()] ? delegates_[e.phase()][e.type()](*this, e) : 0;
+    delegates_[e.phase()][e.type()] ? delegates_[e.phase()][e.type()](this, e) : 0;
 }
 
 }

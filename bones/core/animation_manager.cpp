@@ -1,32 +1,19 @@
 ﻿#include "animation_manager.h"
 #include "animation.h"
+#include "logging.h"
 
 namespace bones
 {
-
-AnimationManager * AnimationManager::Get()
-{
-    static AnimationManager * ani_manager = nullptr;
-    if (!ani_manager)
-        ani_manager = new AnimationManager;
-    return ani_manager;
-}
 
 AnimationManager::AnimationManager()
 {
     ;
 }
 
-void AnimationManager::add(Ref * ref, Animation * ani)
-{
-    if (!ani)
-        return;
-    RefPtr<Ref> rp;
-    rp.reset(ref);
-    RefPtr<Animation> rpa;
-    rpa.reset(ani);
-    animations_[rp].push_back(rpa);
-    rpa->start();
+AnimationManager::~AnimationManager()
+{//不需要在调用animation的stop 因为AnimationManager是在ShutDown后才析构 
+ //此时调用stop 可能 Ref 的数值 结构已经被破坏了 如view的父子结构
+    ;
 }
 
 //remove 操作只是清空RefPtr<Animation>
@@ -39,30 +26,11 @@ void AnimationManager::removeAll()
         for (auto ani_iter = anis.begin(); ani_iter != anis.end(); ++ani_iter)
         {
             auto & a = *ani_iter;
-            a->stop();
-            a.clear();
-        }
-    }
-}
-
-void AnimationManager::remove(Ref * ref, Animation * ani)
-{
-    if (!ani)
-        return;
-    RefPtr<Ref> key;
-    key.reset(ref);
-    auto iter = animations_.find(key);
-    if (iter == animations_.end())
-        return;
-
-    auto & anis = iter->second;
-    for (auto ani_iter = anis.begin(); ani_iter != anis.end(); ++ani_iter)
-    {
-        auto & a = *ani_iter;
-        if (a.get() == ani)
-        {
-            a->stop();
-            a.clear();
+            if (a)
+            {
+                a->stop();
+                a.clear();
+            }
         }
     }
 }
@@ -74,12 +42,94 @@ void AnimationManager::remove(Ref * ref)
     auto iter = animations_.find(key);
     if (iter == animations_.end())
         return;
+
     auto & anis = iter->second;
     for (auto ani_iter = anis.begin(); ani_iter != anis.end(); ++ani_iter)
     {
         auto & a = *ani_iter;
+        if (a)
+        {
+            a->stop();
+            a.clear();
+        }
+    }
+}
+
+void AnimationManager::add(Animation * ani)
+{
+    if (!ani)
+        return;
+    RefPtr<Ref> rp;
+    rp.reset(ani->target());
+    RefPtr<Animation> rpa;
+    rpa.reset(ani);
+    auto & anis = animations_[rp];
+    auto iter = std::find(anis.begin(), anis.end(), rpa);
+    if (iter == anis.end())
+    {
+        anis.push_back(rpa);
+        rpa->start();
+    }
+    else
+        LOG_VERBOSE << "Animation already exits";
+
+}
+
+void AnimationManager::remove(Animation * ani)
+{
+    if (!ani)
+        return;
+    RefPtr<Ref> key;
+    key.reset(ani->target());
+    auto iter = animations_.find(key);
+    if (iter == animations_.end())
+        return;
+    RefPtr<Animation> rpa;
+    rpa.reset(ani);
+    auto ani_iter = std::find(iter->second.begin(), iter->second.end(), rpa);
+    if (ani_iter != iter->second.end())
+    {
+        auto & a = *ani_iter;
         a->stop();
         a.clear();
+    }
+}
+
+void AnimationManager::pause(Animation * ani)
+{
+    if (!ani)
+        return;
+    RefPtr<Ref> key;
+    key.reset(ani->target());
+    auto iter = animations_.find(key);
+    if (iter == animations_.end())
+        return;
+    RefPtr<Animation> rpa;
+    rpa.reset(ani);
+    auto ani_iter = std::find(iter->second.begin(), iter->second.end(), rpa);
+    if (ani_iter != iter->second.end())
+    {
+        auto & a = *ani_iter;
+        a->pause();
+    }
+}
+
+void AnimationManager::resume(Animation * ani)
+{
+    if (!ani)
+        return;
+    RefPtr<Ref> key;
+    key.reset(ani->target());
+    auto iter = animations_.find(key);
+    if (iter == animations_.end())
+        return;
+    RefPtr<Animation> rpa;
+    rpa.reset(ani);
+    auto ani_iter = std::find(iter->second.begin(), iter->second.end(), rpa);
+    if (ani_iter != iter->second.end())
+    {
+        auto & a = *ani_iter;
+        a->resume();
     }
 }
 

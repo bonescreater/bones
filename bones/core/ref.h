@@ -28,7 +28,7 @@ public:
 
     int getRefCount() const;
 
-    virtual const char * getClassName() const;
+    virtual const char * getClassName() const = 0;
 private:
     mutable int count_;
 };

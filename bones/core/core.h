@@ -13,7 +13,6 @@
 
 namespace bones
 {
-extern const char * kClassRef;
 extern const char * kClassWidget;
 extern const char * kClassPanel;
 extern const char * kClassRootView;
@@ -25,20 +24,24 @@ extern const char * kClassText;
 extern const char * kClassRichEdit;
 extern const char * kClassWebView;
 
-extern const char * kClassAnimation;
+extern const char * kClassCommonAnimation;
 
 #define BONES_CLASS_CALLBACK_0(__selector__, __target__, ...) std::bind(__selector__, __target__, ##__VA_ARGS__)
 #define BONES_CLASS_CALLBACK_1(__selector__, __target__, ...) std::bind(__selector__, __target__, std::placeholders::_1, ##__VA_ARGS__)
 #define BONES_CLASS_CALLBACK_2(__selector__, __target__, ...) std::bind(__selector__, __target__, std::placeholders::_1, std::placeholders::_2, ##__VA_ARGS__)
 #define BONES_CLASS_CALLBACK_3(__selector__, __target__, ...) std::bind(__selector__, __target__, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, ##__VA_ARGS__)
+#define BONES_CLASS_CALLBACK_4(__selector__, __target__, ...) std::bind(__selector__, __target__, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, ##__VA_ARGS__)
 
 #define BONES_CALLBACK_0(__selector__, ...) std::bind(__selector__, ##__VA_ARGS__)
 #define BONES_CALLBACK_1(__selector__, ...) std::bind(__selector__, std::placeholders::_1, ##__VA_ARGS__)
 #define BONES_CALLBACK_2(__selector__, ...) std::bind(__selector__, std::placeholders::_1, std::placeholders::_2, ##__VA_ARGS__)
 #define BONES_CALLBACK_3(__selector__, ...) std::bind(__selector__, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, ##__VA_ARGS__)
+#define BONES_CALLBACK_4(__selector__, ...) std::bind(__selector__, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, ##__VA_ARGS__)
 
 typedef float Scalar;
 typedef HANDLE Cursor;
+
+class AnimationManager;
 
 enum LogLevel
 {
@@ -61,6 +64,8 @@ public:
     static void ShutDown();
 
     static void Update();
+
+    static AnimationManager * GetAnimationManager();
 };
 
 }

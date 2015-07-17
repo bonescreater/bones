@@ -52,33 +52,23 @@ HMODULE Helper::GetModuleFromAddress(void * address)
 
 uint64_t Helper::GetTickCount()
 {
-    typedef ULONGLONG(WINAPI *TF64)();
-    typedef DWORD(WINAPI *TF32)();
+    typedef ULONGLONG(WINAPI *TGetTickCount64)();
+    typedef DWORD(WINAPI *TGetTickCount32)();
+
     static FARPROC tf = nullptr;
-    static bool higher_os = false;
+    static bool support_64 = false;
     if (!tf)
     {
-        if (higher_os = Helper::DWMSupport())
-            tf = GetProcAddress(GetModuleHandle(L"kernel32.dll"), "GetTickCount64");
-        else
+        tf = GetProcAddress(GetModuleHandle(L"kernel32.dll"), "GetTickCount64");
+        support_64 = true;
+        if (!tf)
             tf = GetProcAddress(GetModuleHandle(L"kernel32.dll"), "GetTickCount");
+            
         assert(tf);
     }
     if (!tf)
         return 0;
-
-    return higher_os ? ((TF64)tf)() : ((TF32)tf)();
-}
-
-bool Helper::DWMSupport()
-{
-    HMODULE dwm_module = NULL;
-
-    if (!dwm_module)
-        dwm_module = ::GetModuleHandle(L"dwmapi.dll");
-    if (!dwm_module)
-        dwm_module = ::LoadLibrary(L"dwmapi.dll");
-    return !!dwm_module;
+    return support_64 ? ((TGetTickCount64)tf)() : ((TGetTickCount32)tf)();
 }
 
 bool Helper::DWMEnabled()

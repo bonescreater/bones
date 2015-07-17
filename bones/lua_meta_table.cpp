@@ -1,13 +1,14 @@
 ﻿#include "lua_meta_table.h"
-#include "script_parser.h"
 #include "lua_context.h"
 #include "lua_check.h"
+#include "lua_animation.h"
 #include "bones_export.h"
 
 #include "core/view.h"
 #include "core/logging.h"
 #include "core/text.h"
 #include "core/encoding.h"
+#include "core/animation_manager.h"
 
 namespace bones
 {
@@ -22,6 +23,11 @@ static const char * kMetaTableFocusEvent = "__bone__focus__event__";
 static const char * kMethodIndex = "__index";
 static const char * kMethodGC = "__gc";
 static const char * kMethodGetCObject = "getCObject";
+static const char * kMethodAnimate = "animate";
+static const char * kMethodStop = "stop";
+static const char * kMethodPause = "pause";
+static const char * kMethodResume = "resume";
+static const char * kMethodStopAll = "stopAll";
 
 static const char * kMethodContains = "contains";
 static const char * kMethodApplyCSS = "applyCSS";
@@ -197,6 +203,88 @@ static int GetCObject(lua_State * l)
     return 1;
 }
 
+//(self interval due [run start stop pause resume])
+static int Animate(lua_State * l)
+{
+    int count = lua_gettop(l);
+    lua_pushnil(l);
+    if (count >= 3)
+    {
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        Ref * ref = LuaMetaTable::CallGetCObject(l);
+        uint64_t interval = lua_tointeger(l, 2);
+        uint64_t due = lua_tointeger(l, 3);
+        const char * run = nullptr;
+        if (count >= 4)
+            run = lua_tostring(l, 4);
+        const char * stop = nullptr;
+        if (count >= 5)
+            stop = lua_tostring(l, 5);
+        const char * start = nullptr;
+        if (count >= 6)
+            start = lua_tostring(l, 6);
+        const char * pause = nullptr;
+        if (count >= 7)
+            pause = lua_tostring(l, 7);
+        const char * resume = nullptr;
+        if (count >= 8)
+            resume = lua_tostring(l, 8);
+
+        auto * ani = LuaAnimation::Create(ref, interval, due, run, stop, start, pause, resume);
+        Core::GetAnimationManager()->add(ani);
+        ani->release();
+        lua_pushlightuserdata(l, ani);
+    }
+    return 1;
+}
+//(self ani)
+static int StopAnimate(lua_State * l)
+{
+    int count = lua_gettop(l);
+    if (count == 2)
+    {
+        auto ani = (Animation *)lua_touserdata(l, 2);
+        Core::GetAnimationManager()->remove(ani);
+    }
+    return 0;
+}
+//(self ani)
+static int PauseAnimate(lua_State * l)
+{
+    int count = lua_gettop(l);
+    if (count == 2)
+    {
+        auto ani = (Animation *)lua_touserdata(l, 2);
+        Core::GetAnimationManager()->pause(ani);
+    }
+    return 0;
+}
+//(self ani)
+static int ResumeAnimate(lua_State * l)
+{
+    int count = lua_gettop(l);
+    if (count == 2)
+    {
+        auto ani = (Animation *)lua_touserdata(l, 2);
+        Core::GetAnimationManager()->resume(ani);
+    }
+    return 0;
+}
+//(self)
+static int StopAllAnimate(lua_State * l)
+{
+    int count = lua_gettop(l);
+    if (count == 1)
+    {
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        Ref * ref = LuaMetaTable::CallGetCObject(l);
+        Core::GetAnimationManager()->remove(ref);
+    }
+    return 0;
+}
+
 void LuaMetaTable::GetPanel(lua_State * l)
 {
     GetRef(l, kMetaTablePanel);
@@ -237,11 +325,22 @@ void LuaMetaTable::GetRef(lua_State *l, const char * class_name)
         lua_pushcfunction(l, &GC);
         lua_setfield(l, -2, kMethodGC);
 
+        //css method
         lua_pushcfunction(l, &ApplyCSS);
         lua_setfield(l, -2, kMethodApplyCSS);
-
         lua_pushcfunction(l, &ApplyClass);
         lua_setfield(l, -2, kMethodApplyClass);
+        //animate method
+        lua_pushcfunction(l, &Animate);
+        lua_setfield(l, -2, kMethodAnimate);
+        lua_pushcfunction(l, &StopAnimate);
+        lua_setfield(l, -2, kMethodStop);
+        lua_pushcfunction(l, &PauseAnimate);
+        lua_setfield(l, -2, kMethodPause);
+        lua_pushcfunction(l, &ResumeAnimate);
+        lua_setfield(l, -2, kMethodResume);
+        lua_pushcfunction(l, &StopAllAnimate);
+        lua_setfield(l, -2, kMethodStopAll);
     }
 }
 

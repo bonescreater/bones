@@ -10,6 +10,8 @@ class Shirt : public View
 {
 public:
     void setOpacity(float opacity);//0~1.f
+
+    float getOpacity() const;
 protected:
     Shirt();
 

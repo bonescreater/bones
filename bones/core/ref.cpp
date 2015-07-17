@@ -7,7 +7,7 @@ namespace bones
 
 Ref::Ref() :count_(1)
 {    
-    LOG_VERBOSE << "create:" << this->getClassName() << this;
+    LOG_VERBOSE << "create: " << this;
 }
 
 Ref::~Ref()
@@ -37,11 +37,6 @@ void Ref::release()
 int Ref::getRefCount() const
 {
     return count_;
-}
-
-const char * Ref::getClassName() const
-{
-    return kClassRef;
 }
 
 NoncopyableObject::NoncopyableObject()

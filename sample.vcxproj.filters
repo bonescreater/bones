@@ -6,14 +6,20 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="sample\button.css" />
-    <None Include="sample\button.lua" />
     <None Include="sample\test.css" />
     <None Include="sample\test.lua" />
+    <None Include="sample\button.css">
+      <Filter>button</Filter>
+    </None>
+    <None Include="sample\button.lua">
+      <Filter>button</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="sample\button.xml" />
     <Xml Include="sample\test.xml" />
+    <Xml Include="sample\button.xml">
+      <Filter>button</Filter>
+    </Xml>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sample\main.cpp" />

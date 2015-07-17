@@ -54,13 +54,26 @@ local function applyTextCSS(self, css)
     return self.text_:applyCSS(css)
 end
 
+local function AnimateOpacityRun(animate, bone, due)
+    print(animate)
+    print(due)
+end
+
+local function AnimateOpacityStop(animate, bone)
+    print(animate)
+    print("stop")
+end
+
+
 function mod.onPrepare(self)
 print("Prepare")
+print(self)
 --public method
-self.isEnable = isEnable;
-self.applyTextClass = applyTextClass;
-self.applyTextCSS = applyTextCSS;
-
+self.isEnable = isEnable
+self.applyTextClass = applyTextClass
+self.applyTextCSS = applyTextCSS
+self.animateOpacityRun = AnimateOpacityRun
+self.animateOpacityStop = AnimateOpacityStop
 --private member
 self.enable_ = true
 self.hover_ = false
@@ -98,8 +111,9 @@ function mod.onMouseUp(self, e)
 			self.down_ = false
 			if self.hover_ then
 				if type(self.onClick) == "function" then
-					self:onClick("aaa");
+					self:onClick("aaa");  
 				end
+                self:animate(100, 1000, "animateOpacityRun", "animateOpacityStop");
 			end
 			stateChanged(self)
 		end

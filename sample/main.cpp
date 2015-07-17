@@ -64,10 +64,7 @@ int main()
             }                
         }
         else
-        {
             BonesUpdate();
-            ::Sleep(5);
-        }
     }
     BonesShutDown();
     //getchar();
