@@ -39,7 +39,7 @@ bool FocusController::handleKeyEvent(const KeyEvent & ke)
     if (arrow_key_traversal_enabled_ && processArrowKeyTraversal(ke))
         return true;
 
-    if (current_ && current_->getGroup() != -1 && isArrowKeyEvent(ke))
+    if (current_ && current_->group() != -1 && isArrowKeyEvent(ke))
     {
         bool reverse = (key_code == kVKEY_LEFT || key_code == kVKEY_UP);
         advanceFocusInGroup(reverse);
@@ -113,11 +113,11 @@ void FocusController::advanceFocus(bool reverse)
 void FocusController::advanceFocusInGroup(bool reverse)
 {
     clearFocusIfNecessary();
-    if (!current_ || current_->getGroup() == -1)
+    if (!current_ || current_->group() == -1)
         return;
 
     View::Views views;
-    current_->parent()->getViewsInGroup(current_->getGroup(), views);
+    current_->parent()->getViewsInGroup(current_->group(), views);
     auto iter = std::find(views.begin(), views.end(), current_.get());
     if (iter == views.end())
         return;
@@ -178,17 +178,17 @@ bool FocusController::isFocusableCandidate(View * v, int skip_group_id)
 {
     return isFocusable(v) &&
         (v->isGroupFocusTraversable() || skip_group_id == -1 ||
-        v->getGroup() != skip_group_id);
+        v->group() != skip_group_id);
 }
 
 View * FocusController::findSelectedForGroup(View * v)
 {
     if (!v)
         return nullptr;
-    if (v->isGroupFocusTraversable() || v->getGroup() == -1)
+    if (v->isGroupFocusTraversable() || v->group() == -1)
         return v;
 
-    View * selected = v->getSelectedForGroup(v->getGroup());
+    View * selected = v->getSelectedForGroup(v->group());
     if (selected)
         return selected;
 
@@ -238,7 +238,7 @@ View * FocusController::findNextFocusable(View * start, bool reverse)
             start = root->getFirstChild();
     }
 
-    int start_group = start->getGroup();
+    int start_group = start->group();
 
     View * newly = nullptr;
     if (!reverse)

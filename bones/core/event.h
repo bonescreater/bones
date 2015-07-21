@@ -123,7 +123,7 @@ public:
 
     //bool isOnlyRightMouseDown() const;
 
-    int flags() const;
+    int getFlags() const;
 protected:
     int flags_;
 };
@@ -152,9 +152,9 @@ public:
 
     bool isRightMouse() const;
 
-    const Point & loc() const;
+    const Point & getLoc() const;
     
-    const Point & rootLoc() const;
+    const Point & getRootLoc() const;
 
     MouseButton button() const;
 private:

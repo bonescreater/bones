@@ -64,12 +64,12 @@ void MouseController::handleEvent(MouseEvent & e)
 
     View * target = e.target();
     if (target == root_)
-        target = getTargetByPos(e.loc());
+        target = getTargetByPos(e.getLoc());
     if (!target)
         return;
-    last_mouse_point_ = e.loc();
+    last_mouse_point_ = e.getLoc();
 
-    MouseEvent me(e.type(), e.button(), target, target->mapToLocal(e.loc()), e.loc(), e.flags());
+    MouseEvent me(e.type(), e.button(), target, target->mapToLocal(e.getLoc()), e.getLoc(), e.getFlags());
     if (kET_MOUSE_DOWN == me.type() && me.isLeftMouse())
     {//如果是左键按下 自动capture
         shiftCapture(me.target());

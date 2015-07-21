@@ -51,7 +51,8 @@ private:
 class CommonAnimation : public Animation
 {
 public:
-    typedef std::function<void(Ref * sender, Ref * target, uint64_t due_running, void * user_data)> CFRun;
+    //progress 0~1
+    typedef std::function<void(Ref * sender, Ref * target, float progress, void * user_data)> CFRun;
     typedef std::function<void(Ref * sender, Ref * target, void * user_data)> CFRoutine;
 
     enum Action

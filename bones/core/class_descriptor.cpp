@@ -491,6 +491,15 @@ static void PanelSetColor(Ref * ob, const CSSParams & params)
     v->setColor(CSSStrToColor(params[0]));
 }
 
+static void PanelSetOpacity(Ref * ob, const CSSParams & params)
+{
+    if (params.empty() || !ob || params.size() < 1)
+        return;
+    auto v = static_cast<Panel *>(ob);
+    v->setOpacity(CSSStrToScalar(params[0]));
+}
+
+
 ClassDescriptor::ClassDescriptor()
 {
     registerArea();
@@ -562,6 +571,7 @@ void ClassDescriptor::registerPanel()
     table[kDescCursor] = &PanelSetCursor;
     table[kDescHitTest] = &PanelHitTest;
     table[kDescColor] = &PanelSetColor;
+    table[kDescOpacity] = &PanelSetOpacity;
 }
 
 void ClassDescriptor::registerView(CSSClassTable & table)

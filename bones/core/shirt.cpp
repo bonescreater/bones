@@ -7,23 +7,21 @@ namespace bones
 Shirt::Shirt()
 :opacity_(1.0f)
 {
-    ;
+    setFocusable(false);
 }
 
 void Shirt::setOpacity(float opacity)
 {
-    opacity_ = opacity;
-    inval();
+    if (opacity_ != opacity)
+    {
+        opacity_ = opacity;
+        inval();
+    }
 }
 
 float Shirt::getOpacity() const
 {
     return opacity_;
-}
-
-bool Shirt::isFocusable() const
-{
-    return false;
 }
 
 

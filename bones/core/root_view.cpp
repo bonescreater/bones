@@ -11,7 +11,8 @@ namespace bones
 {
 
 RootView::RootView()
-:delegate_(nullptr), mouse_(this), focus_(this), color_(0)
+:delegate_(nullptr), mouse_(this), focus_(this), color_(0),
+opacity_(1.0f)
 {
     ;
 }
@@ -31,6 +32,20 @@ void RootView::setColor(Color color)
 {
     color_ = color;
     inval();
+}
+
+void RootView::setOpacity(float opacity)
+{
+    if (opacity_ != opacity)
+    {
+        opacity_ = opacity;
+        inval();
+    }   
+}
+
+float RootView::getOpacity() const
+{
+    return opacity_;
 }
 
 bool RootView::isVisible() const
@@ -81,10 +96,6 @@ Pixmap & RootView::getPixmap()
     return back_buffer_;
 }
 
-void RootView::update()
-{
-    blink();
-}
 
 void RootView::handleEvent(MouseEvent & e)
 {
@@ -106,7 +117,7 @@ void RootView::handleEvent(KeyEvent & e)
     }
     if (!handle && focus)
     {//都不处理
-        KeyEvent focus_ke(e.type(), focus, e.key(), e.flags());
+        KeyEvent focus_ke(e.type(), focus, e.key(), e.getFlags());
         EventDispatcher dispatcher;
         EventDispatcher::Path path;
         EventDispatcher::getPath(focus_ke.target(), path);
@@ -117,7 +128,11 @@ void RootView::handleEvent(KeyEvent & e)
 
 void RootView::onDraw(SkCanvas & canvas)
 {  
-    canvas.drawColor(color_, SkXfermode::kSrc_Mode);
+    SkPaint paint;
+    paint.setColor(color_);
+    paint.setAlpha(ClampAlpha(opacity_, ColorGetA(color_)));
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    canvas.drawPaint(paint);
 }
 
 bool RootView::notifyInval(const Rect & inval)
@@ -171,13 +186,13 @@ void RootView::onVisibleChanged(View * n)
 
 void RootView::AdjustPixmap()
 {
-    int width = static_cast<int>(getWidth());
-    int height = static_cast<int>(getHeight());
-    if (width != back_buffer_.width() || height != back_buffer_.height())
+    int w = static_cast<int>(getWidth());
+    int h = static_cast<int>(getHeight());
+    if (w != back_buffer_.width() || h != back_buffer_.height())
     {
         back_buffer_.free();
-        if (width && height)
-            back_buffer_.allocate(width, height);
+        if (w && h)
+            back_buffer_.allocate(w, h);
     }
 }
 

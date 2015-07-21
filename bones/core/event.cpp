@@ -113,7 +113,7 @@ bool UIEvent::isRightMouseDown() const
 //        !(flags() & (kEF_LEFT_MOUSE_DOWN | kEF_MIDDLE_MOUSE_DOWN));
 //}
 
-int UIEvent::flags() const
+int UIEvent::getFlags() const
 {
     return flags_;
 }
@@ -155,12 +155,12 @@ bool MouseEvent::isRightMouse() const
     return kMB_RIGHT == button_;
 }
 
-const Point & MouseEvent::loc() const
+const Point & MouseEvent::getLoc() const
 {
     return location_;
 }
 
-const Point & MouseEvent::rootLoc() const
+const Point & MouseEvent::getRootLoc() const
 {
     return root_location_;
 }

@@ -44,6 +44,10 @@ public:
 
     void setColor(Color color);
 
+    void setOpacity(float opacity);
+
+    float getOpacity() const;
+
     const char * getClassName() const override;
 
     RootView * getRootView() const;

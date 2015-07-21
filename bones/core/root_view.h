@@ -30,6 +30,10 @@ public:
 
     void setColor(Color color);
 
+    void setOpacity(float opacity);
+
+    float getOpacity() const;
+
     void draw();
 
     const Rect & getDirtyRect() const;
@@ -37,8 +41,6 @@ public:
     bool isDirty() const;
 
     Pixmap & getPixmap();
-
-    void update();
 
     void handleEvent(KeyEvent & e);
 
@@ -79,6 +81,7 @@ private:
     Delegate * delegate_;
     Rect dirty_;
     Color color_;
+    float opacity_;
 };
 
 

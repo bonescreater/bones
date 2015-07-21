@@ -115,9 +115,7 @@ public:
 
     bool contains(View * v) const;
 
-    void blink();
-
-    int getGroup() const;
+    int group() const;
 
     void getViewsInGroup(int gid, Views & views) const;
 
@@ -154,8 +152,6 @@ protected:
     void draw(SkCanvas & canvas, const Rect & inval);
 protected:
     virtual bool onHitTest(const Point & pt);
-
-    virtual void onBlink();
 
     virtual void onTrigger(int tag, uint32_t interval);
 

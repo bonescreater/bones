@@ -14,8 +14,6 @@ public:
     float getOpacity() const;
 protected:
     Shirt();
-
-    bool isFocusable() const override;
 protected:
     float opacity_;
 };

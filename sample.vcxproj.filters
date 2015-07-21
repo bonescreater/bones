@@ -4,6 +4,9 @@
     <Filter Include="button">
       <UniqueIdentifier>{8e51556b-c066-4d62-8346-bf0e0be2f6aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="animate">
+      <UniqueIdentifier>{80e1074e-e66d-404d-ad9e-9535138deb43}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="sample\test.css" />
@@ -13,6 +16,9 @@
     </None>
     <None Include="sample\button.lua">
       <Filter>button</Filter>
+    </None>
+    <None Include="sample\animate.lua">
+      <Filter>animate</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

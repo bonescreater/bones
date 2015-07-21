@@ -89,6 +89,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="sample\animate.lua" />
     <None Include="sample\button.css" />
     <None Include="sample\button.lua" />
     <None Include="sample\test.css" />

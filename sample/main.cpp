@@ -37,10 +37,6 @@ int main()
     free(xml);
 
     //BonesCleanXML();
-    auto btn1 = BonesGetCObjectByID("btn1");
-    if (btn1)
-        BonesRegScriptCallback(btn1, "onClick", &TestCB, (void *)555);
-
     auto close_btn = BonesGetCObjectByID("close");
     if (close_btn)
         BonesRegScriptCallback(close_btn, "onClick", &TestClose, close_btn);

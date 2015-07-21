@@ -58,9 +58,9 @@ void Core::Update()
     auto delta = frame_count - current;
     if (delta < 1)
         return;
+
     if (animations)
         animations->run(delta);
-
     current = frame_count;
 }
 

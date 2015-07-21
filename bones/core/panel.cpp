@@ -111,6 +111,16 @@ void Panel::setColor(Color color)
     root_->setColor(color);
 }
 
+void Panel::setOpacity(float opacity)
+{
+    root_->setOpacity(opacity);
+}
+
+float Panel::getOpacity() const
+{
+    return root_->getOpacity();
+}
+
 LRESULT Panel::handleNCCreate(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     root_ = AdoptRef(new RootView);

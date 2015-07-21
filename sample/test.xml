@@ -3,6 +3,7 @@
 	    <head>
       <link type ='css' file ='../../sample/test.css'></link>
         <link type ='script' module ='test' file ='../../sample\test.lua'></link>
+        <link type ='script' module ='animate' file ='../../sample\animate.lua'></link>
       <link type ='xml' module ='button' file ='../../sample/button.xml'></link>
       
         <style>
@@ -10,27 +11,41 @@
           {
           content:Bones;
           hit-test: caption 0px 0px 200px 20px;
-          color: #ffffffff;
+          color: #ff7cfc00;
           }
-          .btn1
+          .fadein
           {
-          content: 确定;
+          content: 淡入;
 
+          }
+          .fadeout
+          {
+          content: 淡出;
           }
           .close
           {
           content: 关闭;
+          }
+          .fade
+          {
+          left:20px;
+          top:60px;
+          width:200px;
+          height:50px;
+          color:#ffff0000;
+          opacity:0;
           }
         </style>
 		  </head>
       
         <body>  
             <panel class = "p">
-
-              <button id ="btn1" class ="b11   b12"></button>
-              <button id ="close" class = "   b11     b12  b13"></button>
+              <button id ="fadein" class ="b11   b12 "></button>
+              <button id ="fadeout" class ="b11   b13 "></button>
+              <button id ="close" class = "   b11     b12  b14 "></button>
               <panel class ="p1 p2"></panel>
               <event name ="onPrepare" module ="test" func ="onPrepare"></event>
+              <block id ="test_fade" class ="fade"></block>
 			      </panel>
         </body>  
     </bones>

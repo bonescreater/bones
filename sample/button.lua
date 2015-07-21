@@ -1,6 +1,5 @@
 ﻿local mod = {}
 
-
 --setfenv(1, mod)
 
 --control state
@@ -54,17 +53,6 @@ local function applyTextCSS(self, css)
     return self.text_:applyCSS(css)
 end
 
-local function AnimateOpacityRun(animate, bone, due)
-    print(animate)
-    print(due)
-end
-
-local function AnimateOpacityStop(animate, bone)
-    print(animate)
-    print("stop")
-end
-
-
 function mod.onPrepare(self)
 print("Prepare")
 print(self)
@@ -72,8 +60,6 @@ print(self)
 self.isEnable = isEnable
 self.applyTextClass = applyTextClass
 self.applyTextCSS = applyTextCSS
-self.animateOpacityRun = AnimateOpacityRun
-self.animateOpacityStop = AnimateOpacityStop
 --private member
 self.enable_ = true
 self.hover_ = false
@@ -83,7 +69,6 @@ self.state_ = disable
 self.shirt_ = self:getChildAt(0);
 self.text_ = self:getChildAt(1);
 self.shape_ = self:getChildAt(2);
-self.text_:applyCSS([[{content:"确\n认";}]])
 stateChanged(self)
 end
 
@@ -92,7 +77,7 @@ self:applyCSS("{cursor:hand;}")
 end
 
 function mod.onMouseMove(self, e)
-	self.hover_ = self:contains(e:loc())
+	self.hover_ = self:contains(e:getLoc())
 	stateChanged(self);
 end
 
@@ -111,9 +96,8 @@ function mod.onMouseUp(self, e)
 			self.down_ = false
 			if self.hover_ then
 				if type(self.onClick) == "function" then
-					self:onClick("aaa");  
+					self:onClick();
 				end
-                self:animate(100, 1000, "animateOpacityRun", "animateOpacityStop");
 			end
 			stateChanged(self)
 		end
@@ -135,7 +119,7 @@ function mod.onFocus(self, e)
 end
 
 function mod.onSizeChanged(self)
-	width, height = self:size();
+	width, height = self:getSize();
 	css = string.format("{width:%dpx;height:%dpx;}", width, height);
 	self.shirt_:applyCSS(css);
 	self.text_:applyCSS(css);
@@ -147,5 +131,5 @@ end
 
 
 
-print("load")
+print("load button")
 return mod

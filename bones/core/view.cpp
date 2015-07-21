@@ -545,17 +545,6 @@ bool View::notifyChangeCursor(Cursor cursor)
     return true;
 }
 
-void View::blink()
-{
-    onBlink();
-    auto child = getFirstChild();
-    while (child)
-    {
-        child->blink();
-        child = child->getNextSibling();
-    }
-}
-
 void View::draw(SkCanvas & canvas, const Rect & inval)
 {
     if (!visible() || inval.isEmpty())
@@ -611,10 +600,6 @@ bool View::onHitTest(const Point & pt)
     return true;
 }
 
-void View::onBlink()
-{
-
-}
 
 void View::onTrigger(int tag, uint32_t interval)
 {
@@ -776,7 +761,7 @@ bool View::contains(View * v) const
     return false;
 }
 
-int View::getGroup() const
+int View::group() const
 {
     return group_id_;
 }

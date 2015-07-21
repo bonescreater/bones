@@ -172,7 +172,14 @@ void CommonAnimation::onRun(uint64_t delta)
 
     if (notify)
     {
-        run_routine_ ? run_routine_(this, target(), running_count_, run_user_data_) : 0;
+        float progress = 0;
+        if (running_count_ == due_)
+            progress = 1.0f;
+        else if (running_count_ == 0)
+            progress = 0.f;
+        else
+            progress = (float)running_count_ / due_;
+        run_routine_ ? run_routine_(this, target(), progress, run_user_data_) : 0;
         last_run_ = running_count_;
     }
 

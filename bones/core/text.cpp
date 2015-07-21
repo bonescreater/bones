@@ -240,26 +240,26 @@ void Text::appendEllipsis(size_t begin, size_t length)
     std::vector<Scalar> widths;
     paint.getTextWidths(content_.data() + begin, sizeof(wchar_t)* length, &widths[0]);
     Scalar line_width = 0;
-    Scalar width = getWidth();
+    Scalar max_width = getWidth();
     
     for (auto iter = widths.begin(); iter != widths.end(); ++iter)
         line_width += *iter;
-    if (line_width <= width)
+    if (line_width <= max_width)
         lines_.push_back(std::wstring(content_.data() + begin, length));
     else
     {
         auto ellipsis_length = paint.measureText(kStrEllipsis, sizeof(kStrEllipsis[0]) * length);
-        if (ellipsis_length > width)
+        if (ellipsis_length > max_width)
             lines_.push_back(kStrEllipsis);
         else
         {
-            width -= ellipsis_length;
+            max_width -= ellipsis_length;
             line_width = 0;
             auto iter = widths.begin();
             for (; iter != widths.end(); ++iter)
             {
                 line_width += *iter;
-                if (line_width > width)
+                if (line_width > max_width)
                     break;
             }
             lines_.push_back(std::wstring());
@@ -276,12 +276,12 @@ void Text::wordWrap(size_t begin, size_t length)
     std::vector<Scalar> widths;
     paint.getTextWidths(content_.data() + begin, sizeof(wchar_t)* length, &widths[0]);
     Scalar line_width = 0;
-    Scalar width = getWidth();
+    Scalar max_width = getWidth();
     size_t line_start = 0;
     for (size_t i = 0; i < widths.size();  ++i)
     {
         line_width += widths[i];
-        if (line_width > width)
+        if (line_width > max_width)
         {
             size_t line_length = i - line_start;
             std::wstring line;

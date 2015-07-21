@@ -215,7 +215,11 @@ bool ScriptParser::handleLink(XMLNode node, Module & mod)
         lua_pop(l, count);
     }
     else
-        LOG_ERROR << "lua module " << module << " load fail";
+    {
+        LOG_ERROR << "lua module " << module << " load fail " << lua_tostring(l, -1);
+        lua_pop(l, 1);
+    }
+        
     return true;
 }
 

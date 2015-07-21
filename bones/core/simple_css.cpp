@@ -276,7 +276,7 @@ Token ReadToken(const char * str, size_t & begin, size_t & end)
         next = str[end];
         if (0 != isspace(next) ||
             kTOKEN_END == next ||
-            kTOKEN_POINT == next ||
+            //kTOKEN_POINT == next ||
             kTOKEN_OPEN_BRACE == next ||
             kTOKEN_CLOSE_BRACE == next ||
             kTOKEN_COLON == next ||
