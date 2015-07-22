@@ -1,5 +1,6 @@
 ﻿#include "helper.h"
 #include "rect.h"
+#include "point.h"
 #include "pixmap.h"
 #include "SkRect.h"
 #include "SkBitmap.h"
@@ -25,6 +26,13 @@ SkIRect Helper::ToSkIRect(const Rect & rect)
               static_cast<int>(rect.right()),
               static_cast<int>(rect.bottom()));
     return r;
+}
+
+SkPoint Helper::ToSkPoint(const Point & pt)
+{
+    SkPoint p;
+    p.set(pt.x(), pt.y());
+    return p;
 }
 
 SkBitmap Helper::ToSkBitmap(Pixmap & pm)

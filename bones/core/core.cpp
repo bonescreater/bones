@@ -53,15 +53,17 @@ void Core::Update()
     if (0 == current)
         current = Helper::GetTickCount();
 
+    //
     //防止死循环
     auto frame_count = Helper::GetTickCount();
     auto delta = frame_count - current;
-    if (delta < 1)
-        return;
-
-    if (animations)
-        animations->run(delta);
-    current = frame_count;
+    if (delta >= 1)
+    {
+        if (animations)
+            animations->run(delta);
+        current = frame_count;
+    }
+    //layer window 绘制
 }
 
 AnimationManager * Core::GetAnimationManager()

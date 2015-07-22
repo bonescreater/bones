@@ -5,6 +5,7 @@
 
 struct SkRect;
 struct SkIRect;
+struct SkPoint;
 class SkBitmap;
 
 namespace bones
@@ -12,6 +13,7 @@ namespace bones
 
 class Pixmap;
 class Rect;
+class Point;
 
 class Helper
 {
@@ -19,6 +21,8 @@ public:
     static SkRect ToSkRect(const Rect & rect);
 
     static SkIRect ToSkIRect(const Rect & rect);
+
+    static SkPoint ToSkPoint(const Point & pt);
 
     static SkBitmap ToSkBitmap(Pixmap & pm);
 

@@ -28,13 +28,13 @@ local function stateChanged(self)
 			self.shape_:applyCSS("{border:1px solid #ff999999;}")
 		elseif self.state_ == highlight then
 			self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffeaeaea;}")
-			self.shape_:applyCSS("{color:1px solid #ffaaaaaa;}")
+			self.shape_:applyCSS("{border:1px solid #ffaaaaaa;}")
 		elseif self.state_ == press then
 			self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffd3d3d3;}")
-			self.shape_:applyCSS("{color:1px solid #ff999999;}")
+			self.shape_:applyCSS("{border:1px solid #ff999999;}")
 		elseif self.state_ == disable then
 			self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffd9d9d9;}")
-			self.shape_:applyCSS("{color:1px solid #ffbbbbbb;}")
+			self.shape_:applyCSS("{border:1px solid #ffbbbbbb;}")
 		end
 	end
 	

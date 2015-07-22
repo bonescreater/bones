@@ -18,12 +18,13 @@ static CSSString kDescBottom("bottom");
 static CSSString kDescOpacity("opacity");
 static CSSString kDescColor("color");
 static CSSString kDescLinearGradient("linear-gradient");
+static CSSString kDescRadialGradient("radial-gradient");
 static CSSString kDescContent("content");
 //static CSSString kDescMode("mode");
 //static CSSString kDescStyle("style");
-//static CSSString kDescStrokeWidth("stroke-width");
-//static CSSString kDescRoundRect("round-rect");
-//static CSSString kDescCircle("circle");
+static CSSString kDescStrokeWidth("stroke-width");
+static CSSString kDescRect("rect");
+static CSSString kDescCircle("circle");
 static CSSString kDescBorder("border");
 static CSSString kDescCursor("cursor");
 static CSSString kDescHitTest("hit-test");
@@ -124,6 +125,20 @@ static Scalar CSSStrToScalar(const CSSString & str)
     return f;
 }
 
+static float CSSStrToFloat(const CSSString & str)
+{
+    const char * begin = nullptr;
+    size_t len = 0;
+    if (!(begin = str.begin) || !(len = str.length))
+        return 0;
+    char * css = const_cast<char *>(begin);
+    char old = css[len];
+    css[len] = '\0';
+    auto f = static_cast<Scalar>(atof(begin));
+    css[len] = old;
+    return f;
+}
+
 static Color  CSSStrToColor(const CSSString & str)
 {
     const char * begin = nullptr;
@@ -199,21 +214,6 @@ static Cursor CSSStrToCursor(const CSSString & str)
     return (Cursor)CSSStrToInt(str);
 }
 
-static Block::Anchor  CSSStrToBlockAnchor(const CSSString & str)
-{
-    if (str == kDescLeft)
-        return Block::kLeft;
-    else if (str == kDescTop)
-        return Block::kTop;
-    else if (str == kDescRight)
-        return Block::kRight;
-    else if (str == kDescBottom)
-        return Block::kBottom;
-    else 
-        return Block::kLeft;
-
-}
-
 static void ViewSetLeft(Ref * ob, const CSSParams & params)
 {
     if (params.empty() || !ob)
@@ -259,45 +259,8 @@ static void ShirtSetOpacity(Ref * ob, const CSSParams & params)
     if (params.empty() || !ob || params.size() < 1)
         return;
     auto v = static_cast<Shirt *>(ob);
-    v->setOpacity(CSSStrToScalar(params[0]));
+    v->setOpacity(CSSStrToFloat(params[0]));
 }
-
-static void BlockSetColor(Ref * ob, const CSSParams & params)
-{
-    if (params.empty() || !ob)
-        return;
-    auto v = static_cast<Block *>(ob);
-    v->set(CSSStrToColor(params[0]));
-}
-
-static void BlockSetLinearGradient(Ref * ob, const CSSParams & params)
-{
-    if (params.empty() || !ob)
-        return;
-
-    //线性渐变至少5个参数
-    if (params.size() != 6)
-        return;
-
-    auto v = static_cast<Block *>(ob);
-    Block::LinearGradient linear;
-    linear.begin[0] = CSSStrToBlockAnchor(params[0]);
-    linear.begin[1] = CSSStrToBlockAnchor(params[1]);
-    linear.end[0] = CSSStrToBlockAnchor(params[2]);
-    linear.end[1] = CSSStrToBlockAnchor(params[3]);
-    std::vector<Color> colors;
-    colors.push_back(CSSStrToColor(params[4]));
-    colors.push_back(CSSStrToColor(params[5]));
-    std::vector<Scalar> pos;
-    pos.push_back(0);
-    pos.push_back(1);
-    linear.color = &colors[0];
-    linear.pos = &pos[0];
-    linear.count = colors.size();
-
-    v->set(linear);
-}
-
 /*
 text
 */
@@ -343,38 +306,146 @@ static Shape::Style CSSStrToShapeStyle(const CSSString & str)
 //    v->setStyle(CSSStrToShapeStyle(params[0]));
 //}
 
-//static void ShapeSetColor(Ref * ob, const CSSParams & params)
-//{
-//    if (params.empty() || !ob)
-//        return;
-//    auto v = static_cast<Shape *>(ob);
-//    v->setColor(CSSStrToColor(params[0]));
-//}
+static void ShapeSetColor(Ref * ob, const CSSParams & params)
+{
+    if (params.empty() || !ob)
+        return;
+    auto v = static_cast<Shape *>(ob);
+    v->setColor(CSSStrToColor(params[0]));
+}
+
+static void ShapeSetLinearGradient(Ref * ob, const CSSParams & params)
+{
+    if (params.empty() || !ob)
+        return;
+
+    //线性渐变至少5个参数
+    if (params.size() <= 5)
+        return;
+
+    Point pt[2] = { { CSSStrToPX(params[0]), CSSStrToPX(params[1]) },
+                    { CSSStrToPX(params[2]), CSSStrToPX(params[3]) } };
+    Shape::GradientTileMode m = Shape::kClamp;
+    if (params[4] == "mirror")
+        m = Shape::kMirror;
+    else if (params[4] == "repeat")
+        m = Shape::kRepeat;
+    
+    std::vector<Color> colors;
+    std::vector<float> pos;
+    if (params.size() == 6)
+    {//处理只有1个颜色
+        colors.push_back(CSSStrToColor(params[5]));
+        pos.push_back(1.f);
+    }
+    else if (params.size() == 7)
+    {//处理只有2个颜色
+        colors.resize(2);
+        pos.resize(2);
+        colors.push_back(CSSStrToColor(params[5]));
+        pos.push_back(0.f);
+        colors.push_back(CSSStrToColor(params[6]));
+        pos.push_back(1.f);
+    }
+    else
+    {//处理多个颜色
+        int count = (params.size() - 5) / 2;
+        colors.resize(count);
+        pos.resize(count);
+        for (auto i = 0; i < count; i = i++)
+        {
+            int j = 2 * i;
+            colors.push_back(CSSStrToColor(params[j]));
+            pos.push_back(CSSStrToFloat(params[j + 1]));
+        }
+    }
+    
+    ((Shape *)ob)->setGradient(pt[0], pt[1], &colors[0], &pos[0], colors.size(), m);
+}
+
+static void ShapeSetRadialGradient(Ref * ob, const CSSParams & params)
+{
+    if (params.empty() || !ob)
+        return;
+
+    //线性渐变至少5个参数
+    if (params.size() <= 5)
+        return;
+
+    Point pt= { CSSStrToPX(params[0]), CSSStrToPX(params[1]) };
+    Scalar radius = CSSStrToScalar(params[2]);
+
+    Shape::GradientTileMode m = Shape::kClamp;
+    if (params[3] == "mirror")
+        m = Shape::kMirror;
+    else if (params[3] == "repeat")
+        m = Shape::kRepeat;
+
+    std::vector<Color> colors;
+    std::vector<float> pos;
+    if (params.size() == 5)
+    {//处理只有1个颜色
+        colors.push_back(CSSStrToColor(params[5]));
+        pos.push_back(1.f);
+    }
+    else if (params.size() == 6)
+    {//处理只有2个颜色
+        colors.resize(2);
+        pos.resize(2);
+        colors.push_back(CSSStrToColor(params[5]));
+        pos.push_back(0.f);
+        colors.push_back(CSSStrToColor(params[6]));
+        pos.push_back(1.f);
+    }
+    else
+    {//处理多个颜色
+        int count = (params.size() - 4) / 2;
+        colors.resize(count);
+        pos.resize(count);
+        for (auto i = 0; i < count; i = i++)
+        {
+            int j = 2 * i;
+            colors.push_back(CSSStrToColor(params[j]));
+            pos.push_back(CSSStrToFloat(params[j + 1]));
+        }
+    }
+    ((Shape *)ob)->setGradient(pt, radius, &colors[0], &pos[0], colors.size(), m);
+}
+
+static void ShapeSetStrokeWidth(Ref * ob, const CSSParams & params)
+{
+    if (params.empty() || !ob)
+        return;
+    auto v = static_cast<Shape *>(ob);
+    v->setStrokeWidth(CSSStrToPX(params[0]));
+}
 //
-//static void ShapeSetStrokeWidth(Ref * ob, const CSSParams & params)
-//{
-//    if (params.empty() || !ob)
-//        return;
-//    auto v = static_cast<Shape *>(ob);
-//    v->setStrokeWidth(CSSStrToPX(params[0]));
-//}
+static void ShapeSetRect(Ref * ob, const CSSParams & params)
+{
+    if (params.empty() || !ob || params.size() < 2)
+        return;
+    auto v = static_cast<Shape *>(ob);
+    Rect * pr = nullptr;
+    Rect r;
+    if (params.size() >= 6)
+    {
+        r.setLTRB(CSSStrToPX(params[2]),
+                  CSSStrToPX(params[3]),
+                  CSSStrToPX(params[4]),
+                  CSSStrToPX(params[5]));
+        pr = &r;
+    }
+    v->set(CSSStrToPX(params[0]), CSSStrToPX(params[1]), pr);
+}
 //
-//static void ShapeSetRoundRect(Ref * ob, const CSSParams & params)
-//{
-//    if (params.empty() || !ob || params.size() < 2)
-//        return;
-//    auto v = static_cast<Shape *>(ob);
-//    v->set(CSSStrToPX(params[0]), CSSStrToPX(params[1]));
-//}
-//
-//static void ShapeSetCircle(Ref * ob, const CSSParams & params)
-//{
-//    if (params.empty() || !ob || params.size() < 3)
-//        return;
-//    auto v = static_cast<Shape *>(ob);
-//    v->set(Point::Make(CSSStrToPX(params[0]), CSSStrToPX(params[1])), 
-//           CSSStrToPX(params[2]));
-//}
+static void ShapeSetCircle(Ref * ob, const CSSParams & params)
+{
+    if (params.empty() || !ob || params.size() < 3)
+        return;
+    auto v = static_cast<Shape *>(ob);
+    v->set(Point::Make(CSSStrToPX(params[0]), CSSStrToPX(params[1])), 
+           CSSStrToPX(params[2]));
+}
 
 static void ShapeSetBorder(Ref * ob, const CSSParams & params)
 {
@@ -537,9 +608,6 @@ void ClassDescriptor::registerBlock()
     //view已经register上了
     auto & table = multi_class_tables_[kClassBlock];
     registerShirt(table);
-    table[kDescColor] = &BlockSetColor;
-    table[kDescLinearGradient] = &BlockSetLinearGradient;
-
 }
 
 void ClassDescriptor::registerText()
@@ -555,13 +623,14 @@ void ClassDescriptor::registerShape()
     auto & table = multi_class_tables_[kClassShape];
     registerShirt(table);
     table[kDescBorder] = &ShapeSetBorder;
-
+    table[kDescColor] = &ShapeSetColor;
+    table[kDescLinearGradient] = &ShapeSetLinearGradient;
+    table[kDescRadialGradient] = &ShapeSetRadialGradient;
     //table[kDescMode] =  &ShapeSetMode;
     //table[kDescStyle] = &ShapeSetStyle;
-    //table[kDescColor] = &ShapeSetColor;
-    //table[kDescStrokeWidth] = &ShapeSetStrokeWidth;
-    //table[kDescRoundRect] = &ShapeSetRoundRect;
-    //table[kDescCircle] = &ShapeSetCircle;
+    table[kDescStrokeWidth] = &ShapeSetStrokeWidth;
+    table[kDescRect] = &ShapeSetRect;
+    table[kDescCircle] = &ShapeSetCircle;
 }
 
 void ClassDescriptor::registerPanel()
