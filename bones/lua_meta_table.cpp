@@ -287,14 +287,18 @@ static int Animate(lua_State * l)
     }
     return 1;
 }
-//(self ani)
+//(self , ani, end)
 static int StopAnimate(lua_State * l)
 {
     int count = lua_gettop(l);
-    if (count == 2)
+    if (count >= 2)
     {
         auto ani = (Animation *)lua_touserdata(l, 2);
-        Core::GetAnimationManager()->remove(ani);
+        bool end = false;
+        if (count >= 3)
+            end = !!lua_toboolean(l, 3);
+
+        Core::GetAnimationManager()->remove(ani, end);
     }
     return 0;
 }
@@ -320,16 +324,19 @@ static int ResumeAnimate(lua_State * l)
     }
     return 0;
 }
-//(self)
+//(self, end)
 static int StopAllAnimate(lua_State * l)
 {
     int count = lua_gettop(l);
-    if (count == 1)
+    if (count >= 1)
     {
         lua_pushnil(l);
         lua_copy(l, 1, -1);
         Ref * ref = LuaMetaTable::CallGetCObject(l);
-        Core::GetAnimationManager()->remove(ref);
+        bool end = false;
+        if (count >= 2)
+            end = !!lua_toboolean(l, 2);
+        Core::GetAnimationManager()->remove(ref, end);
     }
     return 0;
 }

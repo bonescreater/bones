@@ -18,7 +18,7 @@ AnimationManager::~AnimationManager()
 
 //remove 操作只是清空RefPtr<Animation>
 //不操作list 防止在loop的过程中 进行remove
-void AnimationManager::removeAll()
+void AnimationManager::removeAll(bool end)
 {
     for (auto iter = animations_.begin(); iter != animations_.end(); ++iter)
     {
@@ -28,14 +28,14 @@ void AnimationManager::removeAll()
             auto & a = *ani_iter;
             if (a)
             {
-                a->stop();
+                a->stop(end);
                 a.clear();
             }
         }
     }
 }
 
-void AnimationManager::remove(Ref * ref)
+void AnimationManager::remove(Ref * ref, bool end)
 {
     RefPtr<Ref> key;
     key.reset(ref);
@@ -49,7 +49,7 @@ void AnimationManager::remove(Ref * ref)
         auto & a = *ani_iter;
         if (a)
         {
-            a->stop();
+            a->stop(end);
             a.clear();
         }
     }
@@ -75,7 +75,7 @@ void AnimationManager::add(Animation * ani)
 
 }
 
-void AnimationManager::remove(Animation * ani)
+void AnimationManager::remove(Animation * ani, bool end)
 {
     if (!ani)
         return;
@@ -90,7 +90,7 @@ void AnimationManager::remove(Animation * ani)
     if (ani_iter != iter->second.end())
     {
         auto & a = *ani_iter;
-        a->stop();
+        a->stop(end);
         a.clear();
     }
 }

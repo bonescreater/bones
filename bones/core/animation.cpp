@@ -4,15 +4,33 @@
 namespace bones
 {
 
-Animation::Animation(Ref * target)
-:stopped_(true), paused_(true), start_(false)
+Animation::Animation(Ref * target, uint64_t interval, uint64_t due)
+:stopped_(true), paused_(true), start_(false),
+interval_(interval), due_(due), last_run_(0), running_count_(0),
+run_user_data_(nullptr)
 {
     target_.reset(target);
+    for (auto i = 0; i < kCount; i++)
+        action_routine_[i].user = nullptr;
 }
 
 Animation::~Animation()
 {
     ;
+}
+
+void Animation::bind(Action action, const CFRoutine & routine, void * user_data)
+{
+    if (action >= kCount)
+        return;
+    action_routine_[action].func = routine;
+    action_routine_[action].user = user_data;
+}
+
+void Animation::bind(const CFRun & routine, void * user_data)
+{
+    run_routine_ = routine;
+    run_user_data_ = user_data;
 }
 //避免重复start  每个Animation只能start 和 stop 一次
 void Animation::start()
@@ -26,11 +44,13 @@ void Animation::start()
     }
 }
 
-void Animation::stop()
+void Animation::stop(bool end)
 {
     if (!isStopped())
     {
         stopped_ = true;
+        if (end)
+            run_routine_ ? run_routine_(this, target(), 1, run_user_data_) : 0;
         onStop();
     } 
 }
@@ -82,78 +102,25 @@ void Animation::run(uint64_t delta)
 
 void Animation::onStart()
 {
-    ;
+    pushAction(kStart);
 }
 
 void Animation::onStop()
 {
-    ;
+    pushAction(kStop);
 }
 
 void Animation::onPause()
 {
-    ;
+    pushAction(kPause);
 }
 
 void Animation::onResume()
 {
-    ;
-}
-
-void Animation::onRun(uint64_t running)
-{
-    ;
-}
-
-CommonAnimation::CommonAnimation(Ref * target, uint64_t interval, uint64_t due)
-:Animation(target), interval_(interval), due_(due), last_run_(0), running_count_(0),
-run_user_data_(nullptr)
-{
-    for (auto i = 0; i < kCount; i++)
-        action_routine_[i].user = nullptr;
-}
-
-CommonAnimation::~CommonAnimation()
-{
-    ;
-}
-
-void CommonAnimation::bind(Action action, const CFRoutine & routine, void * user_data)
-{
-    if (action >= kCount)
-        return;
-    action_routine_[action].func = routine;
-    action_routine_[action].user = user_data;
-}
-
-void CommonAnimation::bind(const CFRun & routine, void * user_data)
-{
-    run_routine_ = routine;
-    run_user_data_ = user_data;
-}
-
-void CommonAnimation::onStart()
-{
-    pushAction(kStart);
-}
-
-void CommonAnimation::onStop()
-{
-    pushAction(kStop);
-}
-
-void CommonAnimation::onPause()
-{
-    pushAction(kPause);
-}
-
-void CommonAnimation::onResume()
-{
     pushAction(kResume);
 }
 
-
-void CommonAnimation::onRun(uint64_t delta)
+void Animation::onRun(uint64_t delta)
 {
     running_count_ += delta;
 
@@ -184,15 +151,15 @@ void CommonAnimation::onRun(uint64_t delta)
     }
 
     if (need_stop)
-        stop();
+        stop(false);
 }
 
-const char * CommonAnimation::getClassName() const
+const char * Animation::getClassName() const
 {
-    return kClassCommonAnimation;
+    return kClassAnimation;
 }
 
-void CommonAnimation::pushAction(Action action)
+void Animation::pushAction(Action action)
 {
     auto & routine = action_routine_[action];
     routine.func ? routine.func(this, target(), routine.user) : 0;

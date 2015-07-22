@@ -221,7 +221,7 @@ Animation * LuaAnimation::Create(
                                 const char * resume,
                                 const char * resume_module)
 {
-    auto ani = new CommonAnimation(target, interval, due);
+    auto ani = new Animation(target, interval, due);
     if (!run && !start && !stop && !pause && !resume)
         return ani;
     auto method = new LuaAnimationMethod;
@@ -239,7 +239,7 @@ Animation * LuaAnimation::Create(
         method->stop = stop;
         if (stop_module && strlen(stop_module))
             method->stop_module = stop_module;
-        ani->bind(CommonAnimation::kStop, BONES_CALLBACK_3(&AnimateStop), method);
+        ani->bind(Animation::kStop, BONES_CALLBACK_3(&AnimateStop), method);
     }
         
     if (start && strlen(start))
@@ -247,7 +247,7 @@ Animation * LuaAnimation::Create(
         method->start = start;
         if (start_module && strlen(start_module))
             method->start_module = start_module;
-        ani->bind(CommonAnimation::kStart, BONES_CALLBACK_3(&AnimateStart), method);
+        ani->bind(Animation::kStart, BONES_CALLBACK_3(&AnimateStart), method);
     }
 
     if (pause && strlen(pause))
@@ -255,7 +255,7 @@ Animation * LuaAnimation::Create(
         method->pause = pause;
         if (pause_module && strlen(pause_module))
             method->pause_module = pause_module;
-        ani->bind(CommonAnimation::kPause, BONES_CALLBACK_3(&AnimatePause), method);
+        ani->bind(Animation::kPause, BONES_CALLBACK_3(&AnimatePause), method);
     }
 
     if (resume && strlen(resume))
@@ -263,7 +263,7 @@ Animation * LuaAnimation::Create(
         method->resume = resume;
         if (resume_module && strlen(resume_module))
             method->resume_module = resume_module;
-        ani->bind(CommonAnimation::kResume, BONES_CALLBACK_3(&AnimateResume), method);
+        ani->bind(Animation::kResume, BONES_CALLBACK_3(&AnimateResume), method);
     }
     return ani;
 }

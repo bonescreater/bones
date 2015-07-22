@@ -15,13 +15,13 @@ class AnimationManager
 public:
     ~AnimationManager();
 
-    void removeAll();
+    void removeAll(bool end);
 
-    void remove(Ref * ref);
+    void remove(Ref * ref, bool end);
 
     void add(Animation * ani);
 
-    void remove(Animation * ani);
+    void remove(Animation * ani, bool end);
 
     void pause(Animation * ani);
 

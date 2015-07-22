@@ -20,7 +20,7 @@ const char * kClassText = "Text";
 const char * kClassRichEdit = "RichEdit";
 const char * kClassWebView = "WebView";
 
-const char * kClassCommonAnimation = "CommonAnimation";
+const char * kClassAnimation = "Animation";
 
 
 static AnimationManager * animations = nullptr;
