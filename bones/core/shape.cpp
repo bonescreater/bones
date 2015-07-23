@@ -2,15 +2,15 @@
 #include "rect.h"
 #include "helper.h"
 #include "SkCanvas.h"
-#include "SkGradientShader.h"
+
 
 namespace bones
 {
 
 Shape::Shape()
-:category_(kNone), mode_(kStroke), style_(kSolid), color_(0xff000000), stroke_width_(1),
+:category_(kNone), mode_(kFill), style_(kSolid), color_(0xff000000), stroke_width_(1),
 border_width_(0), border_style_(kSolid), border_color_(0xff000000), border_rx_(0), border_ry_(0),
-shader_(nullptr)
+colour_type_(kColor)
 {
     rect_param_.rx = 0;
     rect_param_.ry = 0;
@@ -19,8 +19,7 @@ shader_(nullptr)
 
 Shape::~Shape()
 {
-    if (shader_)
-        shader_->unref();
+    ;
 }
 
 void Shape::setMode(Mode mode)
@@ -43,42 +42,16 @@ void Shape::setStrokeWidth(Scalar stroke_width)
 
 void Shape::setColor(Color color)
 {
+    colour_type_ = kColor;
     color_ = color;
-    if (shader_)
-        shader_->unref();
     inval();
 }
 
-void Shape::setGradient(const Point & begin, const Point & end,
-                              Color * color, float * pos, size_t count,
-                              GradientTileMode tile)
+void Shape::setShader(const Shader & shader)
 {
-    SkPoint pt[2] = { Helper::ToSkPoint(begin), Helper::ToSkPoint(end) };
-    SkShader::TileMode mode = SkShader::kClamp_TileMode;
-    if (kRepeat == tile)
-        mode = SkShader::kRepeat_TileMode;
-    else if (kMirror == tile)
-        mode = SkShader::kMirror_TileMode;
-
-    if (shader_)
-        shader_->unref();
-    shader_ = SkGradientShader::CreateLinear(pt, color, pos, count, mode);
-    inval();
-}
-
-void Shape::setGradient(const Point & center, Scalar radius,
-    Color * color, float * pos, size_t count, GradientTileMode tile)
-{
-    SkPoint pt = Helper::ToSkPoint(center);
-    SkShader::TileMode mode = SkShader::kClamp_TileMode;
-    if (kRepeat == tile)
-        mode = SkShader::kRepeat_TileMode;
-    else if (kMirror == tile)
-        mode = SkShader::kMirror_TileMode;
-
-    if (shader_)
-        shader_->unref();
-    shader_ = SkGradientShader::CreateRadial(pt, radius, color, pos, count, mode);
+    colour_type_ = kShader;
+    shader_ = shader;
+    
     inval();
 }
 
@@ -133,16 +106,18 @@ void Shape::drawBackground(SkCanvas & canvas)
         return;
 
     SkPaint paint;
-    if (shader_)
+    if (kShader == colour_type_)
     {
-        paint.setShader(shader_);
+        paint.setShader(Helper::ToSkShader(shader_));
         paint.setAlpha(ClampAlpha(opacity_));
     }  
-    else
+    else if (kColor == colour_type_)
     {
         paint.setColor(color_);
         paint.setAlpha(ClampAlpha(opacity_, ColorGetA(color_)));
     }
+    else
+        assert(0);
 
     paint.setStrokeWidth(stroke_width_);
     if (kFill == mode_)

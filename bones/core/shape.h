@@ -5,8 +5,8 @@
 #include "shirt.h"
 #include "color.h"
 #include "rect.h"
+#include "shader.h"
 
-class SkShader;
 namespace bones
 {
 
@@ -24,19 +24,18 @@ public:
         kStroke,
         kFill,
     };
-
-    enum GradientTileMode
-    {
-        kClamp,
-        kRepeat,
-        kMirror,
-    };
 private:
     enum Category
     {
         kNone,
         kRect,//绘制矩形
         kCircle,
+    };
+
+    enum ColourType
+    {
+        kColor,
+        kShader,
     };
 
     struct RectParam
@@ -64,11 +63,7 @@ public:
 
     void setColor(Color color);
 
-    void setGradient(const Point & begin, const Point & end, 
-        Color * color, float * pos, size_t count, GradientTileMode tile);
-
-    void setGradient(const Point & center, Scalar radius,
-        Color * color, float * pos, size_t count, GradientTileMode tile);
+    void setShader(const Shader & shader);
 
     void set(Scalar rx, Scalar ry, const Rect * r = nullptr);
 
@@ -91,8 +86,9 @@ private:
     CircleParam circle_param_;
     Scalar stroke_width_;
 
+    ColourType colour_type_;
     Color color_;
-    SkShader * shader_;
+    Shader shader_;
 
     Scalar border_width_;
     Style border_style_;

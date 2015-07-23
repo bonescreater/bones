@@ -4,14 +4,14 @@
 #include "lua_check.h"
 #include "lua_panel.h"
 #include "lua_area.h"
-#include "lua_block.h"
+#include "lua_image.h"
 #include "lua_text.h"
 #include "lua_shape.h"
 #include "lua_meta_table.h"
 
 #include "core/logging.h"
 #include "core/area.h"
-#include "core/block.h"
+#include "core/image.h"
 #include "core/text.h"
 #include "core/shape.h"
 #include "core/panel.h"
@@ -239,11 +239,11 @@ bool ScriptParser::handleArea(XMLNode node, Ref * parent_ob, const Module & mod,
     return result;
 }
 
-bool ScriptParser::handleBlock(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
+bool ScriptParser::handleImage(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
 {
-    bool result = XMLController::handleBlock(node, parent_ob, mod, ob);
+    bool result = XMLController::handleImage(node, parent_ob, mod, ob);
     if (result)
-        LuaBlock::Create(static_cast<Block *>(*ob));
+        LuaImage::Create(static_cast<Image *>(*ob));
     return result;
 }
 

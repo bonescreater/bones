@@ -7,6 +7,7 @@ struct SkRect;
 struct SkIRect;
 struct SkPoint;
 class SkBitmap;
+class SkShader;
 
 namespace bones
 {
@@ -14,6 +15,7 @@ namespace bones
 class Pixmap;
 class Rect;
 class Point;
+class Shader;
 
 class Helper
 {
@@ -25,6 +27,8 @@ public:
     static SkPoint ToSkPoint(const Point & pt);
 
     static SkBitmap ToSkBitmap(Pixmap & pm);
+
+    static SkShader * ToSkShader(Shader & shader);
 
     static HMODULE GetModuleFromAddress(void * address);
 

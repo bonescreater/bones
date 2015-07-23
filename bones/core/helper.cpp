@@ -2,6 +2,7 @@
 #include "rect.h"
 #include "point.h"
 #include "pixmap.h"
+#include "shader.h"
 #include "SkRect.h"
 #include "SkBitmap.h"
 #include "SkPixelRef.h"
@@ -46,6 +47,11 @@ SkBitmap Helper::ToSkBitmap(Pixmap & pm)
         bitmap.extractSubset(&subset, ToSkIRect(pm.subset_));
     }
     return subset;
+}
+
+SkShader * Helper::ToSkShader(Shader & shader)
+{
+    return shader.getShader();
 }
 
 HMODULE Helper::GetModuleFromAddress(void * address)

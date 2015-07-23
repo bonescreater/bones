@@ -32,6 +32,7 @@
           top:60px;
           width:200px;
           height:50px;
+          rect:0px 0px;
           color:#ffff0000;
           opacity:0;
           }
@@ -45,7 +46,7 @@
               <button id ="close" class = "   b11     b12  b14 "></button>
               <panel class ="p1 p2"></panel>
               <event name ="onPrepare" module ="test" func ="onPrepare"></event>
-              <block id ="test_fade" class ="fade"></block>
+              <shape id ="test_fade" class ="fade"></shape>
 			      </panel>
         </body>  
     </bones>

@@ -1,5 +1,5 @@
-﻿#ifndef BONES_CORE_BLOCK_H_
-#define BONES_CORE_BLOCK_H_
+﻿#ifndef BONES_CORE_IMAGE_H_
+#define BONES_CORE_IMAGE_H_
 
 #include "shirt.h"
 #include "color.h"
@@ -11,7 +11,7 @@ class SkShader;
 namespace bones
 {
 
-class Block : public Shirt
+class Image : public Shirt
 {
 private:
     enum Style
@@ -20,9 +20,9 @@ private:
         kImageNine,
     };
 public:
-    Block();
+    Image();
 
-    ~Block();
+    ~Image();
 
     void set(Pixmap & pm);//直接绘制 不拉伸
 

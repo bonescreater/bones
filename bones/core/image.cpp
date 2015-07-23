@@ -1,4 +1,4 @@
-﻿#include "block.h"
+﻿#include "image.h"
 #include "helper.h"
 #include "rect.h"
 #include "SkCanvas.h"
@@ -7,24 +7,24 @@
 namespace bones
 {
 
-Block::Block() :style_(kImage)
+Image::Image() :style_(kImage)
 {
 
 }
 
-Block::~Block()
+Image::~Image()
 {
     ;
 }
 
-void Block::set(Pixmap & pm)
+void Image::set(Pixmap & pm)
 {
     style_ = kImage;
     pixmap_ = pm;
     inval();
 }
 
-void Block::set(Pixmap & pm, Rect & nine_center)
+void Image::set(Pixmap & pm, Rect & nine_center)
 {
     style_ = kImageNine;
     pixmap_ = pm;
@@ -32,12 +32,12 @@ void Block::set(Pixmap & pm, Rect & nine_center)
     inval();
 }
 
-const char * Block::getClassName() const
+const char * Image::getClassName() const
 {
-    return kClassBlock;
+    return kClassImage;
 }
 
-void Block::onDraw(SkCanvas & canvas)
+void Image::onDraw(SkCanvas & canvas)
 {
     if (opacity_ == 0)
         return;
@@ -55,14 +55,14 @@ void Block::onDraw(SkCanvas & canvas)
     }
 }
 
-void Block::drawImage(SkCanvas & canvas, const Rect & bounds)
+void Image::drawImage(SkCanvas & canvas, const Rect & bounds)
 {
     SkPaint paint;
     paint.setAlpha(ClampAlpha(opacity_));
     canvas.drawBitmap(Helper::ToSkBitmap(pixmap_), 0, 0, &paint);
 }
 
-void Block::drawImageNine(SkCanvas & canvas, const Rect & bounds)
+void Image::drawImageNine(SkCanvas & canvas, const Rect & bounds)
 {
     SkPaint paint;
     paint.setAlpha(ClampAlpha(opacity_));

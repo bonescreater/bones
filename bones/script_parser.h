@@ -29,7 +29,7 @@ protected:
 
     bool handleArea(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob) override;
 
-    bool handleBlock(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob) override;
+    bool handleImage(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob) override;
 
     bool handleText(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob) override;
 

@@ -8,7 +8,7 @@ local highlight = 2
 local press = 3
 local disable = 4
 
-local function stateChanged(self)
+local function stateChanged(self, force)
 	state = common;
 	if self:isEnable() ~= true then
 		state = disable;
@@ -21,20 +21,26 @@ local function stateChanged(self)
 	elseif self.hover_ then
 		state = highlight;
 	end
-	if state ~= self.state_ then 
+    local width, height = self:getSize();
+    common_css = string.format("{rect:0px 0px;border:1px solid #ff999999;linear-gradient:0px 0px 0px %dpx clamp #ffffffff #ffd9d9d9;}", height);
+    highlight_css = string.format("{rect:0px 0px;border:1px solid #ffaaaaaa;linear-gradient:0px 0px %dpx clamp #ffffffff #ffeaeaea;}", height);
+    press_css = string.format("{rect:0px 0px;border:1px solid #ff999999;linear-gradient:0px 0px %dpx clamp #ffffffff #ffd3d3d3;}", height);
+    disable_css = string.format("{rect:0px 0px;border:1px solid #ffbbbbbb;linear-gradient:0px 0px %dpx clamp #ffffffff #ffd9d9d9;}", height);
+
+	if state ~= self.state_ or force then 
 		self.state_ = state;
 		if self.state_ == common then
-			self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffd9d9d9;}")
-			self.shape_:applyCSS("{border:1px solid #ff999999;}")
+			--self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffd9d9d9;}")
+			self.shape_:applyCSS(common_css)
 		elseif self.state_ == highlight then
-			self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffeaeaea;}")
-			self.shape_:applyCSS("{border:1px solid #ffaaaaaa;}")
+			--self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffeaeaea;}")
+			self.shape_:applyCSS(highlight_css)
 		elseif self.state_ == press then
-			self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffd3d3d3;}")
-			self.shape_:applyCSS("{border:1px solid #ff999999;}")
+			--self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffd3d3d3;}")
+			self.shape_:applyCSS(press_css)
 		elseif self.state_ == disable then
-			self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffd9d9d9;}")
-			self.shape_:applyCSS("{border:1px solid #ffbbbbbb;}")
+			--self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffd9d9d9;}")
+			self.shape_:applyCSS(disable_css)
 		end
 	end
 	
@@ -67,9 +73,9 @@ self.down_ = false
 
 self.state_ = disable
 self.shirt_ = self:getChildAt(0);
-self.text_ = self:getChildAt(1);
-self.shape_ = self:getChildAt(2);
-stateChanged(self)
+self.shape_ = self:getChildAt(1);
+self.text_ = self:getChildAt(2);
+
 end
 
 function mod.onMouseEnter(self, e)
@@ -91,16 +97,21 @@ function mod.onMouseDown(self, e)
 end
 
 function mod.onMouseUp(self, e)
+    local notify = false
+
 	if self:isEnable() and e:isLeftMouse() then
 		if self.down_ then
 			self.down_ = false
 			if self.hover_ then
-				if type(self.onClick) == "function" then
-					self:onClick();
-				end
+                notify = true
 			end
 			stateChanged(self)
 		end
+        if notify then
+        	if type(self.onClick) == "function" then
+					self:onClick();
+            end
+        end
 	end
 end
 
@@ -119,11 +130,13 @@ function mod.onFocus(self, e)
 end
 
 function mod.onSizeChanged(self)
-	width, height = self:getSize();
+	local width, height = self:getSize();
 	css = string.format("{width:%dpx;height:%dpx;}", width, height);
 	self.shirt_:applyCSS(css);
 	self.text_:applyCSS(css);
 	self.shape_:applyCSS(css);
+
+    stateChanged(self, true);
 end
 
 

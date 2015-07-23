@@ -19,6 +19,9 @@
     <Filter Include="xml">
       <UniqueIdentifier>{d4b9aa30-47a9-4c8f-8702-b65b6791730c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="base\skia_ext">
+      <UniqueIdentifier>{3aad015b-d18d-4f03-b9eb-b05eb7b1370c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bones\core\accelerator.cpp">
@@ -63,9 +66,6 @@
     <ClCompile Include="bones\core\shirt.cpp">
       <Filter>bone\facade</Filter>
     </ClCompile>
-    <ClCompile Include="bones\core\block.cpp">
-      <Filter>bone\facade</Filter>
-    </ClCompile>
     <ClCompile Include="bones\core\core.cpp" />
     <ClCompile Include="bones\core\xml_controller.cpp">
       <Filter>xml</Filter>
@@ -97,14 +97,20 @@
     <ClCompile Include="bones\core\panel.cpp">
       <Filter>bone\win32</Filter>
     </ClCompile>
-    <ClCompile Include="bones\core\pixmap.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
     <ClCompile Include="bones\core\animation_manager.cpp">
       <Filter>base</Filter>
     </ClCompile>
     <ClCompile Include="bones\core\animation.cpp">
       <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\image.cpp">
+      <Filter>bone\facade</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\pixmap.cpp">
+      <Filter>base\skia_ext</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\shader.cpp">
+      <Filter>base\skia_ext</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -156,9 +162,6 @@
     <ClInclude Include="bones\core\shirt.h">
       <Filter>bone\facade</Filter>
     </ClInclude>
-    <ClInclude Include="bones\core\block.h">
-      <Filter>bone\facade</Filter>
-    </ClInclude>
     <ClInclude Include="bones\core\core.h" />
     <ClInclude Include="bones\core\xml_controller.h">
       <Filter>xml</Filter>
@@ -193,14 +196,20 @@
     <ClInclude Include="bones\core\panel.h">
       <Filter>bone\win32</Filter>
     </ClInclude>
-    <ClInclude Include="bones\core\pixmap.h">
-      <Filter>base</Filter>
-    </ClInclude>
     <ClInclude Include="bones\core\animation_manager.h">
       <Filter>base</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\animation.h">
       <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\image.h">
+      <Filter>bone\facade</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\pixmap.h">
+      <Filter>base\skia_ext</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\shader.h">
+      <Filter>base\skia_ext</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

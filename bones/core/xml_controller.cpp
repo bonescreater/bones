@@ -3,7 +3,7 @@
 #include "helper.h"
 #include "rapidxml.hpp"
 #include "area.h"
-#include "block.h"
+#include "image.h"
 #include "text.h"
 #include "shape.h"
 
@@ -25,7 +25,7 @@ enum Label
     kLABEL_BODY,
     kLABEL_PANEL,
     kLABEL_AREA,
-    kLABEL_BLOCK,
+    kLABEL_IMAGE,
     kLABEL_TEXT,
     kLABEL_SHAPE,
 };
@@ -35,7 +35,7 @@ enum Bone
     kBONE_UNKNOWN,
     kBONE_PANEL,
     kBONE_AREA,
-    kBONE_BLOCK,
+    kBONE_IMAGE,
     kBONE_TEXT,
     kBONE_SHAPE,
 };
@@ -369,8 +369,8 @@ bool XMLController::createRefFromNode(XMLNode node, Ref * parent_ob, const Modul
     case kLABEL_AREA:
         bret = handleArea(node, parent_ob, mod, &node_ob);
         break;
-    case kLABEL_BLOCK:
-        bret = handleBlock(node, parent_ob, mod, &node_ob);
+    case kLABEL_IMAGE:
+        bret = handleImage(node, parent_ob, mod, &node_ob);
         break;
     case kLABEL_TEXT:
         bret = handleText(node, parent_ob, mod, &node_ob);
@@ -510,9 +510,9 @@ bool XMLController::handleShape(XMLNode node, Ref * parent_ob, const Module & mo
 }
 
 
-bool XMLController::handleBlock(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
+bool XMLController::handleImage(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
 {
-    auto block = AdoptRef(new Block);
+    auto block = AdoptRef(new Image);
     Attribute attrs[] =
     {
         { kStrClass, nullptr }, { kStrID, nullptr }, { kStrGroup, nullptr }
@@ -959,8 +959,8 @@ Label LabelFromName(const char * name)
         return kLABEL_PANEL;
     else if (!strcmp("area", name))
         return kLABEL_AREA;
-    else if (!strcmp("block", name))
-        return kLABEL_BLOCK;
+    else if (!strcmp("image", name))
+        return kLABEL_IMAGE;
     else if (!strcmp("text", name))
         return kLABEL_TEXT;
     else if (!strcmp("shape", name))
@@ -977,8 +977,8 @@ Bone BoneFromName(const char * name)
         return kBONE_PANEL;
     else if (!strcmp(kClassArea, name))
         return kBONE_AREA;
-    else if (!strcmp(kClassBlock, name))
-        return kBONE_BLOCK;
+    else if (!strcmp(kClassImage, name))
+        return kBONE_IMAGE;
     else if (!strcmp(kClassText, name))
         return kBONE_TEXT;
     else if (!strcmp(kClassShape, name))
@@ -998,7 +998,7 @@ void AttachToParentView(View * child, Ref * parent)
     case kBONE_PANEL:
         parent = static_cast<Panel *>(parent)->getRootView();
     case kBONE_AREA:
-    case kBONE_BLOCK:
+    case kBONE_IMAGE:
     case kBONE_TEXT:
     case kBONE_SHAPE:
         pv = static_cast<View *>(parent);

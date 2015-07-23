@@ -33,6 +33,8 @@ btn2:applyTextClass("fadeout")
 btn2["onClick"] = testFadeOut;
 btn3 = bones.getLuaObjectByID("close")
 btn3:applyTextClass("close")
+fade = bones.getLuaObjectByID("test_fade")
+
 end
 
 

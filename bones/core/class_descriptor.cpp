@@ -1,5 +1,5 @@
 ﻿#include "class_descriptor.h"
-#include "block.h"
+#include "image.h"
 #include "text.h"
 #include "shape.h"
 #include "panel.h"
@@ -214,6 +214,102 @@ static Cursor CSSStrToCursor(const CSSString & str)
     return (Cursor)CSSStrToInt(str);
 }
 
+Shader::TileMode CSSStrToShaderTileMode(const CSSString & str)
+{
+    if (str == "mirror")
+        return Shader::kMirror;
+    else if (str == "repeat")
+        return Shader::kRepeat;
+    else
+        return Shader::kClamp;
+}
+
+Shader CSSParamsToLinearGradientShader(const CSSParams & params)
+{
+    //线性渐变至少6个参数
+    Shader shader;
+    if (params.size() < 6)
+        return shader;
+
+    Point pt[2] = { { CSSStrToPX(params[0]), CSSStrToPX(params[1]) },
+    { CSSStrToPX(params[2]), CSSStrToPX(params[3]) } };
+    auto m = CSSStrToShaderTileMode(params[4]);
+    std::vector<Color> colors;
+    std::vector<float> pos;
+    if (params.size() == 6)
+    {//处理只有1个颜色
+        colors.push_back(CSSStrToColor(params[5]));
+        pos.push_back(1.f);
+    }
+    else if (params.size() == 7)
+    {//处理只有2个颜色
+        colors.resize(2);
+        pos.resize(2);
+        colors[0] = CSSStrToColor(params[5]);
+        pos[0] = 0.f;
+        colors[1] = CSSStrToColor(params[6]);
+        pos[1] = 1.f;
+    }
+    else
+    {//处理多个颜色
+        int count = (params.size() - 5) / 2;
+        colors.resize(count);
+        pos.resize(count);
+        for (auto i = 0; i < count; i = i++)
+        {
+            int j = 2 * i;
+            colors[i] = CSSStrToColor(params[5 + j]);
+            pos[i] = CSSStrToFloat(params[5 + j + 1]);
+        }
+    }
+    shader.setGradient(pt[0], pt[1], &colors[0], &pos[0], colors.size(), m);
+    return shader;
+}
+
+Shader CSSParamsToRadialGradientShader(const CSSParams & params)
+{
+    Shader shader;
+    //至少5个参数
+    if (params.size() < 5)
+        return shader;
+
+    Point pt = { CSSStrToPX(params[0]), CSSStrToPX(params[1]) };
+    Scalar radius = CSSStrToScalar(params[2]);
+
+    auto m = CSSStrToShaderTileMode(params[3]);
+
+    std::vector<Color> colors;
+    std::vector<float> pos;
+    if (params.size() == 5)
+    {//处理只有1个颜色
+        colors.push_back(CSSStrToColor(params[5]));
+        pos.push_back(1.f);
+    }
+    else if (params.size() == 6)
+    {//处理只有2个颜色
+        colors.resize(2);
+        pos.resize(2);
+        colors[0] = CSSStrToColor(params[5]);
+        pos[0] = 0.f;
+        colors[1] = CSSStrToColor(params[6]);
+        pos[1] = 1.f;
+    }
+    else
+    {//处理多个颜色
+        int count = (params.size() - 4) / 2;
+        colors.resize(count);
+        pos.resize(count);
+        for (auto i = 0; i < count; i = i++)
+        {
+            int j = 2 * i;
+            colors[i] = CSSStrToColor(params[4 + j]);
+            pos[i] = CSSStrToFloat(params[4 + j + 1]);
+        }
+    }
+    shader.setGradient(pt, radius, &colors[0], &pos[0], colors.size(), m);
+    return shader;
+}
+
 static void ViewSetLeft(Ref * ob, const CSSParams & params)
 {
     if (params.empty() || !ob)
@@ -319,97 +415,14 @@ static void ShapeSetLinearGradient(Ref * ob, const CSSParams & params)
     if (params.empty() || !ob)
         return;
 
-    //线性渐变至少5个参数
-    if (params.size() <= 5)
-        return;
-
-    Point pt[2] = { { CSSStrToPX(params[0]), CSSStrToPX(params[1]) },
-                    { CSSStrToPX(params[2]), CSSStrToPX(params[3]) } };
-    Shape::GradientTileMode m = Shape::kClamp;
-    if (params[4] == "mirror")
-        m = Shape::kMirror;
-    else if (params[4] == "repeat")
-        m = Shape::kRepeat;
-    
-    std::vector<Color> colors;
-    std::vector<float> pos;
-    if (params.size() == 6)
-    {//处理只有1个颜色
-        colors.push_back(CSSStrToColor(params[5]));
-        pos.push_back(1.f);
-    }
-    else if (params.size() == 7)
-    {//处理只有2个颜色
-        colors.resize(2);
-        pos.resize(2);
-        colors.push_back(CSSStrToColor(params[5]));
-        pos.push_back(0.f);
-        colors.push_back(CSSStrToColor(params[6]));
-        pos.push_back(1.f);
-    }
-    else
-    {//处理多个颜色
-        int count = (params.size() - 5) / 2;
-        colors.resize(count);
-        pos.resize(count);
-        for (auto i = 0; i < count; i = i++)
-        {
-            int j = 2 * i;
-            colors.push_back(CSSStrToColor(params[j]));
-            pos.push_back(CSSStrToFloat(params[j + 1]));
-        }
-    }
-    
-    ((Shape *)ob)->setGradient(pt[0], pt[1], &colors[0], &pos[0], colors.size(), m);
+    ((Shape *)ob)->setShader(CSSParamsToLinearGradientShader(params));
 }
 
 static void ShapeSetRadialGradient(Ref * ob, const CSSParams & params)
 {
     if (params.empty() || !ob)
         return;
-
-    //线性渐变至少5个参数
-    if (params.size() <= 5)
-        return;
-
-    Point pt= { CSSStrToPX(params[0]), CSSStrToPX(params[1]) };
-    Scalar radius = CSSStrToScalar(params[2]);
-
-    Shape::GradientTileMode m = Shape::kClamp;
-    if (params[3] == "mirror")
-        m = Shape::kMirror;
-    else if (params[3] == "repeat")
-        m = Shape::kRepeat;
-
-    std::vector<Color> colors;
-    std::vector<float> pos;
-    if (params.size() == 5)
-    {//处理只有1个颜色
-        colors.push_back(CSSStrToColor(params[5]));
-        pos.push_back(1.f);
-    }
-    else if (params.size() == 6)
-    {//处理只有2个颜色
-        colors.resize(2);
-        pos.resize(2);
-        colors.push_back(CSSStrToColor(params[5]));
-        pos.push_back(0.f);
-        colors.push_back(CSSStrToColor(params[6]));
-        pos.push_back(1.f);
-    }
-    else
-    {//处理多个颜色
-        int count = (params.size() - 4) / 2;
-        colors.resize(count);
-        pos.resize(count);
-        for (auto i = 0; i < count; i = i++)
-        {
-            int j = 2 * i;
-            colors.push_back(CSSStrToColor(params[j]));
-            pos.push_back(CSSStrToFloat(params[j + 1]));
-        }
-    }
-    ((Shape *)ob)->setGradient(pt, radius, &colors[0], &pos[0], colors.size(), m);
+    ((Shape *)ob)->setShader(CSSParamsToRadialGradientShader(params));
 }
 
 static void ShapeSetStrokeWidth(Ref * ob, const CSSParams & params)
@@ -574,7 +587,7 @@ static void PanelSetOpacity(Ref * ob, const CSSParams & params)
 ClassDescriptor::ClassDescriptor()
 {
     registerArea();
-    registerBlock();
+    registerImage();
     registerText();
     registerShape();
     registerPanel();
@@ -603,10 +616,10 @@ void ClassDescriptor::registerArea()
 }
 
 
-void ClassDescriptor::registerBlock()
+void ClassDescriptor::registerImage()
 {
     //view已经register上了
-    auto & table = multi_class_tables_[kClassBlock];
+    auto & table = multi_class_tables_[kClassImage];
     registerShirt(table);
 }
 

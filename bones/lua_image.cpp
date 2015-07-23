@@ -1,18 +1,18 @@
-﻿#include "lua_block.h"
+﻿#include "lua_image.h"
 #include "lua_context.h"
 #include "lua_check.h"
 #include "lua_meta_table.h"
-#include "core/block.h"
+#include "core/image.h"
 #include "core/logging.h"
 
 namespace bones
 {
 
-void LuaBlock::Create(Block * co)
+void LuaImage::Create(Image * co)
 {
     if (!co)
         return;
-    if (kClassBlock != co->getClassName())
+    if (kClassImage != co->getClassName())
     {
         LOG_ERROR << co << "class name " << co->getClassName();
         return;

@@ -18,7 +18,7 @@ extern const char * kClassPanel;
 extern const char * kClassRootView;
 extern const char * kClassView;
 extern const char * kClassArea;
-extern const char * kClassBlock;
+extern const char * kClassImage;
 extern const char * kClassShape;
 extern const char * kClassText;
 extern const char * kClassRichEdit;

@@ -24,7 +24,7 @@ private:
 
     void registerArea();
 
-    void registerBlock();
+    void registerImage();
 
     void registerText();
 
