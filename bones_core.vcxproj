@@ -40,6 +40,7 @@
     <ClCompile Include="bones\core\text.cpp" />
     <ClCompile Include="bones\core\view.cpp" />
     <ClCompile Include="bones\core\widget.cpp" />
+    <ClCompile Include="bones\core\panel_manager.cpp" />
     <ClCompile Include="bones\core\xml_controller.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +75,7 @@
     <ClInclude Include="bones\core\text.h" />
     <ClInclude Include="bones\core\view.h" />
     <ClInclude Include="bones\core\widget.h" />
+    <ClInclude Include="bones\core\panel_manager.h" />
     <ClInclude Include="bones\core\xml_controller.h" />
     <ClInclude Include="bones\core\xml_types.h" />
   </ItemGroup>

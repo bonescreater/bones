@@ -9,6 +9,7 @@
 
 #include "panel.h"
 #include "logging.h"
+#include "panel_manager.h"
 #include <functional>
 #include <fstream>
 
@@ -141,7 +142,11 @@ void XMLController::reset()
     main_module_.reset();
     modules_.clear();
     for (auto iter = panels_.begin(); iter != panels_.end(); ++iter)
+    {
         (*iter)->destroy();//销毁创建的窗口 以及native control
+        Core::GetPanelManager()->remove((*iter));
+    }
+        
     panels_.clear();
     ob2id_.clear();
 }
@@ -438,6 +443,8 @@ bool XMLController::handleExtendLabel(XMLNode node, Ref * parent_ob, const Modul
 bool XMLController::handlePanel(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
 {//目前只支持创建窗口
     auto sheet = AdoptRef(new Panel);
+    
+
     //窗口的父只能是窗口
     Bone bone = kBONE_PANEL;
     Panel * parent_panel = nullptr;
@@ -446,9 +453,10 @@ bool XMLController::handlePanel(XMLNode node, Ref * parent_ob, const Module & mo
         if(kBONE_PANEL == BoneFromName(parent_ob->getClassName()))
             parent_panel = static_cast<Panel *>(parent_ob);
     }
-    sheet->create(parent_panel, L"");
+    sheet->create(parent_panel, false);
+    Core::GetPanelManager()->add(sheet.get());
     sheet->show(true);
-
+    
     //显示在桌面中间
     if (!parent_panel)
     {//如果是顶级窗口 将窗口默认设置为 桌面的一半 而且 居中

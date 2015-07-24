@@ -34,7 +34,7 @@ public:
 public:
     Panel();
 
-    bool create(const Panel * parent, const wchar_t * window_name);
+    bool create(const Panel * parent, bool layered);
 
     bool destroy();
 
@@ -51,12 +51,12 @@ public:
     const char * getClassName() const override;
 
     RootView * getRootView() const;
+
+    void update();
 protected:
     virtual void onGeometryChanged(WINDOWPOS & pos);
 
     virtual void onGeometryChanging(WINDOWPOS & pos);
-
-    virtual void onPaint(HDC hdc, const Rect & rect);
 
     virtual void invalidateRect(const Rect & rect) override;
 
@@ -88,6 +88,7 @@ private:
     Rect nc_area_[kNCAreaCount];
     bool track_mouse_;
     Cursor cursor_;
+    bool layered_;
 private:
     friend LRESULT CALLBACK PanelProc(HWND hWnd,
                                          UINT uMsg,

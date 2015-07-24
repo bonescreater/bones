@@ -42,6 +42,7 @@ typedef float Scalar;
 typedef HANDLE Cursor;
 
 class AnimationManager;
+class PanelManager;
 
 enum LogLevel
 {
@@ -66,6 +67,8 @@ public:
     static void Update();
 
     static AnimationManager * GetAnimationManager();
+
+    static PanelManager * GetPanelManager();
 };
 
 }

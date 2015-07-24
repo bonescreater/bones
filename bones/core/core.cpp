@@ -2,6 +2,7 @@
 #include "panel.h"
 #include "logging.h"
 #include "animation_manager.h"
+#include "panel_manager.h"
 #include "helper.h"
 
 #include "SkGraphics.h"
@@ -25,6 +26,8 @@ const char * kClassAnimation = "Animation";
 
 static AnimationManager * animations = nullptr;
 
+static PanelManager * panels = nullptr;
+
 bool Core::StartUp(const Config & config)
 {
     SkGraphics::Init();
@@ -32,15 +35,20 @@ bool Core::StartUp(const Config & config)
     if (bret)
         bret = Log::StartUp(config.log_file, config.log_level);
     if (bret)
-        animations = new AnimationManager;
-
+        bret = !!(animations = new AnimationManager);
+    if (bret)
+        bret = !!(panels = new PanelManager);
     return bret;
 }
 
 void Core::ShutDown()
 {
+    if (panels)
+        delete panels;
+    panels = nullptr;
     if (animations)
         delete animations;
+    animations = nullptr;
 
     Log::ShutDown();
     Panel::Uninitialize();
@@ -63,12 +71,18 @@ void Core::Update()
             animations->run(delta);
         current = frame_count;
     }
-    //layer window 绘制
+    //window 绘制
+    panels->update();
 }
 
 AnimationManager * Core::GetAnimationManager()
 {
     return animations;
+}
+
+PanelManager * Core::GetPanelManager()
+{
+    return panels;
 }
 
 }

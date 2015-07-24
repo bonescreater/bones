@@ -21,6 +21,8 @@ public:
 public:
     Pixmap();
 
+    Pixmap(const Pixmap & pm);
+
     ~Pixmap();
 
     bool decode(const void * buffer, size_t len);

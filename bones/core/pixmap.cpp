@@ -8,7 +8,13 @@ namespace bones
 Pixmap::Pixmap()
 :pixel_ref_(nullptr)
 {
-    ;
+    OutputDebugString(L"xxx");
+}
+
+Pixmap::Pixmap(const Pixmap & pm)
+: Pixmap()
+{
+    *this = pm;
 }
 
 Pixmap::~Pixmap()
