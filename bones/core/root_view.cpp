@@ -188,7 +188,7 @@ void RootView::AdjustPixmap()
 {
     int w = static_cast<int>(getWidth());
     int h = static_cast<int>(getHeight());
-    if (w != back_buffer_.width() || h != back_buffer_.height())
+    if (w != back_buffer_.getWidth() || h != back_buffer_.getHeight())
     {
         back_buffer_.free();
         if (w && h)

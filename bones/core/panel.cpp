@@ -55,12 +55,12 @@ bool Panel::Uninitialize()
     return !!::UnregisterClass(kClassName, module);
 }
 
-Panel::Panel() :track_mouse_(false), layered_(false)
+Panel::Panel() :track_mouse_(false), ex_style_(0)
 {
     ;
 }
 
-bool Panel::create(const Panel * parent, bool layered)
+bool Panel::create(const Panel * parent)
 {
     DWORD ex_style = 0;
     if (!parent)//owner窗口
@@ -71,7 +71,7 @@ bool Panel::create(const Panel * parent, bool layered)
         0, 0, 0, 0, parent ? parent->hwnd() : NULL, 0, 0, this);
     Helper::ExtendFrameInfoClientArea(hwnd, -1, -1, -1, -1);
     cursor_ = ::LoadCursor(NULL, IDC_ARROW);
-    layered_ = layered;
+    ex_style_ = ::GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 
     return !!hwnd;
 }
@@ -96,69 +96,59 @@ RootView * Panel::getRootView() const
     return root_.get();
 }
 
+bool Panel::isLayered() const
+{
+    return !!(ex_style_ & WS_EX_LAYERED);
+}
+
 void Panel::update()
 {
+    if (!isLayered())
+        return;
     if (!root_)
         return;
-
     if (!root_->isDirty())
         return;
 
-    Rect dirty_rect = root_->getDirtyRect();
     root_->draw();
-
-    //只更新脏区
-    Pixmap pm = root_->getPixmap().extractSubset(dirty_rect);
+    auto & pm = root_->getPixmap();
     if (!pm.isValid() || pm.isEmpty())
         return;
-    
+
     Pixmap::LockRec lr;
     if (!pm.lock(lr))
         return;
 
-    int bm_width = static_cast<int>(root_->getWidth());
-    int bm_height = static_cast<int>(root_->getHeight());
+    BITMAPINFOHEADER hdr = { 0 };
+    hdr.biSize = sizeof(BITMAPINFOHEADER);
+    hdr.biWidth = pm.getWidth();
+    hdr.biHeight = -pm.getHeight();  // minus means top-down bitmap
+    hdr.biPlanes = 1;
+    hdr.biBitCount = 32;
+    hdr.biCompression = BI_RGB;  // no compression
+    hdr.biSizeImage = 0;
+    hdr.biXPelsPerMeter = 1;
+    hdr.biYPelsPerMeter = 1;
+    hdr.biClrUsed = 0;
+    hdr.biClrImportant = 0;
+    void * data = nullptr;
+    HBITMAP hbitmap = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(&hdr),
+        0, &data, NULL, 0);
+    Rect win_rect;
+    getWindowRect(win_rect);
+    POINT pos = { win_rect.left(), win_rect.top()};
+    SIZE size = { win_rect.width(), win_rect.height() };
+    POINT src_pos = { 0, 0 };
+    BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+    auto hdc = CreateCompatibleDC(NULL);
+    auto old = ::SelectObject(hdc, hbitmap);
+    memcpy(data, lr.bits, lr.pitch * pm.getHeight());
 
-    BITMAPINFO bmi;
-    memset(&bmi, 0, sizeof(bmi));
-    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth = bm_width;
-    bmi.bmiHeader.biHeight = -bm_height; // top-down image
-    bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = 32;
-    bmi.bmiHeader.biCompression = BI_RGB;
-    bmi.bmiHeader.biSizeImage = 0;
+    auto r = ::UpdateLayeredWindow(hwnd(), NULL, &pos, &size, hdc, &src_pos, 0, &bf, ULW_ALPHA);
 
-    //
-    // Do the SetDIBitsToDevice.
-    //
-    // TODO(wjmaclean):
-    //       Fix this call to handle SkBitmaps that have rowBytes != width,
-    //       i.e. may have padding at the end of lines. The SkASSERT below
-    //       may be ignored by builds, and the only obviously safe option
-    //       seems to be to copy the bitmap to a temporary (contiguous)
-    //       buffer before passing to SetDIBitsToDevice().
-    //SkASSERT(bitmap.width() * bitmap.bytesPerPixel() == bitmap.rowBytes());
-    auto hdc = ::GetDC(hwnd());
-    if (hdc)
-    {
-        int iRet = SetDIBitsToDevice(
-            hdc,
-            static_cast<int>(lr.subset.left()), 
-            static_cast<int>(lr.subset.top()),
-
-            static_cast<int>(lr.subset.width()),
-            static_cast<int>(lr.subset.height()),
-            static_cast<int>(lr.subset.left()),
-            static_cast<int>(bm_height - lr.subset.bottom()),
-            0, bm_height,
-            lr.bits,
-            &bmi,
-            DIB_RGB_COLORS);
-
-        ::ReleaseDC(hwnd(), hdc);
-    }
-
+    ::SelectObject(hdc, old);
+    ::DeleteObject(hbitmap);
+    ::DeleteDC(hdc);
 
     pm.unlock();
 }
@@ -183,6 +173,21 @@ void Panel::setColor(Color color)
 void Panel::setOpacity(float opacity)
 {
     root_->setOpacity(opacity);
+}
+
+void Panel::addEXStyle(uint64_t ex_style)
+{
+    if (!(ex_style_ & ex_style))
+    {
+        ::SetWindowLongPtr(hwnd(), GWL_EXSTYLE, ex_style_ | ex_style);
+        ex_style_ = ::GetWindowLongPtr(hwnd(), GWL_EXSTYLE);
+    }
+}
+
+void Panel::removeEXStyle(uint64_t ex_style)
+{
+    ::SetWindowLongPtr(hwnd(), GWL_EXSTYLE, ex_style_ & ~ex_style);
+    ex_style_ = ::GetWindowLongPtr(hwnd(), GWL_EXSTYLE);
 }
 
 float Panel::getOpacity() const
@@ -295,7 +300,7 @@ LRESULT Panel::handlePaint(UINT uMsg, WPARAM wParam, LPARAM lParam)
     float right = static_cast<float>(ps.rcPaint.right);
     float bottom = static_cast<float>(ps.rcPaint.bottom);
     rect.setLTRB(left, top, right, bottom);
-    //onPaint(ps.hdc, rect);
+    onPaint(ps.hdc, rect);
 
     ::EndPaint(hwnd_, &ps);
     return 0;
@@ -441,12 +446,75 @@ LRESULT Panel::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void Panel::onGeometryChanged(WINDOWPOS & pos)
 {
-    root_->setSize(Size::Make(static_cast<float>(pos.cx), static_cast<float>(pos.cy)));
+    root_->setSize(Size::Make(static_cast<Scalar>(pos.cx), static_cast<Scalar>(pos.cy)));
 }
 
 void Panel::onGeometryChanging(WINDOWPOS & pos)
 {
     ;
+}
+
+void Panel::onPaint(HDC hdc, const Rect & rect)
+{
+    //layered window 没有onPaint消息 不通过onPaint绘制
+    if (isLayered())
+        return;
+
+    Rect dirty_rect = root_->getDirtyRect();
+    if (root_->isDirty())
+        root_->draw();
+
+    dirty_rect.join(rect);
+    if (dirty_rect.isEmpty())
+        return;
+
+    //只更新脏区
+    Pixmap pm = root_->getPixmap().extractSubset(dirty_rect);
+    if (!pm.isValid() || pm.isEmpty())
+        return;
+
+    Pixmap::LockRec lr;
+    if (!pm.lock(lr))
+        return;
+
+    int bm_width = static_cast<int>(root_->getWidth());
+    int bm_height = static_cast<int>(root_->getHeight());
+
+    BITMAPINFO bmi;
+    memset(&bmi, 0, sizeof(bmi));
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = bm_width;
+    bmi.bmiHeader.biHeight = -bm_height; // top-down image
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+    bmi.bmiHeader.biSizeImage = 0;
+
+    //
+    // Do the SetDIBitsToDevice.
+    //
+    // TODO(wjmaclean):
+    //       Fix this call to handle SkBitmaps that have rowBytes != width,
+    //       i.e. may have padding at the end of lines. The SkASSERT below
+    //       may be ignored by builds, and the only obviously safe option
+    //       seems to be to copy the bitmap to a temporary (contiguous)
+    //       buffer before passing to SetDIBitsToDevice().
+    //SkASSERT(bitmap.width() * bitmap.bytesPerPixel() == bitmap.rowBytes());
+    int iRet = SetDIBitsToDevice(
+        hdc,
+        static_cast<int>(lr.subset.left()),
+        static_cast<int>(lr.subset.top()),
+
+        static_cast<int>(lr.subset.width()),
+        static_cast<int>(lr.subset.height()),
+        static_cast<int>(lr.subset.left()),
+        static_cast<int>(bm_height - lr.subset.bottom()),
+        0, bm_height,
+        lr.bits,
+        &bmi,
+        DIB_RGB_COLORS);
+
+    pm.unlock();
 }
 
 LRESULT Panel::defProcessEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -456,13 +524,16 @@ LRESULT Panel::defProcessEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void Panel::invalidateRect(const Rect & rect)
 {
-    //RECT inval;
-    //inval.left = static_cast<int>(rect.left());
-    //inval.top = static_cast<int>(rect.top());
-    //inval.right = static_cast<int>(rect.right());
-    //inval.bottom = static_cast<int>(rect.bottom());
+    //layered windows 无效
+    if (isLayered())
+        return;
+    RECT inval;
+    inval.left = static_cast<int>(rect.left());
+    inval.top = static_cast<int>(rect.top());
+    inval.right = static_cast<int>(rect.right());
+    inval.bottom = static_cast<int>(rect.bottom());
 
-    //::InvalidateRect(hwnd(), &inval, TRUE);
+    ::InvalidateRect(hwnd(), &inval, TRUE);
 }
 
 void Panel::changeCursor(Cursor cursor)

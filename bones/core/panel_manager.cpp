@@ -42,4 +42,34 @@ void PanelManager::update()
     }
 }
 
+Panel * PanelManager::begin()
+{
+    iter_ = panels_.begin();
+    while (iter_ != panels_.end())
+    {
+        if (*iter_)
+            return (*iter_).get();
+        else
+            iter_ = panels_.erase(iter_);
+    }
+        
+    return nullptr;
+}
+
+Panel * PanelManager::next()
+{
+    if (panels_.end() == iter_)
+        return nullptr;
+    ++iter_;
+    while (iter_ != panels_.end())
+    {
+        if (*iter_)
+            return (*iter_).get();
+        else
+            iter_ = panels_.erase(iter_);
+    }
+
+    return nullptr;
+}
+
 }

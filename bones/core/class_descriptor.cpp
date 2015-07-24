@@ -28,7 +28,7 @@ static CSSString kDescCircle("circle");
 static CSSString kDescBorder("border");
 static CSSString kDescCursor("cursor");
 static CSSString kDescHitTest("hit-test");
-
+static CSSString kDescLayered("layered");
 //CSSText主要是方便文本处理转义字符
 class CSSText : public CSSString
 {
@@ -123,6 +123,14 @@ static Scalar CSSStrToScalar(const CSSString & str)
     auto f = static_cast<Scalar>(atof(begin));
     css[len] = old;
     return f;
+}
+
+static bool CSSStrToBool(const CSSString & str)
+{
+    if (str == "true")
+        return true;
+    else
+        return false;
 }
 
 static float CSSStrToFloat(const CSSString & str)
@@ -583,6 +591,18 @@ static void PanelSetOpacity(Ref * ob, const CSSParams & params)
     v->setOpacity(CSSStrToScalar(params[0]));
 }
 
+static void PanelLayered(Ref * ob, const CSSParams & params)
+{
+    if (params.empty() || !ob || params.size() < 1)
+        return;
+    bool b = CSSStrToBool(params[0]);
+    if (b)
+        static_cast<Panel *>(ob)->addEXStyle(Panel::kLayered);
+    else
+        static_cast<Panel *>(ob)->removeEXStyle(Panel::kLayered);
+}
+
+
 
 ClassDescriptor::ClassDescriptor()
 {
@@ -654,6 +674,7 @@ void ClassDescriptor::registerPanel()
     table[kDescHitTest] = &PanelHitTest;
     table[kDescColor] = &PanelSetColor;
     table[kDescOpacity] = &PanelSetOpacity;
+    table[kDescLayered] = &PanelLayered;
 }
 
 void ClassDescriptor::registerView(CSSClassTable & table)

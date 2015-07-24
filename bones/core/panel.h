@@ -27,6 +27,11 @@ public:
 
         kNCAreaCount,
     };
+
+    enum EXStyle
+    {
+        kLayered = WS_EX_LAYERED,
+    };
 public:
     static bool Initialize();
 
@@ -34,7 +39,7 @@ public:
 public:
     Panel();
 
-    bool create(const Panel * parent, bool layered);
+    bool create(const Panel * parent);
 
     bool destroy();
 
@@ -46,6 +51,10 @@ public:
 
     void setOpacity(float opacity);
 
+    void addEXStyle(uint64_t ex_style);
+
+    void removeEXStyle(uint64_t ex_style);
+
     float getOpacity() const;
 
     const char * getClassName() const override;
@@ -53,10 +62,14 @@ public:
     RootView * getRootView() const;
 
     void update();
+
+    bool isLayered() const;
 protected:
     virtual void onGeometryChanged(WINDOWPOS & pos);
 
     virtual void onGeometryChanging(WINDOWPOS & pos);
+
+    virtual void onPaint(HDC hdc, const Rect & rect);
 
     virtual void invalidateRect(const Rect & rect) override;
 
@@ -88,7 +101,7 @@ private:
     Rect nc_area_[kNCAreaCount];
     bool track_mouse_;
     Cursor cursor_;
-    bool layered_;
+    uint64_t ex_style_;
 private:
     friend LRESULT CALLBACK PanelProc(HWND hWnd,
                                          UINT uMsg,

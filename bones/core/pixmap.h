@@ -39,9 +39,9 @@ public:
 
     bool isEmpty() const;
 
-    int width() const;
+    int getWidth() const;
 
-    int height() const;
+    int getHeight() const;
 
     void erase(Color color);
 

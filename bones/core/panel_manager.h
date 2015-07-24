@@ -17,8 +17,13 @@ public:
     void remove(Panel * panel);
 
     void update();
+
+    Panel * begin();
+
+    Panel * next();
 private:
     std::list<RefPtr<Panel>> panels_;
+    std::list<RefPtr<Panel>>::iterator iter_;
 };
 
 }

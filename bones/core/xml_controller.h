@@ -185,8 +185,6 @@ private:
     View * getViewByID(View * parent, const char * id);
 private:
     ClassDescriptor descriptor_;
-    //窗口管理器存放所有的窗口
-    std::vector<Panel *> panels_;
     //存放所有的view
     std::map<RefPtr<Ref>, std::string> ob2id_;
 

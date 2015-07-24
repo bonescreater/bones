@@ -70,12 +70,12 @@ bool Pixmap::isEmpty() const
     return subset_.isEmpty();
 }
 
-int Pixmap::width() const
+int Pixmap::getWidth() const
 {
     return static_cast<int>(subset_.width());
 }
 
-int Pixmap::height() const
+int Pixmap::getHeight() const
 {
     return static_cast<int>(subset_.height());
 }

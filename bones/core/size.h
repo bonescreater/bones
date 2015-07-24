@@ -9,24 +9,24 @@ namespace bones
 class Size
 {
 public:
-    static Size Make(float w, float h);
+    static Size Make(Scalar w, Scalar h);
 
     Size();
 
-    Size(float w, float h);
+    Size(Scalar w, Scalar h);
 
-    void set(float w, float h);
+    void set(Scalar w, Scalar h);
 
-    float width() const;
+    Scalar width() const;
 
-    float height() const;
+    Scalar height() const;
 
     bool operator == (const Size & rh);
 
     bool operator != (const Size & rh);
 private:
-    float width_;
-    float height_;
+    Scalar width_;
+    Scalar height_;
 };
 
 }

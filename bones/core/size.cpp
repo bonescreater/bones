@@ -3,7 +3,7 @@
 namespace bones
 {
 
-Size Size::Make(float w, float h)
+Size Size::Make(Scalar w, Scalar h)
 {
     return Size(w, h);
 }
@@ -13,23 +13,23 @@ Size::Size()
     set(0, 0);
 }
 
-Size::Size(float w, float h)
+Size::Size(Scalar w, Scalar h)
 {
     set(w, h);
 }
 
-void Size::set(float w, float h)
+void Size::set(Scalar w, Scalar h)
 {
     width_ = w;
     height_ = h;
 }
 
-float Size::width() const
+Scalar Size::width() const
 {
     return width_;
 }
 
-float Size::height() const
+Scalar Size::height() const
 {
     return height_;
 }

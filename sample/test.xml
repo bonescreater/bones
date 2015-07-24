@@ -11,7 +11,7 @@
           {
           content:Bones;
           hit-test: caption 0px 0px 200px 20px;
-          color: #ff7cfc00;
+          color: #887cfc00;
           }
           .fadein
           {
@@ -40,10 +40,11 @@
 		  </head>
       
         <body>  
-            <panel class = "p">
+            <panel id ='p_layered' class = "p">
               <button id ="fadein" class ="b11   b12 "></button>
               <button id ="fadeout" class ="b11   b13 "></button>
-              <button id ="close" class = "   b11     b12  b14 "></button>
+              <button id ="layered" class ="b11   b14 "></button>
+              <button id ="close" class = "   b11     b12  b15 "></button>
               <panel class ="p1 p2"></panel>
               <event name ="onPrepare" module ="test" func ="onPrepare"></event>
               <shape id ="test_fade" class ="fade"></shape>

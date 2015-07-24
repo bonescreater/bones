@@ -141,13 +141,15 @@ void XMLController::reset()
 {
     main_module_.reset();
     modules_.clear();
-    for (auto iter = panels_.begin(); iter != panels_.end(); ++iter)
+
+    auto panel = Core::GetPanelManager()->begin();
+    while (panel)
     {
-        (*iter)->destroy();//销毁创建的窗口 以及native control
-        Core::GetPanelManager()->remove((*iter));
+        panel->destroy();
+        Core::GetPanelManager()->remove(panel);
+        panel = Core::GetPanelManager()->next();
     }
-        
-    panels_.clear();
+       
     ob2id_.clear();
 }
 
@@ -157,26 +159,29 @@ Ref * XMLController::getRefByID(const char * id)
         return nullptr;
     //看是否是窗口ID
     RefPtr<Ref> rp;
-    for (auto iter = panels_.begin(); iter != panels_.end(); ++iter)
+    auto panel = Core::GetPanelManager()->begin();
+    while (panel)
     {
-        rp.reset(*iter);
+        rp.reset(panel);
         auto ob = ob2id_.find(rp);
         if (ob != ob2id_.end())
         {
             if (ob->second == id)
-                return *iter;
+                return panel;
         }
+        panel = Core::GetPanelManager()->next();
     }
 
     //看是不是窗口下的view
     Ref * target = nullptr;
-    for (auto iter = panels_.begin(); iter != panels_.end(); ++iter)
+    panel = Core::GetPanelManager()->begin();
+    while (panel)
     {
-        target = getViewByID((*iter)->getRootView(), id);
+        target = getViewByID(panel->getRootView(), id);
         if (target)
             break;
+        panel = Core::GetPanelManager()->next();
     }
-
     return target;
 }
 
@@ -453,7 +458,7 @@ bool XMLController::handlePanel(XMLNode node, Ref * parent_ob, const Module & mo
         if(kBONE_PANEL == BoneFromName(parent_ob->getClassName()))
             parent_panel = static_cast<Panel *>(parent_ob);
     }
-    sheet->create(parent_panel, false);
+    sheet->create(parent_panel);
     Core::GetPanelManager()->add(sheet.get());
     sheet->show(true);
     
@@ -476,7 +481,6 @@ bool XMLController::handlePanel(XMLNode node, Ref * parent_ob, const Module & mo
     acquireAttrs(node, attrs, sizeof(attrs) / sizeof(attrs[0]));
     applyClass(sheet.get(), mod, attrs[0].value);
     applyID(sheet.get(), attrs[1].value);
-    panels_.push_back(sheet.get());
 
     if (ob)
         *ob = sheet.get();
