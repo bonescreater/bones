@@ -11,36 +11,37 @@ end
 
 local function testFadeIn(btn)
     print("test fade in")
-    fade = bones.getLuaObjectByID("test_fade")
+    local fade = bones.getLuaObjectByID("test_fade")
     --animate.fadeIn
-    fade:animate(90, 1800, "fadeIn", "animate", "fadeStop", "test", "fadeStart", "test");
+    local m = fade:animate(90, 1800, "fadeIn", "animate", "fadeStop", "test", "fadeStart", "test");
+    print (m)
 end
 
 local function testFadeOut(btn)
     print("test fade Out")
-    fade = bones.getLuaObjectByID("test_fade")
+    local fade = bones.getLuaObjectByID("test_fade")
     --animate.fadeOut
     fade:animate(90, 1800, "fadeOut", "animate", "fadeStop", "test", "fadeStart", "test");
 end
 
 local function testLayered(btn)
-    panel = bones.getLuaObjectByID("p_layered")
+    local panel = bones.getLuaObjectByID("p_layered")
     panel:applyCSS("{ex-style:app-window layered;}")
+    --collectgarbage("collect")
 end
 
 function mod.onPrepare(self)
 print("test prepare")
-btn1 = bones.getLuaObjectByID("fadein")
+local btn1 = bones.getLuaObjectByID("fadein")
 btn1:applyTextClass("fadein")
 btn1["onClick"] = testFadeIn;
-btn2 = bones.getLuaObjectByID("fadeout")
+local btn2 = bones.getLuaObjectByID("fadeout")
 btn2:applyTextClass("fadeout")
 btn2["onClick"] = testFadeOut;
-btn3 = bones.getLuaObjectByID("close")
+local btn3 = bones.getLuaObjectByID("close")
 btn3:applyTextClass("close")
-fade = bones.getLuaObjectByID("test_fade")
 
-btn_layered = bones.getLuaObjectByID("layered")
+local btn_layered = bones.getLuaObjectByID("layered")
 btn_layered["onClick"] = testLayered;
 btn_layered:applyTextCSS([[{content:"Layered窗口";}]])
 end

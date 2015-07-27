@@ -147,7 +147,10 @@ bool LuaContext::StartUp()
 
 void LuaContext::ShutDown()
 {
-    //lua_gc(state, LUA_GCCOLLECT, 0);
+    lua_gc(state, LUA_GCCOLLECT, 0);
+    //应该close前 清空table
+    lua_pushnil(state);
+    lua_setglobal(state, kBonesTable);
     if (state)
         lua_close(state);
     state = nullptr;

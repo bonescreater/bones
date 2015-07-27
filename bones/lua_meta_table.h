@@ -23,6 +23,8 @@ public:
 
     static void GetFocusEvent(lua_State * l);
 
+    static void GetAnimation(lua_State * l);
+
     static void SetClosureCObject(lua_State * l, Ref * ref);
 
     static Ref * CallGetCObject(lua_State *l);

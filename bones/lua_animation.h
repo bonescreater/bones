@@ -2,15 +2,17 @@
 #define BONES_LUA_ANIMATION_H_
 
 #include "bones.h"
-#include "core/animation.h"
+
 
 namespace bones
 {
 
+class Animation;
+
 class LuaAnimation
 {
 public:
-    static Animation * Create(Ref * target, uint64_t interval, uint64_t due,
+    static void Create(Animation * co,
                  const char * run,
                  const char * run_module,
                  const char * stop,
