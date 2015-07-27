@@ -25,10 +25,7 @@ Pixmap::~Pixmap()
 bool Pixmap::allocate(int width, int height, bool is_opaque)
 {
     free();
-    SkMallocPixelRef::PRFactory factory;
-    pixel_ref_ = factory.create(
-        SkImageInfo::Make(width, height, kPMColor_SkColorType,
-                 is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType), nullptr);
+    pixel_ref_ = allocatePixelRef(width, height, is_opaque);
     subset_.setXYWH(0, 0, static_cast<Scalar>(width), static_cast<Scalar>(height));
     return !!pixel_ref_;
 }
@@ -95,6 +92,14 @@ Pixmap Pixmap::extractSubset(const Rect& subset)
     }
 
     return sub;
+}
+
+SkPixelRef * Pixmap::allocatePixelRef(int width, int height, bool is_opaque)
+{
+    SkMallocPixelRef::PRFactory factory;
+    return factory.create(
+        SkImageInfo::Make(width, height, kPMColor_SkColorType,
+        is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType), nullptr);
 }
 
 void Pixmap::erase(Color color)
@@ -211,5 +216,41 @@ bool Pixmap::decode(const void * buffer, size_t len)
     return SUCCEEDED(hr);
 }
 
+
+Surface::Surface()
+:hbm_(0)
+{
+    ;
+}
+
+SkPixelRef * Surface::allocatePixelRef(int width, int height, bool is_opaque)
+{
+    BITMAPINFOHEADER hdr = { 0 };
+    hdr.biSize = sizeof(BITMAPINFOHEADER);
+    hdr.biWidth = width;
+    hdr.biHeight = -height;  // minus means top-down bitmap
+    hdr.biPlanes = 1;
+    hdr.biBitCount = 32;
+    hdr.biCompression = BI_RGB;  // no compression
+    hdr.biSizeImage = 0;
+    hdr.biXPelsPerMeter = 1;
+    hdr.biYPelsPerMeter = 1;
+    hdr.biClrUsed = 0;
+    hdr.biClrImportant = 0;
+    void * data = nullptr;
+    hbm_ = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(&hdr),
+        0, &data, NULL, 0);
+
+    auto info = SkImageInfo::Make(width, height, kPMColor_SkColorType,
+        is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
+    return SkMallocPixelRef::NewWithProc(info, info.minRowBytes(), nullptr,
+        data, &Surface::PixelRefFree, hbm_);
+}
+
+void Surface::PixelRefFree(void * addr, void * context)
+{
+    if (context)
+        ::DeleteObject((HBITMAP)context);
+}
 
 }

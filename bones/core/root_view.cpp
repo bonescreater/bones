@@ -90,7 +90,7 @@ bool RootView::isDirty() const
     return !dirty_.isEmpty();
 }
 
-Pixmap & RootView::getPixmap()
+Surface & RootView::getBackBuffer()
 {
     AdjustPixmap();
     return back_buffer_;

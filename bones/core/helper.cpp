@@ -54,6 +54,11 @@ SkShader * Helper::ToSkShader(Shader & shader)
     return shader.getShader();
 }
 
+HBITMAP Helper::ToHBitmap(Surface & sf)
+{
+    return sf.hbm_;
+}
+
 HMODULE Helper::GetModuleFromAddress(void * address)
 {
 

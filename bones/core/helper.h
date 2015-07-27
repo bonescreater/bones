@@ -13,6 +13,7 @@ namespace bones
 {
 
 class Pixmap;
+class Surface;
 class Rect;
 class Point;
 class Shader;
@@ -29,6 +30,8 @@ public:
     static SkBitmap ToSkBitmap(Pixmap & pm);
 
     static SkShader * ToSkShader(Shader & shader);
+
+    static HBITMAP ToHBitmap(Surface & sf);
 
     static HMODULE GetModuleFromAddress(void * address);
 

@@ -69,10 +69,11 @@ bool Panel::create(const Panel * parent)
     auto hwnd = ::CreateWindowEx(ex_style, kClassName, L"",
         (WS_THICKFRAME | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX),
         0, 0, 0, 0, parent ? parent->hwnd() : NULL, 0, 0, this);
+    layered_dc_ = CreateCompatibleDC(NULL);
     Helper::ExtendFrameInfoClientArea(hwnd, -1, -1, -1, -1);
     cursor_ = ::LoadCursor(NULL, IDC_ARROW);
     ex_style_ = ::GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-
+    
     return !!hwnd;
 }
 
@@ -111,7 +112,7 @@ void Panel::update()
         return;
 
     root_->draw();
-    auto & pm = root_->getPixmap();
+    auto & pm = root_->getBackBuffer();
     if (!pm.isValid() || pm.isEmpty())
         return;
 
@@ -119,36 +120,17 @@ void Panel::update()
     if (!pm.lock(lr))
         return;
 
-    BITMAPINFOHEADER hdr = { 0 };
-    hdr.biSize = sizeof(BITMAPINFOHEADER);
-    hdr.biWidth = pm.getWidth();
-    hdr.biHeight = -pm.getHeight();  // minus means top-down bitmap
-    hdr.biPlanes = 1;
-    hdr.biBitCount = 32;
-    hdr.biCompression = BI_RGB;  // no compression
-    hdr.biSizeImage = 0;
-    hdr.biXPelsPerMeter = 1;
-    hdr.biYPelsPerMeter = 1;
-    hdr.biClrUsed = 0;
-    hdr.biClrImportant = 0;
-    void * data = nullptr;
-    HBITMAP hbitmap = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(&hdr),
-        0, &data, NULL, 0);
+
     Rect win_rect;
     getWindowRect(win_rect);
-    POINT pos = { win_rect.left(), win_rect.top()};
-    SIZE size = { win_rect.width(), win_rect.height() };
+    POINT pos = { (LONG)win_rect.left(), (LONG)win_rect.top() };
+    SIZE size = { (LONG)win_rect.width(), (LONG)win_rect.height() };
     POINT src_pos = { 0, 0 };
     BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-    auto hdc = CreateCompatibleDC(NULL);
-    auto old = ::SelectObject(hdc, hbitmap);
-    memcpy(data, lr.bits, lr.pitch * pm.getHeight());
-
-    auto r = ::UpdateLayeredWindow(hwnd(), NULL, &pos, &size, hdc, &src_pos, 0, &bf, ULW_ALPHA);
-
-    ::SelectObject(hdc, old);
-    ::DeleteObject(hbitmap);
-    ::DeleteDC(hdc);
+    
+    auto old = ::SelectObject(layered_dc_, Helper::ToHBitmap(pm));
+    auto r = ::UpdateLayeredWindow(hwnd(), NULL, &pos, &size, layered_dc_, &src_pos, 0, &bf, ULW_ALPHA);
+    ::SelectObject(layered_dc_, old);
 
     pm.unlock();
 }
@@ -201,6 +183,7 @@ LRESULT Panel::handleNCDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam)
     //导致root view 释放不了
     MouseEvent e(kET_MOUSE_LEAVE, kMB_NONE, root_.get(), Point(), Point(), 0);
     root_->handleEvent(e);
+    ::DeleteDC(layered_dc_);
     detach();
     return 0;
 }
@@ -460,7 +443,7 @@ void Panel::onPaint(HDC hdc, const Rect & rect)
         return;
 
     //只更新脏区
-    Pixmap pm = root_->getPixmap().extractSubset(dirty_rect);
+    Pixmap pm = root_->getBackBuffer().extractSubset(dirty_rect);
     if (!pm.isValid() || pm.isEmpty())
         return;
 

@@ -40,7 +40,7 @@ public:
 
     bool isDirty() const;
 
-    Pixmap & getPixmap();
+    Surface & getBackBuffer();
 
     void handleEvent(KeyEvent & e);
 
@@ -77,7 +77,7 @@ private:
     FocusController focus_;
     MouseController mouse_;
     AcceleratorManager accelerators_;
-    Pixmap back_buffer_;
+    Surface back_buffer_;
     Delegate * delegate_;
     Rect dirty_;
     Color color_;
