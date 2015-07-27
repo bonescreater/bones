@@ -27,11 +27,6 @@ public:
 
         kNCAreaCount,
     };
-
-    enum EXStyle
-    {
-        kLayered = WS_EX_LAYERED,
-    };
 public:
     static bool Initialize();
 
@@ -51,9 +46,7 @@ public:
 
     void setOpacity(float opacity);
 
-    void addEXStyle(uint64_t ex_style);
-
-    void removeEXStyle(uint64_t ex_style);
+    void setEXStyle(uint64_t ex_style);
 
     float getOpacity() const;
 

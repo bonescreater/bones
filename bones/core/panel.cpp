@@ -175,18 +175,9 @@ void Panel::setOpacity(float opacity)
     root_->setOpacity(opacity);
 }
 
-void Panel::addEXStyle(uint64_t ex_style)
+void Panel::setEXStyle(uint64_t ex_style)
 {
-    if (!(ex_style_ & ex_style))
-    {
-        ::SetWindowLongPtr(hwnd(), GWL_EXSTYLE, ex_style_ | ex_style);
-        ex_style_ = ::GetWindowLongPtr(hwnd(), GWL_EXSTYLE);
-    }
-}
-
-void Panel::removeEXStyle(uint64_t ex_style)
-{
-    ::SetWindowLongPtr(hwnd(), GWL_EXSTYLE, ex_style_ & ~ex_style);
+    ::SetWindowLongPtr(hwnd(), GWL_EXSTYLE, (LONG)ex_style);
     ex_style_ = ::GetWindowLongPtr(hwnd(), GWL_EXSTYLE);
 }
 

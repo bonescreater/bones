@@ -28,7 +28,7 @@ static CSSString kDescCircle("circle");
 static CSSString kDescBorder("border");
 static CSSString kDescCursor("cursor");
 static CSSString kDescHitTest("hit-test");
-static CSSString kDescLayered("layered");
+static CSSString kDescEXStyle("ex-style");
 //CSSText主要是方便文本处理转义字符
 class CSSText : public CSSString
 {
@@ -192,27 +192,27 @@ static Cursor CSSStrToCursor(const CSSString & str)
         cursor = IDC_WAIT;
     else if (str == "cross")
         cursor = IDC_CROSS;
-    else if (str == "uparrow")
+    else if (str == "up-arrow")
         cursor = IDC_UPARROW;
     else if (str == "size")
         cursor = IDC_SIZE;
     else if (str == "icon")
         cursor = IDC_ICON;
-    else if (str == "sizenwse")
+    else if (str == "size-nwse")
         cursor = IDC_SIZENWSE;
-    else if (str == "sizenesw")
+    else if (str == "size-nesw")
         cursor = IDC_SIZENESW;
-    else if (str == "sizewe")
+    else if (str == "size-we")
         cursor = IDC_SIZEWE;
-    else if (str == "sizens")
+    else if (str == "size-ns")
         cursor = IDC_SIZENS;
-    else if (str == "sizeall")
+    else if (str == "size-all")
         cursor = IDC_SIZEALL;
     else if (str == "no")
         cursor = IDC_NO;
     else if (str == "hand")
         cursor = IDC_HAND;
-    else if (str == "appstarting")
+    else if (str == "app-starting")
         cursor = IDC_APPSTARTING;
     else if (str == "help")
         cursor = IDC_HELP;
@@ -551,6 +551,65 @@ Panel::NCArea CSSStrToPanelNCArea(const CSSString & str)
     return Panel::kCaption;
 }
 
+uint64_t CSSStrToEXStyle(const CSSString & str)
+{
+    if (str == "accept-files")
+        return WS_EX_ACCEPTFILES;
+    if (str == "app-window")
+        return WS_EX_APPWINDOW;
+    if (str == "client-edge")
+        return WS_EX_CLIENTEDGE;
+    if (str == "composited")
+        return WS_EX_COMPOSITED;
+    if (str == "context-help")
+        return WS_EX_CONTEXTHELP;
+    if (str == "control-parent")
+        return WS_EX_CONTROLPARENT;
+    if (str == "dlg-modal-frame")
+        return WS_EX_DLGMODALFRAME;
+    if (str == "layered")
+        return WS_EX_LAYERED;
+    if (str == "layout-rtl")
+        return WS_EX_LAYOUTRTL;
+    if (str == "left")
+        return WS_EX_LEFT;
+    if (str == "left-scrollbar")
+        return WS_EX_LEFTSCROLLBAR;
+    if (str == "ltr-reading")
+        return WS_EX_LTRREADING;
+    if (str == "mdi-child")
+        return WS_EX_MDICHILD;
+    if (str == "no-activate")
+        return WS_EX_NOACTIVATE;
+    if (str == "no-inherit-layout")
+        return WS_EX_NOINHERITLAYOUT;
+    if (str == "no-parent-notify")
+        return WS_EX_NOPARENTNOTIFY;
+    if (str == "overlapped-window")
+        return WS_EX_OVERLAPPEDWINDOW;
+    if (str == "palette-window")
+        return WS_EX_PALETTEWINDOW;
+    if (str == "right")
+        return WS_EX_RIGHT;
+    if (str == "right-scrollbar")
+        return WS_EX_RIGHTSCROLLBAR;
+    if (str == "rtl-reading")
+        return WS_EX_RTLREADING;
+    if (str == "static-edge")
+        return WS_EX_STATICEDGE;
+    if (str == "tool-window")
+        return WS_EX_TOOLWINDOW;
+    if (str == "top-most")
+        return WS_EX_TOPMOST;
+    if (str == "transparent")
+        return WS_EX_TRANSPARENT;
+    if (str == "window-edge")
+        return WS_EX_WINDOWEDGE;
+        //WS_EX_NOREDIRECTIONBITMAP,
+
+    return 0;
+}
+
 static void PanelSetCursor(Ref * ob, const CSSParams & params)
 {
     if (params.empty() || !ob)
@@ -591,15 +650,14 @@ static void PanelSetOpacity(Ref * ob, const CSSParams & params)
     v->setOpacity(CSSStrToScalar(params[0]));
 }
 
-static void PanelLayered(Ref * ob, const CSSParams & params)
+static void PanelSetEXStyle(Ref * ob, const CSSParams & params)
 {
     if (params.empty() || !ob || params.size() < 1)
         return;
-    bool b = CSSStrToBool(params[0]);
-    if (b)
-        static_cast<Panel *>(ob)->addEXStyle(Panel::kLayered);
-    else
-        static_cast<Panel *>(ob)->removeEXStyle(Panel::kLayered);
+    uint64_t ex_style = 0;
+    for (auto iter = params.begin(); iter != params.end(); ++iter)
+        ex_style |= CSSStrToEXStyle(*iter);
+    static_cast<Panel *>(ob)->setEXStyle(ex_style);
 }
 
 
@@ -674,7 +732,7 @@ void ClassDescriptor::registerPanel()
     table[kDescHitTest] = &PanelHitTest;
     table[kDescColor] = &PanelSetColor;
     table[kDescOpacity] = &PanelSetOpacity;
-    table[kDescLayered] = &PanelLayered;
+    table[kDescEXStyle] = &PanelSetEXStyle;
 }
 
 void ClassDescriptor::registerView(CSSClassTable & table)

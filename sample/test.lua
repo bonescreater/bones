@@ -25,7 +25,7 @@ end
 
 local function testLayered(btn)
     panel = bones.getLuaObjectByID("p_layered")
-    panel:applyCSS("{layered:true;}")
+    panel:applyCSS("{ex-style:app-window layered;}")
 end
 
 function mod.onPrepare(self)
