@@ -1,8 +1,11 @@
 ﻿#include "lua_animation.h"
 #include "core/animation.h"
 #include "core/logging.h"
+#include "core/animation_manager.h"
+
 #include "lua_context.h"
 #include "lua_check.h"
+#include "lua_meta_table.h"
 
 namespace bones
 {
@@ -208,7 +211,7 @@ void AnimateResume(Ref * sender, Ref * target, void * user_data)
         lua_pop(l, 1);
 }
 
-Animation * LuaAnimation::Create(
+void LuaAnimation::Create(
                                 Ref * target, uint64_t interval, uint64_t due,
                                 const char * run,
                                 const char * run_module,
@@ -222,50 +225,61 @@ Animation * LuaAnimation::Create(
                                 const char * resume_module)
 {
     auto ani = new Animation(target, interval, due);
-    if (!run && !start && !stop && !pause && !resume)
-        return ani;
-    auto method = new LuaAnimationMethod;
 
-    if (run && strlen(run))
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK_COUNT(l, 1);
+    lua_newtable(l);
+    LuaMetaTable::GetAnimation(l);
+    lua_setmetatable(l, -2);
+    LuaMetaTable::SetClosureCObject(l, ani);
+
+    if (run || start || stop || pause || resume)
     {
-        method->run = run;
-        if (run_module && strlen(run_module))
-            method->run_module = run_module;
-        ani->bind(BONES_CALLBACK_4(&AnimateRun), method);
+        auto method = new LuaAnimationMethod;
+
+        if (run && strlen(run))
+        {
+            method->run = run;
+            if (run_module && strlen(run_module))
+                method->run_module = run_module;
+            ani->bind(BONES_CALLBACK_4(&AnimateRun), method);
+        }
+
+        if (stop && strlen(stop))
+        {
+            method->stop = stop;
+            if (stop_module && strlen(stop_module))
+                method->stop_module = stop_module;
+            ani->bind(Animation::kStop, BONES_CALLBACK_3(&AnimateStop), method);
+        }
+
+        if (start && strlen(start))
+        {
+            method->start = start;
+            if (start_module && strlen(start_module))
+                method->start_module = start_module;
+            ani->bind(Animation::kStart, BONES_CALLBACK_3(&AnimateStart), method);
+        }
+
+        if (pause && strlen(pause))
+        {
+            method->pause = pause;
+            if (pause_module && strlen(pause_module))
+                method->pause_module = pause_module;
+            ani->bind(Animation::kPause, BONES_CALLBACK_3(&AnimatePause), method);
+        }
+
+        if (resume && strlen(resume))
+        {
+            method->resume = resume;
+            if (resume_module && strlen(resume_module))
+                method->resume_module = resume_module;
+            ani->bind(Animation::kResume, BONES_CALLBACK_3(&AnimateResume), method);
+        }
     }
 
-    if (stop && strlen(stop))
-    {
-        method->stop = stop;
-        if (stop_module && strlen(stop_module))
-            method->stop_module = stop_module;
-        ani->bind(Animation::kStop, BONES_CALLBACK_3(&AnimateStop), method);
-    }
-        
-    if (start && strlen(start))
-    {
-        method->start = start;
-        if (start_module && strlen(start_module))
-            method->start_module = start_module;
-        ani->bind(Animation::kStart, BONES_CALLBACK_3(&AnimateStart), method);
-    }
-
-    if (pause && strlen(pause))
-    {
-        method->pause = pause;
-        if (pause_module && strlen(pause_module))
-            method->pause_module = pause_module;
-        ani->bind(Animation::kPause, BONES_CALLBACK_3(&AnimatePause), method);
-    }
-
-    if (resume && strlen(resume))
-    {
-        method->resume = resume;
-        if (resume_module && strlen(resume_module))
-            method->resume_module = resume_module;
-        ani->bind(Animation::kResume, BONES_CALLBACK_3(&AnimateResume), method);
-    }
-    return ani;
+    Core::GetAnimationManager()->add(ani);
+    ani->release();
 }
 
 

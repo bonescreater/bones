@@ -10,7 +10,7 @@ namespace bones
 class LuaAnimation
 {
 public:
-    static Animation * Create(Ref * target, uint64_t interval, uint64_t due,
+    static void Create(Ref * target, uint64_t interval, uint64_t due,
                  const char * run,
                  const char * run_module,
                  const char * stop,
