@@ -299,7 +299,7 @@ static int StopAnimate(lua_State * l)
             end = !!lua_toboolean(l, 3);
 
         lua_pushnil(l);
-        lua_copy(l, 1, -1);
+        lua_copy(l, 2, -1);
         Core::GetAnimationManager()->remove(
             (Animation *)LuaMetaTable::CallGetCObject(l), end);
     }
