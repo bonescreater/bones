@@ -11,17 +11,20 @@ namespace bones
 {
 
 RootView::RootView()
-:delegate_(nullptr), mouse_(this), focus_(this), color_(0),
+: delegate_(nullptr), mouse_(this), focus_(this), color_(0),
 opacity_(1.0f)
 {
     ;
 }
-
 RootView::~RootView()
 {
     ;
 }
 
+Widget * RootView::getWidget() const
+{
+    return delegate_ ? delegate_->getWidget() : nullptr;
+}
 
 void RootView::setDelegate(Delegate * delegate)
 {
@@ -51,6 +54,11 @@ float RootView::getOpacity() const
 bool RootView::isVisible() const
 {
     return visible();
+}
+
+RootView * RootView::getRoot()
+{
+    return this;
 }
 
 const char * RootView::getClassName() const
@@ -166,6 +174,7 @@ bool RootView::notifyVisibleChanged(View * n)
 bool RootView::notifySetFocus(View * n)
 {
     focus_.shift(n);
+    delegate_ ? delegate_->requestFocus() : 0;
     return true;
 }
 

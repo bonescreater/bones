@@ -21,6 +21,10 @@ class Shader;
 class Helper
 {
 public:
+    static Rect ToRect(const RECT & wr);
+
+    static Point ToPoint(const POINT & wp);
+
     static SkRect ToSkRect(const Rect & rect);
 
     static SkIRect ToSkIRect(const Rect & rect);
@@ -30,6 +34,10 @@ public:
     static SkBitmap ToSkBitmap(Pixmap & pm);
 
     static SkShader * ToSkShader(Shader & shader);
+
+    static POINT ToPoint(const Point & pt);
+
+    static RECT ToRect(const Rect & r);
 
     static HBITMAP ToHBitmap(Surface & sf);
 

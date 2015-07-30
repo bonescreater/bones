@@ -115,6 +115,9 @@
     <ClCompile Include="bones\core\panel_manager.cpp">
       <Filter>bone\win32</Filter>
     </ClCompile>
+    <ClCompile Include="bones\core\rich_edit.cpp">
+      <Filter>bone\naked</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\core\accelerator.h">
@@ -216,6 +219,9 @@
     </ClInclude>
     <ClInclude Include="bones\core\panel_manager.h">
       <Filter>bone\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\rich_edit.h">
+      <Filter>bone\naked</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

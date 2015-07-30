@@ -71,6 +71,8 @@ public:
 
     void inval();
 
+    void inval(const Rect & r);
+
     void attachChildToFront(View * child);
 
     void attachChildToBack(View * child);

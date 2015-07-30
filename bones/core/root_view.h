@@ -11,12 +11,18 @@
 namespace bones
 {
 
+class Widget;
+
 class RootView : public View
 {
 public:
     class Delegate
     {
     public:
+        virtual Widget * getWidget() = 0;
+
+        virtual void requestFocus() = 0;
+
         virtual void invalidateRect(const Rect & rect) = 0;
 
         virtual void changeCursor(Cursor cursor) = 0;
@@ -42,6 +48,8 @@ public:
 
     Surface & getBackBuffer();
 
+    Widget * getWidget() const;
+
     void handleEvent(KeyEvent & e);
 
     void handleEvent(MouseEvent & e);
@@ -53,6 +61,8 @@ public:
     //void handleEvent(Event & e);
 
     bool isVisible() const override;
+
+    RootView * getRoot() override;
 
     const char * getClassName() const override;
 protected:

@@ -227,6 +227,11 @@ void View::inval()
     notifyInval(Rect::MakeXYWH(0, 0, getWidth(), getHeight()));
 }
 
+void View::inval(const Rect & r)
+{
+    notifyInval(r);
+}
+
 size_t View::getChildCount() const
 {
     return children_count_;
@@ -393,7 +398,7 @@ View * View::parent() const
     return parent_.get();
 }
 
-RootView * View::getRoot()
+RootView * View::getRoot() const
 {
     if (parent_)
         return parent_->getRoot();

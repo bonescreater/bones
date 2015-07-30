@@ -12,6 +12,20 @@ namespace bones
 {
 
 
+Rect Helper::ToRect(const RECT & wr)
+{
+    return Rect::MakeLTRB(static_cast<Scalar>(wr.left), 
+                          static_cast<Scalar>(wr.top), 
+                          static_cast<Scalar>(wr.right), 
+                          static_cast<Scalar>(wr.bottom));
+}
+
+Point Helper::ToPoint(const POINT & wp)
+{
+    return Point::Make(static_cast<Scalar>(wp.x),
+                       static_cast<Scalar>(wp.y));
+}
+
 SkRect Helper::ToSkRect(const Rect & rect)
 {
     SkRect r;
@@ -52,6 +66,24 @@ SkBitmap Helper::ToSkBitmap(Pixmap & pm)
 SkShader * Helper::ToSkShader(Shader & shader)
 {
     return shader.getShader();
+}
+
+POINT Helper::ToPoint(const Point & pt)
+{
+    POINT wp;
+    wp.x = static_cast<LONG>(pt.x());
+    wp.y = static_cast<LONG>(pt.y());
+    return wp;
+}
+
+RECT Helper::ToRect(const Rect & r)
+{
+    RECT wr;
+    wr.left = static_cast<LONG>(r.left());
+    wr.top = static_cast<LONG>(r.top());
+    wr.right = static_cast<LONG>(r.right());
+    wr.bottom = static_cast<LONG>(r.bottom());
+    return wr;
 }
 
 HBITMAP Helper::ToHBitmap(Surface & sf)

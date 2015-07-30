@@ -29,6 +29,7 @@
     <ClCompile Include="bones\core\point.cpp" />
     <ClCompile Include="bones\core\rect.cpp" />
     <ClCompile Include="bones\core\ref.cpp" />
+    <ClCompile Include="bones\core\rich_edit.cpp" />
     <ClCompile Include="bones\core\root_view.cpp" />
     <ClCompile Include="bones\core\shader.cpp" />
     <ClCompile Include="bones\core\shape.cpp" />
@@ -64,6 +65,7 @@
     <ClInclude Include="bones\core\point.h" />
     <ClInclude Include="bones\core\rect.h" />
     <ClInclude Include="bones\core\ref.h" />
+    <ClInclude Include="bones\core\rich_edit.h" />
     <ClInclude Include="bones\core\root_view.h" />
     <ClInclude Include="bones\core\shader.h" />
     <ClInclude Include="bones\core\shape.h" />
