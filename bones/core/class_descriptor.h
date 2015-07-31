@@ -24,6 +24,8 @@ private:
 
     void registerArea();
 
+    void registerRichEdit();
+
     void registerImage();
 
     void registerText();

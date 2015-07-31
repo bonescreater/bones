@@ -398,7 +398,7 @@ View * View::parent() const
     return parent_.get();
 }
 
-RootView * View::getRoot() const
+RootView * View::getRoot()
 {
     if (parent_)
         return parent_->getRoot();

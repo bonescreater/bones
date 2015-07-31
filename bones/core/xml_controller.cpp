@@ -3,6 +3,7 @@
 #include "helper.h"
 #include "rapidxml.hpp"
 #include "area.h"
+#include "rich_edit.h"
 #include "image.h"
 #include "text.h"
 #include "shape.h"
@@ -26,6 +27,7 @@ enum Label
     kLABEL_BODY,
     kLABEL_PANEL,
     kLABEL_AREA,
+    kLABEL_RICHEDIT,
     kLABEL_IMAGE,
     kLABEL_TEXT,
     kLABEL_SHAPE,
@@ -39,6 +41,7 @@ enum Bone
     kBONE_IMAGE,
     kBONE_TEXT,
     kBONE_SHAPE,
+    kBONE_RICHEDIT,
 };
 
 const char * kStrType = "type";
@@ -142,6 +145,7 @@ void XMLController::reset()
     main_module_.reset();
     modules_.clear();
 
+    ob2id_.clear();
     auto panel = Core::GetPanelManager()->begin();
     while (panel)
     {
@@ -149,8 +153,6 @@ void XMLController::reset()
         Core::GetPanelManager()->remove(panel);
         panel = Core::GetPanelManager()->next();
     }
-       
-    ob2id_.clear();
 }
 
 Ref * XMLController::getRefByID(const char * id)
@@ -379,6 +381,8 @@ bool XMLController::createRefFromNode(XMLNode node, Ref * parent_ob, const Modul
     case kLABEL_AREA:
         bret = handleArea(node, parent_ob, mod, &node_ob);
         break;
+    case kLABEL_RICHEDIT:
+        bret = handleRichEdit(node, parent_ob, mod, &node_ob);
     case kLABEL_IMAGE:
         bret = handleImage(node, parent_ob, mod, &node_ob);
         break;
@@ -553,6 +557,27 @@ bool XMLController::handleArea(XMLNode node, Ref * parent_ob, const Module & mod
     if (ob)
         *ob = area.get();
     return area != nullptr;
+}
+
+bool XMLController::handleRichEdit(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
+{
+    auto rich = AdoptRef(new RichEdit);
+
+    //rich edit 需要handle 所以 必须先attach后再设置属性
+    AttachToParentView(rich.get(), parent_ob);
+    Attribute attrs[] =
+    {
+        { kStrClass, nullptr }, { kStrID, nullptr }, { kStrGroup, nullptr }
+    };
+    acquireAttrs(node, attrs, sizeof(attrs) / sizeof(attrs[0]));
+    applyClass(rich.get(), mod, attrs[0].value);
+    applyID(rich.get(), attrs[1].value);
+
+    rich->setText(L"Test");
+
+    if (ob)
+        *ob = rich.get();
+    return rich != nullptr;
 }
 
 bool XMLController::readFile(const char * file_path, FileStream & file)
@@ -971,6 +996,8 @@ Label LabelFromName(const char * name)
         return kLABEL_PANEL;
     else if (!strcmp("area", name))
         return kLABEL_AREA;
+    else if (!strcmp("richedit", name))
+        return kLABEL_RICHEDIT;
     else if (!strcmp("image", name))
         return kLABEL_IMAGE;
     else if (!strcmp("text", name))
@@ -989,6 +1016,8 @@ Bone BoneFromName(const char * name)
         return kBONE_PANEL;
     else if (!strcmp(kClassArea, name))
         return kBONE_AREA;
+    else if (!strcmp(kClassRichEdit, name))
+        return kBONE_RICHEDIT;
     else if (!strcmp(kClassImage, name))
         return kBONE_IMAGE;
     else if (!strcmp(kClassText, name))

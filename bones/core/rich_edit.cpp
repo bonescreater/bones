@@ -3,6 +3,7 @@
 #include "root_view.h"
 #include "widget.h"
 #include "logging.h"
+#include "SkCanvas.h"
 
 namespace bones
 {
@@ -24,15 +25,112 @@ RichEdit::RichEdit()
 :dc_(NULL), accel_pos_(-1), max_length_(INFINITE), password_(L'*'),
 scroll_bars_(WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL |
 ES_AUTOHSCROLL | ES_DISABLENOSCROLL), 
-txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP)
+txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
+services_(nullptr), hwnd_(NULL)
 {
 
 }
 
 RichEdit::~RichEdit()
 {
+    if (services_)
+        services_->Release();
+
     if (dc_)
         ::DeleteDC(dc_);
+}
+
+void RichEdit::setText(const wchar_t * text)
+{
+    lazyInitialize();
+    services_->TxSetText(text);
+}
+
+void RichEdit::setRichText(bool rich)
+{
+    lazyInitialize();
+    if (rich)
+        txt_bits_ |= TXTBIT_RICHTEXT;
+    else
+        txt_bits_ &= ~TXTBIT_RICHTEXT;
+    services_->OnTxPropertyBitsChange(TXTBIT_RICHTEXT, rich ? TXTBIT_RICHTEXT : 0);
+}
+
+bool RichEdit::getRichText() const
+{
+    return !!(txt_bits_ & TXTBIT_RICHTEXT);
+}
+
+void RichEdit::setReadOnly(bool readonly)
+{
+    lazyInitialize();
+    if (readonly)
+        txt_bits_ |= TXTBIT_READONLY;
+    else
+        txt_bits_ &= ~TXTBIT_READONLY;
+
+    services_->OnTxPropertyBitsChange(TXTBIT_READONLY, readonly ? TXTBIT_READONLY : 0);
+}
+
+bool RichEdit::getReadOnly() const
+{
+    return !!(txt_bits_ & TXTBIT_READONLY);
+}
+
+void RichEdit::setLimitText(uint64_t length)
+{
+    lazyInitialize();
+    if (max_length_ != (DWORD)length)
+    {
+        max_length_ = (DWORD)length;
+        services_->OnTxPropertyBitsChange(TXTBIT_MAXLENGTHCHANGE, TXTBIT_MAXLENGTHCHANGE);
+    }
+}
+
+uint64_t RichEdit::getLimitText() const
+{
+    return max_length_;
+}
+
+void RichEdit::setWordWrap(bool wordwrap)
+{
+    lazyInitialize();
+    if (wordwrap)
+        txt_bits_ |= TXTBIT_WORDWRAP;
+    else
+        txt_bits_ &= ~TXTBIT_WORDWRAP;
+    services_->OnTxPropertyBitsChange(TXTBIT_WORDWRAP, wordwrap ? TXTBIT_WORDWRAP : 0);
+}
+
+bool RichEdit::getWordWrap() const
+{
+    return !!(txt_bits_ & TXTBIT_WORDWRAP);
+}
+
+const char * RichEdit::getClassName() const
+{
+    return kClassRichEdit;
+}
+
+HRESULT STDMETHODCALLTYPE RichEdit::QueryInterface(
+    /* [in] */ REFIID riid,
+    /* [iid_is][out] */ __RPC__deref_out void __RPC_FAR *__RPC_FAR *ppvObject)
+{
+    return E_NOTIMPL;
+}
+
+ULONG STDMETHODCALLTYPE RichEdit::AddRef(void)
+{
+    retain();
+    return getRefCount();
+}
+
+ULONG STDMETHODCALLTYPE RichEdit::Release(void)
+{
+    auto count = getRefCount();
+    release();
+    count--;
+    return count;
 }
 
 HDC RichEdit::TxGetDC()
@@ -74,14 +172,25 @@ BOOL RichEdit::TxSetScrollPos(INT fnBar, INT nPos, BOOL fRedraw)
 
 void RichEdit::TxInvalidateRect(LPCRECT prc, BOOL fMode)
 {
+    Rect bounds;
     if (prc)
-        inval(Helper::ToRect(*prc));
+    {
+        bounds = Helper::ToRect(*prc);
+        inval(bounds);
+    }    
     else
+    {
+        getLocalBounds(bounds);
         inval();
+    }  
+    dirty_.join(bounds);   
 }
 
 void RichEdit::TxViewChange(BOOL fUpdate)
 {
+    Rect bounds;
+    getLocalBounds(bounds);
+    dirty_.join(bounds);
     inval();
 }
 
@@ -102,7 +211,7 @@ BOOL RichEdit::TxSetCaretPos(INT x, INT y)
 {
     auto pt = mapToGlobal(Point::Make(static_cast<Scalar>(x), 
                                       static_cast<Scalar>(y)));
-    ::SetCaretPos(static_cast<INT>(pt.x()), static_cast<INT>(pt.y()));
+    return ::SetCaretPos(static_cast<INT>(pt.x()), static_cast<INT>(pt.y()));
 }
 
 BOOL RichEdit::TxSetTimer(UINT idTimer, UINT uTimeout)
@@ -139,7 +248,7 @@ void RichEdit::TxSetFocus()
 
 void RichEdit::TxSetCursor(HCURSOR hcur, BOOL fText)
 {
-    ::SetCursor(hcur);
+    notifyChangeCursor(hcur);
 }
 
 BOOL RichEdit::TxScreenToClient(LPPOINT lppt)
@@ -202,18 +311,22 @@ HRESULT RichEdit::TxGetParaFormat(const PARAFORMAT **ppPF)
 COLORREF RichEdit::TxGetSysColor(int nIndex)
 {
     //COLOR_WINDOW
+    if (COLOR_WINDOW == nIndex)
+        return RGB(255, 255, 255);
+
     return ::GetSysColor(nIndex);
 }
 
 HRESULT	RichEdit::TxGetBackStyle(TXTBACKSTYLE *pstyle)
 {
     *pstyle = TXTBACK_TRANSPARENT;
+    *pstyle = TXTBACK_OPAQUE;  
     return S_OK;
 }
 
 HRESULT	RichEdit::TxGetMaxLength(DWORD *plength)
 {
-    *plength = max_length_;
+    *plength = (DWORD)max_length_;
     return S_OK;
 }
 
@@ -242,8 +355,8 @@ HRESULT	RichEdit::TxGetExtent(LPSIZEL lpExtent)
     LONG xPerInch = ::GetDeviceCaps(dc_, LOGPIXELSX);
     LONG yPerInch = ::GetDeviceCaps(dc_, LOGPIXELSY);
 
-    lpExtent->cx = DXtoHimetricX(getWidth(), xPerInch);
-    lpExtent->cy = DYtoHimetricY(getHeight(), yPerInch);
+    lpExtent->cx = DXtoHimetricX((LONG)getWidth(), xPerInch);
+    lpExtent->cy = DYtoHimetricY((LONG)getHeight(), yPerInch);
 
     return S_OK;
     //return E_NOTIMPL;
@@ -287,20 +400,70 @@ HRESULT	RichEdit::TxGetSelectionBarWidth(LONG *lSelBarWidth)
     return S_OK;
 }
 
+void RichEdit::onDraw(SkCanvas & canvas)
+{
+    lazyInitialize();
+    adjustSurface();
+    if (surface_.isEmpty() || !surface_.isValid())
+        return;
+    if (!dirty_.isEmpty())
+    {
+        auto old = ::SelectObject(dc_, Helper::ToHBitmap(surface_));
+        Rect bounds;
+        getLocalBounds(bounds);
+        auto wbounds = Helper::ToRect(bounds);
+        RECTL rcL = { wbounds.left, wbounds.top, wbounds.right, wbounds.bottom };
+        auto wdirty = Helper::ToRect(dirty_);
+        services_->TxDraw(
+            DVASPECT_CONTENT,
+            0,
+            NULL,
+            NULL,
+            dc_,
+            NULL,
+            &rcL,
+            NULL,
+            &wdirty,
+            NULL,
+            NULL,
+            TXTVIEW_ACTIVE);
+        
+        ::SelectObject(dc_, old);
+        dirty_.setEmpty();
+    }
+    canvas.drawBitmap(Helper::ToSkBitmap(surface_), 0, 0);
+}
+
+void RichEdit::adjustSurface()
+{
+    int iwidth = (int)getWidth();
+    int iheight = (int)getHeight();
+
+    if (surface_.getWidth() != iwidth ||
+        surface_.getHeight() != iheight)
+    {
+        surface_.allocate(iwidth, iheight);
+        assert(surface_.isValid());
+        surface_.erase(0xffffffff);
+    }
+}
+
 HWND RichEdit::getHWND()
 {
-    HWND hwnd = NULL;
-    auto rv = getRoot();
-    if (rv)
+    if (!hwnd_)
     {
-        auto widget = rv->getWidget();
-        if (widget)
-            hwnd = widget->hwnd();
+        auto rv = getRoot();
+        if (rv)
+        {
+            auto widget = rv->getWidget();
+            if (widget)
+                hwnd_ = widget->hwnd();
+        }
     }
-    assert(hwnd);
-    if (!hwnd)
-        LOG_VERBOSE << "rich edit did't attach to a root view ?";
-    return hwnd;
+    assert(hwnd_);
+    if (!hwnd_)
+        LOG_ERROR << "rich edit did't attach to a root view ?";
+    return hwnd_;
 }
 
 void RichEdit::initDefaultCF()
@@ -320,6 +483,7 @@ void RichEdit::initDefaultCF()
         return;
 
     // Set CHARFORMAT structure
+    memset(&cf_, 0, sizeof(cf_));
     cf_.cbSize = sizeof(CHARFORMAT2);
 
     hwnd = GetDesktopWindow();
@@ -329,7 +493,7 @@ void RichEdit::initDefaultCF()
     ReleaseDC(hwnd, hdc);
 
     cf_.yOffset = 0;
-    cf_.crTextColor = GetSysColor(COLOR_WINDOWTEXT);
+    cf_.crTextColor = -1;
 
     cf_.dwEffects = CFM_EFFECTS | CFE_AUTOBACKCOLOR;
     cf_.dwEffects &= ~(CFE_PROTECTED | CFE_LINK);
@@ -343,7 +507,9 @@ void RichEdit::initDefaultCF()
     if (!lf.lfStrikeOut)
         cf_.dwEffects &= ~CFE_STRIKEOUT;
 
-    cf_.dwMask = CFM_ALL | CFM_BACKCOLOR;
+    //cf_.dwMask = CFM_ALL | CFM_BACKCOLOR | CFM_COLOR;
+    cf_.dwMask = CFM_SIZE | CFM_OFFSET | CFM_FACE | CFM_CHARSET | CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE;
+
     cf_.bCharSet = lf.lfCharSet;
     cf_.bPitchAndFamily = lf.lfPitchAndFamily;
     wcscpy(cf_.szFaceName, lf.lfFaceName);
@@ -358,6 +524,57 @@ void RichEdit::initDefaultPF()
     pf_.wAlignment = PFA_LEFT;
     pf_.cTabCount = 1;
     pf_.rgxTabs[0] = lDefaultTab;
+}
+
+void RichEdit::lazyInitialize()
+{
+    typedef HRESULT (STDAPICALLTYPE * T_CreateTextServices)(
+        IUnknown *punkOuter,
+        ITextHost *pITextHost,
+        IUnknown **ppUnk);
+
+    if (!dc_)
+        dc_ = ::CreateCompatibleDC(NULL);
+    assert(dc_);
+    if (!services_)
+    {
+        HMODULE rich = ::GetModuleHandle(L"Msftedit.dll");
+        if (!rich)
+            rich = ::LoadLibrary(L"Msftedit.dll");
+        assert(rich);
+        if (!rich)
+        {
+            LOG_ERROR << "rich edit Msftedit.dll not found";
+            return;
+        }
+            
+        initDefaultCF();
+        initDefaultPF();
+
+        IUnknown * pun = nullptr;
+        T_CreateTextServices TCreateTextServices = (T_CreateTextServices)GetProcAddress(rich,
+            "CreateTextServices");
+        IID* IID_ITS = (IID*)(VOID*)GetProcAddress(rich,
+            "IID_ITextServices");
+
+        auto hr = TCreateTextServices(NULL, this, &pun);
+        if (FAILED(hr))
+        {
+            LOG_ERROR << "rich edit CreateTextServices fail";
+            return;
+        }
+
+        hr = pun->QueryInterface(*IID_ITS, (void **)&services_);
+        pun->Release();
+        if (FAILED(hr))
+        {
+            LOG_ERROR << "rich edit QueryInterface IID_ITextServices fail";
+            return;
+        }
+        assert(services_);
+        services_->OnTxInPlaceActivate(NULL);
+    }
+           
 }
 
 }

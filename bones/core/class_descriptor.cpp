@@ -665,6 +665,7 @@ static void PanelSetEXStyle(Ref * ob, const CSSParams & params)
 ClassDescriptor::ClassDescriptor()
 {
     registerArea();
+    registerRichEdit();
     registerImage();
     registerText();
     registerShape();
@@ -690,6 +691,12 @@ CSSClassTable * ClassDescriptor::getFunc(const char * class_name)
 void ClassDescriptor::registerArea()
 {
     auto & table = multi_class_tables_[kClassArea];
+    registerView(table);
+}
+
+void ClassDescriptor::registerRichEdit()
+{
+    auto & table = multi_class_tables_[kClassRichEdit];
     registerView(table);
 }
 

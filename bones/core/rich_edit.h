@@ -2,6 +2,8 @@
 #define BONES_CORE_RICH_EDIT_H_
 
 #include "view.h"
+#include "pixmap.h"
+#include "rect.h"
 #include <Richedit.h>
 #include <Textserv.h>
 
@@ -15,7 +17,35 @@ public:
     RichEdit();
 
     ~RichEdit();
+    
+    void setText(const wchar_t * text);
 
+    void setRichText(bool rich);
+
+    bool getRichText() const;
+
+    void setReadOnly(bool readonly);
+
+    bool getReadOnly() const;
+
+    void setLimitText(uint64_t length);
+
+    uint64_t getLimitText() const;
+
+    void setWordWrap(bool wordwrap);
+
+    bool getWordWrap() const;
+
+    const char * getClassName() const override;
+    //ITextHost
+public:
+    virtual HRESULT STDMETHODCALLTYPE QueryInterface(
+        /* [in] */ REFIID riid,
+        /* [iid_is][out] */ __RPC__deref_out void __RPC_FAR *__RPC_FAR *ppvObject)override;
+
+    virtual ULONG STDMETHODCALLTYPE AddRef(void) override;
+
+    virtual ULONG STDMETHODCALLTYPE Release(void) override;
     //@cmember Get the DC for the host
     HDC TxGetDC() override;
 
@@ -143,21 +173,31 @@ public:
 
     //@cmember Returns HIMETRIC size of the control bar.
     virtual HRESULT	TxGetSelectionBarWidth(LONG *lSelBarWidth) override;
+protected:
+    void onDraw(SkCanvas & canvas);
 private:
+    void adjustSurface();
+
     HWND getHWND();
 
     void initDefaultCF();
 
     void initDefaultPF();
+
+    void lazyInitialize();
 private:
     HDC dc_;
-    CHARFORMATW cf_;
+    HWND hwnd_;
+    CHARFORMAT2 cf_;
     PARAFORMAT pf_;
     DWORD max_length_;
     wchar_t password_;
     DWORD scroll_bars_;//srollbar的标志 跟窗口样式有关
-    DWORD txt_bits_;//TXT_BIT_*
+    uint64_t txt_bits_;//TXT_BIT_*
     LONG accel_pos_;
+    ITextServices * services_;
+    Surface surface_;
+    Rect dirty_;
 };
 
 }

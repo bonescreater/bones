@@ -127,6 +127,8 @@ protected:
 
     virtual bool handleArea(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob);
 
+    virtual bool handleRichEdit(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob);
+
     virtual bool handleImage(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob);
 
     virtual bool handleText(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob);

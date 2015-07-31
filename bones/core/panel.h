@@ -64,6 +64,10 @@ protected:
 
     virtual void onPaint(HDC hdc, const Rect & rect);
 
+    virtual Widget * getWidget() override;
+
+    virtual void requestFocus() override;
+
     virtual void invalidateRect(const Rect & rect) override;
 
     virtual void changeCursor(Cursor cursor) override;

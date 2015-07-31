@@ -496,6 +496,16 @@ LRESULT Panel::defProcessEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
     return ::DefWindowProc(hwnd_, uMsg, wParam, lParam);
 }
 
+Widget * Panel::getWidget()
+{
+    return this;
+}
+
+void Panel::requestFocus()
+{
+    ::SetFocus(hwnd());
+}
+
 void Panel::invalidateRect(const Rect & rect)
 {
     //layered windows 无效

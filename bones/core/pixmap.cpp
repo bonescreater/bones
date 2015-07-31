@@ -1,5 +1,6 @@
 ﻿#include "pixmap.h"
 #include "SkMallocPixelRef.h"
+#include "SkUtils.h"
 #include <wincodec.h>
 
 namespace bones
@@ -104,7 +105,28 @@ SkPixelRef * Pixmap::allocatePixelRef(int width, int height, bool is_opaque)
 
 void Pixmap::erase(Color color)
 {
-    assert(0);
+    if (!pixel_ref_)
+        return;
+
+    LockRec rec;
+    if (!lock(rec))
+        return;
+
+    uint32_t precolor = SkPreMultiplyColor(color);
+    auto width = subset_.width();
+    auto height = subset_.height();
+    auto pitch = rec.pitch;
+    size_t offset = (size_t)(subset_.left() * 4 + subset_.top() * pitch);
+    uint32_t * bits = static_cast<uint32_t*>(rec.bits);
+
+    bits = (uint32_t *)((char *)bits + offset);
+    while (height)
+    {
+        sk_memset32(bits, precolor, (int)width);
+        bits = (uint32_t *)((char *)bits + pitch);
+        height -= 1;
+    }
+    unlock();
 }
 
 
