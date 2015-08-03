@@ -17,6 +17,10 @@ public:
     RichEdit();
 
     ~RichEdit();
+
+    void setOpacity(float opacity);
+
+    float getOpactiy() const;
     
     void setText(const wchar_t * text);
 
@@ -35,6 +39,8 @@ public:
     void setWordWrap(bool wordwrap);
 
     bool getWordWrap() const;
+
+    void setBackground(bool opaque, Color bg_color);
 
     const char * getClassName() const override;
     //ITextHost
@@ -198,6 +204,9 @@ private:
     ITextServices * services_;
     Surface surface_;
     Rect dirty_;
+    float opacity_;
+    bool bg_opaque_;
+    Color bg_color_;
 };
 
 }

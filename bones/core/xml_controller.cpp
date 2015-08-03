@@ -573,7 +573,7 @@ bool XMLController::handleRichEdit(XMLNode node, Ref * parent_ob, const Module &
     applyClass(rich.get(), mod, attrs[0].value);
     applyID(rich.get(), attrs[1].value);
 
-    rich->setText(L"Test");
+    rich->setText(L"This is a RichEdit");
 
     if (ob)
         *ob = rich.get();

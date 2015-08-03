@@ -245,6 +245,61 @@ Surface::Surface()
     ;
 }
 
+void Surface::eraseAlpha(uint8_t alpha)
+{
+    LockRec rec;
+    if (!lock(rec))
+        return;
+
+    auto width = rec.subset.width();
+    auto height = rec.subset.height();
+    auto pitch = rec.pitch;
+    size_t offset = (size_t)(rec.subset.left() * 4 + rec.subset.top() * pitch);
+    char * bits = static_cast<char *>(rec.bits);
+
+    bits = (char *)bits + offset;
+    while (height)
+    {
+        auto tmp = bits;
+        for (auto i = 0; i < width; i++)
+        {
+            *(tmp + 3) = alpha;
+            tmp += 4;
+        }
+        bits = (char *)bits + pitch;
+        height -= 1;
+    }
+    unlock();
+}
+
+void Surface::negAlpha()
+{
+    LockRec rec;
+    if (!lock(rec))
+        return;
+
+    auto width = rec.subset.width();
+    auto height = rec.subset.height();
+    auto pitch = rec.pitch;
+    size_t offset = (size_t)(rec.subset.left() * 4 + rec.subset.top() * pitch);
+    char * bits = static_cast<char *>(rec.bits);
+
+    bits = (char *)bits + offset;
+    while (height)
+    {
+        auto tmp = bits;
+        for (auto i = 0; i < width; i++)
+        {//要将颜色预乘
+            uint8_t alpha = *(tmp + 3);
+            *(tmp + 3) = ~alpha;
+            tmp += 4;
+        }
+        bits = (char *)bits + pitch;
+        height -= 1;
+    }
+    unlock();
+}
+
 SkPixelRef * Surface::allocatePixelRef(int width, int height, bool is_opaque)
 {
     BITMAPINFOHEADER hdr = { 0 };

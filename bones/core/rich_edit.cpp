@@ -26,7 +26,7 @@ RichEdit::RichEdit()
 scroll_bars_(WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL |
 ES_AUTOHSCROLL | ES_DISABLENOSCROLL), 
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
-services_(nullptr), hwnd_(NULL)
+services_(nullptr), hwnd_(NULL), opacity_(1.0f), bg_opaque_(false), bg_color_(0xff888888)
 {
 
 }
@@ -38,6 +38,17 @@ RichEdit::~RichEdit()
 
     if (dc_)
         ::DeleteDC(dc_);
+}
+
+void RichEdit::setOpacity(float opacity)
+{
+    opacity_ = opacity;
+    inval();
+}
+
+float RichEdit::getOpactiy() const
+{
+    return opacity_;
 }
 
 void RichEdit::setText(const wchar_t * text)
@@ -110,6 +121,192 @@ bool RichEdit::getWordWrap() const
 const char * RichEdit::getClassName() const
 {
     return kClassRichEdit;
+}
+
+void RichEdit::onDraw(SkCanvas & canvas)
+{
+    lazyInitialize();
+    adjustSurface();
+    if (surface_.isEmpty() || !surface_.isValid())
+        return;
+    if (!dirty_.isEmpty())
+    {
+        surface_.erase(0xff000000);
+        auto old = ::SelectObject(dc_, Helper::ToHBitmap(surface_));
+        Rect bounds;
+        getLocalBounds(bounds);
+        auto wbounds = Helper::ToRect(bounds);
+        RECTL rcL = { wbounds.left, wbounds.top, wbounds.right, wbounds.bottom };
+        services_->TxDraw(
+            DVASPECT_CONTENT,
+            0,
+            NULL,
+            NULL,
+            dc_,
+            NULL,
+            &rcL,
+            NULL,
+            &wbounds,
+            NULL,
+            NULL,
+            TXTVIEW_ACTIVE);
+
+        ::SelectObject(dc_, old);
+        //所有的像素点alpha 值改为255
+        surface_.negAlpha();
+        dirty_.setEmpty();
+    }
+    SkPaint paint;
+    paint.setAlpha(ClampAlpha(opacity_));
+    canvas.drawBitmap(Helper::ToSkBitmap(surface_), 0, 0, &paint);
+}
+
+void RichEdit::adjustSurface()
+{
+    int iwidth = (int)getWidth();
+    int iheight = (int)getHeight();
+
+    if (surface_.getWidth() != iwidth ||
+        surface_.getHeight() != iheight)
+    {
+        surface_.allocate(iwidth, iheight);
+        assert(surface_.isValid());
+        surface_.erase(0);
+    }
+}
+
+HWND RichEdit::getHWND()
+{
+    if (!hwnd_)
+    {
+        auto rv = getRoot();
+        if (rv)
+        {
+            auto widget = rv->getWidget();
+            if (widget)
+                hwnd_ = widget->hwnd();
+        }
+    }
+    assert(hwnd_);
+    if (!hwnd_)
+        LOG_ERROR << "rich edit did't attach to a root view ?";
+    return hwnd_;
+}
+
+void RichEdit::initDefaultCF()
+{
+    HWND hwnd;
+    LOGFONT lf;
+    HDC hdc;
+    LONG yPixPerInch;
+    HFONT hfont = NULL;
+
+    // Get LOGFONT for default font
+    if (!hfont)
+        hfont = (HFONT)GetStockObject(SYSTEM_FONT);
+
+    // Get LOGFONT for passed hfont
+    if (!GetObject(hfont, sizeof(LOGFONT), &lf))
+        return;
+
+    // Set CHARFORMAT structure
+    memset(&cf_, 0, sizeof(cf_));
+    cf_.cbSize = sizeof(CHARFORMAT2);
+
+    hwnd = GetDesktopWindow();
+    hdc = GetDC(hwnd);
+    yPixPerInch = GetDeviceCaps(hdc, LOGPIXELSY);
+    cf_.yHeight = lf.lfHeight * LY_PER_INCH / yPixPerInch;
+    ReleaseDC(hwnd, hdc);
+
+    cf_.yOffset = 0;
+    cf_.crTextColor = RGB(0xff, 0, 0);
+    cf_.crBackColor = RGB(0, 0, 0xff);
+
+    cf_.dwEffects = CFM_EFFECTS;
+    cf_.dwEffects &= ~(CFE_PROTECTED | CFE_LINK);
+    cf_.dwEffects = CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE;
+
+    if (lf.lfWeight < FW_BOLD)
+        cf_.dwEffects &= ~CFE_BOLD;
+    if (!lf.lfItalic)
+        cf_.dwEffects &= ~CFE_ITALIC;
+    if (!lf.lfUnderline)
+        cf_.dwEffects &= ~CFE_UNDERLINE;
+    if (!lf.lfStrikeOut)
+        cf_.dwEffects &= ~CFE_STRIKEOUT;
+
+    cf_.dwMask = CFM_ALL;
+    //cf_.dwMask = CFM_SIZE | CFM_OFFSET | CFM_FACE | CFM_CHARSET | CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE;
+
+    cf_.bCharSet = lf.lfCharSet;
+    cf_.bPitchAndFamily = lf.lfPitchAndFamily;
+    wcscpy(cf_.szFaceName, lf.lfFaceName);
+}
+
+void RichEdit::initDefaultPF()
+{
+    memset(&pf_, 0, sizeof(PARAFORMAT));
+
+    pf_.cbSize = sizeof(PARAFORMAT);
+    pf_.dwMask = PFM_ALL;
+    pf_.wAlignment = PFA_LEFT;
+    pf_.cTabCount = 1;
+    pf_.rgxTabs[0] = lDefaultTab;
+}
+
+void RichEdit::lazyInitialize()
+{
+    typedef HRESULT(STDAPICALLTYPE * T_CreateTextServices)(
+        IUnknown *punkOuter,
+        ITextHost *pITextHost,
+        IUnknown **ppUnk);
+
+    if (!hwnd_)
+        getHWND();
+    assert(hwnd_);
+    if (!dc_)
+        dc_ = ::CreateCompatibleDC(NULL);
+    assert(dc_);
+    if (!services_)
+    {
+        HMODULE rich = ::GetModuleHandle(L"Msftedit.dll");
+        if (!rich)
+            rich = ::LoadLibrary(L"Msftedit.dll");
+        assert(rich);
+        if (!rich)
+        {
+            LOG_ERROR << "rich edit Msftedit.dll not found";
+            return;
+        }
+
+        initDefaultCF();
+        initDefaultPF();
+
+        IUnknown * pun = nullptr;
+        T_CreateTextServices TCreateTextServices = (T_CreateTextServices)GetProcAddress(rich,
+            "CreateTextServices");
+        IID* IID_ITS = (IID*)(VOID*)GetProcAddress(rich,
+            "IID_ITextServices");
+
+        auto hr = TCreateTextServices(NULL, this, &pun);
+        if (FAILED(hr))
+        {
+            LOG_ERROR << "rich edit CreateTextServices fail";
+            return;
+        }
+
+        hr = pun->QueryInterface(*IID_ITS, (void **)&services_);
+        pun->Release();
+        if (FAILED(hr))
+        {
+            LOG_ERROR << "rich edit QueryInterface IID_ITextServices fail";
+            return;
+        }
+        assert(services_);
+        //services_->OnTxInPlaceActivate(NULL);
+        //services_->OnTxPropertyBitsChange(TXTBIT_BACKSTYLECHANGE, 0);
+    }
 }
 
 HRESULT STDMETHODCALLTYPE RichEdit::QueryInterface(
@@ -311,16 +508,19 @@ HRESULT RichEdit::TxGetParaFormat(const PARAFORMAT **ppPF)
 COLORREF RichEdit::TxGetSysColor(int nIndex)
 {
     //COLOR_WINDOW
-    if (COLOR_WINDOW == nIndex)
-        return RGB(255, 255, 255);
+    if (COLOR_WINDOW == nIndex && bg_opaque_)
+        return RGB(ColorGetR(bg_color_), ColorGetG(bg_color_), ColorGetB(bg_color_));
+        
 
     return ::GetSysColor(nIndex);
 }
 
 HRESULT	RichEdit::TxGetBackStyle(TXTBACKSTYLE *pstyle)
 {
-    *pstyle = TXTBACK_TRANSPARENT;
-    *pstyle = TXTBACK_OPAQUE;  
+    if (bg_opaque_)
+        *pstyle = TXTBACK_OPAQUE;
+    else
+        *pstyle = TXTBACK_TRANSPARENT;    
     return S_OK;
 }
 
@@ -400,181 +600,6 @@ HRESULT	RichEdit::TxGetSelectionBarWidth(LONG *lSelBarWidth)
     return S_OK;
 }
 
-void RichEdit::onDraw(SkCanvas & canvas)
-{
-    lazyInitialize();
-    adjustSurface();
-    if (surface_.isEmpty() || !surface_.isValid())
-        return;
-    if (!dirty_.isEmpty())
-    {
-        auto old = ::SelectObject(dc_, Helper::ToHBitmap(surface_));
-        Rect bounds;
-        getLocalBounds(bounds);
-        auto wbounds = Helper::ToRect(bounds);
-        RECTL rcL = { wbounds.left, wbounds.top, wbounds.right, wbounds.bottom };
-        auto wdirty = Helper::ToRect(dirty_);
-        services_->TxDraw(
-            DVASPECT_CONTENT,
-            0,
-            NULL,
-            NULL,
-            dc_,
-            NULL,
-            &rcL,
-            NULL,
-            &wdirty,
-            NULL,
-            NULL,
-            TXTVIEW_ACTIVE);
-        
-        ::SelectObject(dc_, old);
-        dirty_.setEmpty();
-    }
-    canvas.drawBitmap(Helper::ToSkBitmap(surface_), 0, 0);
-}
 
-void RichEdit::adjustSurface()
-{
-    int iwidth = (int)getWidth();
-    int iheight = (int)getHeight();
-
-    if (surface_.getWidth() != iwidth ||
-        surface_.getHeight() != iheight)
-    {
-        surface_.allocate(iwidth, iheight);
-        assert(surface_.isValid());
-        surface_.erase(0xffffffff);
-    }
-}
-
-HWND RichEdit::getHWND()
-{
-    if (!hwnd_)
-    {
-        auto rv = getRoot();
-        if (rv)
-        {
-            auto widget = rv->getWidget();
-            if (widget)
-                hwnd_ = widget->hwnd();
-        }
-    }
-    assert(hwnd_);
-    if (!hwnd_)
-        LOG_ERROR << "rich edit did't attach to a root view ?";
-    return hwnd_;
-}
-
-void RichEdit::initDefaultCF()
-{
-    HWND hwnd;
-    LOGFONT lf;
-    HDC hdc;
-    LONG yPixPerInch;
-    HFONT hfont = NULL;
-
-    // Get LOGFONT for default font
-    if (!hfont)
-        hfont = (HFONT)GetStockObject(SYSTEM_FONT);
-
-    // Get LOGFONT for passed hfont
-    if (!GetObject(hfont, sizeof(LOGFONT), &lf))
-        return;
-
-    // Set CHARFORMAT structure
-    memset(&cf_, 0, sizeof(cf_));
-    cf_.cbSize = sizeof(CHARFORMAT2);
-
-    hwnd = GetDesktopWindow();
-    hdc = GetDC(hwnd);
-    yPixPerInch = GetDeviceCaps(hdc, LOGPIXELSY);
-    cf_.yHeight = lf.lfHeight * LY_PER_INCH / yPixPerInch;
-    ReleaseDC(hwnd, hdc);
-
-    cf_.yOffset = 0;
-    cf_.crTextColor = -1;
-
-    cf_.dwEffects = CFM_EFFECTS | CFE_AUTOBACKCOLOR;
-    cf_.dwEffects &= ~(CFE_PROTECTED | CFE_LINK);
-
-    if (lf.lfWeight < FW_BOLD)
-        cf_.dwEffects &= ~CFE_BOLD;
-    if (!lf.lfItalic)
-        cf_.dwEffects &= ~CFE_ITALIC;
-    if (!lf.lfUnderline)
-        cf_.dwEffects &= ~CFE_UNDERLINE;
-    if (!lf.lfStrikeOut)
-        cf_.dwEffects &= ~CFE_STRIKEOUT;
-
-    //cf_.dwMask = CFM_ALL | CFM_BACKCOLOR | CFM_COLOR;
-    cf_.dwMask = CFM_SIZE | CFM_OFFSET | CFM_FACE | CFM_CHARSET | CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE;
-
-    cf_.bCharSet = lf.lfCharSet;
-    cf_.bPitchAndFamily = lf.lfPitchAndFamily;
-    wcscpy(cf_.szFaceName, lf.lfFaceName);
-}
-
-void RichEdit::initDefaultPF()
-{
-    memset(&pf_, 0, sizeof(PARAFORMAT));
-
-    pf_.cbSize = sizeof(PARAFORMAT);
-    pf_.dwMask = PFM_ALL;
-    pf_.wAlignment = PFA_LEFT;
-    pf_.cTabCount = 1;
-    pf_.rgxTabs[0] = lDefaultTab;
-}
-
-void RichEdit::lazyInitialize()
-{
-    typedef HRESULT (STDAPICALLTYPE * T_CreateTextServices)(
-        IUnknown *punkOuter,
-        ITextHost *pITextHost,
-        IUnknown **ppUnk);
-
-    if (!dc_)
-        dc_ = ::CreateCompatibleDC(NULL);
-    assert(dc_);
-    if (!services_)
-    {
-        HMODULE rich = ::GetModuleHandle(L"Msftedit.dll");
-        if (!rich)
-            rich = ::LoadLibrary(L"Msftedit.dll");
-        assert(rich);
-        if (!rich)
-        {
-            LOG_ERROR << "rich edit Msftedit.dll not found";
-            return;
-        }
-            
-        initDefaultCF();
-        initDefaultPF();
-
-        IUnknown * pun = nullptr;
-        T_CreateTextServices TCreateTextServices = (T_CreateTextServices)GetProcAddress(rich,
-            "CreateTextServices");
-        IID* IID_ITS = (IID*)(VOID*)GetProcAddress(rich,
-            "IID_ITextServices");
-
-        auto hr = TCreateTextServices(NULL, this, &pun);
-        if (FAILED(hr))
-        {
-            LOG_ERROR << "rich edit CreateTextServices fail";
-            return;
-        }
-
-        hr = pun->QueryInterface(*IID_ITS, (void **)&services_);
-        pun->Release();
-        if (FAILED(hr))
-        {
-            LOG_ERROR << "rich edit QueryInterface IID_ITextServices fail";
-            return;
-        }
-        assert(services_);
-        services_->OnTxInPlaceActivate(NULL);
-    }
-           
-}
 
 }
