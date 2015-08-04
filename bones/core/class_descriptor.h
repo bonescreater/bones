@@ -36,7 +36,7 @@ private:
 
     void registerView(CSSClassTable & table);
 
-    void registerShirt(CSSClassTable & table);
+    void registerSkin(CSSClassTable & table);
 
     void registerWidget(CSSClassTable & table);
 private:

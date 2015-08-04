@@ -21,12 +21,45 @@ LONG DXtoHimetricX(LONG dx, LONG xPerInch)
     return (LONG)MulDiv(dx, HIMETRIC_PER_INCH, xPerInch);
 }
 
+void UpdateCHARFORMAT2(LOGFONT & lf, CHARFORMAT2 & cf)
+{
+    HWND hwnd;
+    HDC hdc;
+    LONG yPixPerInch;
+
+    hwnd = GetDesktopWindow();
+    hdc = GetDC(hwnd);
+    yPixPerInch = GetDeviceCaps(hdc, LOGPIXELSY);
+    cf.yHeight = lf.lfHeight * LY_PER_INCH / yPixPerInch;
+    ReleaseDC(hwnd, hdc);
+
+    cf.dwEffects = CFM_EFFECTS;
+    cf.dwEffects &= ~(CFE_PROTECTED | CFE_LINK | CFE_AUTOCOLOR);
+
+    if (lf.lfWeight < FW_BOLD)
+        cf.dwEffects &= ~CFE_BOLD;
+    if (!lf.lfItalic)
+        cf.dwEffects &= ~CFE_ITALIC;
+    if (!lf.lfUnderline)
+        cf.dwEffects &= ~CFE_UNDERLINE;
+    if (!lf.lfStrikeOut)
+        cf.dwEffects &= ~CFE_STRIKEOUT;
+
+    cf.dwMask = CFM_ALL;
+
+    cf.bCharSet = lf.lfCharSet;
+    cf.bPitchAndFamily = lf.lfPitchAndFamily;
+    memcpy(cf.szFaceName, lf.lfFaceName, LF_FACESIZE * sizeof(cf.szFaceName[0]));
+    //wcscpy(cf.szFaceName, L"Microsoft Yahei");
+}
+
 RichEdit::RichEdit()
 :dc_(NULL), accel_pos_(-1), max_length_(INFINITE), password_(L'*'),
 scroll_bars_(WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL |
 ES_AUTOHSCROLL | ES_DISABLENOSCROLL), 
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
-services_(nullptr), hwnd_(NULL), opacity_(1.0f), bg_opaque_(false), bg_color_(0xff888888)
+services_(nullptr), hwnd_(NULL), opacity_(1.0f), 
+bg_opaque_(false), bg_color_(0xff7cfc00), bg_set_color_(true)
 {
 
 }
@@ -118,6 +151,52 @@ bool RichEdit::getWordWrap() const
     return !!(txt_bits_ & TXTBIT_WORDWRAP);
 }
 
+void RichEdit::setBackground(bool opaque, Color * bg_color)
+{
+    lazyInitialize();
+    bg_opaque_ = opaque;
+    bg_set_color_ = false;
+    if (bg_color)
+    {
+        bg_color_ = *bg_color;
+        bg_set_color_ = true;
+    }
+    services_->OnTxPropertyBitsChange(TXTBIT_BACKSTYLECHANGE, TXTBIT_BACKSTYLECHANGE);
+}
+
+void RichEdit::setFont(const wchar_t * family, int text_size, bool bBold, bool bUnderline, bool bItalic)
+{
+    lazyInitialize();
+    LOGFONT lf = { 0 };
+    ::GetObject(::GetStockObject(DEFAULT_GUI_FONT), sizeof(LOGFONT), &lf);
+    if (family)
+    {
+        size_t len = LF_FACESIZE;
+        size_t family_len = wcslen(family) + 1;//0结尾
+        len = family_len < len ? family_len : len;
+        memcpy(lf.lfFaceName, family, len * sizeof(wchar_t));
+    }
+    
+    lf.lfCharSet = DEFAULT_CHARSET;
+    lf.lfHeight = text_size;
+    if (bBold) 
+        lf.lfWeight += FW_BOLD;
+    if (bUnderline) 
+        lf.lfUnderline = TRUE;
+    if (bItalic) 
+        lf.lfItalic = TRUE;
+    HFONT hfont = ::CreateFontIndirect(&lf);
+    if (hfont)
+    {
+        ::GetObject(hfont, sizeof(LOGFONT), &lf);
+        // Set CHARFORMAT structure
+        UpdateCHARFORMAT2(lf, cf_);
+        ::DeleteFont(hfont);
+        services_->OnTxPropertyBitsChange(TXTBIT_CHARFORMATCHANGE,
+            TXTBIT_CHARFORMATCHANGE);
+    }
+}
+
 const char * RichEdit::getClassName() const
 {
     return kClassRichEdit;
@@ -131,32 +210,39 @@ void RichEdit::onDraw(SkCanvas & canvas)
         return;
     if (!dirty_.isEmpty())
     {
-        surface_.erase(0xff000000);
-        auto old = ::SelectObject(dc_, Helper::ToHBitmap(surface_));
-        Rect bounds;
-        getLocalBounds(bounds);
-        auto wbounds = Helper::ToRect(bounds);
-        RECTL rcL = { wbounds.left, wbounds.top, wbounds.right, wbounds.bottom };
-        services_->TxDraw(
-            DVASPECT_CONTENT,
-            0,
-            NULL,
-            NULL,
-            dc_,
-            NULL,
-            &rcL,
-            NULL,
-            &wbounds,
-            NULL,
-            NULL,
-            TXTVIEW_ACTIVE);
+        Pixmap dirty_pm = surface_.extractSubset(dirty_);
+        if (dirty_pm.isValid() && !dirty_pm.isEmpty())
+        {
+            dirty_pm.erase(0xff000000);
+            auto old = ::SelectObject(dc_, Helper::ToHBitmap(surface_));
+            Rect bounds;
+            getLocalBounds(bounds);
+            auto wbounds = Helper::ToRect(bounds);
+            RECTL rcL = { wbounds.left, wbounds.top, wbounds.right, wbounds.bottom };
+            RECT wdirty = Helper::ToRect(dirty_);
+            //只更新脏区
+            services_->TxDraw(
+                DVASPECT_CONTENT,
+                0,
+                NULL,
+                NULL,
+                dc_,
+                NULL,
+                &rcL,
+                NULL,
+                &wdirty,
+                NULL,
+                NULL,
+                TXTVIEW_ACTIVE);
 
-        ::SelectObject(dc_, old);
-        //所有的像素点alpha 值改为255
-        surface_.negAlpha();
-        dirty_.setEmpty();
+            ::SelectObject(dc_, old);
+            dirty_pm.negAlpha();
+            dirty_.setEmpty();
+        }
     }
     SkPaint paint;
+    //paint.setAntiAlias(true);
+    //paint.setFilterLevel(SkPaint::kHigh_FilterLevel);
     paint.setAlpha(ClampAlpha(opacity_));
     canvas.drawBitmap(Helper::ToSkBitmap(surface_), 0, 0, &paint);
 }
@@ -172,6 +258,7 @@ void RichEdit::adjustSurface()
         surface_.allocate(iwidth, iheight);
         assert(surface_.isValid());
         surface_.erase(0);
+        getLocalBounds(dirty_);
     }
 }
 
@@ -195,53 +282,14 @@ HWND RichEdit::getHWND()
 
 void RichEdit::initDefaultCF()
 {
-    HWND hwnd;
-    LOGFONT lf;
-    HDC hdc;
-    LONG yPixPerInch;
-    HFONT hfont = NULL;
-
-    // Get LOGFONT for default font
-    if (!hfont)
-        hfont = (HFONT)GetStockObject(SYSTEM_FONT);
-
-    // Get LOGFONT for passed hfont
-    if (!GetObject(hfont, sizeof(LOGFONT), &lf))
-        return;
-
-    // Set CHARFORMAT structure
     memset(&cf_, 0, sizeof(cf_));
     cf_.cbSize = sizeof(CHARFORMAT2);
-
-    hwnd = GetDesktopWindow();
-    hdc = GetDC(hwnd);
-    yPixPerInch = GetDeviceCaps(hdc, LOGPIXELSY);
-    cf_.yHeight = lf.lfHeight * LY_PER_INCH / yPixPerInch;
-    ReleaseDC(hwnd, hdc);
-
-    cf_.yOffset = 0;
+    LOGFONT lf;
+    // Get LOGFONT for passed hfont
+    ::GetObject((HFONT)GetStockObject(SYSTEM_FONT), sizeof(LOGFONT), &lf);
+    UpdateCHARFORMAT2(lf, cf_);
+    //setFont(L"Microsoft Yahei")
     cf_.crTextColor = RGB(0xff, 0, 0);
-    cf_.crBackColor = RGB(0, 0, 0xff);
-
-    cf_.dwEffects = CFM_EFFECTS;
-    cf_.dwEffects &= ~(CFE_PROTECTED | CFE_LINK);
-    cf_.dwEffects = CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE;
-
-    if (lf.lfWeight < FW_BOLD)
-        cf_.dwEffects &= ~CFE_BOLD;
-    if (!lf.lfItalic)
-        cf_.dwEffects &= ~CFE_ITALIC;
-    if (!lf.lfUnderline)
-        cf_.dwEffects &= ~CFE_UNDERLINE;
-    if (!lf.lfStrikeOut)
-        cf_.dwEffects &= ~CFE_STRIKEOUT;
-
-    cf_.dwMask = CFM_ALL;
-    //cf_.dwMask = CFM_SIZE | CFM_OFFSET | CFM_FACE | CFM_CHARSET | CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE;
-
-    cf_.bCharSet = lf.lfCharSet;
-    cf_.bPitchAndFamily = lf.lfPitchAndFamily;
-    wcscpy(cf_.szFaceName, lf.lfFaceName);
 }
 
 void RichEdit::initDefaultPF()
@@ -508,7 +556,7 @@ HRESULT RichEdit::TxGetParaFormat(const PARAFORMAT **ppPF)
 COLORREF RichEdit::TxGetSysColor(int nIndex)
 {
     //COLOR_WINDOW
-    if (COLOR_WINDOW == nIndex && bg_opaque_)
+    if (COLOR_WINDOW == nIndex && bg_set_color_)
         return RGB(ColorGetR(bg_color_), ColorGetG(bg_color_), ColorGetB(bg_color_));
         
 

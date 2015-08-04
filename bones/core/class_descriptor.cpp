@@ -358,11 +358,11 @@ static void ViewSetCursor(Ref * ob, const CSSParams & params)
     v->setCursor(CSSStrToCursor(params[0]));
 }
 
-static void ShirtSetOpacity(Ref * ob, const CSSParams & params)
+static void SkinSetOpacity(Ref * ob, const CSSParams & params)
 {
     if (params.empty() || !ob || params.size() < 1)
         return;
-    auto v = static_cast<Shirt *>(ob);
+    auto v = static_cast<Skin *>(ob);
     v->setOpacity(CSSStrToFloat(params[0]));
 }
 /*
@@ -705,13 +705,13 @@ void ClassDescriptor::registerImage()
 {
     //view已经register上了
     auto & table = multi_class_tables_[kClassImage];
-    registerShirt(table);
+    registerSkin(table);
 }
 
 void ClassDescriptor::registerText()
 {
     auto & table = multi_class_tables_[kClassText];   
-    registerShirt(table);
+    registerSkin(table);
     table[kDescColor] = &TextSetColor;
     table[kDescContent] = &TextSetContent;
 }
@@ -719,7 +719,7 @@ void ClassDescriptor::registerText()
 void ClassDescriptor::registerShape()
 {
     auto & table = multi_class_tables_[kClassShape];
-    registerShirt(table);
+    registerSkin(table);
     table[kDescBorder] = &ShapeSetBorder;
     table[kDescColor] = &ShapeSetColor;
     table[kDescLinearGradient] = &ShapeSetLinearGradient;
@@ -751,10 +751,10 @@ void ClassDescriptor::registerView(CSSClassTable & table)
     table[kDescCursor] = &ViewSetCursor;
 }
 
-void ClassDescriptor::registerShirt(CSSClassTable & table)
+void ClassDescriptor::registerSkin(CSSClassTable & table)
 {
     registerView(table);
-    table[kDescOpacity] = &ShirtSetOpacity;
+    table[kDescOpacity] = &SkinSetOpacity;
 }
 
 void ClassDescriptor::registerWidget(CSSClassTable & table)

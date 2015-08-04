@@ -6,7 +6,6 @@
 
 #include "core/panel.h"
 #include "core/root_view.h"
-#include "core/shirt.h"
 #include "core/view.h"
 #include "core/logging.h"
 #include "core/text.h"
@@ -213,7 +212,7 @@ static int Opacity(lua_State * l)
             else if (kClassRootView == ref->getClassName())
                 opa = ((RootView *)ref)->getOpacity();
             else
-                opa = ((Shirt *)ref)->getOpacity();
+                opa = ((Skin *)ref)->getOpacity();
             lua_pushnumber(l, opa);
         }
     }

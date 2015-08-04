@@ -69,11 +69,8 @@ bool Panel::create(const Panel * parent)
     auto hwnd = ::CreateWindowEx(ex_style, kClassName, L"",
         (WS_THICKFRAME | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX),
         0, 0, 0, 0, parent ? parent->hwnd() : NULL, 0, 0, this);
-    layered_dc_ = CreateCompatibleDC(NULL);
     Helper::ExtendFrameInfoClientArea(hwnd, -1, -1, -1, -1);
-    cursor_ = ::LoadCursor(NULL, IDC_ARROW);
-    ex_style_ = ::GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-    
+
     return !!hwnd;
 }
 
@@ -128,9 +125,9 @@ void Panel::update()
     POINT src_pos = { 0, 0 };
     BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
     
-    auto old = ::SelectObject(layered_dc_, Helper::ToHBitmap(pm));
-    auto r = ::UpdateLayeredWindow(hwnd(), NULL, &pos, &size, layered_dc_, &src_pos, 0, &bf, ULW_ALPHA);
-    ::SelectObject(layered_dc_, old);
+    auto old = ::SelectObject(dc_, Helper::ToHBitmap(pm));
+    auto r = ::UpdateLayeredWindow(hwnd(), NULL, &pos, &size, dc_, &src_pos, 0, &bf, ULW_ALPHA);
+    ::SelectObject(dc_, old);
 
     pm.unlock();
 }
@@ -172,6 +169,10 @@ LRESULT Panel::handleNCCreate(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     root_ = AdoptRef(new RootView);
     root_->setDelegate(this);
+    dc_ = CreateCompatibleDC(NULL);
+    cursor_ = ::LoadCursor(NULL, IDC_ARROW);
+    ex_style_ = ::GetWindowLongPtr(hwnd(), GWL_EXSTYLE);
+
     return 1;
 }
 
@@ -183,7 +184,7 @@ LRESULT Panel::handleNCDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam)
     //导致root view 释放不了
     MouseEvent e(kET_MOUSE_LEAVE, kMB_NONE, root_.get(), Point(), Point(), 0);
     root_->handleEvent(e);
-    ::DeleteDC(layered_dc_);
+    ::DeleteDC(dc_);
     detach();
     return 0;
 }
@@ -442,53 +443,11 @@ void Panel::onPaint(HDC hdc, const Rect & rect)
     if (dirty_rect.isEmpty())
         return;
 
-    //只更新脏区
-    Pixmap pm = root_->getBackBuffer().extractSubset(dirty_rect);
-    if (!pm.isValid() || pm.isEmpty())
-        return;
-
-    Pixmap::LockRec lr;
-    if (!pm.lock(lr))
-        return;
-
-    int bm_width = static_cast<int>(root_->getWidth());
-    int bm_height = static_cast<int>(root_->getHeight());
-
-    BITMAPINFO bmi;
-    memset(&bmi, 0, sizeof(bmi));
-    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth = bm_width;
-    bmi.bmiHeader.biHeight = -bm_height; // top-down image
-    bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = 32;
-    bmi.bmiHeader.biCompression = BI_RGB;
-    bmi.bmiHeader.biSizeImage = 0;
-
-    //
-    // Do the SetDIBitsToDevice.
-    //
-    // TODO(wjmaclean):
-    //       Fix this call to handle SkBitmaps that have rowBytes != width,
-    //       i.e. may have padding at the end of lines. The SkASSERT below
-    //       may be ignored by builds, and the only obviously safe option
-    //       seems to be to copy the bitmap to a temporary (contiguous)
-    //       buffer before passing to SetDIBitsToDevice().
-    //SkASSERT(bitmap.width() * bitmap.bytesPerPixel() == bitmap.rowBytes());
-    int iRet = SetDIBitsToDevice(
-        hdc,
-        static_cast<int>(lr.subset.left()),
-        static_cast<int>(lr.subset.top()),
-
-        static_cast<int>(lr.subset.width()),
-        static_cast<int>(lr.subset.height()),
-        static_cast<int>(lr.subset.left()),
-        static_cast<int>(bm_height - lr.subset.bottom()),
-        0, bm_height,
-        lr.bits,
-        &bmi,
-        DIB_RGB_COLORS);
-
-    pm.unlock();
+    ////只更新脏区
+    auto old = ::SelectObject(dc_, Helper::ToHBitmap(root_->getBackBuffer()));
+    ::BitBlt(hdc, (int)rect.left(), (int)rect.top(), (int)rect.width(), (int)rect.height(),
+        dc_, (int)rect.left(), (int)rect.top(), SRCCOPY);
+    ::SelectObject(dc_, old);
 }
 
 LRESULT Panel::defProcessEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)

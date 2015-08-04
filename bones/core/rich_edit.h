@@ -40,7 +40,9 @@ public:
 
     bool getWordWrap() const;
 
-    void setBackground(bool opaque, Color bg_color);
+    void setBackground(bool opaque, Color * bg_color);
+
+    void setFont(const wchar_t * family, int text_size, bool bBold, bool bUnderline, bool bItalic);
 
     const char * getClassName() const override;
     //ITextHost
@@ -207,6 +209,7 @@ private:
     float opacity_;
     bool bg_opaque_;
     Color bg_color_;
+    bool bg_set_color_;
 };
 
 }

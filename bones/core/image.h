@@ -1,7 +1,7 @@
 ﻿#ifndef BONES_CORE_IMAGE_H_
 #define BONES_CORE_IMAGE_H_
 
-#include "shirt.h"
+#include "view.h"
 #include "color.h"
 #include "pixmap.h"
 #include "rect.h"
@@ -11,7 +11,7 @@ class SkShader;
 namespace bones
 {
 
-class Image : public Shirt
+class Image : public Skin
 {
 private:
     enum Style

@@ -34,7 +34,6 @@
     <ClCompile Include="bones\core\shader.cpp" />
     <ClCompile Include="bones\core\shape.cpp" />
     <ClCompile Include="bones\core\panel.cpp" />
-    <ClCompile Include="bones\core\shirt.cpp" />
     <ClCompile Include="bones\core\simple_css.cpp" />
     <ClCompile Include="bones\core\size.cpp" />
     <ClCompile Include="bones\core\class_descriptor.cpp" />
@@ -70,7 +69,6 @@
     <ClInclude Include="bones\core\shader.h" />
     <ClInclude Include="bones\core\shape.h" />
     <ClInclude Include="bones\core\panel.h" />
-    <ClInclude Include="bones\core\shirt.h" />
     <ClInclude Include="bones\core\simple_css.h" />
     <ClInclude Include="bones\core\size.h" />
     <ClInclude Include="bones\core\class_descriptor.h" />

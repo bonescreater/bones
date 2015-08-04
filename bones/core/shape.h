@@ -2,7 +2,7 @@
 #define BONES_CORE_SHAPE_H_
 
 
-#include "shirt.h"
+#include "view.h"
 #include "color.h"
 #include "rect.h"
 #include "shader.h"
@@ -10,7 +10,7 @@
 namespace bones
 {
 
-class Shape : public Shirt
+class Shape : public Skin
 {
 public:
     enum Style

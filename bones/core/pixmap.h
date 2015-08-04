@@ -44,6 +44,8 @@ public:
     int getHeight() const;
 
     void erase(Color color);
+    //修改alpha 不会重新预乘颜色
+    void negAlpha();
 
     Pixmap extractSubset(const Rect & subset);
 
@@ -60,10 +62,6 @@ class Surface : public Pixmap
 {
 public:
     Surface();
-    //gdi的绘制 会导致alpha清0 有时候需要alpha置为指定值
-    void eraseAlpha(uint8_t alpha);
-
-    void negAlpha();
 protected:
     SkPixelRef * allocatePixelRef(int width, int height, bool is_opaque) override;
 private:

@@ -1,7 +1,7 @@
 ﻿#ifndef BONES_CORE_TEXT_H_
 #define BONES_CORE_TEXT_H_
 
-#include "shirt.h"
+#include "view.h"
 #include "color.h"
 
 class SkPaint;
@@ -9,7 +9,7 @@ namespace bones
 {
 
 
-class Text : public Shirt
+class Text : public Skin
 {
 public:
     enum Align

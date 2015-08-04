@@ -256,5 +256,19 @@ protected:
 };
 
 
+//外观
+class Skin : public View
+{
+public:
+    void setOpacity(float opacity);//0~1.f
+
+    float getOpacity() const;
+protected:
+    Skin();
+protected:
+    float opacity_;
+};
+
+
 }
 #endif

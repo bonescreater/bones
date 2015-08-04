@@ -63,9 +63,6 @@
     <ClCompile Include="bones\core\view.cpp">
       <Filter>base</Filter>
     </ClCompile>
-    <ClCompile Include="bones\core\shirt.cpp">
-      <Filter>bone\facade</Filter>
-    </ClCompile>
     <ClCompile Include="bones\core\core.cpp" />
     <ClCompile Include="bones\core\xml_controller.cpp">
       <Filter>xml</Filter>
@@ -164,9 +161,6 @@
     </ClInclude>
     <ClInclude Include="bones\core\view.h">
       <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="bones\core\shirt.h">
-      <Filter>bone\facade</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\core.h" />
     <ClInclude Include="bones\core\xml_controller.h">

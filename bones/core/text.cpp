@@ -15,7 +15,7 @@ Scalar GetTextHeight(SkPaint & paint)
 }
 
 Text::Text()
-:cache_dirty_(false), of_(kNone), family_("Microsoft Yahei"),
+:cache_dirty_(false), of_(kNone), family_("System"/*"Microsoft Yahei"*/),
 font_style_(kNormal), text_size_(12), text_color_(0xff000000),
 text_align_(kCenter), underline_(false)
 {

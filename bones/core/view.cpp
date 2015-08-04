@@ -935,4 +935,24 @@ void View::recursiveVisibleNotifications(View * start)
 }
 
 
+Skin::Skin()
+:opacity_(1.0f)
+{
+    setFocusable(false);
+}
+
+void Skin::setOpacity(float opacity)
+{
+    if (opacity_ != opacity)
+    {
+        opacity_ = opacity;
+        inval();
+    }
+}
+
+float Skin::getOpacity() const
+{
+    return opacity_;
+}
+
 }
