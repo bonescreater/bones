@@ -8,6 +8,8 @@
 #include "pixmap.h"
 #include "rect.h"
 
+class SkBaseDevice;
+
 namespace bones
 {
 
@@ -88,6 +90,7 @@ private:
     MouseController mouse_;
     AcceleratorManager accelerators_;
     Surface back_buffer_;
+    SkBaseDevice * device_;
     Delegate * delegate_;
     Rect dirty_;
     Color color_;

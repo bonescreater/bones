@@ -95,11 +95,6 @@ Pixmap Pixmap::extractSubset(const Rect& subset)
     return sub;
 }
 
-void Pixmap::copyTo(Pixmap & pm, int left, int top)
-{
-    ;
-}
-
 SkPixelRef * Pixmap::allocatePixelRef(int width, int height, bool is_opaque)
 {
     SkMallocPixelRef::PRFactory factory;
@@ -133,34 +128,6 @@ void Pixmap::erase(Color color)
     }
     unlock();
 }
-
-void Pixmap::negAlpha()
-{
-    LockRec rec;
-    if (!lock(rec))
-        return;
-
-    auto width = rec.subset.width();
-    auto height = rec.subset.height();
-    auto pitch = rec.pitch;
-    size_t offset = (size_t)(rec.subset.left() * 4 + rec.subset.top() * pitch);
-    char * bits = static_cast<char *>(rec.bits);
-
-    bits = (char *)bits + offset;
-    while (height)
-    {
-        auto tmp = bits;
-        for (auto i = 0; i < width; i++)
-        {
-            *(tmp + 3) = ~*(tmp + 3);
-            tmp += 4;
-        }
-        bits = (char *)bits + pitch;
-        height -= 1;
-    }
-    unlock();
-}
-
 
 Pixmap & Pixmap::operator=(const Pixmap & pm)
 {

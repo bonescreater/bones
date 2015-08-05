@@ -15,6 +15,7 @@
     <ClCompile Include="bones\core\accelerator_manager.cpp" />
     <ClCompile Include="bones\core\animation.cpp" />
     <ClCompile Include="bones\core\animation_manager.cpp" />
+    <ClCompile Include="bones\core\device.cpp" />
     <ClCompile Include="bones\core\image.cpp" />
     <ClCompile Include="bones\core\core.cpp" />
     <ClCompile Include="bones\core\encoding.cpp" />
@@ -48,6 +49,7 @@
     <ClInclude Include="bones\core\accelerator_manager.h" />
     <ClInclude Include="bones\core\animation.h" />
     <ClInclude Include="bones\core\animation_manager.h" />
+    <ClInclude Include="bones\core\device.h" />
     <ClInclude Include="bones\core\image.h" />
     <ClInclude Include="bones\core\color.h" />
     <ClInclude Include="bones\core\core.h" />

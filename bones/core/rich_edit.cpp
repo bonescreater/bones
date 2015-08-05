@@ -4,6 +4,7 @@
 #include "widget.h"
 #include "logging.h"
 #include "SkCanvas.h"
+#include "device.h"
 
 namespace bones
 {
@@ -58,8 +59,8 @@ RichEdit::RichEdit()
 scroll_bars_(WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL |
 ES_AUTOHSCROLL | ES_DISABLENOSCROLL), 
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
-services_(nullptr), hwnd_(NULL), opacity_(1.0f), 
-bg_opaque_(false), bg_color_(0xffffffff), bg_set_color_(true)
+services_(nullptr), hwnd_(NULL), opacity_(1.f), 
+bg_opaque_(false), bg_color_(0xff0000ff), bg_set_color_(true)
 {
     ;
 }
@@ -75,8 +76,11 @@ RichEdit::~RichEdit()
 
 void RichEdit::setOpacity(float opacity)
 {
-    opacity_ = opacity;
-    inval();
+    if (opacity_ != opacity)
+    {
+        opacity_ = opacity;
+        inval();
+    }
 }
 
 float RichEdit::getOpactiy() const
@@ -213,7 +217,9 @@ void RichEdit::onDraw(SkCanvas & canvas)
         Pixmap dirty_pm = surface_.extractSubset(dirty_);
         if (dirty_pm.isValid() && !dirty_pm.isEmpty())
         {
-            dirty_pm.erase(0xff000000);
+            auto & target = Device::From(canvas.getDevice());
+            antiAliasBegin(target, dirty_pm);
+
             auto old = ::SelectObject(dc_, Helper::ToHBitmap(surface_));
             Rect bounds;
             getLocalBounds(bounds);
@@ -237,7 +243,7 @@ void RichEdit::onDraw(SkCanvas & canvas)
                 TXTVIEW_ACTIVE);
 
             ::SelectObject(dc_, old);
-            dirty_pm.negAlpha();
+            antiAliasEnd(dirty_pm);
             dirty_.setEmpty();
         }
     }
@@ -256,10 +262,12 @@ void RichEdit::adjustSurface()
     if (surface_.getWidth() != iwidth ||
         surface_.getHeight() != iheight)
     {
-        surface_.allocate(iwidth, iheight);
-        assert(surface_.isValid());
-        surface_.erase(0);
-        getLocalBounds(dirty_);
+        surface_.free();
+        if (iwidth && iheight)
+        {
+            surface_.allocate(iwidth, iheight);
+            assert(surface_.isValid());
+        }
     }
 }
 
@@ -286,7 +294,7 @@ void RichEdit::initDefaultCF()
     memset(&cf_, 0, sizeof(cf_));
     cf_.cbSize = sizeof(CHARFORMAT2);
     cf_.crTextColor = RGB(0xff, 0, 0);
-    setFont(L"Microsoft Yahei", 12, false, false, false);  
+    setFont(L"Microsoft Yahei", 20, false, false, false);  
 }
 
 void RichEdit::initDefaultPF()
@@ -298,6 +306,71 @@ void RichEdit::initDefaultPF()
     pf_.wAlignment = PFA_LEFT;
     pf_.cTabCount = 1;
     pf_.rgxTabs[0] = lDefaultTab;
+}
+
+void RichEdit::antiAliasBegin(Pixmap & render, Pixmap & update)
+{
+    if (bg_opaque_)
+        return;
+    Pixmap::LockRec sr;
+    Pixmap::LockRec dr;
+    render.lock(sr);
+    update.lock(dr);
+    auto dstart = (char *)dr.bits + 
+        (int)(dr.subset.left() * 4 + dr.subset.top() * dr.pitch);
+    auto sstart = (char *)sr.bits +
+        (int)((sr.subset.left() + getLeft()) * 4 + (sr.subset.top() + getTop()) * sr.pitch);
+
+    int dheight = (int)dr.subset.height();
+    int dwidth = (int)dr.subset.width();
+
+    for (auto i = 0; i < dheight; ++i)
+    {
+        for (auto j = 0; j < dwidth; ++j)
+        {
+            Color src = *((Color *)sstart + j);
+            Color * pdst = (Color *)dstart + j;
+            *pdst = src;
+            //设置alpha为0xff
+            *((char *)pdst + 3) = '\xff';
+        }
+        dstart += dr.pitch;
+        sstart += sr.pitch;
+    }
+
+    update.unlock();
+    render.unlock();
+}
+
+void RichEdit::antiAliasEnd(Pixmap & update)
+{
+    Pixmap::LockRec lr;
+    if (!update.lock(lr))
+        return;
+
+    char * cs = (char *)lr.bits + 
+        (int)(lr.subset.left() * 4 + lr.subset.top() * lr.pitch);
+    auto height = (int)lr.subset.height();
+    auto width = (int)lr.subset.width();
+    for (auto i = 0; i < height; ++i)
+    {
+        for (auto j = 0; j < width; ++j)
+        {
+            Color * pc = (Color *)cs + j;
+            auto pa = ((char *)pc + 3);
+            if (bg_opaque_)//不透明背景 所有像素有效 alpha全部置为255
+                *pa = '\xff';
+            else
+            {//透明背景 清除所有的背景 保留文字
+                if (*pa != 0)
+                    *pc = 0;
+                else
+                    *pa = '\xff';
+            }
+        }
+        cs += lr.pitch;
+    }
+    update.unlock();
 }
 
 void RichEdit::lazyInitialize()

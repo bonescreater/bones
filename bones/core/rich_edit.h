@@ -193,6 +193,10 @@ private:
     void initDefaultPF();
 
     void lazyInitialize();
+
+    void antiAliasBegin(Pixmap & render, Pixmap & update);
+
+    void antiAliasEnd(Pixmap & update);
 private:
     HDC dc_;
     HWND hwnd_;

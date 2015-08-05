@@ -6,19 +6,22 @@
 #include "helper.h"
 #include "SkCanvas.h"
 #include "SkBitmap.h"
+#include "device.h"
+#include "SkDevice.h"
 
 namespace bones
 {
 
 RootView::RootView()
 : delegate_(nullptr), mouse_(this), focus_(this), color_(0),
-opacity_(1.0f)
+opacity_(1.0f), device_(nullptr)
 {
     ;
 }
 RootView::~RootView()
 {
-    ;
+    if (device_)
+        device_->unref();
 }
 
 Widget * RootView::getWidget() const
@@ -84,7 +87,9 @@ void RootView::draw()
 
     if (!back_buffer_.isValid())
         return;
-    SkCanvas canvas(Helper::ToSkBitmap(back_buffer_));
+    if (!device_)
+        return;
+    SkCanvas canvas(device_);
     View::draw(canvas, rect);
 }
 
@@ -199,9 +204,17 @@ void RootView::AdjustPixmap()
     int h = static_cast<int>(getHeight());
     if (w != back_buffer_.getWidth() || h != back_buffer_.getHeight())
     {
+        if (device_)
+        {
+            device_->unref();
+            device_ = nullptr;
+        }
         back_buffer_.free();
         if (w && h)
+        {
             back_buffer_.allocate(w, h);
+            device_ = Device::Create(back_buffer_);
+        }            
     }
 }
 

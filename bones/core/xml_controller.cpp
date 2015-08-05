@@ -383,6 +383,7 @@ bool XMLController::createRefFromNode(XMLNode node, Ref * parent_ob, const Modul
         break;
     case kLABEL_RICHEDIT:
         bret = handleRichEdit(node, parent_ob, mod, &node_ob);
+        break;
     case kLABEL_IMAGE:
         bret = handleImage(node, parent_ob, mod, &node_ob);
         break;
@@ -574,7 +575,9 @@ bool XMLController::handleRichEdit(XMLNode node, Ref * parent_ob, const Module &
     applyID(rich.get(), attrs[1].value);
 
     rich->setText(L"This is a 测RichEdit");
-
+    rich->setOpacity(0.3f);
+    Color bg_color = 0xff00ff00;
+    rich->setBackground(false, &bg_color);
     if (ob)
         *ob = rich.get();
     return rich != nullptr;

@@ -44,14 +44,10 @@ public:
     int getHeight() const;
 
     void erase(Color color);
-    //修改alpha 不会重新预乘颜色
-    void negAlpha();
 
     Pixmap extractSubset(const Rect & subset);
 
     Pixmap & operator=(const Pixmap & pm);
-
-    void copyTo(Pixmap & pm, int left, int top);
 protected:
     virtual SkPixelRef * allocatePixelRef(int width, int height, bool is_opaque);
 private:

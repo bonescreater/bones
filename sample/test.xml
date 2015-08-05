@@ -11,7 +11,7 @@
           {
           content:Bones;
           hit-test: caption 0px 0px 200px 20px;
-          color: #ff7cfc00;
+          color: #ffffffff;
           }
           .fadein
           {
