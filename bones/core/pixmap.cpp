@@ -95,6 +95,11 @@ Pixmap Pixmap::extractSubset(const Rect& subset)
     return sub;
 }
 
+void Pixmap::copyTo(Pixmap & pm, int left, int top)
+{
+    ;
+}
+
 SkPixelRef * Pixmap::allocatePixelRef(int width, int height, bool is_opaque)
 {
     SkMallocPixelRef::PRFactory factory;

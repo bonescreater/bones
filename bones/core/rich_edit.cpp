@@ -59,9 +59,9 @@ scroll_bars_(WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL |
 ES_AUTOHSCROLL | ES_DISABLENOSCROLL), 
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
 services_(nullptr), hwnd_(NULL), opacity_(1.0f), 
-bg_opaque_(false), bg_color_(0xff7cfc00), bg_set_color_(true)
+bg_opaque_(false), bg_color_(0xffffffff), bg_set_color_(true)
 {
-
+    ;
 }
 
 RichEdit::~RichEdit()
@@ -220,6 +220,7 @@ void RichEdit::onDraw(SkCanvas & canvas)
             auto wbounds = Helper::ToRect(bounds);
             RECTL rcL = { wbounds.left, wbounds.top, wbounds.right, wbounds.bottom };
             RECT wdirty = Helper::ToRect(dirty_);
+            //::SelectClipRgn(dc_, ::CreateRectRgn(0, 0, 0, 0));
             //只更新脏区
             services_->TxDraw(
                 DVASPECT_CONTENT,
@@ -284,12 +285,8 @@ void RichEdit::initDefaultCF()
 {
     memset(&cf_, 0, sizeof(cf_));
     cf_.cbSize = sizeof(CHARFORMAT2);
-    LOGFONT lf;
-    // Get LOGFONT for passed hfont
-    ::GetObject((HFONT)GetStockObject(SYSTEM_FONT), sizeof(LOGFONT), &lf);
-    UpdateCHARFORMAT2(lf, cf_);
-    //setFont(L"Microsoft Yahei")
     cf_.crTextColor = RGB(0xff, 0, 0);
+    setFont(L"Microsoft Yahei", 12, false, false, false);  
 }
 
 void RichEdit::initDefaultPF()
@@ -328,9 +325,6 @@ void RichEdit::lazyInitialize()
             return;
         }
 
-        initDefaultCF();
-        initDefaultPF();
-
         IUnknown * pun = nullptr;
         T_CreateTextServices TCreateTextServices = (T_CreateTextServices)GetProcAddress(rich,
             "CreateTextServices");
@@ -352,6 +346,8 @@ void RichEdit::lazyInitialize()
             return;
         }
         assert(services_);
+        initDefaultCF();
+        initDefaultPF();
         //services_->OnTxInPlaceActivate(NULL);
         //services_->OnTxPropertyBitsChange(TXTBIT_BACKSTYLECHANGE, 0);
     }

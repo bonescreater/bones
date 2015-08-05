@@ -50,6 +50,8 @@ public:
     Pixmap extractSubset(const Rect & subset);
 
     Pixmap & operator=(const Pixmap & pm);
+
+    void copyTo(Pixmap & pm, int left, int top);
 protected:
     virtual SkPixelRef * allocatePixelRef(int width, int height, bool is_opaque);
 private:
