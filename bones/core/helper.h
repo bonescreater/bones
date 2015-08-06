@@ -51,6 +51,10 @@ public:
         int left, int right, int top, int bottom);
 
     static Rect GetPrimaryWorkArea();
+
+    static WPARAM ToKeyStateForMouse(int flags);
+
+    static LPARAM ToCoordinateForMouse(const Point & pt);
 };
 
 }

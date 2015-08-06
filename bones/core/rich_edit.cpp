@@ -60,7 +60,7 @@ scroll_bars_(WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL |
 ES_AUTOHSCROLL | ES_DISABLENOSCROLL), 
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
 services_(nullptr), hwnd_(NULL), opacity_(1.f), 
-bg_opaque_(false), bg_color_(0xff0000ff), bg_set_color_(true)
+bg_opaque_(true), bg_color_(0xff0000ff), bg_set_color_(true)
 {
     ;
 }
@@ -254,6 +254,49 @@ void RichEdit::onDraw(SkCanvas & canvas)
     canvas.drawBitmap(Helper::ToSkBitmap(surface_), 0, 0, &paint);
 }
 
+void RichEdit::onMouseMove(MouseEvent & e)
+{
+    lazyInitialize();
+    
+    LRESULT lr = 1;
+    auto root = getRoot();
+    //WM_SETCURSOR仅在非Capture下WM_MOUSEMOVE才会发送
+    //模拟WINDOWS 的SetCursor
+    if (NULL == ::GetCapture())
+    {
+        auto & loc = e.getLoc();
+        services_->OnTxSetCursor(DVASPECT_CONTENT, 0, NULL, NULL,
+            dc_, NULL, NULL, (INT)loc.x(), (INT)loc.y());
+    }
+
+
+    services_->TxSendMessage(WM_MOUSEMOVE, 
+        Helper::ToKeyStateForMouse(e.getFlags()), 
+        Helper::ToCoordinateForMouse(e.getLoc()), &lr);
+}
+
+void RichEdit::onMouseDown(MouseEvent & e)
+{
+    lazyInitialize();
+
+    LRESULT lr = 1;
+
+    services_->TxSendMessage(WM_LBUTTONDOWN,
+        Helper::ToKeyStateForMouse(e.getFlags()),
+        Helper::ToCoordinateForMouse(e.getLoc()), &lr);
+}
+
+void RichEdit::onMouseUp(MouseEvent & e)
+{
+    lazyInitialize();
+
+    LRESULT lr = 1;
+
+    services_->TxSendMessage(WM_LBUTTONUP,
+        Helper::ToKeyStateForMouse(e.getFlags()),
+        Helper::ToCoordinateForMouse(e.getLoc()), &lr);
+}
+
 void RichEdit::adjustSurface()
 {
     int iwidth = (int)getWidth();
@@ -421,7 +464,8 @@ void RichEdit::lazyInitialize()
         assert(services_);
         initDefaultCF();
         initDefaultPF();
-        //services_->OnTxInPlaceActivate(NULL);
+        services_->OnTxInPlaceActivate(NULL);
+        services_->OnTxUIActivate();
         //services_->OnTxPropertyBitsChange(TXTBIT_BACKSTYLECHANGE, 0);
     }
 }

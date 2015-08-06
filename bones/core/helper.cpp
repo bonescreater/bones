@@ -3,6 +3,8 @@
 #include "point.h"
 #include "pixmap.h"
 #include "shader.h"
+#include "event.h"
+
 #include "SkRect.h"
 #include "SkBitmap.h"
 #include "SkPixelRef.h"
@@ -164,6 +166,28 @@ Rect Helper::GetPrimaryWorkArea()
             static_cast<float>(mi.rcWork.bottom));
     }
     return r;
+}
+
+WPARAM Helper::ToKeyStateForMouse(int flags)
+{
+    WPARAM wp = 0;
+
+    if (flags & kEF_LEFT_MOUSE_DOWN)
+        wp |= MK_LBUTTON;
+    if (flags & kEF_RIGHT_MOUSE_DOWN)
+        wp |= MK_RBUTTON;
+    if (flags & kEF_MIDDLE_MOUSE_DOWN)
+        wp |= MK_MBUTTON;
+    if (flags & kEF_CONTROL_DOWN)
+        wp |= MK_CONTROL;
+    if (flags & kEF_SHIFT_DOWN)
+        wp |= MK_SHIFT;
+    return wp;
+}
+
+LPARAM Helper::ToCoordinateForMouse(const Point & pt)
+{
+    return MAKELPARAM(pt.x(), pt.y());
 }
 
 }

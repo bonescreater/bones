@@ -38,8 +38,12 @@ extern const char * kClassAnimation;
 #define BONES_CALLBACK_3(__selector__, ...) std::bind(__selector__, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, ##__VA_ARGS__)
 #define BONES_CALLBACK_4(__selector__, ...) std::bind(__selector__, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, ##__VA_ARGS__)
 
+
+
 typedef float Scalar;
 typedef HANDLE Cursor;
+
+#define DEFAULT_CURSOR ::LoadImage(NULL, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_SHARED)
 
 class AnimationManager;
 class PanelManager;

@@ -182,7 +182,13 @@ public:
     //@cmember Returns HIMETRIC size of the control bar.
     virtual HRESULT	TxGetSelectionBarWidth(LONG *lSelBarWidth) override;
 protected:
-    void onDraw(SkCanvas & canvas);
+    void onDraw(SkCanvas & canvas) override;
+
+    void onMouseMove(MouseEvent & e) override;
+
+    void onMouseDown(MouseEvent & e) override;
+
+    void onMouseUp(MouseEvent & e) override;
 private:
     void adjustSurface();
 

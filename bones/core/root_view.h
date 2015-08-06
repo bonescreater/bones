@@ -62,11 +62,14 @@ public:
 
     //void handleEvent(Event & e);
 
+    bool isCapture();
+
     bool isVisible() const override;
 
     RootView * getRoot() override;
 
     const char * getClassName() const override;
+
 protected:
     virtual void onDraw(SkCanvas & canvas) override;
 
