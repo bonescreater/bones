@@ -383,7 +383,7 @@ void RichEdit::preprocessSurface(Pixmap & render, Pixmap & update)
             Color * pdst = (Color *)dstart + j;
             *pdst = src;
             //设置alpha为0xff
-            //*((char *)pdst + 3) = '\xff';
+            *((char *)pdst + 3) = '\xff';
         }
         dstart += dr.pitch;
         sstart += sr.pitch;
@@ -418,7 +418,7 @@ void RichEdit::postprocessSurface(Pixmap & update)
                 if (*pa != 0)
                     *pc = 0;
                 else
-                        *pa = '\xff';               
+                     *pa = '\xff';               
             }
         }
         cs += lr.pitch;

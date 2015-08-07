@@ -15,8 +15,8 @@ bool TestClose(BonesCObject co, BonesArg * arg, size_t arg_count, void * userdat
     ::PostQuitMessage(0);
     return true;
 }
-int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-//int main()
+//int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int main()
 {
     BonesConfig config;
     config.log_file = L"./test.log";
