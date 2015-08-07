@@ -55,7 +55,7 @@ public:
 
     void setOverFlow(OverFlow of);
 protected:
-    void onDraw(SkCanvas & canvas) override;
+    void onDraw(SkCanvas & canvas, const Rect & inval) override;
 
     void onSizeChanged() override;
 private:

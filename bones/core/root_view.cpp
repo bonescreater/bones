@@ -151,7 +151,7 @@ void RootView::setFocus(bool focus)
     }
 }
 
-void RootView::onDraw(SkCanvas & canvas)
+void RootView::onDraw(SkCanvas & canvas, const Rect & inval)
 {  
     SkPaint paint;
     paint.setColor(color_);

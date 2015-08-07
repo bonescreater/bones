@@ -575,7 +575,7 @@ bool XMLController::handleRichEdit(XMLNode node, Ref * parent_ob, const Module &
     applyID(rich.get(), attrs[1].value);
 
     rich->setText(L"This is a 测RichEdit");
-    rich->setOpacity(1.f);
+    rich->setOpacity(1.0f);
     Color bg_color = 0xffffff00;
     rich->setBackground(false, &bg_color);
     if (ob)

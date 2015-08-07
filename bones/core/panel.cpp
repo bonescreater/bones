@@ -113,11 +113,6 @@ void Panel::update()
     if (!pm.isValid() || pm.isEmpty())
         return;
 
-    Pixmap::LockRec lr;
-    if (!pm.lock(lr))
-        return;
-
-
     Rect win_rect;
     getWindowRect(win_rect);
     POINT pos = { (LONG)win_rect.left(), (LONG)win_rect.top() };
@@ -125,11 +120,8 @@ void Panel::update()
     POINT src_pos = { 0, 0 };
     BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
     
-    auto old = ::SelectObject(dc_, Helper::ToHBitmap(pm));
-    auto r = ::UpdateLayeredWindow(hwnd(), NULL, &pos, &size, dc_, &src_pos, 0, &bf, ULW_ALPHA);
-    ::SelectObject(dc_, old);
-
-    pm.unlock();
+    auto dc = Helper::ToHDC(pm);
+    ::UpdateLayeredWindow(hwnd(), NULL, &pos, &size, dc, &src_pos, 0, &bf, ULW_ALPHA);
 }
 
 void Panel::setNCArea(NCArea area, const Rect & rect)
@@ -169,7 +161,6 @@ LRESULT Panel::handleNCCreate(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     root_ = AdoptRef(new RootView);
     root_->setDelegate(this);
-    dc_ = CreateCompatibleDC(NULL);
     cursor_ = ::LoadCursor(NULL, IDC_ARROW);
     ex_style_ = ::GetWindowLongPtr(hwnd(), GWL_EXSTYLE);
 
@@ -184,7 +175,6 @@ LRESULT Panel::handleNCDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam)
     //导致root view 释放不了
     MouseEvent e(kET_MOUSE_LEAVE, kMB_NONE, root_.get(), Point(), Point(), 0);
     root_->handleEvent(e);
-    ::DeleteDC(dc_);
     detach();
     return 0;
 }
@@ -450,11 +440,10 @@ void Panel::onPaint(HDC hdc, const Rect & rect)
     if (dirty_rect.isEmpty())
         return;
 
-    ////只更新脏区
-    auto old = ::SelectObject(dc_, Helper::ToHBitmap(root_->getBackBuffer()));
+    //只更新脏区
+    auto dc = Helper::ToHDC(root_->getBackBuffer());
     ::BitBlt(hdc, (int)rect.left(), (int)rect.top(), (int)rect.width(), (int)rect.height(),
-        dc_, (int)rect.left(), (int)rect.top(), SRCCOPY);
-    ::SelectObject(dc_, old);
+        dc, (int)rect.left(), (int)rect.top(), SRCCOPY);
 }
 
 LRESULT Panel::defProcessEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)

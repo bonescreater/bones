@@ -58,14 +58,22 @@ private:
 
 class Surface : public Pixmap
 {
+private:
+    struct Context
+    {
+        HGDIOBJ obj;
+        HDC dc;
+    };
 public:
     Surface();
+
+    Surface & operator=(const Surface & right);
 protected:
     SkPixelRef * allocatePixelRef(int width, int height, bool is_opaque) override;
 private:
     static void PixelRefFree(void * addr, void * context);
 private:
-    HBITMAP hbm_;
+    Context * context_;
     friend class Helper;
 };
 

@@ -92,7 +92,7 @@ const char * Shape::getClassName() const
     return kClassShape;
 }
 
-void Shape::onDraw(SkCanvas & canvas)
+void Shape::onDraw(SkCanvas & canvas, const Rect & inval)
 {
     if (opacity_ == 0)
         return;

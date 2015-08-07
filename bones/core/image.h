@@ -30,7 +30,7 @@ public:
 
     const char * getClassName() const override;
 protected:
-    void onDraw(SkCanvas & canvas) override;
+    void onDraw(SkCanvas & canvas, const Rect & inval) override;
 private:
     void drawImage(SkCanvas & canvas, const Rect & bounds);
 

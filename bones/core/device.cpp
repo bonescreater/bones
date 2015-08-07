@@ -6,32 +6,32 @@
 namespace bones
 {
 
-class PixmapDevice : public SkBitmapDevice
+class SurfaceDevice : public SkBitmapDevice
 {
 public:
-    PixmapDevice(Pixmap & pm)
+    SurfaceDevice(Surface & pm)
         :SkBitmapDevice(Helper::ToSkBitmap(pm)), target_(pm)
     {
         ;
     }
 
-    Pixmap & getTarget()
+    Surface & getTarget()
     {
         return target_;
     }
 private:
-    Pixmap target_;
+    Surface target_;
 };
 
 
-SkBaseDevice * Device::Create(Pixmap & pm)
+SkBaseDevice * Device::Create(Surface & pm)
 {
-    return new PixmapDevice(pm);
+    return new SurfaceDevice(pm);
 }
 
-Pixmap & Device::From(SkBaseDevice * sd)
+Surface & Device::From(SkBaseDevice * sd)
 {
-    return ((PixmapDevice *)sd)->getTarget();
+    return ((SurfaceDevice *)sd)->getTarget();
 }
 
 }

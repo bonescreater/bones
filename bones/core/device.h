@@ -8,15 +8,14 @@ class SkBaseDevice;
 namespace bones
 {
 
-class Pixmap;
-class PixmapDevice;
+class Surface;
 
 class Device
 {
 public:
-    static SkBaseDevice * Create(Pixmap & pm);
+    static SkBaseDevice * Create(Surface & pm);
 
-    static Pixmap & From(SkBaseDevice * sd);
+    static Surface & From(SkBaseDevice * sd);
 };
 
 }

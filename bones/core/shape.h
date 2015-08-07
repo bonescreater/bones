@@ -73,7 +73,7 @@ public:
 
     const char * getClassName() const override;
 protected:
-    void onDraw(SkCanvas & canvas) override;
+    void onDraw(SkCanvas & canvas, const Rect & inval) override;
 
     void drawBackground(SkCanvas & canvas);
 

@@ -565,7 +565,7 @@ void View::draw(SkCanvas & canvas, const Rect & inval)
         //绘制自己的时候 不能超出矩形
         auto count = canvas.save();
         canvas.clipRect(Helper::ToSkRect(intersect_bounds));
-        onDraw(canvas);
+        onDraw(canvas, intersect_bounds);
         canvas.restoreToCount(count);
     }
     else if (c)
@@ -611,7 +611,7 @@ void View::onTrigger(int tag, uint32_t interval)
 
 }
 
-void View::onDraw(SkCanvas & canvas)
+void View::onDraw(SkCanvas & canvas, const Rect & inval)
 {
     ;
 }

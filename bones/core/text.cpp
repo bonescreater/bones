@@ -85,7 +85,7 @@ void Text::setOverFlow(OverFlow of)
     }
 }
 
-void Text::onDraw(SkCanvas & canvas)
+void Text::onDraw(SkCanvas & canvas, const Rect & inval)
 {
     adjustCache();
 

@@ -157,7 +157,7 @@ protected:
 
     virtual void onTrigger(int tag, uint32_t interval);
 
-    virtual void onDraw(SkCanvas & canvas);
+    virtual void onDraw(SkCanvas & canvas, const Rect & inval);
 
     virtual void onSizeChanging(Size & size);
 

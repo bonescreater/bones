@@ -37,7 +37,7 @@ const char * Image::getClassName() const
     return kClassImage;
 }
 
-void Image::onDraw(SkCanvas & canvas)
+void Image::onDraw(SkCanvas & canvas, const Rect & inval)
 {
     if (opacity_ == 0)
         return;

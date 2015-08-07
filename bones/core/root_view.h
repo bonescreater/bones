@@ -71,7 +71,7 @@ public:
     const char * getClassName() const override;
 
 protected:
-    virtual void onDraw(SkCanvas & canvas) override;
+    virtual void onDraw(SkCanvas & canvas, const Rect & inval) override;
 
     virtual void onVisibleChanged(View * start) override;
 

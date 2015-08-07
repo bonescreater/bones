@@ -55,7 +55,7 @@ void UpdateCHARFORMAT2(LOGFONT & lf, CHARFORMAT2 & cf)
 }
 
 RichEdit::RichEdit()
-:dc_(NULL), accel_pos_(-1), max_length_(INFINITE), password_(L'*'),
+:accel_pos_(-1), max_length_(INFINITE), password_(L'*'),
 scroll_bars_(WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL |
 ES_AUTOHSCROLL | ES_DISABLENOSCROLL), 
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
@@ -69,9 +69,6 @@ RichEdit::~RichEdit()
 {
     if (services_)
         services_->Release();
-
-    if (dc_)
-        ::DeleteDC(dc_);
 }
 
 void RichEdit::setOpacity(float opacity)
@@ -206,47 +203,39 @@ const char * RichEdit::getClassName() const
     return kClassRichEdit;
 }
 
-void RichEdit::onDraw(SkCanvas & canvas)
+void RichEdit::onDraw(SkCanvas & canvas, const Rect & inval)
 {
     lazyInitialize();
     adjustSurface();
     if (surface_.isEmpty() || !surface_.isValid())
         return;
-    if (!dirty_.isEmpty())
-    {
-        Pixmap dirty_pm = surface_.extractSubset(dirty_);
-        if (dirty_pm.isValid() && !dirty_pm.isEmpty())
-        {
-            auto & target = Device::From(canvas.getDevice());
-            antiAliasBegin(target, dirty_pm);
 
-            auto old = ::SelectObject(dc_, Helper::ToHBitmap(surface_));
-            Rect bounds;
-            getLocalBounds(bounds);
-            auto wbounds = Helper::ToRect(bounds);
-            RECTL rcL = { wbounds.left, wbounds.top, wbounds.right, wbounds.bottom };
-            RECT wdirty = Helper::ToRect(dirty_);
-            //::SelectClipRgn(dc_, ::CreateRectRgn(0, 0, 0, 0));
-            //只更新脏区
-            services_->TxDraw(
-                DVASPECT_CONTENT,
-                0,
-                NULL,
-                NULL,
-                dc_,
-                NULL,
-                &rcL,
-                NULL,
-                &wdirty,
-                NULL,
-                NULL,
-                TXTVIEW_ACTIVE);
+    auto & target = Device::From(canvas.getDevice());
+    auto update = surface_.extractSubset(inval);
+    preprocessSurface(target, update);
 
-            ::SelectObject(dc_, old);
-            antiAliasEnd(dirty_pm);
-            dirty_.setEmpty();
-        }
-    }
+    Rect bounds;
+    getLocalBounds(bounds);
+    auto wbounds = Helper::ToRect(bounds);
+    RECTL rcL = { wbounds.left, wbounds.top, wbounds.right, wbounds.bottom };
+    RECT winval = Helper::ToRect(inval);
+
+    //只更新脏区
+    services_->TxDraw(
+        DVASPECT_CONTENT,
+        0,
+        NULL,
+        NULL,
+        Helper::ToHDC(surface_),
+        NULL,
+        &rcL,
+        NULL,
+        &winval,
+        NULL,
+        NULL,
+        TXTVIEW_ACTIVE);
+
+    postprocessSurface(update);
     SkPaint paint;
     //paint.setAntiAlias(true);
     //paint.setFilterLevel(SkPaint::kHigh_FilterLevel);
@@ -257,7 +246,8 @@ void RichEdit::onDraw(SkCanvas & canvas)
 void RichEdit::onMouseMove(MouseEvent & e)
 {
     lazyInitialize();
-    
+    adjustSurface();
+
     LRESULT lr = 1;
     auto root = getRoot();
     //WM_SETCURSOR仅在非Capture下WM_MOUSEMOVE才会发送
@@ -266,11 +256,12 @@ void RichEdit::onMouseMove(MouseEvent & e)
     {
         auto & loc = e.getLoc();
         services_->OnTxSetCursor(DVASPECT_CONTENT, 0, NULL, NULL,
-            dc_, NULL, NULL, (INT)loc.x(), (INT)loc.y());
+            Helper::ToHDC(surface_), NULL, NULL, (INT)loc.x(), (INT)loc.y());
     }
 
 
-    services_->TxSendMessage(WM_MOUSEMOVE, 
+    services_->TxSendMessage(
+        Helper::ToMsgForMouse(e.type(), e.button()),
         Helper::ToKeyStateForMouse(e.getFlags()), 
         Helper::ToCoordinateForMouse(e.getLoc()), &lr);
 }
@@ -289,7 +280,9 @@ void RichEdit::onMouseUp(MouseEvent & e)
 {
     lazyInitialize();
 
-    services_->TxSendMessage(WM_LBUTTONUP,
+
+    services_->TxSendMessage(
+        Helper::ToMsgForMouse(e.type(), e.button()),
         Helper::ToKeyStateForMouse(e.getFlags()),
         Helper::ToCoordinateForMouse(e.getLoc()), nullptr);
 }
@@ -362,8 +355,12 @@ void RichEdit::initDefaultPF()
     pf_.rgxTabs[0] = lDefaultTab;
 }
 
-void RichEdit::antiAliasBegin(Pixmap & render, Pixmap & update)
+void RichEdit::preprocessSurface(Pixmap & render, Pixmap & update)
 {
+    //GDI 在TxDraw里有文字抗锯齿 抗锯齿的像素来源于背景
+    //所以在背景透明的情况下 从画布中读取背景像素用于抗锯齿
+    //如果此时画布中的背景也是半透明 会导致 文字周边有阴影 
+    //GDI暂时无法解决 等WIN8 WIN10流行后 换用TxDrawD2D应该可以解决掉这个问题
     if (bg_opaque_)
         return;
     Pixmap::LockRec sr;
@@ -386,7 +383,7 @@ void RichEdit::antiAliasBegin(Pixmap & render, Pixmap & update)
             Color * pdst = (Color *)dstart + j;
             *pdst = src;
             //设置alpha为0xff
-            *((char *)pdst + 3) = '\xff';
+            //*((char *)pdst + 3) = '\xff';
         }
         dstart += dr.pitch;
         sstart += sr.pitch;
@@ -396,7 +393,7 @@ void RichEdit::antiAliasBegin(Pixmap & render, Pixmap & update)
     render.unlock();
 }
 
-void RichEdit::antiAliasEnd(Pixmap & update)
+void RichEdit::postprocessSurface(Pixmap & update)
 {
     Pixmap::LockRec lr;
     if (!update.lock(lr))
@@ -406,11 +403,13 @@ void RichEdit::antiAliasEnd(Pixmap & update)
         (int)(lr.subset.left() * 4 + lr.subset.top() * lr.pitch);
     auto height = (int)lr.subset.height();
     auto width = (int)lr.subset.width();
+
     for (auto i = 0; i < height; ++i)
     {
         for (auto j = 0; j < width; ++j)
         {
             Color * pc = (Color *)cs + j;
+
             auto pa = ((char *)pc + 3);
             if (bg_opaque_)//不透明背景 所有像素有效 alpha全部置为255
                 *pa = '\xff';
@@ -419,7 +418,7 @@ void RichEdit::antiAliasEnd(Pixmap & update)
                 if (*pa != 0)
                     *pc = 0;
                 else
-                    *pa = '\xff';
+                        *pa = '\xff';               
             }
         }
         cs += lr.pitch;
@@ -437,9 +436,6 @@ void RichEdit::lazyInitialize()
     if (!hwnd_)
         getHWND();
     assert(hwnd_);
-    if (!dc_)
-        dc_ = ::CreateCompatibleDC(NULL);
-    assert(dc_);
     if (!services_)
     {
         HMODULE rich = ::GetModuleHandle(L"Msftedit.dll");
@@ -502,14 +498,12 @@ ULONG STDMETHODCALLTYPE RichEdit::Release(void)
 
 HDC RichEdit::TxGetDC()
 {
-    if (!dc_)
-        dc_ = ::CreateCompatibleDC(NULL);
-    return dc_;
+    adjustSurface();
+    return Helper::ToHDC(surface_);
 }
 
 INT RichEdit::TxReleaseDC(HDC hdc)
 {
-    assert(dc_ == hdc);
     return 1;
 }
 
@@ -539,25 +533,14 @@ BOOL RichEdit::TxSetScrollPos(INT fnBar, INT nPos, BOOL fRedraw)
 
 void RichEdit::TxInvalidateRect(LPCRECT prc, BOOL fMode)
 {
-    Rect bounds;
     if (prc)
-    {
-        bounds = Helper::ToRect(*prc);
-        inval(bounds);
-    }    
+        inval(Helper::ToRect(*prc));   
     else
-    {
-        getLocalBounds(bounds);
-        inval();
-    }  
-    dirty_.join(bounds);   
+        inval(); 
 }
 
 void RichEdit::TxViewChange(BOOL fUpdate)
 {
-    Rect bounds;
-    getLocalBounds(bounds);
-    dirty_.join(bounds);
     inval();
 }
 
@@ -722,8 +705,9 @@ HRESULT	RichEdit::TxGetAcceleratorPos(LONG *pcp)
 
 HRESULT	RichEdit::TxGetExtent(LPSIZEL lpExtent)
 {//zooming
-    LONG xPerInch = ::GetDeviceCaps(dc_, LOGPIXELSX);
-    LONG yPerInch = ::GetDeviceCaps(dc_, LOGPIXELSY);
+    auto dc = Helper::ToHDC(surface_);
+    LONG xPerInch = ::GetDeviceCaps(dc, LOGPIXELSX);
+    LONG yPerInch = ::GetDeviceCaps(dc, LOGPIXELSY);
 
     lpExtent->cx = DXtoHimetricX((LONG)getWidth(), xPerInch);
     lpExtent->cy = DYtoHimetricY((LONG)getHeight(), yPerInch);

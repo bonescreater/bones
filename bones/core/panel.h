@@ -99,7 +99,6 @@ private:
     bool track_mouse_;
     Cursor cursor_;
     uint64_t ex_style_;
-    HDC dc_;
 private:
     friend LRESULT CALLBACK PanelProc(HWND hWnd,
                                          UINT uMsg,

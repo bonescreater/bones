@@ -26,6 +26,12 @@ Pixmap::~Pixmap()
 bool Pixmap::allocate(int width, int height, bool is_opaque)
 {
     free();
+    //防止分配0*0的位图
+    if (0 == width)
+        width = 4;
+    if (0 == height)
+        height = 4;
+
     pixel_ref_ = allocatePixelRef(width, height, is_opaque);
     subset_.setXYWH(0, 0, static_cast<Scalar>(width), static_cast<Scalar>(height));
     return !!pixel_ref_;
@@ -239,9 +245,18 @@ bool Pixmap::decode(const void * buffer, size_t len)
 
 
 Surface::Surface()
-:hbm_(0)
+:context_(nullptr)
 {
     ;
+}
+
+Surface & Surface::operator=(const Surface & right)
+{
+    Pixmap * pl = this;
+    Pixmap * pr = (Pixmap *)&right;
+    *pl = *pr;
+    this->context_ = right.context_;
+    return *this;
 }
 
 SkPixelRef * Surface::allocatePixelRef(int width, int height, bool is_opaque)
@@ -259,19 +274,29 @@ SkPixelRef * Surface::allocatePixelRef(int width, int height, bool is_opaque)
     hdr.biClrUsed = 0;
     hdr.biClrImportant = 0;
     void * data = nullptr;
-    hbm_ = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(&hdr),
+    auto hbm = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(&hdr),
         0, &data, NULL, 0);
+    context_ = new Context;
+    context_->dc = ::CreateCompatibleDC(NULL);
+    context_->obj = ::SelectObject(context_->dc, hbm);
+    ::SetGraphicsMode(context_->dc, GM_ADVANCED);
 
     auto info = SkImageInfo::Make(width, height, kPMColor_SkColorType,
         is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
     return SkMallocPixelRef::NewWithProc(info, info.minRowBytes(), nullptr,
-        data, &Surface::PixelRefFree, hbm_);
+        data, &Surface::PixelRefFree, context_);
 }
 
 void Surface::PixelRefFree(void * addr, void * context)
 {
     if (context)
-        ::DeleteObject((HBITMAP)context);
+    {
+        Context * c = (Context *)context; 
+        ::DeleteObject(::SelectObject(c->dc, c->obj));
+        ::DeleteDC(c->dc);
+        delete c;
+    }
+        
 }
 
 }

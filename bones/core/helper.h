@@ -39,7 +39,7 @@ public:
 
     static RECT ToRect(const Rect & r);
 
-    static HBITMAP ToHBitmap(Surface & sf);
+    static HDC ToHDC(Surface & sf);
 
     static HMODULE GetModuleFromAddress(void * address);
 

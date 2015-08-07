@@ -182,7 +182,7 @@ public:
     //@cmember Returns HIMETRIC size of the control bar.
     virtual HRESULT	TxGetSelectionBarWidth(LONG *lSelBarWidth) override;
 protected:
-    void onDraw(SkCanvas & canvas) override;
+    void onDraw(SkCanvas & canvas, const Rect & inval) override;
 
     void onMouseMove(MouseEvent & e) override;
 
@@ -204,11 +204,10 @@ private:
 
     void lazyInitialize();
 
-    void antiAliasBegin(Pixmap & render, Pixmap & update);
+    void preprocessSurface(Pixmap & render, Pixmap & update);
 
-    void antiAliasEnd(Pixmap & update);
+    void postprocessSurface(Pixmap & update);
 private:
-    HDC dc_;
     HWND hwnd_;
     CHARFORMAT2 cf_;
     PARAFORMAT pf_;
@@ -219,7 +218,6 @@ private:
     LONG accel_pos_;
     ITextServices * services_;
     Surface surface_;
-    Rect dirty_;
     float opacity_;
     bool bg_opaque_;
     Color bg_color_;

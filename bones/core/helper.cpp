@@ -88,9 +88,11 @@ RECT Helper::ToRect(const Rect & r)
     return wr;
 }
 
-HBITMAP Helper::ToHBitmap(Surface & sf)
+HDC Helper::ToHDC(Surface & sf)
 {
-    return sf.hbm_;
+    if (sf.context_)
+        return sf.context_->dc;
+    return NULL;
 }
 
 HMODULE Helper::GetModuleFromAddress(void * address)
