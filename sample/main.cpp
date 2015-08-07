@@ -60,7 +60,11 @@ int main()
             }                
         }
         else
+        {
             BonesUpdate();
+            ::SleepEx(5, true);
+        }
+
     }
     BonesShutDown();
     //getchar();
