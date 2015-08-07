@@ -189,6 +189,10 @@ protected:
     void onMouseDown(MouseEvent & e) override;
 
     void onMouseUp(MouseEvent & e) override;
+
+    void onFocus(FocusEvent & e) override;
+
+    void onBlur(FocusEvent & e) override;
 private:
     void adjustSurface();
 

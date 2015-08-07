@@ -55,6 +55,8 @@ public:
     static WPARAM ToKeyStateForMouse(int flags);
 
     static LPARAM ToCoordinateForMouse(const Point & pt);
+
+    static UINT ToMsgForMouse(int type, int button);
 };
 
 }

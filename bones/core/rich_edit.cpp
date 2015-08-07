@@ -279,22 +279,33 @@ void RichEdit::onMouseDown(MouseEvent & e)
 {
     lazyInitialize();
 
-    LRESULT lr = 1;
-
-    services_->TxSendMessage(WM_LBUTTONDOWN,
+    services_->TxSendMessage(
+        Helper::ToMsgForMouse(e.type(), e.button()),
         Helper::ToKeyStateForMouse(e.getFlags()),
-        Helper::ToCoordinateForMouse(e.getLoc()), &lr);
+        Helper::ToCoordinateForMouse(e.getLoc()), nullptr);
 }
 
 void RichEdit::onMouseUp(MouseEvent & e)
 {
     lazyInitialize();
 
-    LRESULT lr = 1;
-
     services_->TxSendMessage(WM_LBUTTONUP,
         Helper::ToKeyStateForMouse(e.getFlags()),
-        Helper::ToCoordinateForMouse(e.getLoc()), &lr);
+        Helper::ToCoordinateForMouse(e.getLoc()), nullptr);
+}
+
+void RichEdit::onFocus(FocusEvent & e)
+{
+    lazyInitialize();
+    services_->OnTxInPlaceActivate(NULL);
+    services_->TxSendMessage(WM_SETFOCUS, 0, 0, nullptr);
+}
+
+void RichEdit::onBlur(FocusEvent & e)
+{
+    lazyInitialize();
+    services_->TxSendMessage(WM_KILLFOCUS, 0, 0, nullptr);
+    services_->OnTxInPlaceActivate(NULL);
 }
 
 void RichEdit::adjustSurface()
@@ -465,8 +476,6 @@ void RichEdit::lazyInitialize()
         initDefaultCF();
         initDefaultPF();
         services_->OnTxInPlaceActivate(NULL);
-        services_->OnTxUIActivate();
-        //services_->OnTxPropertyBitsChange(TXTBIT_BACKSTYLECHANGE, 0);
     }
 }
 

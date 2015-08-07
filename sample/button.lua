@@ -120,7 +120,6 @@ function mod.onMouseLeave(self, e)
 	self.hover_ = false
 	self.down_ = false
 	stateChanged(self)
-    self:applyCSS("{cursor:arrow;}")
 end
 
 function mod.onBlur(self, e)

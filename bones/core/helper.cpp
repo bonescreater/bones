@@ -190,4 +190,32 @@ LPARAM Helper::ToCoordinateForMouse(const Point & pt)
     return MAKELPARAM(pt.x(), pt.y());
 }
 
+UINT Helper::ToMsgForMouse(int type, int button)
+{
+    if (kET_MOUSE_MOVE == type)
+        return WM_MOUSEMOVE;
+    if (kET_MOUSE_DOWN == type)
+    {
+        if (kMB_LEFT == button)
+            return WM_LBUTTONDOWN;
+        if (kMB_RIGHT == button)
+            return WM_RBUTTONDOWN;
+        if (kMB_MIDDLE == button)
+            return WM_MBUTTONDOWN;
+    }
+    if (kET_MOUSE_UP == type)
+    {
+        if (kMB_LEFT == button)
+            return WM_LBUTTONUP;
+        if (kMB_RIGHT == button)
+            return WM_RBUTTONUP;
+        if (kMB_MIDDLE == button)
+            return WM_MBUTTONUP;
+    }
+    if (kET_MOUSE_LEAVE == type)
+        return WM_MOUSELEAVE;
+
+    return WM_NULL;
+}
+
 }

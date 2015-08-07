@@ -43,8 +43,6 @@ extern const char * kClassAnimation;
 typedef float Scalar;
 typedef HANDLE Cursor;
 
-#define DEFAULT_CURSOR ::LoadImage(NULL, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_SHARED)
-
 class AnimationManager;
 class PanelManager;
 

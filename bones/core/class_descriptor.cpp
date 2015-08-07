@@ -184,7 +184,7 @@ static Color  CSSStrToColor(const CSSString & str)
 static Cursor CSSStrToCursor(const CSSString & str)
 {
     const wchar_t * cursor = nullptr;
-    if (str == "arrow" || str == "default")
+    if (str == "arrow")
         cursor = IDC_ARROW;
     else if (str == "ibeam")
         cursor = IDC_IBEAM;

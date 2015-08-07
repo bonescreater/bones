@@ -10,8 +10,8 @@
           .p
           {
           content:Bones;
-          hit-test: caption 0px 0px 200px 20px;
-          color: #88ffffff;
+          hit-test: capture 0px 0px 200px 20px;
+          color: #ffffffff;
           }
           .fadein
           {

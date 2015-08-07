@@ -191,8 +191,12 @@ LRESULT Panel::handleNCDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT Panel::handleSetCursor(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    ::SetCursor((HCURSOR)cursor_);
-    return TRUE;
+    if (HTCLIENT == LOWORD(lParam))
+    {
+        ::SetCursor((HCURSOR)cursor_);
+        return TRUE;
+    }
+    return defProcessEvent(uMsg, wParam, lParam);
 }
 
 LRESULT Panel::handleNCCalcSize(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -219,6 +223,7 @@ LRESULT Panel::handlePositionChanges(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT Panel::handleFocus(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    root_->setFocus(WM_SETFOCUS == uMsg);
     return defProcessEvent(uMsg, wParam, lParam);
 }
 
@@ -258,10 +263,9 @@ LRESULT Panel::handleNCHitTest(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case kTopRight:
         return HTTOPRIGHT;
     default:
-        return defProcessEvent(uMsg, wParam, lParam);
+        return  defProcessEvent(uMsg, wParam, lParam);
         break;
-    }
-
+    }        
 }
 
 LRESULT Panel::handlePaint(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -413,6 +417,9 @@ LRESULT Panel::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
             return handlePaint(uMsg, wParam, lParam);
         case WM_SETCURSOR:
             return handleSetCursor(uMsg, wParam, lParam);
+        case WM_SETFOCUS:
+        case WM_KILLFOCUS:
+            return handleFocus(uMsg, wParam, lParam);
         default:
             return defProcessEvent(uMsg, wParam, lParam);
         }

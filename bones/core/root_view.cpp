@@ -139,6 +139,18 @@ void RootView::handleEvent(KeyEvent & e)
     }
 }
 
+void RootView::setFocus(bool focus)
+{//由窗口调用
+    if (focus)
+    {
+        ;
+    }
+    else
+    {//失去焦点 将内部焦点移除
+        focus_.shift(nullptr);
+    }
+}
+
 void RootView::onDraw(SkCanvas & canvas)
 {  
     SkPaint paint;

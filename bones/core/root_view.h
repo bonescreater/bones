@@ -62,7 +62,7 @@ public:
 
     //void handleEvent(Event & e);
 
-    bool isCapture();
+    void setFocus(bool focus);
 
     bool isVisible() const override;
 
@@ -98,6 +98,8 @@ private:
     Rect dirty_;
     Color color_;
     float opacity_;
+
+    friend class MouseController;
 };
 
 

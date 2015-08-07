@@ -27,6 +27,7 @@ end
 local function testLayered(btn)
     local panel = bones.getLuaObjectByID("p_layered")
     panel:applyCSS("{ex-style:app-window layered;}")
+    panel:applyCSS("{color:#8800ff00;}")
     --collectgarbage("collect")
 end
 

@@ -70,9 +70,13 @@ void MouseController::handleEvent(MouseEvent & e)
     last_mouse_point_ = e.getLoc();
 
     MouseEvent me(e.type(), e.button(), target, target->mapToLocal(e.getLoc()), e.getLoc(), e.getFlags());
-    if (kET_MOUSE_DOWN == me.type() && me.isLeftMouse())
-    {//如果是左键按下 自动capture
-        shiftCapture(me.target());
+    if (kET_MOUSE_DOWN == me.type() )
+    {
+        //鼠标按下则发生焦点切换事件
+        root_->focus_.shift(target);
+        //如果是左键按下 自动capture
+        if (me.isLeftMouse())
+            shiftCapture(target);
     }
     shiftOver(target);
     pushEvent(me);
@@ -105,7 +109,7 @@ void MouseController::shiftOver(View * n)
         if (over_)
         {
             //进入新的view前将光标置为默认光标
-            over_->setCursor(DEFAULT_CURSOR);
+            over_->setCursor(::LoadImage(NULL, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_SHARED));
             Point empty;
             MouseEvent me(kET_MOUSE_ENTER, kMB_NONE, over_.get(), empty, empty, 0);
             dispatcher.run(me, new_path);
