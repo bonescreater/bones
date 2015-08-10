@@ -17,6 +17,7 @@ class Surface;
 class Rect;
 class Point;
 class Shader;
+struct KeyState;
 
 class Helper
 {
@@ -57,6 +58,8 @@ public:
     static LPARAM ToCoordinateForMouse(const Point & pt);
 
     static UINT ToMsgForMouse(int type, int button);
+
+    static LPARAM ToKeyStateForKey(const KeyState & state);
 };
 
 }

@@ -7,62 +7,6 @@ namespace bones
 {
 static int kInvalidTag = -1;
 
-///*iterator front to back*/
-//class F2BIter
-//{
-//public:
-//    F2BIter(const View * parent)
-//    {
-//        if (parent)
-//            first_child_ = parent->first_child_;
-//
-//        child_ = first_child_;
-//    }
-//    RefPtr<View> next()
-//    {
-//        RefPtr<View> cur = child_;
-//        if (child_)
-//        {
-//            child_ = child_->next_sibling_;
-//            if (child_ == first_child_)
-//                child_.reset();
-//        }
-//        return cur;
-//    }
-//private:
-//    RefPtr<View> first_child_;
-//    RefPtr<View> child_;
-//};
-//
-///*iterator back to front*/
-//class B2FIter
-//{
-//public:
-//    B2FIter(const View* parent)
-//    {
-//        if (parent)
-//            first_child_ = parent->first_child_;
-//
-//        if (first_child_)
-//            child_ = first_child_->prev_sibling_;
-//    }
-//    RefPtr<View> next()
-//    {
-//        RefPtr<View> cur = child_;
-//        if (child_)
-//        {          
-//            if (child_ == first_child_)
-//                child_.reset();
-//            else 
-//                child_ = child_->prev_sibling_;
-//        }
-//        return cur;
-//    }
-//private:
-//    RefPtr<View> first_child_;
-//    RefPtr<View> child_;
-//};
-
 View::View() :tag_(kInvalidTag), group_id_(-1), children_count_(0)
 {
     flag_.focusable = true;
@@ -433,6 +377,9 @@ void View::dispatch(Event & e)
     case kET_KEY_DOWN:
         onKeyDown(*KeyEvent::From(e));
         break;
+    case kET_KEY_PRESS:
+        onKeyPress(*KeyEvent::From(e));
+        break;
     case kET_KEY_UP:
         onKeyUp(*KeyEvent::From(e));
         break;
@@ -692,6 +639,11 @@ void View::onKeyDown(KeyEvent & e)
 }
 
 void View::onKeyUp(KeyEvent & e)
+{
+    ;
+}
+
+void View::onKeyPress(KeyEvent & e)
 {
     ;
 }

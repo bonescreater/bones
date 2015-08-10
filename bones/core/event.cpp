@@ -177,17 +177,28 @@ KeyEvent * KeyEvent::From(Event & e)
     return nullptr;
 }
 
-KeyEvent::KeyEvent(EventType type, View * target, KeyboardCode code, int flags)
+KeyEvent::KeyEvent(EventType type, View * target, KeyboardCode value, KeyState state, int flags)
 {
     type_ = type;
     target_.reset(target);
-    key_code_ = code;
+    key_code_ = (KeyboardCode)value;
+    state_ = state;
     flags_ = flags;
 }
 
 KeyboardCode KeyEvent::key() const
 {
     return key_code_;
+}
+
+wchar_t KeyEvent::ch() const
+{
+    return ch_;
+}
+
+KeyState KeyEvent::state() const
+{
+    return state_;
 }
 
 FocusEvent * FocusEvent::From(Event & e)

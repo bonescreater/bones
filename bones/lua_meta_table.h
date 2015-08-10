@@ -13,6 +13,8 @@ public:
 
     static void GetArea(lua_State * l);
 
+    static void GetRichEdit(lua_State * l);
+
     static void GetBlock(lua_State * l);
 
     static void GetText(lua_State * l);

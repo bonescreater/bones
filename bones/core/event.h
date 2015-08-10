@@ -21,7 +21,9 @@ enum EventType
     kET_MOUSE_WHEEL,
 
     kET_KEY_DOWN,
+    kET_KEY_PRESS,
     kET_KEY_UP,
+
 
     kET_FOCUS_OUT,
     kET_FOCUS_IN,
@@ -163,17 +165,37 @@ private:
     MouseButton button_;
 };
 
+// equal lParam
+struct KeyState
+{
+    uint32_t repeat_count : 16;
+    uint32_t scan_code : 8;
+    uint32_t extended_key : 1;
+    uint32_t reserved : 4;
+    uint32_t context_code : 1;
+    uint32_t previous_state : 1;
+    uint32_t transition_state : 1;
+};
 
 class KeyEvent : public UIEvent
 {
 public:
     static KeyEvent * From(Event & e);
 public:
-    KeyEvent(EventType type, View * target, KeyboardCode code, int flags);
+    KeyEvent(EventType type, View * target, KeyboardCode value, KeyState state, int flags);
 
     KeyboardCode key() const;
+
+    wchar_t ch() const;
+
+    KeyState state() const;
 private:
-    KeyboardCode key_code_;
+    union
+    {
+        KeyboardCode key_code_;
+        wchar_t ch_;
+    }; 
+    KeyState state_;
 };
 
 class FocusEvent : public UIEvent

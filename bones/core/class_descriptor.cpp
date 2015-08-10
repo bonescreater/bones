@@ -5,6 +5,7 @@
 #include "panel.h"
 #include "encoding.h"
 #include "logging.h"
+#include "rich_edit.h"
 
 namespace bones
 {
@@ -365,6 +366,14 @@ static void SkinSetOpacity(Ref * ob, const CSSParams & params)
     auto v = static_cast<Skin *>(ob);
     v->setOpacity(CSSStrToFloat(params[0]));
 }
+
+static void RichEditSetOpacity(Ref * ob, const CSSParams & params)
+{
+    if (params.empty() || !ob || params.size() < 1)
+        return;
+    auto v = static_cast<RichEdit *>(ob);
+    v->setOpacity(CSSStrToFloat(params[0]));
+}
 /*
 text
 */
@@ -698,6 +707,7 @@ void ClassDescriptor::registerRichEdit()
 {
     auto & table = multi_class_tables_[kClassRichEdit];
     registerView(table);
+    table[kDescOpacity] = &RichEditSetOpacity;
 }
 
 

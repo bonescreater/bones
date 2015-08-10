@@ -115,39 +115,46 @@ void RootView::handleEvent(MouseEvent & e)
     mouse_.handleEvent(e);
 }
 
+void RootView::handleEvent(FocusEvent & e)
+{
+    if (e.type() == kET_FOCUS)
+    {
+        has_focus_ = true;
+    }
+    else if (e.type() == kET_BLUR)
+    {
+        has_focus_ = false;
+        //失去焦点 将内部焦点移除
+        focus_.shift(nullptr);
+    }
+}
+
 void RootView::handleEvent(KeyEvent & e)
 {
     //处理键盘事件
     View * focus = focus_.current();
     bool handle = false;
-    if (focus && focus->skipDefaultKeyEventProcessing(e))
-    {//
+    if (kET_KEY_PRESS != e.type())
+    {//非字符
+        //焦点管理器会询问是否skip
         handle = focus_.handleKeyEvent(e);
-    }
-    if (!handle)
-    {//焦点管理器不处理 看快捷键管理器是否处理
-        handle = accelerators_.process(Accelerator::make(e));
+
+        bool skip = false;
+        if (focus)
+            skip = focus->skipDefaultKeyEventProcessing(e);
+        if (!handle && !skip)
+        {//焦点管理器不处理 看快捷键管理器是否处理
+            handle = accelerators_.process(Accelerator::make(e));
+        }
     }
     if (!handle && focus)
     {//都不处理
-        KeyEvent focus_ke(e.type(), focus, e.key(), e.getFlags());
+        KeyEvent focus_ke(e.type(), focus, e.key(), e.state(), e.getFlags());
         EventDispatcher dispatcher;
         EventDispatcher::Path path;
         EventDispatcher::getPath(focus_ke.target(), path);
         dispatcher.run(focus_ke, path);
         handle = true;
-    }
-}
-
-void RootView::setFocus(bool focus)
-{//由窗口调用
-    if (focus)
-    {
-        ;
-    }
-    else
-    {//失去焦点 将内部焦点移除
-        focus_.shift(nullptr);
     }
 }
 
@@ -190,8 +197,9 @@ bool RootView::notifyVisibleChanged(View * n)
 
 bool RootView::notifySetFocus(View * n)
 {
-    focus_.shift(n);
     delegate_ ? delegate_->requestFocus() : 0;
+    if (has_focus_)
+        focus_.shift(n);
     return true;
 }
 

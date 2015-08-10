@@ -189,6 +189,26 @@ LRESULT Panel::handleSetCursor(UINT uMsg, WPARAM wParam, LPARAM lParam)
     return defProcessEvent(uMsg, wParam, lParam);
 }
 
+LRESULT Panel::handleKey(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    EventType type = kET_COUNT;
+    if (WM_CHAR == uMsg)
+        type = kET_KEY_PRESS;
+    else if (WM_KEYDOWN == uMsg)
+        type = kET_KEY_DOWN;
+    else if (WM_KEYUP == uMsg)
+        type = kET_KEY_UP;
+
+    if (type != kET_COUNT)
+    {
+        KeyEvent e(type, root_.get(), (KeyboardCode)wParam, *(KeyState *)(&lParam), 0);
+        root_->handleEvent(e);
+        return 0;
+    }
+    else
+        return defProcessEvent(uMsg, wParam, lParam);
+}
+
 LRESULT Panel::handleNCCalcSize(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (wParam == TRUE)
@@ -213,8 +233,9 @@ LRESULT Panel::handlePositionChanges(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT Panel::handleFocus(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    root_->setFocus(WM_SETFOCUS == uMsg);
-    return defProcessEvent(uMsg, wParam, lParam);
+    FocusEvent e(WM_SETFOCUS == uMsg ? kET_FOCUS : kET_BLUR, root_.get(), false);
+    root_->handleEvent(e);
+    return 0;
 }
 
 LRESULT Panel::handleNCHitTest(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -410,6 +431,10 @@ LRESULT Panel::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_SETFOCUS:
         case WM_KILLFOCUS:
             return handleFocus(uMsg, wParam, lParam);
+        case WM_KEYDOWN:
+        case WM_KEYUP:
+        case WM_CHAR:
+            return handleKey(uMsg, wParam, lParam);
         default:
             return defProcessEvent(uMsg, wParam, lParam);
         }

@@ -220,4 +220,9 @@ UINT Helper::ToMsgForMouse(int type, int button)
     return WM_NULL;
 }
 
+LPARAM Helper::ToKeyStateForKey(const KeyState & state)
+{
+    return (LPARAM)*(uint32_t *)(&state);
+}
+
 }

@@ -38,6 +38,9 @@
     <ClCompile Include="bones\lua_image.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
+    <ClCompile Include="bones\lua_rich_edit.cpp">
+      <Filter>lua\proxy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
@@ -78,6 +81,9 @@
       <Filter>lua\proxy</Filter>
     </ClInclude>
     <ClInclude Include="bones\lua_image.h">
+      <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_rich_edit.h">
       <Filter>lua\proxy</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,7 +20,7 @@ public:
 
     void setOpacity(float opacity);
 
-    float getOpactiy() const;
+    float getOpacity() const;
     
     void setText(const wchar_t * text);
 
@@ -184,6 +184,10 @@ public:
 protected:
     void onDraw(SkCanvas & canvas, const Rect & inval) override;
 
+    void onPositionChanged() override;
+
+    void onSizeChanged() override;
+
     void onMouseMove(MouseEvent & e) override;
 
     void onMouseDown(MouseEvent & e) override;
@@ -193,6 +197,8 @@ protected:
     void onFocus(FocusEvent & e) override;
 
     void onBlur(FocusEvent & e) override;
+
+    void onKeyPress(KeyEvent & e) override;
 private:
     void adjustSurface();
 
@@ -209,6 +215,7 @@ private:
     void postprocessSurface(Pixmap & update);
 private:
     HWND hwnd_;
+    HDC dc_;
     CHARFORMAT2 cf_;
     PARAFORMAT pf_;
     DWORD max_length_;

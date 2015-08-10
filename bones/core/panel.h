@@ -93,6 +93,8 @@ private:
     LRESULT handleNCDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     LRESULT handleSetCursor(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+    LRESULT handleKey(UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
     RefPtr<RootView> root_;
     Rect nc_area_[kNCAreaCount];

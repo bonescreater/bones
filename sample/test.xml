@@ -26,20 +26,10 @@
           {
           content: 关闭;
           }
-          .fade
-          {
-          left:20px;
-          top:60px;
-          width:200px;
-          height:50px;
-          rect:0px 0px;
-          color:#ffff0000;
-          opacity:0;
-          }
           .rich
           {
           left:20px;
-          top:120px;
+          top:60px;
           width:200px;
           height:50px;
           }
@@ -54,8 +44,7 @@
               <button id ="close" class = "   b11     b12  b15 "></button>
               <panel class ="p1 p2"></panel>
               <event name ="onPrepare" module ="test" func ="onPrepare"></event>
-              <shape id ="test_fade" class ="fade"></shape>
-              <richedit class ="rich"></richedit>
+              <richedit id ="rich" class ="rich"></richedit>
 			      </panel>
         </body>  
     </bones>

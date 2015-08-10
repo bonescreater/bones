@@ -61,9 +61,6 @@ public:
     //void handleEvent(WheelEvent & e);
 
     //void handleEvent(Event & e);
-
-    void setFocus(bool focus);
-
     bool isVisible() const override;
 
     RootView * getRoot() override;
@@ -98,7 +95,7 @@ private:
     Rect dirty_;
     Color color_;
     float opacity_;
-
+    bool has_focus_;
     friend class MouseController;
 };
 

@@ -12,6 +12,7 @@
 #include "core/encoding.h"
 #include "core/animation_manager.h"
 #include "core/animation.h"
+#include "core/rich_edit.h"
 
 namespace bones
 {
@@ -20,6 +21,8 @@ static const char * kMetaTableArea = "__bone__area__";
 static const char * kMetaTableBlock = "__bone__block__";
 static const char * kMetaTableText = "__bone__text__";
 static const char * kMetaTableShape = "__bone__shape__";
+static const char * kMetaTableRichEdit = "__bone__rich_edit__";
+
 static const char * kMetaTableMouseEvent = "__bone__mouse__event__";
 static const char * kMetaTableFocusEvent = "__bone__focus__event__";
 static const char * kMetaTableAnimation = "__bone__animation__";
@@ -211,6 +214,8 @@ static int Opacity(lua_State * l)
                 opa = ((Panel *)ref)->getOpacity();
             else if (kClassRootView == ref->getClassName())
                 opa = ((RootView *)ref)->getOpacity();
+            else if (kClassRichEdit == ref->getClassName())
+                opa = ((RichEdit *)ref)->getOpacity();
             else
                 opa = ((Skin *)ref)->getOpacity();
             lua_pushnumber(l, opa);
@@ -366,6 +371,11 @@ void LuaMetaTable::GetPanel(lua_State * l)
 void LuaMetaTable::GetArea(lua_State * l)
 {
     GetView(l, kMetaTableArea);
+}
+
+void LuaMetaTable::GetRichEdit(lua_State * l)
+{
+    GetView(l, kMetaTableRichEdit);
 }
 
 void LuaMetaTable::GetBlock(lua_State * l)

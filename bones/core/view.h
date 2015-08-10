@@ -191,6 +191,8 @@ protected:
 
     virtual void onKeyUp(KeyEvent & e);
 
+    virtual void onKeyPress(KeyEvent & e);
+
     virtual void onFocusOut(FocusEvent & e);
 
     virtual void onFocusIn(FocusEvent & e);

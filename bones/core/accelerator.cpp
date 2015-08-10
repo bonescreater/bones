@@ -93,7 +93,7 @@ Accelerator Accelerator::make(const KeyEvent & ke)
         modifiers |= kEF_CONTROL_DOWN;
     if (ke.isAltDown())
         modifiers |= kEF_ALT_DOWN;
-    return Accelerator (ke.type(), ke.key(), modifiers);
+    return Accelerator(ke.type(), ke.key(), modifiers);
 }
 
 }

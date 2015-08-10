@@ -8,6 +8,7 @@
 #include "lua_text.h"
 #include "lua_shape.h"
 #include "lua_meta_table.h"
+#include "lua_rich_edit.h"
 
 #include "core/logging.h"
 #include "core/area.h"
@@ -15,6 +16,7 @@
 #include "core/text.h"
 #include "core/shape.h"
 #include "core/panel.h"
+#include "core/rich_edit.h"
 
 namespace bones
 {
@@ -236,6 +238,14 @@ bool ScriptParser::handleArea(XMLNode node, Ref * parent_ob, const Module & mod,
     bool result = XMLController::handleArea(node, parent_ob, mod, ob);
     if (result)
         LuaArea::Create(static_cast<Area *>(*ob));
+    return result;
+}
+
+bool ScriptParser::handleRichEdit(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
+{
+    bool result = XMLController::handleRichEdit(node, parent_ob, mod, ob);
+    if (result)
+        LuaRichEdit::Create(static_cast<RichEdit *>(*ob));
     return result;
 }
 

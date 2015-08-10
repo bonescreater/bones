@@ -60,13 +60,16 @@ scroll_bars_(WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL |
 ES_AUTOHSCROLL | ES_DISABLENOSCROLL), 
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
 services_(nullptr), hwnd_(NULL), opacity_(1.f), 
-bg_opaque_(true), bg_color_(0xff0000ff), bg_set_color_(true)
+bg_opaque_(true), bg_color_(0xff0000ff), bg_set_color_(true),
+dc_(NULL)
 {
     ;
 }
 
 RichEdit::~RichEdit()
 {
+    if (dc_)
+        ::DeleteDC(dc_);
     if (services_)
         services_->Release();
 }
@@ -80,7 +83,7 @@ void RichEdit::setOpacity(float opacity)
     }
 }
 
-float RichEdit::getOpactiy() const
+float RichEdit::getOpacity() const
 {
     return opacity_;
 }
@@ -243,6 +246,18 @@ void RichEdit::onDraw(SkCanvas & canvas, const Rect & inval)
     canvas.drawBitmap(Helper::ToSkBitmap(surface_), 0, 0, &paint);
 }
 
+void RichEdit::onPositionChanged()
+{
+    lazyInitialize();
+    services_->OnTxPropertyBitsChange(TXTBIT_CLIENTRECTCHANGE, TRUE);
+}
+
+void RichEdit::onSizeChanged()
+{
+    lazyInitialize();
+    services_->OnTxPropertyBitsChange(TXTBIT_CLIENTRECTCHANGE, TRUE);
+}
+
 void RichEdit::onMouseMove(MouseEvent & e)
 {
     lazyInitialize();
@@ -299,6 +314,12 @@ void RichEdit::onBlur(FocusEvent & e)
     lazyInitialize();
     services_->TxSendMessage(WM_KILLFOCUS, 0, 0, nullptr);
     services_->OnTxInPlaceActivate(NULL);
+}
+
+void RichEdit::onKeyPress(KeyEvent & e)
+{
+    lazyInitialize();
+    services_->TxSendMessage(WM_CHAR, e.ch(), Helper::ToKeyStateForKey(e.state()), 0);
 }
 
 void RichEdit::adjustSurface()
@@ -498,8 +519,9 @@ ULONG STDMETHODCALLTYPE RichEdit::Release(void)
 
 HDC RichEdit::TxGetDC()
 {
-    adjustSurface();
-    return Helper::ToHDC(surface_);
+    if (!dc_)
+        dc_ = ::CreateCompatibleDC(NULL);
+    return dc_;
 }
 
 INT RichEdit::TxReleaseDC(HDC hdc)

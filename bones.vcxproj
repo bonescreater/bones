@@ -97,6 +97,7 @@
     <ClCompile Include="bones\lua_event.cpp" />
     <ClCompile Include="bones\lua_meta_table.cpp" />
     <ClCompile Include="bones\lua_panel.cpp" />
+    <ClCompile Include="bones\lua_rich_edit.cpp" />
     <ClCompile Include="bones\lua_shape.cpp" />
     <ClCompile Include="bones\lua_text.cpp" />
     <ClCompile Include="bones\script_parser.cpp" />
@@ -122,6 +123,7 @@
     <ClInclude Include="bones\lua_event.h" />
     <ClInclude Include="bones\lua_meta_table.h" />
     <ClInclude Include="bones\lua_panel.h" />
+    <ClInclude Include="bones\lua_rich_edit.h" />
     <ClInclude Include="bones\lua_shape.h" />
     <ClInclude Include="bones\lua_text.h" />
     <ClInclude Include="bones\script_parser.h" />
