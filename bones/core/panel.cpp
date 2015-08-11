@@ -202,6 +202,8 @@ LRESULT Panel::handleKey(UINT uMsg, WPARAM wParam, LPARAM lParam)
     if (type != kET_COUNT)
     {
         KeyEvent e(type, root_.get(), (KeyboardCode)wParam, *(KeyState *)(&lParam), 0);
+        NativeEvent ne = { uMsg, wParam, lParam, 0 };
+        e.setNativeEvent(&ne);
         root_->handleEvent(e);
         return 0;
     }
@@ -221,9 +223,11 @@ LRESULT Panel::handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     if (type != kET_COUNT)
     {
-        CompositionEvent e(type, root_.get(), uMsg, wParam, lParam);
+        CompositionEvent e(type, root_.get());
+        NativeEvent ne = { uMsg, wParam, lParam, 0 };
+        e.setNativeEvent(&ne);
         root_->handleEvent(e);
-        return e.result();
+        return ne.result;
     }
     else
         return defProcessEvent(uMsg, wParam, lParam);
@@ -255,6 +259,8 @@ LRESULT Panel::handlePositionChanges(UINT uMsg, WPARAM wParam, LPARAM lParam)
 LRESULT Panel::handleFocus(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     FocusEvent e(WM_SETFOCUS == uMsg ? kET_FOCUS : kET_BLUR, root_.get(), false);
+    NativeEvent ne = { uMsg, wParam, lParam, 0 };
+    e.setNativeEvent(&ne);
     root_->handleEvent(e);
     return 0;
 }
@@ -419,6 +425,8 @@ LRESULT Panel::handleMouse(UINT uMsg, WPARAM wParam, LPARAM lParam)
     Point p(static_cast<float>(GET_X_LPARAM(lParam)), 
             static_cast<float>(GET_Y_LPARAM(lParam)));
     MouseEvent e(et, mb, root_.get(), p, p, flags);
+    NativeEvent ne = { uMsg, wParam, lParam, 0 };
+    e.setNativeEvent(&ne);
     root_->handleEvent(e);
     return 0;
 }

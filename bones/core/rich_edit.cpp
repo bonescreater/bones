@@ -61,7 +61,7 @@ ES_AUTOHSCROLL | ES_DISABLENOSCROLL),
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
 services_(nullptr), hwnd_(NULL), opacity_(1.f), 
 bg_opaque_(true), bg_color_(0xff0000ff), bg_set_color_(true),
-dc_(NULL)
+dc_(NULL), traversal_(false)
 {
     ;
 }
@@ -307,6 +307,7 @@ void RichEdit::onFocus(FocusEvent & e)
     lazyInitialize();
     services_->OnTxInPlaceActivate(NULL);
     services_->TxSendMessage(WM_SETFOCUS, 0, 0, nullptr);
+    traversal_ = e.isTabTraversal();
 }
 
 void RichEdit::onBlur(FocusEvent & e)
@@ -314,6 +315,23 @@ void RichEdit::onBlur(FocusEvent & e)
     lazyInitialize();
     services_->TxSendMessage(WM_KILLFOCUS, 0, 0, nullptr);
     services_->OnTxInPlaceActivate(NULL);
+}
+
+void RichEdit::onKeyDown(KeyEvent & e)
+{
+    lazyInitialize();
+    switch (e.key())
+    {
+    case kVKEY_BACK:
+    case kVKEY_RETURN:
+    //case kVKEY_TAB: tab用于切换焦点
+    case kVKEY_UP:
+    case kVKEY_DOWN:
+    case kVKEY_LEFT:
+    case kVKEY_RIGHT:
+        services_->TxSendMessage(WM_KEYDOWN, e.key(), Helper::ToKeyStateForKey(e.state()), 0);
+    }
+        
 }
 
 void RichEdit::onKeyPress(KeyEvent & e)
@@ -325,19 +343,30 @@ void RichEdit::onKeyPress(KeyEvent & e)
 void RichEdit::onCompositionStart(CompositionEvent & e)
 {
     lazyInitialize();
-    services_->TxSendMessage(e.msg(), e.wparam(), e.lparam(), 0);
+    auto native = e.nativeEvent();
+    if (native)
+        services_->TxSendMessage(native->msg, native->wparam, native->lparam, 0);
 }
 
 void RichEdit::onCompositionUpdate(CompositionEvent & e)
 {
     lazyInitialize();
-    services_->TxSendMessage(e.msg(), e.wparam(), e.lparam(), 0);
+    auto native = e.nativeEvent();
+    if (native)
+        services_->TxSendMessage(native->msg, native->wparam, native->lparam, 0);
 }
 
 void RichEdit::onCompositionEnd(CompositionEvent & e)
 {
     lazyInitialize();
-    services_->TxSendMessage(e.msg(), e.wparam(), e.lparam(), 0);
+    auto native = e.nativeEvent();
+    if (native)
+        services_->TxSendMessage(native->msg, native->wparam, native->lparam, 0);
+}
+
+bool RichEdit::skipDefaultKeyEventProcessing(const KeyEvent & ke)
+{
+    return false;
 }
 
 void RichEdit::adjustSurface()

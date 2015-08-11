@@ -198,6 +198,8 @@ protected:
 
     void onBlur(FocusEvent & e) override;
 
+    void onKeyDown(KeyEvent & e) override;
+
     void onKeyPress(KeyEvent & e) override;
 
     void onCompositionStart(CompositionEvent & e) override;
@@ -205,6 +207,8 @@ protected:
     void onCompositionUpdate(CompositionEvent & e) override;
 
     void onCompositionEnd(CompositionEvent & e) override;
+
+    bool skipDefaultKeyEventProcessing(const KeyEvent & ke) override;
 private:
     void adjustSurface();
 
@@ -235,6 +239,7 @@ private:
     bool bg_opaque_;
     Color bg_color_;
     bool bg_set_color_;
+    bool traversal_;
 };
 
 }

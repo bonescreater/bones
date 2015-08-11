@@ -70,6 +70,7 @@ void MouseController::handleEvent(MouseEvent & e)
     last_mouse_point_ = e.getLoc();
 
     MouseEvent me(e.type(), e.button(), target, target->mapToLocal(e.getLoc()), e.getLoc(), e.getFlags());
+    me.setNativeEvent(e.nativeEvent());
     if (kET_MOUSE_DOWN == me.type() )
     {
         //鼠标按下则发生焦点切换事件

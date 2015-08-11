@@ -134,7 +134,8 @@ void RootView::handleEvent(CompositionEvent & e)
     View * focus = focus_.current();
     if (!focus)
         return;
-    CompositionEvent ce(e.type(), focus, e.msg(), e.wparam(), e.lparam());
+    CompositionEvent ce(e.type(), focus);
+    ce.setNativeEvent(e.nativeEvent());
     EventDispatcher dispatcher;
     EventDispatcher::Path path;
     EventDispatcher::getPath(ce.target(), path);
@@ -162,6 +163,7 @@ void RootView::handleEvent(KeyEvent & e)
     if (!handle && focus)
     {//都不处理
         KeyEvent focus_ke(e.type(), focus, e.key(), e.state(), e.getFlags());
+        focus_ke.setNativeEvent(e.nativeEvent());
         EventDispatcher dispatcher;
         EventDispatcher::Path path;
         EventDispatcher::getPath(focus_ke.target(), path);

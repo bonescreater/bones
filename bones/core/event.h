@@ -8,6 +8,14 @@
 namespace bones
 {
 
+struct NativeEvent
+{
+    UINT msg;
+    WPARAM wparam;
+    LPARAM lparam;
+    LRESULT result;
+};
+
 class View;
 enum EventType
 {
@@ -85,9 +93,9 @@ public:
 
     Phase phase() const;
 
-    void setUserData(void * user_data);
+    void setNativeEvent(const NativeEvent * native);
 
-    void * userData() const;
+    const NativeEvent * nativeEvent() const;
 protected:
     Event();
 protected:
@@ -98,7 +106,7 @@ protected:
     bool cancelable_;
     bool canceled_;
     bool propagation_;
-    void * user_data_;
+    const NativeEvent * native_;
 };
 
 class UIEvent : public Event
@@ -230,34 +238,12 @@ private:
     int dy_;
 };
 
-class NativeEvent : public Event
-{
-public:
-    UINT msg() const;
-
-    WPARAM wparam() const;
-
-    LPARAM lparam() const;
-
-    LRESULT result() const;
-
-    void setResult(LRESULT result);
-protected:
-    NativeEvent();
-protected:
-    UINT msg_;
-    WPARAM wparam_;
-    LPARAM lparam_;
-    LRESULT result_;
-};
-
-class CompositionEvent : public NativeEvent
+class CompositionEvent : public Event
 {
 public:
     static CompositionEvent * From(Event & e);
 
-    CompositionEvent(EventType type, View * target, 
-                     UINT msg, WPARAM wparam, LPARAM lparam);
+    CompositionEvent(EventType type, View * target);
 };
 
 }
