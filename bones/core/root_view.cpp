@@ -129,6 +129,18 @@ void RootView::handleEvent(FocusEvent & e)
     }
 }
 
+void RootView::handleEvent(CompositionEvent & e)
+{
+    View * focus = focus_.current();
+    if (!focus)
+        return;
+    CompositionEvent ce(e.type(), focus, e.msg(), e.wparam(), e.lparam());
+    EventDispatcher dispatcher;
+    EventDispatcher::Path path;
+    EventDispatcher::getPath(ce.target(), path);
+    dispatcher.run(ce, path);
+}
+
 void RootView::handleEvent(KeyEvent & e)
 {
     //处理键盘事件

@@ -383,6 +383,15 @@ void View::dispatch(Event & e)
     case kET_KEY_UP:
         onKeyUp(*KeyEvent::From(e));
         break;
+    case kET_COMPOSITION_START:
+        onCompositionStart(*CompositionEvent::From(e));
+        break;
+    case kET_COMPOSITION_UPDATE:
+        onCompositionUpdate(*CompositionEvent::From(e));
+        break;
+    case kET_COMPOSITION_END:
+        onCompositionEnd(*CompositionEvent::From(e));
+        break;
     case kET_FOCUS_OUT:
         onFocusOut(*FocusEvent::From(e));
         break;
@@ -644,6 +653,21 @@ void View::onKeyUp(KeyEvent & e)
 }
 
 void View::onKeyPress(KeyEvent & e)
+{
+    ;
+}
+
+void View::onCompositionStart(CompositionEvent & e)
+{
+    ;
+}
+
+void View::onCompositionUpdate(CompositionEvent & e)
+{
+    ;
+}
+
+void View::onCompositionEnd(CompositionEvent & e)
 {
     ;
 }

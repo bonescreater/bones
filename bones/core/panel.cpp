@@ -209,6 +209,27 @@ LRESULT Panel::handleKey(UINT uMsg, WPARAM wParam, LPARAM lParam)
         return defProcessEvent(uMsg, wParam, lParam);
 }
 
+LRESULT Panel::handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    EventType type = kET_COUNT;
+    if (WM_IME_STARTCOMPOSITION == uMsg)
+        type = kET_COMPOSITION_START;
+    else if (WM_IME_COMPOSITION == uMsg)
+        type = kET_COMPOSITION_UPDATE;
+    else if (WM_IME_ENDCOMPOSITION == uMsg)
+        type = kET_COMPOSITION_END;
+
+    if (type != kET_COUNT)
+    {
+        CompositionEvent e(type, root_.get(), uMsg, wParam, lParam);
+        root_->handleEvent(e);
+        return e.result();
+    }
+    else
+        return defProcessEvent(uMsg, wParam, lParam);
+    
+}
+
 LRESULT Panel::handleNCCalcSize(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (wParam == TRUE)
@@ -435,6 +456,10 @@ LRESULT Panel::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_KEYUP:
         case WM_CHAR:
             return handleKey(uMsg, wParam, lParam);
+        case WM_IME_STARTCOMPOSITION:
+        case WM_IME_COMPOSITION:
+        case WM_IME_ENDCOMPOSITION:
+            return handleIME(uMsg, wParam, lParam);
         default:
             return defProcessEvent(uMsg, wParam, lParam);
         }

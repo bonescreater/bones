@@ -95,6 +95,8 @@ private:
     LRESULT handleSetCursor(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     LRESULT handleKey(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+    LRESULT handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
     RefPtr<RootView> root_;
     Rect nc_area_[kNCAreaCount];

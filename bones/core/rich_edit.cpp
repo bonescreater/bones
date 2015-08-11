@@ -322,6 +322,24 @@ void RichEdit::onKeyPress(KeyEvent & e)
     services_->TxSendMessage(WM_CHAR, e.ch(), Helper::ToKeyStateForKey(e.state()), 0);
 }
 
+void RichEdit::onCompositionStart(CompositionEvent & e)
+{
+    lazyInitialize();
+    services_->TxSendMessage(e.msg(), e.wparam(), e.lparam(), 0);
+}
+
+void RichEdit::onCompositionUpdate(CompositionEvent & e)
+{
+    lazyInitialize();
+    services_->TxSendMessage(e.msg(), e.wparam(), e.lparam(), 0);
+}
+
+void RichEdit::onCompositionEnd(CompositionEvent & e)
+{
+    lazyInitialize();
+    services_->TxSendMessage(e.msg(), e.wparam(), e.lparam(), 0);
+}
+
 void RichEdit::adjustSurface()
 {
     int iwidth = (int)getWidth();

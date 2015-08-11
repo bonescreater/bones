@@ -193,6 +193,12 @@ protected:
 
     virtual void onKeyPress(KeyEvent & e);
 
+    virtual void onCompositionStart(CompositionEvent & e);
+
+    virtual void onCompositionUpdate(CompositionEvent & e);
+
+    virtual void onCompositionEnd(CompositionEvent & e);
+
     virtual void onFocusOut(FocusEvent & e);
 
     virtual void onFocusIn(FocusEvent & e);

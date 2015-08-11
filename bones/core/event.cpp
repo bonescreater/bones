@@ -251,5 +251,54 @@ int WheelEvent::dy() const
     return dy_;
 }
 
+UINT NativeEvent::msg() const
+{
+    return msg_;
+}
+
+WPARAM NativeEvent::wparam() const
+{
+    return wparam_;
+}
+
+LPARAM NativeEvent::lparam() const
+{
+    return lparam_;
+}
+
+LRESULT NativeEvent::result() const
+{
+    return result_;
+}
+
+void NativeEvent::setResult(LRESULT result)
+{
+    result_ = result;
+}
+
+NativeEvent::NativeEvent()
+:msg_(WM_NULL), wparam_(0), lparam_(0), result_(0)
+{
+
+}
+
+CompositionEvent * CompositionEvent::From(Event & e)
+{
+    if (kET_COMPOSITION_START == e.type() || 
+        kET_COMPOSITION_UPDATE == e.type() ||
+        kET_COMPOSITION_END == e.type())
+        return static_cast<CompositionEvent *>(&e);
+    return nullptr;
+}
+
+CompositionEvent::CompositionEvent(EventType type, View * target,
+    UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    type_ = type;
+    target_.reset(target);
+    msg_ = msg;
+    wparam_ = wparam;
+    lparam_ = lparam;
+}
 
 }

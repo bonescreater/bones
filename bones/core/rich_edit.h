@@ -199,6 +199,12 @@ protected:
     void onBlur(FocusEvent & e) override;
 
     void onKeyPress(KeyEvent & e) override;
+
+    void onCompositionStart(CompositionEvent & e) override;
+
+    void onCompositionUpdate(CompositionEvent & e) override;
+
+    void onCompositionEnd(CompositionEvent & e) override;
 private:
     void adjustSurface();
 

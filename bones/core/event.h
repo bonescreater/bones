@@ -24,6 +24,9 @@ enum EventType
     kET_KEY_PRESS,
     kET_KEY_UP,
 
+    kET_COMPOSITION_START,
+    kET_COMPOSITION_UPDATE,
+    kET_COMPOSITION_END,
 
     kET_FOCUS_OUT,
     kET_FOCUS_IN,
@@ -225,6 +228,36 @@ public:
 private:
     int dx_;
     int dy_;
+};
+
+class NativeEvent : public Event
+{
+public:
+    UINT msg() const;
+
+    WPARAM wparam() const;
+
+    LPARAM lparam() const;
+
+    LRESULT result() const;
+
+    void setResult(LRESULT result);
+protected:
+    NativeEvent();
+protected:
+    UINT msg_;
+    WPARAM wparam_;
+    LPARAM lparam_;
+    LRESULT result_;
+};
+
+class CompositionEvent : public NativeEvent
+{
+public:
+    static CompositionEvent * From(Event & e);
+
+    CompositionEvent(EventType type, View * target, 
+                     UINT msg, WPARAM wparam, LPARAM lparam);
 };
 
 }

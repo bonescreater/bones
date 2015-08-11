@@ -58,6 +58,8 @@ public:
 
     void handleEvent(FocusEvent & e);
 
+    void handleEvent(CompositionEvent & e);
+
     //void handleEvent(WheelEvent & e);
 
     //void handleEvent(Event & e);
