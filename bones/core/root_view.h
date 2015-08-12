@@ -15,6 +15,14 @@ namespace bones
 
 class Widget;
 
+struct NativeEvent
+{
+    UINT msg;
+    WPARAM wparam;
+    LPARAM lparam;
+    LRESULT result;
+};
+
 class RootView : public View
 {
 public:
@@ -36,12 +44,6 @@ public:
 
     void setDelegate(Delegate * delegate);
 
-    void setColor(Color color);
-
-    void setOpacity(float opacity);
-
-    float getOpacity() const;
-
     void draw();
 
     const Rect & getDirtyRect() const;
@@ -52,23 +54,25 @@ public:
 
     Widget * getWidget() const;
 
-    void handleEvent(KeyEvent & e);
+    void handleMouse(NativeEvent & e);
 
-    void handleEvent(MouseEvent & e);
+    void handleKey(NativeEvent & e);
 
-    void handleEvent(FocusEvent & e);
+    void handleFocus(NativeEvent & e);
 
-    void handleEvent(CompositionEvent & e);
+    void handleComposition(NativeEvent & e);
 
-    //void handleEvent(WheelEvent & e);
+    void handleWheel(NativeEvent & e);
 
-    //void handleEvent(Event & e);
     bool isVisible() const override;
 
     RootView * getRoot() override;
 
     const char * getClassName() const override;
+protected:
+    //void handleEvent(WheelEvent & e);
 
+    //void handleEvent(Event & e);
 protected:
     virtual void onDraw(SkCanvas & canvas, const Rect & inval) override;
 
@@ -95,8 +99,6 @@ private:
     SkBaseDevice * device_;
     Delegate * delegate_;
     Rect dirty_;
-    Color color_;
-    float opacity_;
     bool has_focus_;
     friend class MouseController;
 };

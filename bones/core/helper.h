@@ -2,6 +2,7 @@
 #define BONES_CORE_HELPER_H_
 
 #include "core.h"
+#include "event.h"
 
 struct SkRect;
 struct SkIRect;
@@ -57,9 +58,13 @@ public:
 
     static LPARAM ToCoordinateForMouse(const Point & pt);
 
-    static UINT ToMsgForMouse(int type, int button);
+    static UINT ToMsgForMouse(EventType type, MouseButton button);
 
     static LPARAM ToKeyStateForKey(const KeyState & state);
+
+    static int ToFlagsForMouse(WPARAM wp);
+
+    static void ToEMForMouse(UINT msg, EventType & type, MouseButton & mb);
 };
 
 }

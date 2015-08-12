@@ -10,7 +10,7 @@
 namespace bones
 {
 
-class Shape : public Skin
+class Shape : public View
 {
 public:
     enum Style
@@ -74,6 +74,8 @@ public:
     const char * getClassName() const override;
 protected:
     void onDraw(SkCanvas & canvas, const Rect & inval) override;
+
+    bool onHitTest(const Point & pt) override;
 
     void drawBackground(SkCanvas & canvas);
 

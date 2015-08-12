@@ -208,18 +208,7 @@ static int Opacity(lua_State * l)
         lua_copy(l, 1, -1);
         Ref * ref = LuaMetaTable::CallGetCObject(l);
         if (ref)
-        {
-            auto opa = 0.f;
-            if (kClassPanel == ref->getClassName())
-                opa = ((Panel *)ref)->getOpacity();
-            else if (kClassRootView == ref->getClassName())
-                opa = ((RootView *)ref)->getOpacity();
-            else if (kClassRichEdit == ref->getClassName())
-                opa = ((RichEdit *)ref)->getOpacity();
-            else
-                opa = ((Skin *)ref)->getOpacity();
-            lua_pushnumber(l, opa);
-        }
+            lua_pushnumber(l, ((View *)ref)->getOpacity());
     }
     return 1;
 }
@@ -348,8 +337,6 @@ static int StopAllAnimate(lua_State * l)
 void LuaMetaTable::GetPanel(lua_State * l)
 {
     GetRef(l, kMetaTablePanel);
-    lua_pushcfunction(l, &Opacity);
-    lua_setfield(l, -2, kMethodOpacity);
     //css method
     lua_pushcfunction(l, &ApplyCSS);
     lua_setfield(l, -2, kMethodApplyCSS);
@@ -428,7 +415,7 @@ void LuaMetaTable::GetView(lua_State * l, const char * class_name)
     lua_pushcfunction(l, &GetSize);
     lua_setfield(l, -2, kMethodSize);
 
-    //view panel
+    //view
     lua_pushcfunction(l, &Opacity);
     lua_setfield(l, -2, kMethodOpacity);
     //css method

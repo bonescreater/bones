@@ -9,7 +9,7 @@ namespace bones
 {
 
 
-class Text : public Skin
+class Text : public View
 {
 public:
     enum Align
@@ -58,6 +58,8 @@ protected:
     void onDraw(SkCanvas & canvas, const Rect & inval) override;
 
     void onSizeChanged() override;
+
+    bool onHitTest(const Point & pt) override;
 private:
     void adjustCache();
 

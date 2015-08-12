@@ -11,7 +11,7 @@ class SkShader;
 namespace bones
 {
 
-class Image : public Skin
+class Image : public View
 {
 private:
     enum Style
@@ -31,6 +31,8 @@ public:
     const char * getClassName() const override;
 protected:
     void onDraw(SkCanvas & canvas, const Rect & inval) override;
+
+    bool onHitTest(const Point & pt) override;
 private:
     void drawImage(SkCanvas & canvas, const Rect & bounds);
 

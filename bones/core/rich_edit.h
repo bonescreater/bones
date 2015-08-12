@@ -17,10 +17,6 @@ public:
     RichEdit();
 
     ~RichEdit();
-
-    void setOpacity(float opacity);
-
-    float getOpacity() const;
     
     void setText(const wchar_t * text);
 
@@ -208,6 +204,8 @@ protected:
 
     void onCompositionEnd(CompositionEvent & e) override;
 
+    void onAddHierarchy(View * start) override;
+
     bool skipDefaultKeyEventProcessing(const KeyEvent & ke) override;
 private:
     void adjustSurface();
@@ -235,7 +233,6 @@ private:
     LONG accel_pos_;
     ITextServices * services_;
     Surface surface_;
-    float opacity_;
     bool bg_opaque_;
     Color bg_color_;
     bool bg_set_color_;

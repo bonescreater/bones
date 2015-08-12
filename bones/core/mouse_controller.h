@@ -31,8 +31,6 @@ private:
     void shiftCapture(View * n);
 
     void shiftOver(View * n);
-
-    void pushEvent(MouseEvent & e);
 private:
     RootView * root_;
     RefPtr<View> over_;

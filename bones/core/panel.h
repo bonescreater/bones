@@ -42,13 +42,7 @@ public:
 
     void setCursor(Cursor cursor);
 
-    void setColor(Color color);
-
-    void setOpacity(float opacity);
-
     void setEXStyle(uint64_t ex_style);
-
-    float getOpacity() const;
 
     const char * getClassName() const override;
 

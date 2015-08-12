@@ -59,7 +59,7 @@ RichEdit::RichEdit()
 scroll_bars_(WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL |
 ES_AUTOHSCROLL | ES_DISABLENOSCROLL), 
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
-services_(nullptr), hwnd_(NULL), opacity_(1.f), 
+services_(nullptr), hwnd_(NULL),
 bg_opaque_(true), bg_color_(0xff0000ff), bg_set_color_(true),
 dc_(NULL), traversal_(false)
 {
@@ -74,29 +74,13 @@ RichEdit::~RichEdit()
         services_->Release();
 }
 
-void RichEdit::setOpacity(float opacity)
-{
-    if (opacity_ != opacity)
-    {
-        opacity_ = opacity;
-        inval();
-    }
-}
-
-float RichEdit::getOpacity() const
-{
-    return opacity_;
-}
-
 void RichEdit::setText(const wchar_t * text)
 {
-    lazyInitialize();
     services_->TxSetText(text);
 }
 
 void RichEdit::setRichText(bool rich)
 {
-    lazyInitialize();
     if (rich)
         txt_bits_ |= TXTBIT_RICHTEXT;
     else
@@ -111,7 +95,6 @@ bool RichEdit::getRichText() const
 
 void RichEdit::setReadOnly(bool readonly)
 {
-    lazyInitialize();
     if (readonly)
         txt_bits_ |= TXTBIT_READONLY;
     else
@@ -127,7 +110,6 @@ bool RichEdit::getReadOnly() const
 
 void RichEdit::setLimitText(uint64_t length)
 {
-    lazyInitialize();
     if (max_length_ != (DWORD)length)
     {
         max_length_ = (DWORD)length;
@@ -142,7 +124,6 @@ uint64_t RichEdit::getLimitText() const
 
 void RichEdit::setWordWrap(bool wordwrap)
 {
-    lazyInitialize();
     if (wordwrap)
         txt_bits_ |= TXTBIT_WORDWRAP;
     else
@@ -157,7 +138,6 @@ bool RichEdit::getWordWrap() const
 
 void RichEdit::setBackground(bool opaque, Color * bg_color)
 {
-    lazyInitialize();
     bg_opaque_ = opaque;
     bg_set_color_ = false;
     if (bg_color)
@@ -170,7 +150,6 @@ void RichEdit::setBackground(bool opaque, Color * bg_color)
 
 void RichEdit::setFont(const wchar_t * family, int text_size, bool bBold, bool bUnderline, bool bItalic)
 {
-    lazyInitialize();
     LOGFONT lf = { 0 };
     ::GetObject(::GetStockObject(DEFAULT_GUI_FONT), sizeof(LOGFONT), &lf);
     if (family)
@@ -208,7 +187,6 @@ const char * RichEdit::getClassName() const
 
 void RichEdit::onDraw(SkCanvas & canvas, const Rect & inval)
 {
-    lazyInitialize();
     adjustSurface();
     if (surface_.isEmpty() || !surface_.isValid())
         return;
@@ -248,21 +226,16 @@ void RichEdit::onDraw(SkCanvas & canvas, const Rect & inval)
 
 void RichEdit::onPositionChanged()
 {
-    lazyInitialize();
     services_->OnTxPropertyBitsChange(TXTBIT_CLIENTRECTCHANGE, TRUE);
 }
 
 void RichEdit::onSizeChanged()
 {
-    lazyInitialize();
     services_->OnTxPropertyBitsChange(TXTBIT_CLIENTRECTCHANGE, TRUE);
 }
 
 void RichEdit::onMouseMove(MouseEvent & e)
 {
-    lazyInitialize();
-    adjustSurface();
-
     LRESULT lr = 1;
     auto root = getRoot();
     //WM_SETCURSOR仅在非Capture下WM_MOUSEMOVE才会发送
@@ -271,7 +244,7 @@ void RichEdit::onMouseMove(MouseEvent & e)
     {
         auto & loc = e.getLoc();
         services_->OnTxSetCursor(DVASPECT_CONTENT, 0, NULL, NULL,
-            Helper::ToHDC(surface_), NULL, NULL, (INT)loc.x(), (INT)loc.y());
+            dc_, NULL, NULL, (INT)loc.x(), (INT)loc.y());
     }
 
 
@@ -283,8 +256,6 @@ void RichEdit::onMouseMove(MouseEvent & e)
 
 void RichEdit::onMouseDown(MouseEvent & e)
 {
-    lazyInitialize();
-
     services_->TxSendMessage(
         Helper::ToMsgForMouse(e.type(), e.button()),
         Helper::ToKeyStateForMouse(e.getFlags()),
@@ -293,9 +264,6 @@ void RichEdit::onMouseDown(MouseEvent & e)
 
 void RichEdit::onMouseUp(MouseEvent & e)
 {
-    lazyInitialize();
-
-
     services_->TxSendMessage(
         Helper::ToMsgForMouse(e.type(), e.button()),
         Helper::ToKeyStateForMouse(e.getFlags()),
@@ -304,7 +272,6 @@ void RichEdit::onMouseUp(MouseEvent & e)
 
 void RichEdit::onFocus(FocusEvent & e)
 {
-    lazyInitialize();
     services_->OnTxInPlaceActivate(NULL);
     services_->TxSendMessage(WM_SETFOCUS, 0, 0, nullptr);
     traversal_ = e.isTabTraversal();
@@ -312,14 +279,12 @@ void RichEdit::onFocus(FocusEvent & e)
 
 void RichEdit::onBlur(FocusEvent & e)
 {
-    lazyInitialize();
     services_->TxSendMessage(WM_KILLFOCUS, 0, 0, nullptr);
     services_->OnTxInPlaceActivate(NULL);
 }
 
 void RichEdit::onKeyDown(KeyEvent & e)
 {
-    lazyInitialize();
     switch (e.key())
     {
     case kVKEY_BACK:
@@ -336,32 +301,34 @@ void RichEdit::onKeyDown(KeyEvent & e)
 
 void RichEdit::onKeyPress(KeyEvent & e)
 {
-    lazyInitialize();
-    services_->TxSendMessage(WM_CHAR, e.ch(), Helper::ToKeyStateForKey(e.state()), 0);
+    if (e.ch() != '\t')
+        services_->TxSendMessage(WM_CHAR, e.ch(), Helper::ToKeyStateForKey(e.state()), 0);
 }
 
 void RichEdit::onCompositionStart(CompositionEvent & e)
 {
-    lazyInitialize();
-    auto native = e.nativeEvent();
+    auto native = (NativeEvent *)e.getUserData();
     if (native)
         services_->TxSendMessage(native->msg, native->wparam, native->lparam, 0);
 }
 
 void RichEdit::onCompositionUpdate(CompositionEvent & e)
 {
-    lazyInitialize();
-    auto native = e.nativeEvent();
+    auto native = (NativeEvent *)e.getUserData();
     if (native)
         services_->TxSendMessage(native->msg, native->wparam, native->lparam, 0);
 }
 
 void RichEdit::onCompositionEnd(CompositionEvent & e)
 {
-    lazyInitialize();
-    auto native = e.nativeEvent();
+    auto native = (NativeEvent *)e.getUserData();
     if (native)
         services_->TxSendMessage(native->msg, native->wparam, native->lparam, 0);
+}
+
+void RichEdit::onAddHierarchy(View * start)
+{
+    lazyInitialize();
 }
 
 bool RichEdit::skipDefaultKeyEventProcessing(const KeyEvent & ke)
@@ -504,6 +471,10 @@ void RichEdit::lazyInitialize()
     if (!hwnd_)
         getHWND();
     assert(hwnd_);
+    if (!dc_)
+        dc_ = ::CreateCompatibleDC(NULL);
+    assert(dc_);
+
     if (!services_)
     {
         HMODULE rich = ::GetModuleHandle(L"Msftedit.dll");
@@ -566,8 +537,6 @@ ULONG STDMETHODCALLTYPE RichEdit::Release(void)
 
 HDC RichEdit::TxGetDC()
 {
-    if (!dc_)
-        dc_ = ::CreateCompatibleDC(NULL);
     return dc_;
 }
 

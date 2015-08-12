@@ -26,20 +26,15 @@ local function stateChanged(self, force)
     highlight_css = string.format("{rect:0px 0px;border:1px solid #ffaaaaaa;linear-gradient:0px 0px %dpx clamp #ffffffff #ffeaeaea;}", height);
     press_css = string.format("{rect:0px 0px;border:1px solid #ff999999;linear-gradient:0px 0px %dpx clamp #ffffffff #ffd3d3d3;}", height);
     disable_css = string.format("{rect:0px 0px;border:1px solid #ffbbbbbb;linear-gradient:0px 0px %dpx clamp #ffffffff #ffd9d9d9;}", height);
-
 	if state ~= self.state_ or force then 
 		self.state_ = state;
 		if self.state_ == common then
-			--self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffd9d9d9;}")
 			self.shape_:applyCSS(common_css)
 		elseif self.state_ == highlight then
-			--self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffeaeaea;}")
 			self.shape_:applyCSS(highlight_css)
 		elseif self.state_ == press then
-			--self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffd3d3d3;}")
 			self.shape_:applyCSS(press_css)
 		elseif self.state_ == disable then
-			--self.shirt_:applyCSS("{linear-gradient:left top left bottom #ffffffff #ffd9d9d9;}")
 			self.shape_:applyCSS(disable_css)
 		end
 	end
@@ -75,6 +70,7 @@ self.state_ = disable
 self.shirt_ = self:getChildAt(0);
 self.shape_ = self:getChildAt(1);
 self.text_ = self:getChildAt(2);
+self.border_ = self:getChildAt(3);
 
 end
 
@@ -123,9 +119,15 @@ function mod.onMouseLeave(self, e)
 end
 
 function mod.onBlur(self, e)
+    print("onBlur")
+    self.border_:applyCSS("{border:0px solid #ff00ff00;}")
 end
 
 function mod.onFocus(self, e)
+    print("onFocus")
+    if e:isTabTraversal() then
+        self.border_:applyCSS("{border:1px solid #ff00ff00;}")
+    end
 end
 
 function mod.onSizeChanged(self)
@@ -134,7 +136,7 @@ function mod.onSizeChanged(self)
 	self.shirt_:applyCSS(css);
 	self.text_:applyCSS(css);
 	self.shape_:applyCSS(css);
-
+    self.border_:applyCSS(css);
     stateChanged(self, true);
 end
 

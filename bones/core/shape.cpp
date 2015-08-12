@@ -15,6 +15,7 @@ colour_type_(kColor)
     rect_param_.rx = 0;
     rect_param_.ry = 0;
     circle_param_.radius = 0;
+    setFocusable(false);
 }
 
 Shape::~Shape()
@@ -98,6 +99,11 @@ void Shape::onDraw(SkCanvas & canvas, const Rect & inval)
         return;
     drawBackground(canvas);
     drawBorder(canvas);
+}
+
+bool Shape::onHitTest(const Point & pt)
+{
+    return false;
 }
 
 void Shape::drawBackground(SkCanvas & canvas)

@@ -152,8 +152,8 @@ void FocusController::setFocusWithReason(View * view, FocusChangeReason reason)
 
     View *last = current_.get();
 
-    EventDispatcher::getPath(last, last_path);
-    EventDispatcher::getPath(view, newly_path);
+    EventDispatcher::GetPath(last, last_path);
+    EventDispatcher::GetPath(view, newly_path);
     if (last)
         dispatcher.run(FocusEvent(kET_FOCUS_OUT, last, tab), last_path);
     if (view)

@@ -7,7 +7,7 @@ namespace bones
 {
 static int kInvalidTag = -1;
 
-View::View() :tag_(kInvalidTag), group_id_(-1), children_count_(0)
+View::View() :tag_(kInvalidTag), group_id_(-1), children_count_(0), opacity_(1.0f)
 {
     flag_.focusable = true;
     flag_.visible = true;
@@ -17,6 +17,20 @@ View::View() :tag_(kInvalidTag), group_id_(-1), children_count_(0)
 View::~View()
 {
     ;
+}
+
+void View::setOpacity(float opacity)
+{
+    if (opacity_ != opacity)
+    {
+        opacity_ = opacity;
+        inval();
+    }
+}
+
+float View::getOpacity() const
+{
+    return opacity_;
 }
 
 void View::setLoc(Scalar x, Scalar y)
@@ -911,24 +925,5 @@ void View::recursiveVisibleNotifications(View * start)
 }
 
 
-Skin::Skin()
-:opacity_(1.0f)
-{
-    setFocusable(false);
-}
-
-void Skin::setOpacity(float opacity)
-{
-    if (opacity_ != opacity)
-    {
-        opacity_ = opacity;
-        inval();
-    }
-}
-
-float Skin::getOpacity() const
-{
-    return opacity_;
-}
 
 }

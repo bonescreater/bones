@@ -6,7 +6,7 @@ namespace bones
 
 Event::Event() 
 :type_(kET_COUNT), phase_(kCapture),
-bubbles_(true), cancelable_(true), canceled_(false), propagation_(true), native_(nullptr)
+bubbles_(true), cancelable_(true), canceled_(false), propagation_(true), user_data_(nullptr)
 {
 
 }
@@ -45,14 +45,14 @@ Event::Phase Event::phase() const
     return phase_;
 }
 
-void Event::setNativeEvent(const NativeEvent * native)
+void Event::setUserData(void * ud)
 {
-    native_ = native;
+    user_data_ = ud;
 }
 
-const NativeEvent * Event::nativeEvent() const
+void * Event::getUserData() const
 {
-    return native_;
+    return user_data_;
 }
 
 bool UIEvent::isShiftDown() const 

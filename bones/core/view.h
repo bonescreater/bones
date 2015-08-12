@@ -31,6 +31,10 @@ public:
 
     virtual ~View();
 
+    void setOpacity(float opacity);//0~1.f
+
+    float getOpacity() const;
+
     void setLoc(Scalar x, Scalar y);
 
     void setSize(Scalar w, Scalar h);
@@ -256,27 +260,13 @@ protected:
     int tag_;
     int group_id_;
 
+    float opacity_;
     friend class EventDispatcher;
     friend class RootView;
 
     friend class B2FIter;
     friend class F2BIter;
 };
-
-
-//外观
-class Skin : public View
-{
-public:
-    void setOpacity(float opacity);//0~1.f
-
-    float getOpacity() const;
-protected:
-    Skin();
-protected:
-    float opacity_;
-};
-
 
 }
 #endif

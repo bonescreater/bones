@@ -7,14 +7,17 @@
 	                <area>
                     <event name ="onPrepare" module ="button" func ="onPrepare"></event>
                     <event name ="onSizeChanged" module ="button" func ="onSizeChanged"></event>
-                    <event name ="onMouseDown" phase ="capture" module ="button" func ="onMouseDown"></event>
-                    <event name ="onMouseUp" phase ="capture" module ="button" func ="onMouseUp"></event>
-                    <event name ="onMouseMove" phase ="capture" module ="button" func ="onMouseMove"></event>
-                    <event name ="onMouseLeave" phase ="capture" module ="button" func ="onMouseLeave"></event>
-                    <event name ="onMouseEnter" phase ="capture" module ="button" func ="onMouseEnter"></event>
+                    <event name ="onMouseDown" phase ="target" module ="button" func ="onMouseDown"></event>
+                    <event name ="onMouseUp" phase ="target" module ="button" func ="onMouseUp"></event>
+                    <event name ="onMouseMove" phase ="target" module ="button" func ="onMouseMove"></event>
+                    <event name ="onMouseLeave" phase ="target" module ="button" func ="onMouseLeave"></event>
+                    <event name ="onMouseEnter" phase ="target" module ="button" func ="onMouseEnter"></event>
+                    <event name ="onFocus" phase ="target" module ="button" func ="onFocus"></event>
+                    <event name ="onBlur" phase ="target" module ="button" func ="onBlur"></event>
                   	<image class = "b"></image>
                     <shape></shape>
                     <text class="t"></text>
+                    <shape></shape>
                   </area>
 </body>
 </bones>

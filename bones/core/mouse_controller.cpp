@@ -38,7 +38,7 @@ void MouseController::shiftIfNecessary()
         if (!target)
             return;
         MouseEvent e(kET_MOUSE_MOVE, kMB_NONE, target, target->mapToLocal(last_mouse_point_), last_mouse_point_, 0);
-        pushEvent(e);
+        EventDispatcher::Push(e);
     }
 }
 
@@ -70,7 +70,7 @@ void MouseController::handleEvent(MouseEvent & e)
     last_mouse_point_ = e.getLoc();
 
     MouseEvent me(e.type(), e.button(), target, target->mapToLocal(e.getLoc()), e.getLoc(), e.getFlags());
-    me.setNativeEvent(e.nativeEvent());
+    me.setUserData(e.getUserData());
     if (kET_MOUSE_DOWN == me.type() )
     {
         //鼠标按下则发生焦点切换事件
@@ -80,7 +80,7 @@ void MouseController::handleEvent(MouseEvent & e)
             shiftCapture(target);
     }
     shiftOver(target);
-    pushEvent(me);
+    EventDispatcher::Push(me);
     if (kET_MOUSE_UP == me.type() && me.isLeftMouse())
     {//左键弹起 取消capture
         shiftCapture(nullptr);
@@ -97,9 +97,9 @@ void MouseController::shiftOver(View * n)
     {
         EventDispatcher dispatcher;
         EventDispatcher::Path old_path;
-        EventDispatcher::getPath(over_.get(), old_path);
+        EventDispatcher::GetPath(over_.get(), old_path);
         EventDispatcher::Path new_path;
-        EventDispatcher::getPath(n, new_path);
+        EventDispatcher::GetPath(n, new_path);
         if (over_)
         {
             Point empty;
@@ -142,12 +142,5 @@ View * MouseController::over() const
     return over_.get();
 }
 
-void MouseController::pushEvent(MouseEvent & e)
-{
-    EventDispatcher dispatcher;
-    EventDispatcher::Path path;
-    EventDispatcher::getPath(e.target(), path);
-    dispatcher.run(e, path);
-}
 
 }

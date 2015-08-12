@@ -6,7 +6,15 @@
 namespace bones
 {
 
-void EventDispatcher::getPath(View * v, Path & path)
+void EventDispatcher::Push(Event & e)
+{
+    EventDispatcher dispatcher;
+    EventDispatcher::Path path;
+    EventDispatcher::GetPath(e.target(), path);
+    dispatcher.run(e, path);
+}
+
+void EventDispatcher::GetPath(View * v, Path & path)
 {
     path.clear();
 

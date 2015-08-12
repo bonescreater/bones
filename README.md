@@ -3,6 +3,7 @@
 
 bug
 1.暂不推荐在layered window中使用 richedit
+
 	a. layered window 不能显示 richedit 光标 
        可以自绘光标但考虑到richedit的效率暂时不解决	
 

@@ -359,11 +359,11 @@ static void ViewSetCursor(Ref * ob, const CSSParams & params)
     v->setCursor(CSSStrToCursor(params[0]));
 }
 
-static void SkinSetOpacity(Ref * ob, const CSSParams & params)
+static void ViewSetOpacity(Ref * ob, const CSSParams & params)
 {
     if (params.empty() || !ob || params.size() < 1)
         return;
-    auto v = static_cast<Skin *>(ob);
+    auto v = static_cast<View *>(ob);
     v->setOpacity(CSSStrToFloat(params[0]));
 }
 
@@ -643,22 +643,6 @@ static void PanelHitTest(Ref * ob, const CSSParams & params)
     v->setNCArea(nc, r);
 }
 
-static void PanelSetColor(Ref * ob, const CSSParams & params)
-{
-    if (params.empty() || !ob)
-        return;
-    auto v = static_cast<Panel *>(ob);
-    v->setColor(CSSStrToColor(params[0]));
-}
-
-static void PanelSetOpacity(Ref * ob, const CSSParams & params)
-{
-    if (params.empty() || !ob || params.size() < 1)
-        return;
-    auto v = static_cast<Panel *>(ob);
-    v->setOpacity(CSSStrToScalar(params[0]));
-}
-
 static void PanelSetEXStyle(Ref * ob, const CSSParams & params)
 {
     if (params.empty() || !ob || params.size() < 1)
@@ -715,13 +699,13 @@ void ClassDescriptor::registerImage()
 {
     //view已经register上了
     auto & table = multi_class_tables_[kClassImage];
-    registerSkin(table);
+    registerView(table);
 }
 
 void ClassDescriptor::registerText()
 {
     auto & table = multi_class_tables_[kClassText];   
-    registerSkin(table);
+    registerView(table);
     table[kDescColor] = &TextSetColor;
     table[kDescContent] = &TextSetContent;
 }
@@ -729,7 +713,7 @@ void ClassDescriptor::registerText()
 void ClassDescriptor::registerShape()
 {
     auto & table = multi_class_tables_[kClassShape];
-    registerSkin(table);
+    registerView(table);
     table[kDescBorder] = &ShapeSetBorder;
     table[kDescColor] = &ShapeSetColor;
     table[kDescLinearGradient] = &ShapeSetLinearGradient;
@@ -747,8 +731,6 @@ void ClassDescriptor::registerPanel()
     registerWidget(table);
     table[kDescCursor] = &PanelSetCursor;
     table[kDescHitTest] = &PanelHitTest;
-    table[kDescColor] = &PanelSetColor;
-    table[kDescOpacity] = &PanelSetOpacity;
     table[kDescEXStyle] = &PanelSetEXStyle;
 }
 
@@ -759,12 +741,7 @@ void ClassDescriptor::registerView(CSSClassTable & table)
     table[kDescWidth] = &ViewSetWidth;
     table[kDescHeight] = &ViewSetHeight;
     table[kDescCursor] = &ViewSetCursor;
-}
-
-void ClassDescriptor::registerSkin(CSSClassTable & table)
-{
-    registerView(table);
-    table[kDescOpacity] = &SkinSetOpacity;
+    table[kDescOpacity] = &ViewSetOpacity;
 }
 
 void ClassDescriptor::registerWidget(CSSClassTable & table)

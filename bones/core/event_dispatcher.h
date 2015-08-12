@@ -16,7 +16,9 @@ class EventDispatcher
 public:
     typedef std::list<RefPtr<View>> Path;
 public:
-    static void getPath(View * v, Path & path);
+    static void Push(Event & e);
+
+    static void GetPath(View * v, Path & path);
 public:
     virtual void run(Event & e, Path & path);
 };

@@ -13,8 +13,8 @@ namespace bones
 {
 
 RootView::RootView()
-: delegate_(nullptr), mouse_(this), focus_(this), color_(0),
-opacity_(1.0f), device_(nullptr)
+: delegate_(nullptr), mouse_(this), focus_(this),
+device_(nullptr)
 {
     ;
 }
@@ -34,24 +34,114 @@ void RootView::setDelegate(Delegate * delegate)
     delegate_ = delegate;
 }
 
-void RootView::setColor(Color color)
+void RootView::handleMouse(NativeEvent & e)
 {
-    color_ = color;
-    inval();
+    int flags = Helper::ToFlagsForMouse(e.wparam);
+
+    //暂时不管XBUTTON
+    EventType et = kET_COUNT;
+    MouseButton mb = kMB_NONE;
+
+    Helper::ToEMForMouse(e.msg, et, mb);
+    auto & lparam = e.lparam;
+    Point p(static_cast<Scalar>(GET_X_LPARAM(lparam)),
+        static_cast<Scalar>(GET_Y_LPARAM(lparam)));
+    MouseEvent me(et, mb, this, p, p, flags);
+    mouse_.handleEvent(me);
 }
 
-void RootView::setOpacity(float opacity)
+void RootView::handleKey(NativeEvent & e)
 {
-    if (opacity_ != opacity)
+    //处理键盘事件
+    View * focus = focus_.current();
+    EventType type = kET_COUNT;
+    auto & msg = e.msg;
+    if (WM_CHAR == msg)
+        type = kET_KEY_PRESS;
+    else if (WM_KEYDOWN == msg)
+        type = kET_KEY_DOWN;
+    else if (WM_KEYUP == msg)
+        type = kET_KEY_UP;
+    else
+        return;
+
+    bool handle = false;
+
+    KeyEvent ke(type, focus, (KeyboardCode)e.wparam, *(KeyState *)(&e.lparam), 0);
+    ke.setUserData(&e);
+    if (kET_KEY_PRESS != type)
+    {//非字符
+        //焦点管理器会询问是否skip
+        handle = focus_.handleKeyEvent(ke);
+
+        bool skip = false;
+        if (focus)
+            skip = focus->skipDefaultKeyEventProcessing(ke);
+        if (!handle && !skip)
+        {//焦点管理器不处理 看快捷键管理器是否处理
+            handle = accelerators_.process(Accelerator::make(ke));
+        }
+    }
+    if (!handle && focus)
+    {//都不处理
+        EventDispatcher::Push(ke);
+        handle = true;
+    }
+}
+
+void RootView::handleFocus(NativeEvent & e)
+{
+    auto & msg = e.msg;
+    if (msg == WM_SETFOCUS)
     {
-        opacity_ = opacity;
-        inval();
-    }   
+        has_focus_ = true;
+    }
+    else if (msg == WM_KILLFOCUS)
+    {
+        has_focus_ = false;
+        //失去焦点 将内部焦点移除
+        focus_.shift(nullptr);
+    }
 }
 
-float RootView::getOpacity() const
+void RootView::handleComposition(NativeEvent & e)
 {
-    return opacity_;
+    View * focus = focus_.current();
+    if (!focus)
+        return;
+    auto & msg = e.msg;
+    EventType type = kET_COUNT;
+    if (WM_IME_STARTCOMPOSITION == msg)
+        type = kET_COMPOSITION_START;
+    else if (WM_IME_COMPOSITION == msg)
+        type = kET_COMPOSITION_UPDATE;
+    else if (WM_IME_ENDCOMPOSITION == msg)
+        type = kET_COMPOSITION_END;
+    else
+        return;
+
+    CompositionEvent ce(type, focus);
+    ce.setUserData(&e);
+    EventDispatcher::Push(ce);
+}
+
+void RootView::handleWheel(NativeEvent & e)
+{
+    int flags = Helper::ToFlagsForMouse(e.wparam);
+    auto & msg = e.msg;
+    if (WM_MOUSEWHEEL == msg || WM_MOUSEHWHEEL == msg)
+    {
+        auto type = kET_MOUSE_WHEEL;
+        auto delta = GET_WHEEL_DELTA_WPARAM(e.wparam);
+        Point p(static_cast<Scalar>(GET_X_LPARAM(e.lparam)), 
+                static_cast<Scalar>(GET_Y_LPARAM(e.lparam)));
+
+        WheelEvent we(type, this, WM_MOUSEHWHEEL == msg ? delta : 0,
+            WM_MOUSEWHEEL == msg ? delta : 0, p, p, flags);
+
+        //wheelEvent和mouseEvent分发逻辑一致
+        mouse_.handleEvent(we);
+    }
 }
 
 bool RootView::isVisible() const
@@ -109,74 +199,10 @@ Surface & RootView::getBackBuffer()
     return back_buffer_;
 }
 
-
-void RootView::handleEvent(MouseEvent & e)
-{
-    mouse_.handleEvent(e);
-}
-
-void RootView::handleEvent(FocusEvent & e)
-{
-    if (e.type() == kET_FOCUS)
-    {
-        has_focus_ = true;
-    }
-    else if (e.type() == kET_BLUR)
-    {
-        has_focus_ = false;
-        //失去焦点 将内部焦点移除
-        focus_.shift(nullptr);
-    }
-}
-
-void RootView::handleEvent(CompositionEvent & e)
-{
-    View * focus = focus_.current();
-    if (!focus)
-        return;
-    CompositionEvent ce(e.type(), focus);
-    ce.setNativeEvent(e.nativeEvent());
-    EventDispatcher dispatcher;
-    EventDispatcher::Path path;
-    EventDispatcher::getPath(ce.target(), path);
-    dispatcher.run(ce, path);
-}
-
-void RootView::handleEvent(KeyEvent & e)
-{
-    //处理键盘事件
-    View * focus = focus_.current();
-    bool handle = false;
-    if (kET_KEY_PRESS != e.type())
-    {//非字符
-        //焦点管理器会询问是否skip
-        handle = focus_.handleKeyEvent(e);
-
-        bool skip = false;
-        if (focus)
-            skip = focus->skipDefaultKeyEventProcessing(e);
-        if (!handle && !skip)
-        {//焦点管理器不处理 看快捷键管理器是否处理
-            handle = accelerators_.process(Accelerator::make(e));
-        }
-    }
-    if (!handle && focus)
-    {//都不处理
-        KeyEvent focus_ke(e.type(), focus, e.key(), e.state(), e.getFlags());
-        focus_ke.setNativeEvent(e.nativeEvent());
-        EventDispatcher dispatcher;
-        EventDispatcher::Path path;
-        EventDispatcher::getPath(focus_ke.target(), path);
-        dispatcher.run(focus_ke, path);
-        handle = true;
-    }
-}
-
 void RootView::onDraw(SkCanvas & canvas, const Rect & inval)
 {  
     SkPaint paint;
-    paint.setColor(color_);
-    paint.setAlpha(ClampAlpha(opacity_, ColorGetA(color_)));
+    paint.setColor(0);
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
     canvas.drawPaint(paint);
 }
@@ -252,80 +278,5 @@ void RootView::AdjustPixmap()
     }
 }
 
-//void RootView::injectMouseMove(float x, float y)
-//{
-    //if (_mouse_x == x && _mouse_y == y)
-    //    return;
-
-    //_mouse_x = x;
-    //_mouse_y = y;
-
-    //View * target = _mouse.capture();
-    //if(!target)
-    //    target = hitTest(this, _mouse_x, _mouse_y);
-
-    //_mouse.shiftOver(target);
-
-    //if (target)
-    //{
-    //    MouseEvent me = MouseEvent::makeMove(target, _mouse_states, _mouse_x, _mouse_y);
-    //    EventDispatcher dispatcher;
-    //    EventDispatcher::Path path;
-    //    EventDispatcher::getPath(target, path);
-    //    dispatcher.run(me, path);
-    //}
-//}
-
-//void RootView::injectMouseDown(MouseButton button)
-//{
-    //View * target = _mouse.capture();
-    //if (!target)
-    //    target = hitTest(this, _mouse_x, _mouse_y);
-
-    //if (!target)
-    //    return;
-
-    //MouseEvent me = MouseEvent::makeDown(target, button, _mouse_states, _mouse_x, _mouse_y);
-    //EventDispatcher dispatcher;
-    //EventDispatcher::Path path;
-    //EventDispatcher::getPath(target, path);
-    //dispatcher.run(me, path);
-
-    //if (!me.canceled())
-    //{
-    //    if (kMBPrimary == me.button())
-    //    {
-    //        _mouse.shiftCapture(target);
-    //        focus_.shift(target);
-    //    }   
-    //}
-//}
-
-//void RootView::injectMouseUp(MouseButton button)
-//{
-//    View * target = _mouse.capture();
-//    if (!target)
-//        target = hitTest(this, _mouse_x, _mouse_y);
-//
-//    if (!target)
-//        return;
-//
-//    MouseEvent me = MouseEvent::makeUp(target, button, _mouse_states, _mouse_x, _mouse_y);
-//    EventDispatcher dispatcher;
-//    EventDispatcher::Path path;
-//    EventDispatcher::getPath(target, path);
-//    dispatcher.run(me, path);
-//
-//    if (!me.canceled())
-//    {
-//        if (kMBPrimary == me.button() ||
-//            kMBSecondry == me.button())
-//        {
-//            _mouse.shiftCapture(nullptr);
-//            target = hitTest(this, _mouse_x, _mouse_y);
-//            _mouse.shiftOver(target);
-//        }
-//    }
-//}
 
 }

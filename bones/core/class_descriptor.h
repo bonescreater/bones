@@ -36,8 +36,6 @@ private:
 
     void registerView(CSSClassTable & table);
 
-    void registerSkin(CSSClassTable & table);
-
     void registerWidget(CSSClassTable & table);
 private:
     std::map<const char *, CSSClassTable> multi_class_tables_;

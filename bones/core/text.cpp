@@ -19,7 +19,7 @@ Text::Text()
 font_style_(kNormal), text_size_(12), text_color_(0xff000000),
 text_align_(kCenter), underline_(false)
 {
-    ;
+    setFocusable(false);
 }
 
 const char * Text::getClassName() const
@@ -188,6 +188,11 @@ SkPaint Text::ToSkPaint()
 void Text::onSizeChanged()
 {
     cache_dirty_ = true;
+}
+
+bool Text::onHitTest(const Point & pt)
+{
+    return false;
 }
 
 void Text::adjustCache()

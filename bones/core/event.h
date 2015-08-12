@@ -8,14 +8,6 @@
 namespace bones
 {
 
-struct NativeEvent
-{
-    UINT msg;
-    WPARAM wparam;
-    LPARAM lparam;
-    LRESULT result;
-};
-
 class View;
 enum EventType
 {
@@ -93,9 +85,9 @@ public:
 
     Phase phase() const;
 
-    void setNativeEvent(const NativeEvent * native);
+    void setUserData(void * ud);
 
-    const NativeEvent * nativeEvent() const;
+    void * getUserData() const;
 protected:
     Event();
 protected:
@@ -106,7 +98,7 @@ protected:
     bool cancelable_;
     bool canceled_;
     bool propagation_;
-    const NativeEvent * native_;
+    void * user_data_;
 };
 
 class UIEvent : public Event

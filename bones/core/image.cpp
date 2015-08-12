@@ -9,7 +9,7 @@ namespace bones
 
 Image::Image() :style_(kImage)
 {
-
+    setFocusable(false);
 }
 
 Image::~Image()
@@ -53,6 +53,11 @@ void Image::onDraw(SkCanvas & canvas, const Rect & inval)
         drawImageNine(canvas, r);
         break;
     }
+}
+
+bool Image::onHitTest(const Point & pt)
+{
+    return false;
 }
 
 void Image::drawImage(SkCanvas & canvas, const Rect & bounds)

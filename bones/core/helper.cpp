@@ -3,7 +3,6 @@
 #include "point.h"
 #include "pixmap.h"
 #include "shader.h"
-#include "event.h"
 
 #include "SkRect.h"
 #include "SkBitmap.h"
@@ -192,7 +191,7 @@ LPARAM Helper::ToCoordinateForMouse(const Point & pt)
     return MAKELPARAM(pt.x(), pt.y());
 }
 
-UINT Helper::ToMsgForMouse(int type, int button)
+UINT Helper::ToMsgForMouse(EventType type, MouseButton button)
 {
     if (kET_MOUSE_MOVE == type)
         return WM_MOUSEMOVE;
@@ -223,6 +222,79 @@ UINT Helper::ToMsgForMouse(int type, int button)
 LPARAM Helper::ToKeyStateForKey(const KeyState & state)
 {
     return (LPARAM)*(uint32_t *)(&state);
+}
+
+int Helper::ToFlagsForMouse(WPARAM wp)
+{
+    int flags = kEF_NONE;
+    if (wp & MK_LBUTTON)
+        flags |= kEF_LEFT_MOUSE_DOWN;
+    if (wp & MK_RBUTTON)
+        flags |= kEF_RIGHT_MOUSE_DOWN;
+    if (wp & MK_MBUTTON)
+        flags |= kEF_MIDDLE_MOUSE_DOWN;
+    if (wp & MK_CONTROL)
+        flags |= kEF_CONTROL_DOWN;
+    if (wp & MK_SHIFT)
+        flags |= kEF_SHIFT_DOWN;
+
+    //暂时不管XBUTTON
+    return flags;
+}
+
+void Helper::ToEMForMouse(UINT msg, EventType & type, MouseButton & mb)
+{
+    type = kET_COUNT;
+    mb = kMB_NONE;
+
+    switch (msg)
+    {
+    case WM_MOUSEMOVE:
+        type = kET_MOUSE_MOVE;
+        break;
+    case WM_LBUTTONDBLCLK:
+    {
+        type = kET_MOUSE_DCLICK;
+        mb = kMB_LEFT;
+    }
+        break;
+    case WM_LBUTTONDOWN:
+    {
+        type = kET_MOUSE_DOWN;
+        mb = kMB_LEFT;
+    }
+        break;
+    case WM_LBUTTONUP:
+    {
+        type = kET_MOUSE_UP;
+        mb = kMB_LEFT;
+    }
+        break;
+    case WM_RBUTTONDBLCLK:
+    {
+        type = kET_MOUSE_DCLICK;
+        mb = kMB_RIGHT;
+    }
+        break;
+    case WM_RBUTTONDOWN:
+    {
+        type = kET_MOUSE_DOWN;
+        mb = kMB_RIGHT;
+    }
+        break;
+    case WM_RBUTTONUP:
+    {
+        type = kET_MOUSE_UP;
+        mb = kMB_RIGHT;
+    }
+        break;
+    case WM_MOUSELEAVE:
+        type = kET_MOUSE_LEAVE;
+        break;
+    default:
+        assert(0);
+        return;
+    }
 }
 
 }

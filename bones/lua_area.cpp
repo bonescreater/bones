@@ -15,6 +15,8 @@ static const char * kMethodOnMouseMove = "onMouseMove";
 static const char * kMethodOnMouseLeave = "onMouseLeave";
 static const char * kMethodOnMouseEnter = "onMouseEnter";
 static const char * kMethodOnSizeChanged = "onSizeChanged";
+static const char * kMethodOnFocus = "onFocus";
+static const char * kMethodOnBlur = "onBlur";
 
 static EventType ToEventType(const char * name)
 {
@@ -32,6 +34,10 @@ static EventType ToEventType(const char * name)
         return kET_MOUSE_LEAVE;
     if (!strcmp(kMethodOnMouseEnter, name))
         return kET_MOUSE_ENTER;
+    if (!strcmp(kMethodOnFocus, name))
+        return kET_FOCUS;
+    if (!strcmp(kMethodOnBlur, name))
+        return kET_BLUR;
     assert(0);
     LOG_VERBOSE << "unknown event type: " << name;
     return kET_CUSTOM;
@@ -110,8 +116,10 @@ static void OnEvent(Ref * sender, Event & e)
     case kET_FOCUS_IN:
         break;
     case kET_BLUR:
+        method = kMethodOnBlur;
         break;
     case kET_FOCUS:
+        method = kMethodOnFocus;
         break;
     default:
         break;

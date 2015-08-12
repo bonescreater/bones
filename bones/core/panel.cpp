@@ -136,25 +136,10 @@ void Panel::setCursor(Cursor cursor)
     cursor_ = cursor;
 }
 
-void Panel::setColor(Color color)
-{
-    root_->setColor(color);
-}
-
-void Panel::setOpacity(float opacity)
-{
-    root_->setOpacity(opacity);
-}
-
 void Panel::setEXStyle(uint64_t ex_style)
 {
     ::SetWindowLongPtr(hwnd(), GWL_EXSTYLE, (LONG)ex_style);
     ex_style_ = ::GetWindowLongPtr(hwnd(), GWL_EXSTYLE);
-}
-
-float Panel::getOpacity() const
-{
-    return root_->getOpacity();
 }
 
 LRESULT Panel::handleNCCreate(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -173,8 +158,8 @@ LRESULT Panel::handleNCDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam)
     //如果在窗口鼠标事件处理过程中 进行destroy  windows不会 发送WM_MOUSELEAVE消息
     //所以需要手动发一个 告诉root view 鼠标离开 不然root view的mouse over始终指向自己
     //导致root view 释放不了
-    MouseEvent e(kET_MOUSE_LEAVE, kMB_NONE, root_.get(), Point(), Point(), 0);
-    root_->handleEvent(e);
+    NativeEvent n = { WM_MOUSELEAVE, 0, 0, 0 };
+    root_->handleMouse(n);
     detach();
     return 0;
 }
@@ -202,9 +187,8 @@ LRESULT Panel::handleKey(UINT uMsg, WPARAM wParam, LPARAM lParam)
     if (type != kET_COUNT)
     {
         KeyEvent e(type, root_.get(), (KeyboardCode)wParam, *(KeyState *)(&lParam), 0);
-        NativeEvent ne = { uMsg, wParam, lParam, 0 };
-        e.setNativeEvent(&ne);
-        root_->handleEvent(e);
+        NativeEvent n = { uMsg, wParam, lParam, 0 };
+        root_->handleKey(n);
         return 0;
     }
     else
@@ -223,11 +207,9 @@ LRESULT Panel::handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     if (type != kET_COUNT)
     {
-        CompositionEvent e(type, root_.get());
-        NativeEvent ne = { uMsg, wParam, lParam, 0 };
-        e.setNativeEvent(&ne);
-        root_->handleEvent(e);
-        return ne.result;
+        NativeEvent n = { uMsg, wParam, lParam, 0 };
+        root_->handleComposition(n);
+        return n.result;
     }
     else
         return defProcessEvent(uMsg, wParam, lParam);
@@ -258,10 +240,8 @@ LRESULT Panel::handlePositionChanges(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT Panel::handleFocus(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    FocusEvent e(WM_SETFOCUS == uMsg ? kET_FOCUS : kET_BLUR, root_.get(), false);
-    NativeEvent ne = { uMsg, wParam, lParam, 0 };
-    e.setNativeEvent(&ne);
-    root_->handleEvent(e);
+    NativeEvent n = { uMsg, wParam, lParam, 0 };
+    root_->handleFocus(n);
     return 0;
 }
 
@@ -325,21 +305,6 @@ LRESULT Panel::handlePaint(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT Panel::handleMouse(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    int flags = kEF_NONE;
-    if (wParam & MK_LBUTTON)
-        flags |= kEF_LEFT_MOUSE_DOWN;
-    if (wParam & MK_RBUTTON)
-        flags |= kEF_RIGHT_MOUSE_DOWN;
-    if (wParam & MK_MBUTTON)
-        flags |= kEF_MIDDLE_MOUSE_DOWN;
-    if (wParam & MK_CONTROL)
-        flags |= kEF_CONTROL_DOWN;
-    if (wParam & MK_SHIFT)
-        flags |= kEF_SHIFT_DOWN;
-    //暂时不管XBUTTON
-    EventType et = kET_COUNT;
-    MouseButton mb = kMB_NONE;
-
     if (!track_mouse_)
     {
         TRACKMOUSEEVENT track_event =
@@ -352,82 +317,31 @@ LRESULT Panel::handleMouse(UINT uMsg, WPARAM wParam, LPARAM lParam)
         track_mouse_ = ::TrackMouseEvent(&track_event) != FALSE;
     }
 
+    NativeEvent n = { uMsg, wParam, lParam, 0 };
     if (WM_MOUSEWHEEL == uMsg || WM_MOUSEHWHEEL == uMsg)
     {
-        et = kET_MOUSE_WHEEL;
-        auto delta = GET_WHEEL_DELTA_WPARAM(wParam);
         POINT pt;
         pt.x = GET_X_LPARAM(lParam);
         pt.y = GET_Y_LPARAM(lParam);
-
         ::ScreenToClient(hwnd(), &pt);
-        Point p(static_cast<float>(pt.x), static_cast<float>(pt.y));
-
-        WheelEvent e(et, root_.get(), WM_MOUSEHWHEEL == uMsg ? delta : 0,
-            WM_MOUSEWHEEL == uMsg ? delta : 0, p, p, flags);
-        root_->handleEvent(e);
+        n.lparam = MAKELPARAM(pt.x, pt.y);
+        root_->handleWheel(n);
         return 0;
     }
 
     switch (uMsg)
     {
-    case WM_MOUSEMOVE:
-        et = kET_MOUSE_MOVE;
-        break;
-    case WM_LBUTTONDBLCLK:
-    {
-        et = kET_MOUSE_DCLICK;
-        mb = kMB_LEFT;
-    }
-        break;
     case WM_LBUTTONDOWN:
-    {
         ::SetCapture(hwnd());
-        et = kET_MOUSE_DOWN;
-        mb = kMB_LEFT;
-    }
         break;
     case WM_LBUTTONUP:
-    {
         ::ReleaseCapture();
-        et = kET_MOUSE_UP;
-        mb = kMB_LEFT;
-    }
-        break;
-    case WM_RBUTTONDBLCLK:
-    {
-        et = kET_MOUSE_DCLICK;
-        mb = kMB_RIGHT;
-    }
-        break;
-    case WM_RBUTTONDOWN:
-    {
-        et = kET_MOUSE_DOWN;
-        mb = kMB_RIGHT;
-    }
-        break;
-    case WM_RBUTTONUP:
-    {
-        et = kET_MOUSE_UP;
-        mb = kMB_RIGHT;
-    }
         break;
     case WM_MOUSELEAVE:
-    {
-        et = kET_MOUSE_LEAVE;
         track_mouse_ = false;
-    }
         break;
-    default:
-        assert(0);
-        return 0;
     }
-    Point p(static_cast<float>(GET_X_LPARAM(lParam)), 
-            static_cast<float>(GET_Y_LPARAM(lParam)));
-    MouseEvent e(et, mb, root_.get(), p, p, flags);
-    NativeEvent ne = { uMsg, wParam, lParam, 0 };
-    e.setNativeEvent(&ne);
-    root_->handleEvent(e);
+    root_->handleMouse(n);
     return 0;
 }
 

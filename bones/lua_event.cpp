@@ -19,6 +19,8 @@ void LuaEvent::Get(lua_State * l, Event & e)
     *userdata = &e;
     if (MouseEvent::From(e))
         LuaMetaTable::GetMouseEvent(l);
+    else if (FocusEvent::From(e))
+        LuaMetaTable::GetFocusEvent(l);
     else
     {
         lua_pushnil(l);
