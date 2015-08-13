@@ -230,7 +230,18 @@ View * FocusController::findNextFocusable(View * start, bool reverse)
         if (reverse)
         {
             while (start->getChildCount() > 0)
+            {
                 start = start->getFirstChild();
+                while (start)
+                {
+                    auto tmp  = start->getNextSibling();
+                    if (!tmp)
+                        break;
+                    start = tmp;
+                }
+                    
+            }
+                
             while (start->getNextFocusable())
                 start = start->getNextFocusable();
         }
@@ -343,7 +354,12 @@ View * FocusController::findPrevFocusable(View * start,
     //查找兄弟节点
     auto sibling = start->getPrevFocusable();
     if (sibling)
-        return findPrevFocusable(sibling, true, false, true, skip_group_id);
+    {
+        auto v =  findPrevFocusable(sibling, true, false, true, skip_group_id);
+        if (v)
+            return v;
+    }
+        
 
     //查找父节点时不需要再查子节点
     if (can_go_up)
