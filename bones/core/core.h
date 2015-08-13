@@ -45,6 +45,7 @@ typedef HANDLE Cursor;
 
 class AnimationManager;
 class PanelManager;
+class CSSManager;
 
 enum LogLevel
 {
@@ -71,6 +72,8 @@ public:
     static AnimationManager * GetAnimationManager();
 
     static PanelManager * GetPanelManager();
+
+    static CSSManager * GetCSSManager();
 };
 
 }

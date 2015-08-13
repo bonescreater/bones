@@ -2,85 +2,17 @@
 #define BONES_CORE_XML_CONTROLLER_H_
 
 #include "core.h"
-#include "simple_css.h"
-#include "class_descriptor.h"
 #include "ref.h"
+#include "xml.h"
+#include <vector>
+#include <map>
 
-namespace rapidxml
-{
-    template <class ch> class xml_node;
-    template <class ch> class xml_attribute;
-    template <class ch> class xml_document;
-}
 
 
 namespace bones
 {
-class Ref;
 class View;
 class Panel;
-
-class XMLAttribute
-{
-public:
-    XMLAttribute(rapidxml::xml_attribute<char> * attr);
-
-    XMLAttribute nextSibling()  const;
-
-    XMLAttribute prevSibling()  const;
-
-    char * name() const;
-
-    size_t nameSize() const;
-
-    char * value() const;
-
-    size_t valueSize() const;
-
-    operator bool()  const;
-private:
-    rapidxml::xml_attribute<char> * attr_;
-};
-
-class XMLNode
-{
-public:
-    XMLNode(rapidxml::xml_node<char> * n);
-
-    XMLNode firstChild() const;
-
-    XMLNode nextSibling() const;
-
-    XMLNode prevSibling() const;
-
-    XMLAttribute firstAttribute() const;
-
-    char * name() const;
-
-    size_t nameSize() const;
-
-    char * value() const;
-
-    size_t valueSize() const;
-
-    operator bool()  const;
-private:
-    rapidxml::xml_node<char> * node_;
-};
-
-class XMLDocument
-{
-public:
-    XMLDocument();
-
-    ~XMLDocument();
-
-    bool parse(char * str);
-
-    XMLNode root() const;
-private:
-    rapidxml::xml_document<char> * document_;
-};
 
 class XMLController
 {
@@ -93,13 +25,11 @@ public:
         {
             xml_file.clear();
             css_files.clear();
-            css.reset();
         }
         FileStream xml_file;//xml文件内容
         std::string xml_fullname;
         std::vector<FileStream> css_files;//多个css文件内容
         XMLDocument doc;
-        SimpleCSS css;//解析出的CSS结果放在这里
     };
     typedef struct
     {
@@ -112,10 +42,6 @@ public:
     virtual ~XMLController();
     //zero-terminated XML string
     bool loadString(const char * data);
-
-    void applyCSS(Ref * ob, const char * css);
-
-    void applyClass(Ref * ob, const char * class_name, const char * mod_name);
 
     Ref * getRefByID(const char * id);
 protected:
@@ -162,15 +88,9 @@ private:
 
     void parseModuleBody(const Module & mod);
 
-    void applyClass(Ref *ob, const Module & mod, const char * class_name);
-
-    void applyClass(Ref * ob, const SimpleCSS & css, const CSSString & class_name);
+    void applyClass(Ref *ob, const char * class_name);
 
     void applyID(Ref * ob, const char * id_name);
-
-    void applyEntries(Ref * ob, const CSSEntries & entries);
-
-    void applyEntry(Ref * ob, const CSSEntry & entry);
 
     bool checkFormat(XMLDocument & doc);
 
@@ -186,7 +106,6 @@ private:
 
     View * getViewByID(View * parent, const char * id);
 private:
-    ClassDescriptor descriptor_;
     //存放所有的view
     std::map<RefPtr<Ref>, std::string> ob2id_;
 
@@ -194,6 +113,16 @@ private:
     Module main_module_;
     std::map<std::string, Module> modules_;
 };
+
+//字符串常量
+extern const char * kStrType;
+extern const char * kStrModule;
+extern const char * kStrCSS;
+extern const char * kStrXML;
+extern const char * kStrID;
+extern const char * kStrClass;
+extern const char * kStrGroup;
+extern const char * kStrFile;
 
 }
 

@@ -188,7 +188,7 @@ bool ScriptParser::handleLink(XMLNode node, Module & mod)
     FileStream  fs;
     if (!readFile(path.data(), fs))
     {
-        LOG_ERROR << path << " read fail";
+        LOG_ERROR << path.data() << " read fail";
         return true;
     }
         

@@ -46,8 +46,8 @@ local function isEnable(self)
 	return self.enable_
 end
 
-local function applyTextClass(self, class, mod)
-    return self.text_:applyClass(class, mod)
+local function applyTextClass(self, class)
+    return self.text_:applyClass(class)
 end
 
 local function applyTextCSS(self, css)

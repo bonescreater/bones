@@ -1,4 +1,4 @@
-﻿#include "class_descriptor.h"
+﻿#include "css_types.h"
 #include "image.h"
 #include "text.h"
 #include "shape.h"
@@ -223,7 +223,7 @@ static Cursor CSSStrToCursor(const CSSString & str)
     return (Cursor)CSSStrToInt(str);
 }
 
-Shader::TileMode CSSStrToShaderTileMode(const CSSString & str)
+static Shader::TileMode CSSStrToShaderTileMode(const CSSString & str)
 {
     if (str == "mirror")
         return Shader::kMirror;
@@ -233,7 +233,7 @@ Shader::TileMode CSSStrToShaderTileMode(const CSSString & str)
         return Shader::kClamp;
 }
 
-Shader CSSParamsToLinearGradientShader(const CSSParams & params)
+static Shader CSSParamsToLinearGradientShader(const CSSParams & params)
 {
     //线性渐变至少6个参数
     Shader shader;
@@ -275,7 +275,7 @@ Shader CSSParamsToLinearGradientShader(const CSSParams & params)
     return shader;
 }
 
-Shader CSSParamsToRadialGradientShader(const CSSParams & params)
+static Shader CSSParamsToRadialGradientShader(const CSSParams & params)
 {
     Shader shader;
     //至少5个参数
@@ -540,7 +540,7 @@ static void WidgetSetContent(Ref * ob, const CSSParams & params)
 /*
 panel
 */
-Panel::NCArea CSSStrToPanelNCArea(const CSSString & str)
+static Panel::NCArea CSSStrToPanelNCArea(const CSSString & str)
 {
     if (str == "caption")
         return Panel::kCaption;
@@ -560,7 +560,7 @@ Panel::NCArea CSSStrToPanelNCArea(const CSSString & str)
     return Panel::kCaption;
 }
 
-uint64_t CSSStrToEXStyle(const CSSString & str)
+static uint64_t CSSStrToEXStyle(const CSSString & str)
 {
     if (str == "accept-files")
         return WS_EX_ACCEPTFILES;
@@ -653,67 +653,64 @@ static void PanelSetEXStyle(Ref * ob, const CSSParams & params)
     static_cast<Panel *>(ob)->setEXStyle(ex_style);
 }
 
-
-
-ClassDescriptor::ClassDescriptor()
+static void RegisterView(CSSClassTable & table)
 {
-    registerArea();
-    registerRichEdit();
-    registerImage();
-    registerText();
-    registerShape();
-    registerPanel();
+    table[kDescLeft] = &ViewSetLeft;
+    table[kDescTop] = &ViewSetTop;
+    table[kDescWidth] = &ViewSetWidth;
+    table[kDescHeight] = &ViewSetHeight;
+    table[kDescCursor] = &ViewSetCursor;
+    table[kDescOpacity] = &ViewSetOpacity;
 }
 
-ClassDescriptor::~ClassDescriptor()
+static void RegisterWidget(CSSClassTable & table)
 {
-    ;
+    table[kDescLeft] = &WidgetSetLeft;
+    table[kDescTop] = &WidgetSetTop;
+    table[kDescWidth] = &WidgetetWidth;
+    table[kDescHeight] = &WidgetSetHeight;
+    table[kDescContent] = &WidgetSetContent;
 }
 
-CSSClassTable * ClassDescriptor::getFunc(const char * class_name)
+//增加view的描述
+static void RegisterView(CSSClassTables & tables)
 {
-    if (!class_name)
-        return nullptr;
-    auto iter = multi_class_tables_.find(class_name);
-    if (iter == multi_class_tables_.end())
-        return nullptr;
-
-    return &(iter->second);
+    auto & table = tables[kClassView];
+    RegisterView(table);
 }
 
-void ClassDescriptor::registerArea()
+static void RegisterArea(CSSClassTables & tables)
 {
-    auto & table = multi_class_tables_[kClassArea];
-    registerView(table);
+    auto & table = tables[kClassArea];
+    RegisterView(table);
 }
 
-void ClassDescriptor::registerRichEdit()
+static void RegisterRichEdit(CSSClassTables & tables)
 {
-    auto & table = multi_class_tables_[kClassRichEdit];
-    registerView(table);
+    auto & table = tables[kClassRichEdit];
+    RegisterView(table);
     table[kDescOpacity] = &RichEditSetOpacity;
 }
 
-
-void ClassDescriptor::registerImage()
+static void RegisterImage(CSSClassTables & tables)
 {
     //view已经register上了
-    auto & table = multi_class_tables_[kClassImage];
-    registerView(table);
+    auto & table = tables[kClassImage];
+    RegisterView(table);
 }
 
-void ClassDescriptor::registerText()
+static void RegisterText(CSSClassTables & tables)
 {
-    auto & table = multi_class_tables_[kClassText];   
-    registerView(table);
+    auto & table = tables[kClassText];
+    RegisterView(table);
     table[kDescColor] = &TextSetColor;
     table[kDescContent] = &TextSetContent;
 }
 
-void ClassDescriptor::registerShape()
+static void RegisterShape(CSSClassTables & tables)
 {
-    auto & table = multi_class_tables_[kClassShape];
-    registerView(table);
+    auto & table = tables[kClassShape];
+    RegisterView(table);
     table[kDescBorder] = &ShapeSetBorder;
     table[kDescColor] = &ShapeSetColor;
     table[kDescLinearGradient] = &ShapeSetLinearGradient;
@@ -725,32 +722,29 @@ void ClassDescriptor::registerShape()
     table[kDescCircle] = &ShapeSetCircle;
 }
 
-void ClassDescriptor::registerPanel()
+static void RegisterPanel(CSSClassTables & tables)
 {
-    auto & table = multi_class_tables_[kClassPanel];
-    registerWidget(table);
+    auto & table = tables[kClassPanel];
+    RegisterWidget(table);
     table[kDescCursor] = &PanelSetCursor;
     table[kDescHitTest] = &PanelHitTest;
     table[kDescEXStyle] = &PanelSetEXStyle;
 }
 
-void ClassDescriptor::registerView(CSSClassTable & table)
+
+void RegisterClassTables(CSSClassTables & tables)
 {
-    table[kDescLeft] = &ViewSetLeft;
-    table[kDescTop] = &ViewSetTop;
-    table[kDescWidth] = &ViewSetWidth;
-    table[kDescHeight] = &ViewSetHeight;
-    table[kDescCursor] = &ViewSetCursor;
-    table[kDescOpacity] = &ViewSetOpacity;
+    RegisterView(tables);
+    RegisterArea(tables);
+    RegisterRichEdit(tables);
+    RegisterImage(tables);
+    RegisterText(tables);
+    RegisterShape(tables);
+    RegisterPanel(tables);
 }
 
-void ClassDescriptor::registerWidget(CSSClassTable & table)
-{
-    table[kDescLeft] = &WidgetSetLeft;
-    table[kDescTop] = &WidgetSetTop;
-    table[kDescWidth] = &WidgetetWidth;
-    table[kDescHeight] = &WidgetSetHeight;
-    table[kDescContent] = &WidgetSetContent;
-}
+
+
+
 
 }

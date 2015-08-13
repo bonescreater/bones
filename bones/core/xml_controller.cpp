@@ -1,7 +1,6 @@
 ﻿#include "xml_controller.h"
 #include "encoding.h"
 #include "helper.h"
-#include "rapidxml.hpp"
 #include "area.h"
 #include "rich_edit.h"
 #include "image.h"
@@ -11,6 +10,8 @@
 #include "panel.h"
 #include "logging.h"
 #include "panel_manager.h"
+#include "css_manager.h"
+
 #include <functional>
 #include <fstream>
 
@@ -59,46 +60,6 @@ Label LabelFromName(const char * name);
 Bone BoneFromName(const char * name);
 
 void AttachToParentView(View * child, Ref * parent);
-
-class CSSClassName
-{
-public:
-    CSSClassName(const char * class_name)
-    {
-        assert(class_name);
-        class_name_ = class_name;
-        length_ = strlen(class_name);
-        current_ = 0;
-    }
-
-    const char * next(size_t & next_size)
-    {
-        if (current_ >= length_)
-            return nullptr;
-
-        //跳过空白字符
-        while (0 != isspace(class_name_[current_]))
-        {
-            current_++;
-            if (current_ >= length_)
-                return nullptr;
-        }
-        auto cur = current_;
-        auto ptr = class_name_ + cur;
-        while (0 == isspace(class_name_[current_]))
-        {
-            current_++;
-            if (current_ >= length_)
-                break;
-        }
-        next_size = current_ - cur;
-        return ptr;
-    }
-private:
-    const char * class_name_;
-    size_t length_;
-    size_t current_;
-};
 
 XMLController::XMLController()
 {
@@ -153,6 +114,8 @@ void XMLController::reset()
         Core::GetPanelManager()->remove(panel);
         panel = Core::GetPanelManager()->next();
     }
+
+    Core::GetCSSManager()->clean();
 }
 
 Ref * XMLController::getRefByID(const char * id)
@@ -220,7 +183,7 @@ void XMLController::parseModuleHead(Module & mod)
 bool XMLController::handleStyle(XMLNode node, Module & mod)
 {
     if (node.valueSize() > 0 && node.value())
-        mod.css.append(node.value());
+        Core::GetCSSManager()->append(node.value());
     return true;
 }
 
@@ -261,7 +224,7 @@ bool XMLController::handleLink(XMLNode node, Module & mod)
             path = joinPath(parts, sizeof(parts) / sizeof(parts[0]));
         }
         if (readFile(path.data(), file_stream))
-            mod.css.append(file_stream.data());
+            Core::GetCSSManager()->append(file_stream.data());
         return true;
     }
     else if (!strcmp(kStrXML, type))
@@ -442,7 +405,7 @@ bool XMLController::handleExtendLabel(XMLNode node, Ref * parent_ob, const Modul
             { kStrClass, nullptr }, { kStrID, nullptr }, { kStrGroup, nullptr }
         };
         acquireAttrs(node, attrs, sizeof(attrs) / sizeof(attrs[0]));
-        applyClass(node_ob, mod, attrs[0].value);
+        applyClass(node_ob, attrs[0].value);
         applyID(node_ob, attrs[1].value);
         if (ob)
             *ob = node_ob;
@@ -484,7 +447,7 @@ bool XMLController::handlePanel(XMLNode node, Ref * parent_ob, const Module & mo
         { kStrClass, nullptr }, { kStrID, nullptr }, { kStrGroup, nullptr }
     };
     acquireAttrs(node, attrs, sizeof(attrs) / sizeof(attrs[0]));
-    applyClass(sheet.get(), mod, attrs[0].value);
+    applyClass(sheet.get(), attrs[0].value);
     applyID(sheet.get(), attrs[1].value);
 
     if (ob)
@@ -500,7 +463,7 @@ bool XMLController::handleText(XMLNode node, Ref * parent_ob, const Module & mod
         { kStrClass, nullptr }, { kStrID, nullptr }, { kStrGroup, nullptr }
     };
     acquireAttrs(node, attrs, sizeof(attrs) / sizeof(attrs[0]));
-    applyClass(v.get(), mod, attrs[0].value);
+    applyClass(v.get(), attrs[0].value);
     applyID(v.get(), attrs[1].value);
 
     AttachToParentView(v.get(), parent_ob);
@@ -517,7 +480,7 @@ bool XMLController::handleShape(XMLNode node, Ref * parent_ob, const Module & mo
         { kStrClass, nullptr }, { kStrID, nullptr }, { kStrGroup, nullptr }
     };
     acquireAttrs(node, attrs, sizeof(attrs) / sizeof(attrs[0]));
-    applyClass(v.get(), mod, attrs[0].value);
+    applyClass(v.get(), attrs[0].value);
     applyID(v.get(), attrs[1].value);
     AttachToParentView(v.get(), parent_ob);
     if (ob)
@@ -535,7 +498,7 @@ bool XMLController::handleImage(XMLNode node, Ref * parent_ob, const Module & mo
         { kStrClass, nullptr }, { kStrID, nullptr }, { kStrGroup, nullptr }
     };
     acquireAttrs(node, attrs, sizeof(attrs) / sizeof(attrs[0]));
-    applyClass(block.get(), mod, attrs[0].value);
+    applyClass(block.get(), attrs[0].value);
     applyID(block.get(), attrs[1].value);
 
     AttachToParentView(block.get(), parent_ob);
@@ -552,7 +515,7 @@ bool XMLController::handleArea(XMLNode node, Ref * parent_ob, const Module & mod
         { kStrClass, nullptr }, { kStrID, nullptr }, { kStrGroup, nullptr }
     };
     acquireAttrs(node, attrs, sizeof(attrs) / sizeof(attrs[0]));
-    applyClass(area.get(), mod, attrs[0].value);
+    applyClass(area.get(), attrs[0].value);
     applyID(area.get(), attrs[1].value);
     AttachToParentView(area.get(), parent_ob);
     if (ob)
@@ -571,7 +534,7 @@ bool XMLController::handleRichEdit(XMLNode node, Ref * parent_ob, const Module &
         { kStrClass, nullptr }, { kStrID, nullptr }, { kStrGroup, nullptr }
     };
     acquireAttrs(node, attrs, sizeof(attrs) / sizeof(attrs[0]));
-    applyClass(rich.get(), mod, attrs[0].value);
+    applyClass(rich.get(), attrs[0].value);
     applyID(rich.get(), attrs[1].value);
 
     rich->setText(L"This is a 测RichEdit");
@@ -616,58 +579,11 @@ bool XMLController::readFile(const wchar_t * file_path, FileStream & file)
     return true;
 }
 
-void XMLController::applyClass(Ref * ob, const SimpleCSS & css, const CSSString & class_name)
+void XMLController::applyClass(Ref *ob, const char * class_name)
 {
     if (!class_name || !ob)
         return;
-    auto entries = css.getEntries(class_name);
-    if (!entries)
-        return;
-    
-    applyEntries(ob, *entries);
-}
-
-void XMLController::applyClass(Ref *ob, const Module & mod, const char * class_name)
-{
-    if (!class_name || !ob)
-        return;
-    CSSClassName cn(class_name);
-    CSSString str;
-    while (str.begin = cn.next(str.length))
-        applyClass(ob, mod.css, str);
-}
-
-void XMLController::applyCSS(Ref * ob, const char * css)
-{
-    if (!ob || !css)
-        return;
-    CSSEntries entries;
-    SimpleCSS::Parse(css, entries);
-    applyEntries(ob, entries);     
-}
-
-void XMLController::applyClass(Ref * ob, const char * class_name, const char * mod_name)
-{
-    if (!ob || !class_name)
-        return;
-    //找到正确的mod
-    Module * mod = &main_module_;
-    if (mod_name)
-    {
-        auto iter = modules_.find(mod_name);
-        if (iter == modules_.end())
-            return;
-        mod = &iter->second;
-    }
-    applyClass(ob, *mod, class_name);
-}
-
-void XMLController::applyEntries(Ref * ob, const CSSEntries & entries)
-{
-    for (auto iter = entries.begin(); iter != entries.end(); ++iter)
-    {
-        applyEntry(ob, *iter);
-    }
+    Core::GetCSSManager()->applyClass(ob, class_name);
 }
 
 void XMLController::applyID(Ref * ob, const char * id_name)
@@ -679,19 +595,6 @@ void XMLController::applyID(Ref * ob, const char * id_name)
     auto & id = ob2id_[rp];
     if (id_name)
         id = id_name;
-}
-
-void XMLController::applyEntry(Ref * ob, const CSSEntry & entry)
-{
-    auto table = descriptor_.getFunc(ob->getClassName());
-    if (!table)
-        return;
-    auto iter = table->find(entry.first);
-    if (iter != table->end())
-    {
-        auto & func = *iter;
-        (*func.second)(ob, entry.second);
-    }
 }
 
 View * XMLController::getViewByID(View * parent, const char * id)
@@ -802,184 +705,7 @@ bool XMLController::isAbsolutePath(const char * path)
     return isalpha(path[0]) && ':' == path[1];
 }
 
-XMLAttribute::XMLAttribute(rapidxml::xml_attribute<char> * attr)
-:attr_(attr)
-{
 
-}
-
-char * XMLAttribute::name() const
-{
-    return attr_ ? attr_->name() : nullptr;
-}
-
-size_t XMLAttribute::nameSize() const
-{
-    return attr_ ? attr_->name_size() : 0;
-}
-
-char * XMLAttribute::value() const
-{
-    return attr_ ? attr_->value() : nullptr;
-}
-
-size_t XMLAttribute::valueSize() const
-{
-    return attr_ ? attr_->value_size() : 0;
-}
-
-XMLAttribute XMLAttribute::nextSibling()  const
-{
-    return attr_ ? attr_->next_attribute() : nullptr;
-}
-
-XMLAttribute XMLAttribute::prevSibling()  const
-{
-    return attr_ ? attr_->previous_attribute() : nullptr;
-}
-
-XMLAttribute::operator bool()  const
-{
-    return attr_ != nullptr;
-}
-
-
-
-XMLNode::XMLNode(rapidxml::xml_node<char> * n)
-:node_(n)
-{
-}
-
-XMLNode XMLNode::firstChild() const
-{
-    return node_ ? node_->first_node() : nullptr;
-}
-
-XMLNode XMLNode::nextSibling() const
-{
-    return node_ ? node_->next_sibling() : nullptr;
-}
-
-XMLNode XMLNode::prevSibling() const
-{
-    return node_ ? node_->previous_sibling() : nullptr;
-}
-
-XMLAttribute XMLNode::firstAttribute() const
-{
-    return node_ ? node_->first_attribute() : nullptr;
-}
-
-char * XMLNode::name() const
-{
-    return node_ ? node_->name() : nullptr;
-}
-
-size_t XMLNode::nameSize() const
-{
-    return node_ ? node_->name_size() : 0;
-}
-
-char * XMLNode::value() const
-{
-    return node_ ? node_->value() : nullptr;
-}
-
-size_t XMLNode::valueSize() const
-{
-    return node_ ? node_->value_size() : 0;
-}
-
-XMLNode::operator bool()  const
-{
-    return node_ != nullptr;
-}
-
-
-XMLDocument::XMLDocument()
-:document_(nullptr)
-{
-    
-}
-
-XMLDocument::~XMLDocument()
-{
-    if (document_)
-        delete document_;
-}
-
-bool XMLDocument::parse(char * str)
-{
-    try
-    {
-        if (!document_)
-            document_ = new rapidxml::xml_document<>;
-        document_->parse<0>(str);
-    }
-    catch (rapidxml::parse_error &)
-    {
-        assert(0);
-        LOG_ERROR << "xml parse fail";
-        return false;
-    }
-
-    return true;
-}
-
-XMLNode XMLDocument::root() const
-{
-    return document_ ? document_->first_node() : nullptr;
-}
-
-CSSString::CSSString()
-:begin(nullptr), length(0)
-{
-
-}
-
-CSSString::CSSString(const char * b)
-: begin(b), length(0)
-{
-    if (begin)
-        length = strlen(begin);
-}
-
-CSSString::CSSString(const char * b, size_t l)
-:begin(b), length(l)
-{
-
-}
-
-CSSString::operator bool() const
-{
-    return begin != nullptr && length != 0;
-}
-
-bool CSSString::operator<(const CSSString & right) const
-{
-    size_t n = this->length;
-    if (n > right.length)
-        n = right.length;
-    int re = strncmp(this->begin, right.begin, n);
-    if (re == 0)
-    {//前n个字符相等
-        if (n != this->length)
-            re = 1;
-        else if (n != right.length)
-            re = -1;
-    }
-    return re < 0;
-}
-
-bool CSSString::operator==(const CSSString & right) const
-{
-    if (this->length == right.length)
-    {
-        if (0 == strncmp(this->begin, right.begin, this->length))
-            return true;
-    }
-    return false;
-}
 
 Label LabelFromName(const char * name)
 {

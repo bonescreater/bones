@@ -3,6 +3,8 @@
 #include "logging.h"
 #include "animation_manager.h"
 #include "panel_manager.h"
+#include "css_manager.h"
+
 #include "helper.h"
 
 #include "SkGraphics.h"
@@ -28,6 +30,8 @@ static AnimationManager * animations = nullptr;
 
 static PanelManager * panels = nullptr;
 
+static CSSManager * css = nullptr;
+
 bool Core::StartUp(const Config & config)
 {
     SkGraphics::Init();
@@ -38,6 +42,9 @@ bool Core::StartUp(const Config & config)
         bret = !!(animations = new AnimationManager);
     if (bret)
         bret = !!(panels = new PanelManager);
+    if (bret)
+        bret = !!(css = new CSSManager);
+
     return bret;
 }
 
@@ -83,6 +90,11 @@ AnimationManager * Core::GetAnimationManager()
 PanelManager * Core::GetPanelManager()
 {
     return panels;
+}
+
+CSSManager * Core::GetCSSManager()
+{
+    return css;
 }
 
 }

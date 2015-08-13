@@ -16,11 +16,20 @@
     <Filter Include="bone\naked">
       <UniqueIdentifier>{501ad653-d803-4635-846f-2cbfcd09b305}</UniqueIdentifier>
     </Filter>
-    <Filter Include="xml">
-      <UniqueIdentifier>{d4b9aa30-47a9-4c8f-8702-b65b6791730c}</UniqueIdentifier>
+    <Filter Include="base\css">
+      <UniqueIdentifier>{cbc5a894-54bc-4bb0-9114-e7781eed0b89}</UniqueIdentifier>
     </Filter>
-    <Filter Include="base\skia_ext">
+    <Filter Include="3rd_ext">
+      <UniqueIdentifier>{85f0aaac-1f11-4915-917e-c71f43ca79a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rd_ext\skia_ext">
       <UniqueIdentifier>{3aad015b-d18d-4f03-b9eb-b05eb7b1370c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rd_ext\xml_ext">
+      <UniqueIdentifier>{edfc7129-6f37-422b-ae35-fa990e346188}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\xml">
+      <UniqueIdentifier>{d4b9aa30-47a9-4c8f-8702-b65b6791730c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -65,13 +74,7 @@
     </ClCompile>
     <ClCompile Include="bones\core\core.cpp" />
     <ClCompile Include="bones\core\xml_controller.cpp">
-      <Filter>xml</Filter>
-    </ClCompile>
-    <ClCompile Include="bones\core\simple_css.cpp">
-      <Filter>xml</Filter>
-    </ClCompile>
-    <ClCompile Include="bones\core\class_descriptor.cpp">
-      <Filter>xml</Filter>
+      <Filter>base\xml</Filter>
     </ClCompile>
     <ClCompile Include="bones\core\encoding.cpp">
       <Filter>base</Filter>
@@ -104,10 +107,10 @@
       <Filter>bone\facade</Filter>
     </ClCompile>
     <ClCompile Include="bones\core\pixmap.cpp">
-      <Filter>base\skia_ext</Filter>
+      <Filter>3rd_ext\skia_ext</Filter>
     </ClCompile>
     <ClCompile Include="bones\core\shader.cpp">
-      <Filter>base\skia_ext</Filter>
+      <Filter>3rd_ext\skia_ext</Filter>
     </ClCompile>
     <ClCompile Include="bones\core\panel_manager.cpp">
       <Filter>bone\win32</Filter>
@@ -116,7 +119,16 @@
       <Filter>bone\naked</Filter>
     </ClCompile>
     <ClCompile Include="bones\core\device.cpp">
-      <Filter>base\skia_ext</Filter>
+      <Filter>3rd_ext\skia_ext</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\css_manager.cpp">
+      <Filter>base\css</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\class_descriptor.hpp">
+      <Filter>base\css</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\xml.cpp">
+      <Filter>3rd_ext\xml_ext</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -167,16 +179,7 @@
     </ClInclude>
     <ClInclude Include="bones\core\core.h" />
     <ClInclude Include="bones\core\xml_controller.h">
-      <Filter>xml</Filter>
-    </ClInclude>
-    <ClInclude Include="bones\core\simple_css.h">
-      <Filter>xml</Filter>
-    </ClInclude>
-    <ClInclude Include="bones\core\xml_types.h">
-      <Filter>xml</Filter>
-    </ClInclude>
-    <ClInclude Include="bones\core\class_descriptor.h">
-      <Filter>xml</Filter>
+      <Filter>base\xml</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\encoding.h">
       <Filter>base</Filter>
@@ -209,10 +212,10 @@
       <Filter>bone\facade</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\pixmap.h">
-      <Filter>base\skia_ext</Filter>
+      <Filter>3rd_ext\skia_ext</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\shader.h">
-      <Filter>base\skia_ext</Filter>
+      <Filter>3rd_ext\skia_ext</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\panel_manager.h">
       <Filter>bone\win32</Filter>
@@ -221,7 +224,16 @@
       <Filter>bone\naked</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\device.h">
-      <Filter>base\skia_ext</Filter>
+      <Filter>3rd_ext\skia_ext</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\css_manager.h">
+      <Filter>base\css</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\css_types.h">
+      <Filter>base\css</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\xml.h">
+      <Filter>3rd_ext\xml_ext</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

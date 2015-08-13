@@ -2,6 +2,7 @@
 #include "script_parser.h"
 #include "lua_context.h"
 #include "core/pixmap.h"
+#include "core/css_manager.h"
 
 namespace bones
 {
@@ -121,12 +122,12 @@ BONES_API_EXPORT(void) BonesUnregScriptCallback(bones::Ref * co,
 BONES_API_EXPORT(void)BonesApplyCSS(bones::Ref * co, const char * css)
 {
     using namespace bones;
-    ScriptParser::Get()->applyCSS(co, css);
+    Core::GetCSSManager()->applyCSS(co, css);
 }
 
-BONES_API_EXPORT(void)BonesApplyClass(bones::Ref * co, const char * class_name, const char * mod)
+BONES_API_EXPORT(void)BonesApplyClass(bones::Ref * co, const char * class_name)
 {
     using namespace bones;
-    ScriptParser::Get()->applyClass(co, class_name, mod);
+    Core::GetCSSManager()->applyClass(co, class_name);
 }
 

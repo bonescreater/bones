@@ -1,9 +1,102 @@
-﻿#include "simple_css.h"
+﻿#include "css_manager.h"
 #include "logging.h"
+#include "ref.h"
+
 
 namespace bones
 {
 
+extern void RegisterClassTables(CSSClassTables & tables);
+
+CSSString::CSSString()
+    :begin(nullptr), length(0)
+{
+
+}
+
+CSSString::CSSString(const char * b)
+    : begin(b), length(0)
+{
+    if (begin)
+        length = strlen(begin);
+}
+
+CSSString::CSSString(const char * b, size_t l)
+    :begin(b), length(l)
+{
+
+}
+
+CSSString::operator bool() const
+{
+    return begin != nullptr && length != 0;
+}
+
+bool CSSString::operator<(const CSSString & right) const
+{
+    size_t n = this->length;
+    if (n > right.length)
+        n = right.length;
+    int re = strncmp(this->begin, right.begin, n);
+    if (re == 0)
+    {//前n个字符相等
+        if (n != this->length)
+            re = 1;
+        else if (n != right.length)
+            re = -1;
+    }
+    return re < 0;
+}
+
+bool CSSString::operator==(const CSSString & right) const
+{
+    if (this->length == right.length)
+    {
+        if (0 == strncmp(this->begin, right.begin, this->length))
+            return true;
+    }
+    return false;
+}
+
+class CSSClassName
+{
+public:
+    CSSClassName(const char * class_name)
+    {
+        assert(class_name);
+        class_name_ = class_name;
+        length_ = strlen(class_name);
+        current_ = 0;
+    }
+
+    const char * next(size_t & next_size)
+    {
+        if (current_ >= length_)
+            return nullptr;
+
+        //跳过空白字符
+        while (0 != isspace(class_name_[current_]))
+        {
+            current_++;
+            if (current_ >= length_)
+                return nullptr;
+        }
+        auto cur = current_;
+        auto ptr = class_name_ + cur;
+        while (0 == isspace(class_name_[current_]))
+        {
+            current_++;
+            if (current_ >= length_)
+                break;
+        }
+        next_size = current_ - cur;
+        return ptr;
+    }
+private:
+    const char * class_name_;
+    size_t length_;
+    size_t current_;
+};
 
 enum Token
 {
@@ -35,7 +128,7 @@ const char * SkipBOM(const char * str)
     return str;
 }
 
-void SimpleCSS::Parse(const char * css, CSSEntries & entries)
+void CSSManager::parse(const char * css, CSSEntries & entries)
 {
     size_t len = 0;
     if (!css || !(len = strlen(css)) )
@@ -97,17 +190,42 @@ error:
     LOG_VERBOSE << "css parse error: " << token;
 }
 
-SimpleCSS::SimpleCSS()
+CSSManager::CSSManager()
 {
-    reset();
+    RegisterClassTables(class_tables_);
 }
 
-void SimpleCSS::reset()
+void CSSManager::clean()
 {
     styles_.clear();
 }
 
-void SimpleCSS::append(const char * str)
+void CSSManager::applyCSS(Ref * ob, const char * css)
+{
+    if (!ob || !css)
+        return;
+    CSSEntries entries;
+    parse(css, entries);
+    applyEntries(ob, entries);
+}
+
+void CSSManager::applyClass(Ref * ob, const char * class_name)
+{
+    if (!class_name || !ob)
+        return;
+    CSSClassName cn(class_name);
+    CSSString str;
+    while (str.begin = cn.next(str.length))
+    {
+        auto iter = styles_.find(str);
+        if (iter == styles_.end())
+            return;
+
+        applyEntries(ob, iter->second);
+    }
+}
+
+void CSSManager::append(const char * str)
 {
     size_t len = 0;
 
@@ -189,14 +307,18 @@ error:
     LOG_VERBOSE << "css parse error: " << token;
 }
 
-const CSSEntries * SimpleCSS::getEntries(const CSSString & style_name) const
+void CSSManager::applyEntries(Ref * ob, const CSSEntries & entries)
 {
-    if (!style_name)
-        return nullptr;
-    auto iter = styles_.find(style_name);
-    if (iter == styles_.end())
-        return nullptr;
-    return &iter->second;
+    auto it = class_tables_.find(ob->getClassName());
+    if (it == class_tables_.end())
+        return;
+
+    for (auto iter = entries.begin(); iter != entries.end(); ++iter)
+    {   
+        auto func = it->second.find(iter->first);
+        if (func != it->second.end())
+            (func->second)(ob, iter->second);
+    }
 }
 
 //0结尾字符串

@@ -31,7 +31,7 @@ BONES_API_EXPORT(void) BonesUnregScriptCallback(bones::Ref * co,
 
 BONES_API_EXPORT(void)BonesApplyCSS(bones::Ref * co, const char * css);
 
-BONES_API_EXPORT(void)BonesApplyClass(bones::Ref * co, const char * class_name, const char * mod);
+BONES_API_EXPORT(void)BonesApplyClass(bones::Ref * co, const char * class_name);
 
 
 #endif

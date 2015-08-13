@@ -145,7 +145,7 @@ static int ApplyCSS(lua_State * l)
 static int ApplyClass(lua_State * l)
 {
     int count = lua_gettop(l);
-    if (2 == count || 3 == count)
+    if (2 == count)
     {
         const char * class_name = lua_tostring(l, 2);
         const char * mod = nullptr;
@@ -154,7 +154,7 @@ static int ApplyClass(lua_State * l)
         lua_pushnil(l);
         lua_copy(l, 1, -1);
         Ref * v = (Ref *)LuaMetaTable::CallGetCObject(l);
-        BonesApplyClass(v, class_name, mod);
+        BonesApplyClass(v, class_name);
     }
     return 0;
 }
