@@ -230,17 +230,7 @@ View * FocusController::findNextFocusable(View * start, bool reverse)
         if (reverse)
         {
             while (start->getChildCount() > 0)
-            {
-                start = start->getFirstChild();
-                while (start)
-                {
-                    auto tmp  = start->getNextSibling();
-                    if (!tmp)
-                        break;
-                    start = tmp;
-                }
-                    
-            }
+                start = start->getLastChild();
                 
             while (start->getNextFocusable())
                 start = start->getNextFocusable();
