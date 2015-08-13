@@ -36,7 +36,7 @@ void RootView::setDelegate(Delegate * delegate)
 
 void RootView::handleMouse(NativeEvent & e)
 {
-    int flags = Helper::ToFlagsForMouse(e.wparam);
+    int flags = Helper::ToFlagsForEvent();
 
     //暂时不管XBUTTON
     EventType et = kET_COUNT;
@@ -47,6 +47,7 @@ void RootView::handleMouse(NativeEvent & e)
     Point p(static_cast<Scalar>(GET_X_LPARAM(lparam)),
         static_cast<Scalar>(GET_Y_LPARAM(lparam)));
     MouseEvent me(et, mb, this, p, p, flags);
+    me.setUserData(&e);
     mouse_.handleEvent(me);
 }
 
@@ -67,7 +68,8 @@ void RootView::handleKey(NativeEvent & e)
 
     bool handle = false;
 
-    KeyEvent ke(type, focus, (KeyboardCode)e.wparam, *(KeyState *)(&e.lparam), 0);
+    KeyEvent ke(type, focus, (KeyboardCode)e.wparam, *(KeyState *)(&e.lparam), 
+                Helper::ToFlagsForEvent());
     ke.setUserData(&e);
     if (kET_KEY_PRESS != type)
     {//非字符
@@ -127,7 +129,7 @@ void RootView::handleComposition(NativeEvent & e)
 
 void RootView::handleWheel(NativeEvent & e)
 {
-    int flags = Helper::ToFlagsForMouse(e.wparam);
+    int flags = Helper::ToFlagsForEvent();
     auto & msg = e.msg;
     if (WM_MOUSEWHEEL == msg || WM_MOUSEHWHEEL == msg)
     {
@@ -140,6 +142,7 @@ void RootView::handleWheel(NativeEvent & e)
             WM_MOUSEWHEEL == msg ? delta : 0, p, p, flags);
 
         //wheelEvent和mouseEvent分发逻辑一致
+        we.setUserData(&e);
         mouse_.handleEvent(we);
     }
 }

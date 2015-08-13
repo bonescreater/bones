@@ -224,21 +224,26 @@ LPARAM Helper::ToKeyStateForKey(const KeyState & state)
     return (LPARAM)*(uint32_t *)(&state);
 }
 
-int Helper::ToFlagsForMouse(WPARAM wp)
+int Helper::ToFlagsForEvent()
 {
     int flags = kEF_NONE;
-    if (wp & MK_LBUTTON)
-        flags |= kEF_LEFT_MOUSE_DOWN;
-    if (wp & MK_RBUTTON)
-        flags |= kEF_RIGHT_MOUSE_DOWN;
-    if (wp & MK_MBUTTON)
-        flags |= kEF_MIDDLE_MOUSE_DOWN;
-    if (wp & MK_CONTROL)
-        flags |= kEF_CONTROL_DOWN;
-    if (wp & MK_SHIFT)
+    if (::GetKeyState(VK_SHIFT) < 0)
         flags |= kEF_SHIFT_DOWN;
+    if (::GetKeyState(VK_CONTROL) < 0)
+        flags |= kEF_CONTROL_DOWN;
+    if (::GetKeyState(VK_MENU) < 0)
+        flags |= kEF_ALT_DOWN;
+    if (::GetKeyState(VK_CAPITAL) < 0)
+        flags |= kEF_CAPS_LOCK_DOWN;
+    if (::GetKeyState(VK_LBUTTON) < 0)
+        flags |= kEF_LEFT_MOUSE_DOWN;
+    if (::GetKeyState(VK_RBUTTON) < 0)
+        flags |= kEF_RIGHT_MOUSE_DOWN;
+    if (::GetKeyState(VK_MBUTTON) < 0)
+        flags |= kEF_MIDDLE_MOUSE_DOWN;
+    if (::GetKeyState(kVKEY_COMMAND) < 0 || ::GetKeyState(kVKEY_RWIN) < 0)
+        flags |= kEF_COMMAND_DOWN;
 
-    //暂时不管XBUTTON
     return flags;
 }
 

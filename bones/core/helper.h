@@ -62,7 +62,7 @@ public:
 
     static LPARAM ToKeyStateForKey(const KeyState & state);
 
-    static int ToFlagsForMouse(WPARAM wp);
+    static int ToFlagsForEvent();
 
     static void ToEMForMouse(UINT msg, EventType & type, MouseButton & mb);
 };
