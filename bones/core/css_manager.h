@@ -34,7 +34,6 @@ private:
     void parse(const char * css, CSSEntries & entries);
 private:
     CSSStyles styles_;
-    CSSClassTables class_tables_;
 
     friend class Core;
 };

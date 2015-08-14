@@ -1,6 +1,9 @@
 ﻿#include "text.h"
+#include "encoding.h"
+
 #include "SkCanvas.h"
 #include "SkTypeface.h"
+#include "css_utils.h"
 
 namespace bones
 {
@@ -307,6 +310,26 @@ void Text::wordWrap(size_t begin, size_t length)
 
     }
         
+}
+
+BONES_CSS_TABLE_BEGIN(Text, View)
+BONES_CSS_SET_FUNC("color", &Text::setColor)
+BONES_CSS_SET_FUNC("content", &Text::setContent)
+BONES_CSS_TABLE_END()
+
+void Text::setColor(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setColor(CSSUtils::CSSStrToColor(params[0]));
+}
+
+void Text::setContent(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    CSSText content(params[0]);
+    set(Encoding::FromUTF8(content.begin, content.length).data());
 }
 
 }

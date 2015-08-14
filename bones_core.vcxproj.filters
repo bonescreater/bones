@@ -124,11 +124,11 @@
     <ClCompile Include="bones\core\css_manager.cpp">
       <Filter>base\css</Filter>
     </ClCompile>
-    <ClCompile Include="bones\core\class_descriptor.hpp">
-      <Filter>base\css</Filter>
-    </ClCompile>
     <ClCompile Include="bones\core\xml.cpp">
       <Filter>3rd_ext\xml_ext</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\css_utils.cpp">
+      <Filter>base\css</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -234,6 +234,9 @@
     </ClInclude>
     <ClInclude Include="bones\core\xml.h">
       <Filter>3rd_ext\xml_ext</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\css_utils.h">
+      <Filter>base\css</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

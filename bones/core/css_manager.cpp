@@ -1,12 +1,11 @@
 ﻿#include "css_manager.h"
 #include "logging.h"
 #include "ref.h"
-
+#include "view.h"
+#include "widget.h"
 
 namespace bones
 {
-
-extern void RegisterClassTables(CSSClassTables & tables);
 
 CSSString::CSSString()
     :begin(nullptr), length(0)
@@ -192,7 +191,7 @@ error:
 
 CSSManager::CSSManager()
 {
-    RegisterClassTables(class_tables_);
+    ;
 }
 
 void CSSManager::clean()
@@ -309,16 +308,34 @@ error:
 
 void CSSManager::applyEntries(Ref * ob, const CSSEntries & entries)
 {
-    auto it = class_tables_.find(ob->getClassName());
-    if (it == class_tables_.end())
-        return;
+    const CSSClassTables * tables = nullptr;
+
+    if (kClassPanel == ob->getClassName())
+        tables = ((Widget *)ob)->getCSSClassTables();
+    else//view
+        tables = ((View *)ob)->getCSSClassTables();
 
     for (auto iter = entries.begin(); iter != entries.end(); ++iter)
-    {   
-        auto func = it->second.find(iter->first);
-        if (func != it->second.end())
-            (func->second)(ob, iter->second);
+    {
+        auto tmp_tables = tables;
+        while (tmp_tables)
+        {
+            auto & the_table = tmp_tables->table;
+            if (!the_table)
+                continue;
+            auto it = the_table->find(iter->first);
+            if (it != the_table->end())
+            {//找到
+                (ob->*it->second)(iter->second);
+                break;
+            }
+            if (tmp_tables->base)
+                tmp_tables = (*tmp_tables->base)();
+            else
+                break;
+        }
     }
+
 }
 
 //0结尾字符串

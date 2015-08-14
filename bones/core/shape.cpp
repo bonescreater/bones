@@ -2,7 +2,7 @@
 #include "rect.h"
 #include "helper.h"
 #include "SkCanvas.h"
-
+#include "css_utils.h"
 
 namespace bones
 {
@@ -168,6 +168,112 @@ void Shape::drawBorder(SkCanvas & canvas)
     Rect bounds;
     bounds.setXYWH(0, 0, getWidth() - border_width_, getHeight() - border_width_);
     canvas.drawRoundRect(Helper::ToSkRect(bounds), border_rx_, border_ry_, paint);
+}
+
+BONES_CSS_TABLE_BEGIN(Shape, View)
+BONES_CSS_SET_FUNC("border", &Shape::setBorder)
+BONES_CSS_SET_FUNC("color", &Shape::setColor)
+BONES_CSS_SET_FUNC("linear-gradient", &Shape::setLinearGradient)
+BONES_CSS_SET_FUNC("radial-gradient", &Shape::setRadialGradient)
+//BONES_CSS_SET_FUNC("content", &Shape::setContent)
+//BONES_CSS_SET_FUNC("content", &Shape::setContent)
+BONES_CSS_SET_FUNC("stroke-width", &Shape::setStrokeWidth)
+BONES_CSS_SET_FUNC("rect", &Shape::setRect)
+BONES_CSS_SET_FUNC("circle", &Shape::setCircle)
+BONES_CSS_TABLE_END()
+
+static Shape::Style CSSStrToShapeStyle(const CSSString & str)
+{
+    return Shape::kSolid;
+}
+//static void ShapeSetMode(Ref * ob, const CSSParams & params)
+//{
+//    if (params.empty() || !ob)
+//        return;
+//    auto v = static_cast<Shape *>(ob);
+//    Shape::Mode m = Shape::kFill;
+//    LOG_VERBOSE << "shape unsupport mode\n";
+//    v->setMode(m);
+//}
+
+//static void ShapeSetStyle(Ref * ob, const CSSParams & params)
+//{
+//    if (params.empty() || !ob)
+//        return;
+//    auto v = static_cast<Shape *>(ob);
+//    v->setStyle(CSSStrToShapeStyle(params[0]));
+//}
+
+void Shape::setColor(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setColor(CSSUtils::CSSStrToColor(params[0]));
+}
+
+void Shape::setLinearGradient(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+
+    setShader(CSSUtils::CSSParamsToLinearGradientShader(params));
+}
+
+void Shape::setRadialGradient(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setShader(CSSUtils::CSSParamsToRadialGradientShader(params));
+}
+
+void Shape::setStrokeWidth(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setStrokeWidth(CSSUtils::CSSStrToPX(params[0]));
+}
+//
+void Shape::setRect(const CSSParams & params)
+{
+    if (params.size() < 2)
+        return;
+
+    Rect * pr = nullptr;
+    Rect r;
+    if (params.size() >= 6)
+    {
+        r.setLTRB(CSSUtils::CSSStrToPX(params[2]),
+            CSSUtils::CSSStrToPX(params[3]),
+            CSSUtils::CSSStrToPX(params[4]),
+            CSSUtils::CSSStrToPX(params[5]));
+        pr = &r;
+    }
+    set(CSSUtils::CSSStrToPX(params[0]), CSSUtils::CSSStrToPX(params[1]), pr);
+}
+//
+void Shape::setCircle(const CSSParams & params)
+{
+    if (params.size() < 3)
+        return;
+    set(Point::Make(CSSUtils::CSSStrToPX(params[0]), CSSUtils::CSSStrToPX(params[1])),
+        CSSUtils::CSSStrToPX(params[2]));
+}
+
+void Shape::setBorder(const CSSParams & params)
+{
+    if (params.size() < 3)
+        return;
+    Scalar rx = 0;
+    if (params.size() >= 4)
+        rx = CSSUtils::CSSStrToPX(params[3]);
+    Scalar ry = 0;
+    if (params.size() >= 5)
+        rx = CSSUtils::CSSStrToPX(params[4]);
+
+    setBorder(CSSUtils::CSSStrToPX(params[0]),
+        CSSStrToShapeStyle(params[1]),
+        CSSUtils::CSSStrToColor(params[2]),
+        rx, ry);
 }
 
 }

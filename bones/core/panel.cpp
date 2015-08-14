@@ -1,5 +1,7 @@
 ﻿#include "panel.h"
 #include "helper.h"
+#include "logging.h"
+#include "css_utils.h"
 
 namespace bones
 {
@@ -450,6 +452,124 @@ void Panel::invalidateRect(const Rect & rect)
 void Panel::changeCursor(Cursor cursor)
 {
     cursor_ = cursor;
+}
+
+BONES_CSS_TABLE_BEGIN(Panel, Widget)
+BONES_CSS_SET_FUNC("cursor", &Panel::setCursor)
+BONES_CSS_SET_FUNC("hit-test", &Panel::setHitTest)
+BONES_CSS_SET_FUNC("ex-style", &Panel::setEXStyle)
+BONES_CSS_TABLE_END()
+
+static Panel::NCArea CSSStrToNCArea(const CSSString & str)
+{
+    if (str == "caption")
+        return Panel::kCaption;
+    if (str == "bottom")
+        return Panel::kBottom;
+    if (str == "bottom-left")
+        return Panel::kBottomLeft;
+    if (str == "bottom-right")
+        return Panel::kBottomRight;
+    if (str == "top")
+        return Panel::kTop;
+    if (str == "top-left")
+        return Panel::kTopLeft;
+    if (str == "top-right")
+        return Panel::kTopRight;
+    LOG_ERROR << "hit test param error";
+    return Panel::kCaption;
+}
+
+static uint64_t CSSStrToEXStyle(const CSSString & str)
+{
+    if (str == "accept-files")
+        return WS_EX_ACCEPTFILES;
+    if (str == "app-window")
+        return WS_EX_APPWINDOW;
+    if (str == "client-edge")
+        return WS_EX_CLIENTEDGE;
+    if (str == "composited")
+        return WS_EX_COMPOSITED;
+    if (str == "context-help")
+        return WS_EX_CONTEXTHELP;
+    if (str == "control-parent")
+        return WS_EX_CONTROLPARENT;
+    if (str == "dlg-modal-frame")
+        return WS_EX_DLGMODALFRAME;
+    if (str == "layered")
+        return WS_EX_LAYERED;
+    if (str == "layout-rtl")
+        return WS_EX_LAYOUTRTL;
+    if (str == "left")
+        return WS_EX_LEFT;
+    if (str == "left-scrollbar")
+        return WS_EX_LEFTSCROLLBAR;
+    if (str == "ltr-reading")
+        return WS_EX_LTRREADING;
+    if (str == "mdi-child")
+        return WS_EX_MDICHILD;
+    if (str == "no-activate")
+        return WS_EX_NOACTIVATE;
+    if (str == "no-inherit-layout")
+        return WS_EX_NOINHERITLAYOUT;
+    if (str == "no-parent-notify")
+        return WS_EX_NOPARENTNOTIFY;
+    if (str == "overlapped-window")
+        return WS_EX_OVERLAPPEDWINDOW;
+    if (str == "palette-window")
+        return WS_EX_PALETTEWINDOW;
+    if (str == "right")
+        return WS_EX_RIGHT;
+    if (str == "right-scrollbar")
+        return WS_EX_RIGHTSCROLLBAR;
+    if (str == "rtl-reading")
+        return WS_EX_RTLREADING;
+    if (str == "static-edge")
+        return WS_EX_STATICEDGE;
+    if (str == "tool-window")
+        return WS_EX_TOOLWINDOW;
+    if (str == "top-most")
+        return WS_EX_TOPMOST;
+    if (str == "transparent")
+        return WS_EX_TRANSPARENT;
+    if (str == "window-edge")
+        return WS_EX_WINDOWEDGE;
+    //WS_EX_NOREDIRECTIONBITMAP,
+
+    return 0;
+}
+
+void Panel::setCursor(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setCursor(CSSUtils::CSSStrToCursor(params[0]));
+}
+
+void Panel::setHitTest(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    if (params.size() != 5)
+        return;
+
+    Rect r;
+    r.setLTRB(CSSUtils::CSSStrToScalar(params[1]),
+        CSSUtils::CSSStrToPX(params[2]),
+        CSSUtils::CSSStrToPX(params[3]),
+        CSSUtils::CSSStrToPX(params[4]));
+    Panel::NCArea nc = CSSStrToNCArea(params[0]);
+    setNCArea(nc, r);
+}
+
+void Panel::setEXStyle(const CSSParams & params)
+{
+    if (params.size() < 1)
+        return;
+    uint64_t ex_style = 0;
+    for (auto iter = params.begin(); iter != params.end(); ++iter)
+        ex_style |= CSSStrToEXStyle(*iter);
+    setEXStyle(ex_style);
 }
 
 }

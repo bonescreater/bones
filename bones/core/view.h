@@ -6,6 +6,7 @@
 #include "size.h"
 #include "accelerator.h"
 #include <vector>
+#include "css_types.h"
 
 class SkCanvas;
 
@@ -244,6 +245,20 @@ private:
     void propagateAddNotifications();
 
     void propagateVisibleNotifications();
+
+    BONES_CSS_TABLE_DECLARE()
+
+    void setLeft(const CSSParams & params);
+
+    void setTop(const CSSParams & params);
+
+    void setWidth(const CSSParams & params);
+
+    void setHeight(const CSSParams & params);
+
+    void setCursor(const CSSParams & params);
+
+    void setOpacity(const CSSParams & params);
 protected:
     Flag flag_;
     Point loc_;

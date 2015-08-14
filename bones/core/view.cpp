@@ -2,6 +2,7 @@
 #include "rect.h"
 #include "helper.h"
 #include "SkCanvas.h"
+#include "css_utils.h"
 
 namespace bones
 {
@@ -923,7 +924,58 @@ void View::recursiveVisibleNotifications(View * start)
         child = child->getNextSibling();
     }
 }
+    
 
 
+BONES_CSS_BASE_TABLE_BEGIN(View)
+BONES_CSS_SET_FUNC("left", &View::setLeft)
+BONES_CSS_SET_FUNC("top", &View::setTop)
+BONES_CSS_SET_FUNC("width", &View::setWidth)
+BONES_CSS_SET_FUNC("height", &View::setHeight)
+BONES_CSS_SET_FUNC("cursor", &View::setCursor)
+BONES_CSS_SET_FUNC("opacity", &View::setOpacity)
+BONES_CSS_BASE_TABLE_END()
+
+void View::setLeft(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setLeft(CSSUtils::CSSStrToPX(params[0]));
+}
+
+void View::setTop(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setTop(CSSUtils::CSSStrToPX(params[0]));
+}
+
+void View::setWidth(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setWidth(CSSUtils::CSSStrToPX(params[0]));
+}
+
+void View::setHeight(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setHeight(CSSUtils::CSSStrToPX(params[0]));
+}
+
+void View::setCursor(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setCursor(CSSUtils::CSSStrToCursor(params[0]));
+}
+
+void View::setOpacity(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setOpacity(CSSUtils::CSSStrToFloat(params[0]));
+}
 
 }

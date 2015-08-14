@@ -70,6 +70,12 @@ private:
     void wordWrap(size_t begin, size_t length);
 
     SkPaint ToSkPaint();
+
+    BONES_CSS_TABLE_DECLARE()
+
+    void setColor(const CSSParams & params);
+
+    void setContent(const CSSParams & params);
 private:
     bool cache_dirty_;
     std::wstring content_;

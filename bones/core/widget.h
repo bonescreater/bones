@@ -3,6 +3,7 @@
 
 #include "core.h"
 #include "ref.h"
+#include "css_types.h"
 
 namespace bones
 {
@@ -55,6 +56,18 @@ public:
     HWND hwnd() const;
 
     const char * getClassName() const override;
+
+    BONES_CSS_TABLE_DECLARE()
+
+    void setLeft(const CSSParams & params);
+
+    void setTop(const CSSParams & params);
+
+    void setWidth(const CSSParams & params);
+
+    void setHeight(const CSSParams & params);
+
+    void setContent(const CSSParams & params);
 protected:
     HWND hwnd_;
 };

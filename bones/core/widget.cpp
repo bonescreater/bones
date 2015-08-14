@@ -2,6 +2,8 @@
 #include "size.h"
 #include "point.h"
 #include "rect.h"
+#include "encoding.h"
+#include "css_utils.h"
 
 namespace bones
 {
@@ -149,6 +151,47 @@ HWND Widget::hwnd() const
 const char * Widget::getClassName() const
 {
     return kClassWidget;
+}
+
+BONES_CSS_BASE_TABLE_BEGIN(Widget)
+BONES_CSS_SET_FUNC("left", &Widget::setLeft)
+BONES_CSS_SET_FUNC("top", &Widget::setTop)
+BONES_CSS_SET_FUNC("width", &Widget::setWidth)
+BONES_CSS_SET_FUNC("height", &Widget::setHeight)
+BONES_CSS_SET_FUNC("content", &Widget::setContent)
+BONES_CSS_BASE_TABLE_END()
+
+void Widget::setLeft(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setLeft(CSSUtils::CSSStrToPX(params[0]));
+}
+void Widget::setTop(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setTop(CSSUtils::CSSStrToPX(params[0]));
+}
+void Widget::setWidth(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setWidth(CSSUtils::CSSStrToPX(params[0]));
+}
+
+void Widget::setHeight(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setHeight(CSSUtils::CSSStrToPX(params[0]));
+}
+
+void Widget::setContent(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setWindowText(Encoding::FromUTF8(params[0].begin, params[0].length).data());
 }
 
 }

@@ -2,8 +2,11 @@
 #define BONES_CSS_TYPES_H_
 
 #include "core.h"
+#include "color.h"
+
 #include <vector>
 #include <map>
+#include "shader.h"
 
 namespace bones
 {
@@ -34,9 +37,59 @@ typedef std::pair<CSSString, CSSParams> CSSEntry;//font
 typedef std::vector<CSSEntry> CSSEntries;//顺序存储
 typedef std::map<CSSString, CSSEntries> CSSStyles;
 
-typedef void(*CSSCLASS_FUNC)(Ref * ob, const CSSParams & params);
+typedef void(Ref::*CSSCLASS_FUNC)(const CSSParams & params);
+
 typedef std::map<CSSString, CSSCLASS_FUNC> CSSClassTable;
-typedef std::map<const char *, CSSClassTable> CSSClassTables;
+
+struct CSSClassTables
+{
+    const CSSClassTables *(*base)();
+    CSSClassTable * table;
+};
+
+#define BONES_CSS_TABLE_DECLARE()\
+protected:\
+    static const CSSClassTables * GetCSSClassTables(); \
+    virtual const CSSClassTables * getCSSClassTables() const; \
+    friend class CSSManager; \
+
+#define BONES_CSS_BASE_TABLE_BEGIN(the) \
+    const CSSClassTables * the::getCSSClassTables() const\
+{\
+    return GetCSSClassTables(); \
+}\
+    const CSSClassTables * the::GetCSSClassTables()\
+{\
+    static CSSClassTable table; \
+if (table.empty())\
+{\
+
+#define BONES_CSS_SET_FUNC(a, b)\
+    table[a] = (CSSCLASS_FUNC)b; \
+
+#define BONES_CSS_BASE_TABLE_END()\
+}\
+    static CSSClassTables tables = { nullptr, &table }; \
+    return &tables; \
+} \
+
+#define BONES_CSS_TABLE_BEGIN(the, base) \
+    const CSSClassTables * the::getCSSClassTables() const\
+{\
+    return GetCSSClassTables(); \
+}\
+    const CSSClassTables * the::GetCSSClassTables()\
+{\
+    typedef base BaseClass; \
+    static CSSClassTable table; \
+    if(table.empty())\
+    {\
+
+#define BONES_CSS_TABLE_END()\
+    }\
+    static CSSClassTables tables = { &BaseClass::GetCSSClassTables, &table }; \
+    return &tables; \
+} \
 
 
 

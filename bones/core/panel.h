@@ -91,6 +91,14 @@ private:
     LRESULT handleKey(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     LRESULT handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+    BONES_CSS_TABLE_DECLARE()
+
+    void setCursor(const CSSParams & params);
+
+    void setHitTest(const CSSParams & params);
+
+    void setEXStyle(const CSSParams & params);
 private:
     RefPtr<RootView> root_;
     Rect nc_area_[kNCAreaCount];

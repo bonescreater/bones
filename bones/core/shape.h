@@ -80,6 +80,22 @@ protected:
     void drawBackground(SkCanvas & canvas);
 
     void drawBorder(SkCanvas & canvas);
+
+    BONES_CSS_TABLE_DECLARE()
+
+    void setColor(const CSSParams & params);
+
+    void setLinearGradient(const CSSParams & params);
+
+    void setRadialGradient(const CSSParams & params);
+
+    void setStrokeWidth(const CSSParams & params);
+
+    void setRect(const CSSParams & params);
+
+    void setCircle(const CSSParams & params);
+
+    void setBorder(const CSSParams & params);
 private:
     Category category_;
     Mode mode_;
