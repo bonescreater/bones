@@ -23,14 +23,9 @@ Shape::~Shape()
     ;
 }
 
-void Shape::setMode(Mode mode)
+void Shape::setRender(Mode mode, Style style)
 {
     mode_ = mode;
-    inval();
-}
-
-void Shape::setStyle(Style style)
-{
     style_ = style;
     inval();
 }
@@ -175,34 +170,25 @@ BONES_CSS_SET_FUNC("border", &Shape::setBorder)
 BONES_CSS_SET_FUNC("color", &Shape::setColor)
 BONES_CSS_SET_FUNC("linear-gradient", &Shape::setLinearGradient)
 BONES_CSS_SET_FUNC("radial-gradient", &Shape::setRadialGradient)
-//BONES_CSS_SET_FUNC("content", &Shape::setContent)
-//BONES_CSS_SET_FUNC("content", &Shape::setContent)
+BONES_CSS_SET_FUNC("render", &Shape::setRender)
 BONES_CSS_SET_FUNC("stroke-width", &Shape::setStrokeWidth)
 BONES_CSS_SET_FUNC("rect", &Shape::setRect)
 BONES_CSS_SET_FUNC("circle", &Shape::setCircle)
 BONES_CSS_TABLE_END()
 
-static Shape::Style CSSStrToShapeStyle(const CSSString & str)
+static Shape::Style CSSStrToStyle(const CSSString & str)
 {
     return Shape::kSolid;
 }
-//static void ShapeSetMode(Ref * ob, const CSSParams & params)
-//{
-//    if (params.empty() || !ob)
-//        return;
-//    auto v = static_cast<Shape *>(ob);
-//    Shape::Mode m = Shape::kFill;
-//    LOG_VERBOSE << "shape unsupport mode\n";
-//    v->setMode(m);
-//}
 
-//static void ShapeSetStyle(Ref * ob, const CSSParams & params)
-//{
-//    if (params.empty() || !ob)
-//        return;
-//    auto v = static_cast<Shape *>(ob);
-//    v->setStyle(CSSStrToShapeStyle(params[0]));
-//}
+static Shape::Mode CSSStrToMode(const CSSString & str)
+{
+    if (str == "fill")
+        return Shape::kFill;
+    if (str == "stroke")
+        return Shape::kStroke;
+    return Shape::kFill;
+}
 
 void Shape::setColor(const CSSParams & params)
 {
@@ -226,6 +212,17 @@ void Shape::setRadialGradient(const CSSParams & params)
     setShader(CSSUtils::CSSParamsToRadialGradientShader(params));
 }
 
+void Shape::setRender(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    Shape::Mode m = CSSStrToMode(params[0]);
+    Shape::Style s = Shape::kSolid;
+    if (params.size() > 1)
+        s = CSSStrToStyle(params[1]);
+    setRender(m, s);
+}
+
 void Shape::setStrokeWidth(const CSSParams & params)
 {
     if (params.empty())
@@ -240,7 +237,7 @@ void Shape::setRect(const CSSParams & params)
 
     Rect * pr = nullptr;
     Rect r;
-    if (params.size() >= 6)
+    if (params.size() > 5)
     {
         r.setLTRB(CSSUtils::CSSStrToPX(params[2]),
             CSSUtils::CSSStrToPX(params[3]),
@@ -264,14 +261,14 @@ void Shape::setBorder(const CSSParams & params)
     if (params.size() < 3)
         return;
     Scalar rx = 0;
-    if (params.size() >= 4)
+    if (params.size() > 3)
         rx = CSSUtils::CSSStrToPX(params[3]);
     Scalar ry = 0;
-    if (params.size() >= 5)
+    if (params.size() > 4)
         rx = CSSUtils::CSSStrToPX(params[4]);
 
     setBorder(CSSUtils::CSSStrToPX(params[0]),
-        CSSStrToShapeStyle(params[1]),
+        CSSStrToStyle(params[1]),
         CSSUtils::CSSStrToColor(params[2]),
         rx, ry);
 }

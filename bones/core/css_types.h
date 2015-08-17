@@ -65,7 +65,7 @@ if (table.empty())\
 {\
 
 #define BONES_CSS_SET_FUNC(a, b)\
-    table[a] = (CSSCLASS_FUNC)b; \
+    table[a] = static_cast<CSSCLASS_FUNC>(b); \
 
 #define BONES_CSS_BASE_TABLE_END()\
 }\

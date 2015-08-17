@@ -19,7 +19,7 @@
           }
           .fadeout
           {
-          content: 淡出;
+          content: "淡出";
           }
           .close
           {
@@ -32,11 +32,16 @@
           width:200px;
           height:50px;
           }
+          .bg
+          {
+          color:#ffffffff;
+          }
         </style>
 		  </head>
       
         <body>  
             <panel id ='p_layered' class = "p">
+              <shape class ="bg"></shape>
               <button id ="fadein" class ="b11   b12 "></button>
               <button id ="fadeout" class ="b11   b13 "></button>
               <button id ="layered" class ="b11   b14 "></button>

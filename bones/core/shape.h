@@ -55,9 +55,7 @@ public:
 
     ~Shape();
 
-    void setMode(Mode mode);
-
-    void setStyle(Style style);
+    void setRender(Mode mode, Style style);
 
     void setStrokeWidth(Scalar stroke_width);
 
@@ -88,6 +86,8 @@ protected:
     void setLinearGradient(const CSSParams & params);
 
     void setRadialGradient(const CSSParams & params);
+
+    void setRender(const CSSParams & params);
 
     void setStrokeWidth(const CSSParams & params);
 
