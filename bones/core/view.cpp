@@ -932,6 +932,9 @@ BONES_CSS_SET_FUNC("left", &View::setLeft)
 BONES_CSS_SET_FUNC("top", &View::setTop)
 BONES_CSS_SET_FUNC("width", &View::setWidth)
 BONES_CSS_SET_FUNC("height", &View::setHeight)
+BONES_CSS_SET_FUNC("loc", &View::setLoc)
+BONES_CSS_SET_FUNC("size", &View::setSize)
+BONES_CSS_SET_FUNC("flag", &View::setFlag)
 BONES_CSS_SET_FUNC("cursor", &View::setCursor)
 BONES_CSS_SET_FUNC("opacity", &View::setOpacity)
 BONES_CSS_BASE_TABLE_END()
@@ -962,6 +965,44 @@ void View::setHeight(const CSSParams & params)
     if (params.empty())
         return;
     setHeight(CSSUtils::CSSStrToPX(params[0]));
+}
+
+void View::setLoc(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    Scalar x = CSSUtils::CSSStrToPX(params[0]);
+    Scalar y = 0;
+    if (params.size() > 1)
+        y = CSSUtils::CSSStrToPX(params[1]);
+    setLoc(x, y);
+}
+
+void View::setSize(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    Scalar w = CSSUtils::CSSStrToPX(params[0]);
+    Scalar h = 0;
+    if (params.size() > 1)
+        h = CSSUtils::CSSStrToPX(params[1]);
+    setSize(w, h);
+}
+
+void View::setFlag(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+
+    bool visible = false;
+    bool focusable = false;
+    if (params[0] == "visible")
+        visible = true;
+    if (params[0] == "focusable")
+        focusable = true;
+
+    setVisible(visible);
+    setFocusable(focusable);
 }
 
 void View::setCursor(const CSSParams & params)

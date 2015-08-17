@@ -13,7 +13,7 @@ local function testFadeIn(btn)
     print("test fade in")
     local fade = bones.getLuaObjectByID("rich")
     --animate.fadeIn
-    local m = fade:animate(90, 1800, "fadeIn", "animate", "fadeStop", "test", "fadeStart", "test");
+    local m = fade:animate(90, 1800, animate.fadeIn, test.fadeStop, test.fadeStart);
     print (m)
 end
 
@@ -21,7 +21,7 @@ local function testFadeOut(btn)
     print("test fade Out")
     local fade = bones.getLuaObjectByID("rich")
     --animate.fadeOut
-    fade:animate(90, 1800, "fadeOut", "animate", "fadeStop", "test", "fadeStart", "test");
+    fade:animate(90, 1800, animate.fadeOut, test.fadeStop, test.fadeStart);
 end
 
 local function testLayered(btn)

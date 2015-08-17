@@ -5,7 +5,7 @@ function mod.calcTime(interval, step, start, stop)
     return (math.abs(stop - start)) / step * interval;
 end
 
-function mod.fadeIn(ani, bone, progress)
+function mod.fadeIn(bone, ani, progress)
     local org_opacity = bone["__current_opacity__"]
     if org_opacity == nil then
         bone["__current_opacity__"] = bone:getOpacity()
@@ -19,7 +19,7 @@ function mod.fadeIn(ani, bone, progress)
     end
 end
 
-function mod.fadeOut(ani, bone, progress)
+function mod.fadeOut(bone, ani, progress)
     local org_opacity = bone["__current_opacity__"]
     if org_opacity == nil then
         bone["__current_opacity__"] = bone:getOpacity()

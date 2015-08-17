@@ -256,6 +256,12 @@ private:
 
     void setHeight(const CSSParams & params);
 
+    void setLoc(const CSSParams & params);
+
+    void setSize(const CSSParams & params);
+
+    void setFlag(const CSSParams & params);
+
     void setCursor(const CSSParams & params);
 
     void setOpacity(const CSSParams & params);

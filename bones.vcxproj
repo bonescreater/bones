@@ -89,7 +89,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bones\bones_export.cpp" />
-    <ClCompile Include="bones\lua_animation.cpp" />
     <ClCompile Include="bones\lua_area.cpp" />
     <ClCompile Include="bones\lua_image.cpp" />
     <ClCompile Include="bones\lua_check.cpp" />
@@ -115,7 +114,6 @@
     <ClInclude Include="bones\bones.h" />
     <ClInclude Include="bones\bones_api.h" />
     <ClInclude Include="bones\bones_export.h" />
-    <ClInclude Include="bones\lua_animation.h" />
     <ClInclude Include="bones\lua_area.h" />
     <ClInclude Include="bones\lua_image.h" />
     <ClInclude Include="bones\lua_check.h" />

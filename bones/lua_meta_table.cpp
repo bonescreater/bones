@@ -1,7 +1,6 @@
 ﻿#include "lua_meta_table.h"
 #include "lua_context.h"
 #include "lua_check.h"
-#include "lua_animation.h"
 #include "bones_export.h"
 
 #include "core/panel.h"
@@ -29,7 +28,7 @@ static const char * kMetaTableAnimation = "__bone__animation__";
 
 static const char * kMethodIndex = "__index";
 static const char * kMethodGC = "__gc";
-static const char * kMethodOpacity = "getOpacity";
+static const char * kMethodGetOpacity = "getOpacity";
 static const char * kMethodGetCObject = "getCObject";
 static const char * kMethodAnimate = "animate";
 static const char * kMethodStop = "stop";
@@ -41,7 +40,8 @@ static const char * kMethodContains = "contains";
 static const char * kMethodApplyCSS = "applyCSS";
 static const char * kMethodApplyClass = "applyClass";
 static const char * kMethodGetChildAt = "getChildAt";
-static const char * kMethodSize = "getSize";
+static const char * kMethodGetSize = "getSize";
+static const char * kMethodGetLoc = "getLoc";
 
 static const char * kMethodStopPropagation = "stopPropagation";
 static const char * kMethodPreventDefault = "preventDefault";
@@ -67,6 +67,90 @@ static const char * kMethodIsMiddleMouse = "isMiddleMouse";
 static const char * kMethodIsRightMouse = "isRightMouse";
 
 static const char * kMethodIsTabTraversal = "isTabTraversal";
+
+static const char * kMethodAnimateRun = "__run__";
+static const char * kMethodAnimateStart = "__start__";
+static const char * kMethodAnimateStop = "__stop__";
+static const char * kMethodAnimatePause = "__pause__";
+static const char * kMethodAnimateResume = "__resume__";
+
+void AnimateRun(Ref * sender, Ref * target, float progress, void * user_data)
+{
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, sender);
+    lua_getfield(l, -1, kMethodAnimateRun);
+    LuaContext::GetLOFromCO(l, target);
+    lua_pushnil(l);
+    lua_copy(l, -4, -1);
+    lua_pushnumber(l, progress);
+    LuaContext::SafeLOPCall(l, 3, 0);
+    lua_pop(l, 1);
+}
+
+
+void AnimateStop(Ref * sender, Ref * target, void * user_data)
+{
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, sender);
+
+    lua_getfield(l, -1, kMethodAnimateStop);
+
+    LuaContext::GetLOFromCO(l, target);
+    lua_pushnil(l);
+    lua_copy(l, -4, -1);
+    LuaContext::SafeLOPCall(l, 2, 0);
+    lua_pop(l, 1);
+
+    LuaContext::GetCO2LOTable(l);
+    lua_pushlightuserdata(l, sender);
+    lua_pushnil(l);
+    lua_settable(l, -3);
+    lua_pop(l, 1);
+}
+
+void AnimateStart(Ref * sender, Ref * target, void * user_data)
+{
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, sender);
+    lua_getfield(l, -1, kMethodAnimateStart);
+
+    LuaContext::GetLOFromCO(l, target);
+    lua_pushnil(l);
+    lua_copy(l, -4, -1);
+    LuaContext::SafeLOPCall(l, 2, 0);
+    lua_pop(l, 1);
+}
+
+void AnimatePause(Ref * sender, Ref * target, void * user_data)
+{
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, sender);
+    lua_getfield(l, -1, kMethodAnimatePause);
+
+    LuaContext::GetLOFromCO(l, target);
+    lua_pushnil(l);
+    lua_copy(l, -4, -1);
+    LuaContext::SafeLOPCall(l, 2, 0);
+    lua_pop(l, 1);
+}
+
+void AnimateResume(Ref * sender, Ref * target, void * user_data)
+{
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, sender);
+    lua_getfield(l, -1, kMethodAnimateResume);
+
+    LuaContext::GetLOFromCO(l, target);
+    lua_pushnil(l);
+    lua_copy(l, -4, -1);
+    LuaContext::SafeLOPCall(l, 2, 0);
+    lua_pop(l, 1);
+}
 
 //调用LO的GetCObject
 Ref * LuaMetaTable::CallGetCObject(lua_State *l)
@@ -104,23 +188,62 @@ static int Contains(lua_State * l)
     lua_pushboolean(l, bret);
     return 1;
 }
+
 //(self)
+static int GetLoc(lua_State * l)
+{
+    lua_settop(l, 1);
+    lua_pushnil(l);
+    lua_pushnil(l);
+
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    View * v = (View *)LuaMetaTable::CallGetCObject(l);
+    if (v)
+    {
+        lua_pushnumber(l, v->getLeft());
+        lua_pushnumber(l, v->getTop());
+    }
+    else
+        LOG_ERROR << "not found CO";
+    return 2;
+}
+
 static int GetSize(lua_State * l)
 {
-    bool bret = false;
-    int count = lua_gettop(l);
+    lua_settop(l, 1);
     lua_pushnil(l);
     lua_pushnil(l);
-    if (count == 1)
+
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    View * v = (View *)LuaMetaTable::CallGetCObject(l);
+    if (v)
     {
-        lua_pushnil(l);
-        lua_copy(l, 1, -1);
-        View * v = (View *)LuaMetaTable::CallGetCObject(l);
         lua_pushnumber(l, v->getWidth());
         lua_pushnumber(l, v->getHeight());
     }
+    else
+        LOG_ERROR << "not found CO";
+
 
     return 2;
+}
+
+static int GetOpacity(lua_State * l)
+{
+    lua_settop(l, 1);
+    lua_pushnil(l);
+
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    Ref * ref = LuaMetaTable::CallGetCObject(l);
+    if (ref)
+        lua_pushnumber(l, ((View *)ref)->getOpacity());
+    else
+        LOG_ERROR << "not found CO";
+
+    return 1;
 }
 
 
@@ -198,21 +321,6 @@ static int GC(lua_State * l)
     return 0;
 }
 
-static int Opacity(lua_State * l)
-{
-    int count = lua_gettop(l);
-    lua_pushnil(l);
-    if (count == 1)
-    {
-        lua_pushnil(l);
-        lua_copy(l, 1, -1);
-        Ref * ref = LuaMetaTable::CallGetCObject(l);
-        if (ref)
-            lua_pushnumber(l, ((View *)ref)->getOpacity());
-    }
-    return 1;
-}
-
 static int GetCObject(lua_State * l)
 {
     int count = lua_gettop(l);
@@ -226,61 +334,115 @@ static int GetCObject(lua_State * l)
     return 1;
 }
 
-//(self interval due [run start stop pause resume])
+
+
+
+//(self interval due [run stop start  pause resume])
 static int Animate(lua_State * l)
 {
-    int count = lua_gettop(l);
+    lua_settop(l, 8);
     lua_pushnil(l);
-    if (count >= 3)
-    {
-        lua_pushnil(l);
-        lua_copy(l, 1, -1);
-        Ref * ref = LuaMetaTable::CallGetCObject(l);
-        uint64_t interval = lua_tointeger(l, 2);
-        uint64_t due = lua_tointeger(l, 3);
-        const char * run = nullptr;
-        const char * run_module = nullptr;
-        if (count >= 4)
-            run = lua_tostring(l, 4);
-        if (count >= 5)
-            run_module = lua_tostring(l, 5);
 
-        const char * stop = nullptr;
-        const char * stop_module = nullptr;
-        if (count >= 6)
-            stop = lua_tostring(l, 6);
-        if (count >= 7)
-            stop_module = lua_tostring(l, 7);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    Ref * ref = LuaMetaTable::CallGetCObject(l);
+    uint64_t interval = lua_tointeger(l, 2);
+    uint64_t due = lua_tointeger(l, 3);
 
-        const char * start = nullptr;
-        const char * start_module = nullptr;
-        if (count >= 8)
-            start = lua_tostring(l, 8);
-        if (count >= 9)
-            start_module = lua_tostring(l, 9);
+    auto ani = new Animation(ref, interval, due);
 
-        const char * pause = nullptr;
-        const char * pause_module = nullptr;
-        if (count >= 10)
-            pause = lua_tostring(l, 10);
-        if (count >= 11)
-            pause_module = lua_tostring(l, 11);
+    //创建1个LuaAnimation
+    LuaContext::GetCO2LOTable(l);
+    lua_pushlightuserdata(l, ani);
+    lua_newtable(l);
+    LuaMetaTable::GetAnimation(l);
+    lua_setmetatable(l, -2);
+    LuaMetaTable::SetClosureCObject(l, ani);
+    lua_settable(l, -3);
+    lua_pop(l, 1);
+    LuaContext::GetLOFromCO(l, ani);
 
-        const char * resume = nullptr;
-        const char * resume_module = nullptr;
-        if (count >= 12)
-            resume = lua_tostring(l, 12);
-        if (count >= 13)
-            resume_module = lua_tostring(l, 13);
+    ani->bind(BONES_CALLBACK_4(&AnimateRun), nullptr);
+    ani->bind(Animation::kStop, BONES_CALLBACK_3(&AnimateStop), nullptr);
+    ani->bind(Animation::kStart, BONES_CALLBACK_3(&AnimateStart), nullptr);
+    ani->bind(Animation::kPause, BONES_CALLBACK_3(&AnimatePause), nullptr);
+    ani->bind(Animation::kResume, BONES_CALLBACK_3(&AnimateResume), nullptr);
+    lua_pushnil(l);
+    lua_copy(l, 4, -1);
+    lua_setfield(l, -2, kMethodAnimateRun);
+    lua_pushnil(l);
+    lua_copy(l, 5, -1);
+    lua_setfield(l, -2, kMethodAnimateStop);
+    lua_pushnil(l);
+    lua_copy(l, 6, -1);
+    lua_setfield(l, -2, kMethodAnimateStart);
+    lua_pushnil(l);
+    lua_copy(l, 7, -1);
+    lua_setfield(l, -2, kMethodAnimatePause);
+    lua_pushnil(l);
+    lua_copy(l, 8, -1);
+    lua_setfield(l, -2, kMethodAnimateResume);
 
-        auto ani = new Animation(ref, interval, due);
-        LuaAnimation::Create(ani,
-            run, run_module, stop, stop_module, start, start_module,
-            pause, pause_module, resume, resume_module);
-        LuaContext::GetLOFromCO(l, ani);
-    }
+    Core::GetAnimationManager()->add(ani);
+    ani->release();
+
     return 1;
 }
+
+//static int Animate(lua_State * l)
+//{
+//    int count = lua_gettop(l);
+//    lua_pushnil(l);
+//    if (count >= 3)
+//    {
+//        lua_pushnil(l);
+//        lua_copy(l, 1, -1);
+//        Ref * ref = LuaMetaTable::CallGetCObject(l);
+//        uint64_t interval = lua_tointeger(l, 2);
+//        uint64_t due = lua_tointeger(l, 3);
+//        const char * run = nullptr;
+//        const char * run_module = nullptr;
+//        if (count >= 4)
+//            run = lua_tostring(l, 4);
+//        if (count >= 5)
+//            run_module = lua_tostring(l, 5);
+//
+//        const char * stop = nullptr;
+//        const char * stop_module = nullptr;
+//        if (count >= 6)
+//            stop = lua_tostring(l, 6);
+//        if (count >= 7)
+//            stop_module = lua_tostring(l, 7);
+//
+//        const char * start = nullptr;
+//        const char * start_module = nullptr;
+//        if (count >= 8)
+//            start = lua_tostring(l, 8);
+//        if (count >= 9)
+//            start_module = lua_tostring(l, 9);
+//
+//        const char * pause = nullptr;
+//        const char * pause_module = nullptr;
+//        if (count >= 10)
+//            pause = lua_tostring(l, 10);
+//        if (count >= 11)
+//            pause_module = lua_tostring(l, 11);
+//
+//        const char * resume = nullptr;
+//        const char * resume_module = nullptr;
+//        if (count >= 12)
+//            resume = lua_tostring(l, 12);
+//        if (count >= 13)
+//            resume_module = lua_tostring(l, 13);
+//
+//        auto ani = new Animation(ref, interval, due);
+//        LuaAnimation::Create(ani,
+//            run, run_module, stop, stop_module, start, start_module,
+//            pause, pause_module, resume, resume_module);
+//        LuaContext::GetLOFromCO(l, ani);
+//    }
+//    return 1;
+//}
 //(self , ani, end)
 static int StopAnimate(lua_State * l)
 {
@@ -406,18 +568,26 @@ void LuaMetaTable::GetView(lua_State * l, const char * class_name)
 {
     assert(l && class_name);
     GetRef(l, class_name);
+
+    //view
+    lua_pushcfunction(l, &GetOpacity);
+    lua_setfield(l, -2, kMethodGetOpacity);
+
+    lua_pushcfunction(l, &GetLoc);
+    lua_setfield(l, -2, kMethodGetLoc);
+
+    lua_pushcfunction(l, &GetSize);
+    lua_setfield(l, -2, kMethodGetSize);
+
     lua_pushcfunction(l, &Contains);
     lua_setfield(l, -2, kMethodContains);
 
     lua_pushcfunction(l, &GetChildAt);
     lua_setfield(l, -2, kMethodGetChildAt);
 
-    lua_pushcfunction(l, &GetSize);
-    lua_setfield(l, -2, kMethodSize);
 
-    //view
-    lua_pushcfunction(l, &Opacity);
-    lua_setfield(l, -2, kMethodOpacity);
+
+
     //css method
     lua_pushcfunction(l, &ApplyCSS);
     lua_setfield(l, -2, kMethodApplyCSS);

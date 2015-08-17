@@ -32,9 +32,6 @@
     <ClCompile Include="bones\bones_export.cpp">
       <Filter>api</Filter>
     </ClCompile>
-    <ClCompile Include="bones\lua_animation.cpp">
-      <Filter>lua\proxy</Filter>
-    </ClCompile>
     <ClCompile Include="bones\lua_image.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
@@ -76,9 +73,6 @@
     </ClInclude>
     <ClInclude Include="bones\bones_export.h">
       <Filter>api</Filter>
-    </ClInclude>
-    <ClInclude Include="bones\lua_animation.h">
-      <Filter>lua\proxy</Filter>
     </ClInclude>
     <ClInclude Include="bones\lua_image.h">
       <Filter>lua\proxy</Filter>
