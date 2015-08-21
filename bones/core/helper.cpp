@@ -125,49 +125,49 @@ uint64_t Helper::GetTickCount()
     return support_64 ? ((TGetTickCount64)tf)() : ((TGetTickCount32)tf)();
 }
 
-bool Helper::DWMEnabled()
-{
-    static HMODULE dwm_module = NULL;
+//bool Helper::DWMEnabled()
+//{
+//    static HMODULE dwm_module = NULL;
+//
+//    if (!dwm_module)
+//        dwm_module = ::GetModuleHandle(L"dwmapi.dll");
+//    if (!dwm_module)
+//        dwm_module = ::LoadLibrary(L"dwmapi.dll");
+//    if (!dwm_module)
+//        return false;
+//
+//    BOOL result = TRUE;
+//    if (SUCCEEDED(::DwmIsCompositionEnabled(&result)))
+//        return !!result;
+//    return false;
+//}
 
-    if (!dwm_module)
-        dwm_module = ::GetModuleHandle(L"dwmapi.dll");
-    if (!dwm_module)
-        dwm_module = ::LoadLibrary(L"dwmapi.dll");
-    if (!dwm_module)
-        return false;
-
-    BOOL result = TRUE;
-    if (SUCCEEDED(::DwmIsCompositionEnabled(&result)))
-        return !!result;
-    return false;
-}
-
-bool Helper::ExtendFrameInfoClientArea(HWND hwnd,
-    int left, int right, int top, int bottom)
-{
-    if (!DWMEnabled())
-        return false;
-    MARGINS margins = { left, right, top, bottom };
-    return SUCCEEDED(::DwmExtendFrameIntoClientArea(hwnd, &margins));
-}
-
-Rect Helper::GetPrimaryWorkArea()
-{
-    Rect r;
-    POINT pt = { 0, 0 };
-    auto monitor = ::MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY);
-    if (monitor)
-    {
-        MONITORINFO mi = { 0 };
-        mi.cbSize = sizeof(mi);
-        ::GetMonitorInfo(monitor, &mi);
-        r.setLTRB(static_cast<float>(mi.rcWork.left),
-            static_cast<float>(mi.rcWork.top),
-            static_cast<float>(mi.rcWork.right),
-            static_cast<float>(mi.rcWork.bottom));
-    }
-    return r;
-}
+//bool Helper::ExtendFrameInfoClientArea(HWND hwnd,
+//    int left, int right, int top, int bottom)
+//{
+//    if (!DWMEnabled())
+//        return false;
+//    MARGINS margins = { left, right, top, bottom };
+//    return SUCCEEDED(::DwmExtendFrameIntoClientArea(hwnd, &margins));
+//}
+//
+//Rect Helper::GetPrimaryWorkArea()
+//{
+//    Rect r;
+//    POINT pt = { 0, 0 };
+//    auto monitor = ::MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY);
+//    if (monitor)
+//    {
+//        MONITORINFO mi = { 0 };
+//        mi.cbSize = sizeof(mi);
+//        ::GetMonitorInfo(monitor, &mi);
+//        r.setLTRB(static_cast<float>(mi.rcWork.left),
+//            static_cast<float>(mi.rcWork.top),
+//            static_cast<float>(mi.rcWork.right),
+//            static_cast<float>(mi.rcWork.bottom));
+//    }
+//    return r;
+//}
 
 WPARAM Helper::ToKeyStateForMouse(int flags)
 {

@@ -54,6 +54,11 @@ XMLNode::XMLNode(rapidxml::xml_node<char> * n)
 {
 }
 
+XMLNode::XMLNode()
+: node_(nullptr)
+{
+
+}
 XMLNode XMLNode::firstChild() const
 {
     return node_ ? node_->first_node() : nullptr;
@@ -97,6 +102,32 @@ size_t XMLNode::valueSize() const
 XMLNode::operator bool()  const
 {
     return node_ != nullptr;
+}
+
+void XMLNode::acquire(Attribute * attrs, int count) const
+{
+    if (!attrs || !count)
+        return;
+    for (auto i = 0; i < count; ++i)
+        attrs[i].value = nullptr;
+
+    for (auto i = 0; i < count; ++i)
+    {
+        if (!attrs[i].name)
+            continue;
+        auto node_attr = firstAttribute();
+        while (node_attr)
+        {
+            char * name = node_attr.name();
+
+            if (name && !strcmp(attrs[i].name, name))
+            {
+                attrs[i].value = node_attr.value();
+                break;
+            }
+            node_attr = node_attr.nextSibling();
+        }
+    }  
 }
 
 

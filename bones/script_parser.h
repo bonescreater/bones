@@ -9,39 +9,63 @@ namespace bones
 {
 
 class Ref;
+class Shape;
+class Image;
+class Text;
+class Area;
 
-class ScriptParser : public XMLController
+class ScriptParser : public BonesCore, 
+                     public XMLController::Delegate
 {
 public:
-    static ScriptParser * Get();
-public:
-    void regScriptCallback(Ref * ob, const char * event_name, ScriptCallBack cb, void * userdata);
-
-    void unregScriptCallback(Ref * ob, const char * event_name);
-
-    void clean();
-protected:
     ScriptParser();
+public:
+    bool loadXMLString(const char * data, BonesXMLListener * listener) override;
 
-    bool handleLink(XMLNode node, Module & mod) override;
+    void cleanXML() override;
 
-    bool handlePanel(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob) override;
+    BonesPixmap * createPixmap(const void * data, int len) override;
 
-    bool handleArea(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob) override;
+    void destroyPixmap(BonesPixmap *) override;
 
-    bool handleRichEdit(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob) override;
+    BonesObject * getObject(const char * id) override;
 
-    bool handleImage(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob) override;
+    BonesObject * getObject(BonesObject * ob, const char * id) override;
+    //xml controller 
+    //XML刚载入时触发 返回false 自动clean
+    bool onLoad() override;
+    //节点初始化完毕触发 此时禁止clean
+    void onPrepare(View * v, XMLNode node) override;
 
-    bool handleText(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob) override;
+    bool preprocessHead(XMLNode node, const char * full_path) override;
 
-    bool handleShape(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob) override;
+    void postprocessHead(XMLNode node, const char * full_path) override;
 
-    bool handleExtendLabel(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob) override;
+    bool preprocessBody(XMLNode node, View * parent_ob, View ** ob) override;
 
-    void handleNodeOnPrepare(XMLNode node, Ref * ob) override;
-    //处理event标签
-    bool handleELEvent(XMLNode node, Ref * parent_ob, const Module & info, Ref ** ob);
+    void postprocessBody(XMLNode node, View * parent_ob, View * ob) override;
+
+    BonesObject * getObject(View *);
+
+    void listen(BonesObject * bo, const char * name, BonesScriptListener * listener);
+
+    void push(BonesScriptArg * arg);
+private:
+    void handleRoot(Root * ob);
+
+    void handleShape(Shape * ob);
+
+    void handleImage(Image * ob);
+
+    void handleText(Text * ob);
+
+    void handleRichEdit(Text * ob);
+
+    void handleArea(Area * ob);
+private:
+    XMLController xml_;
+    BonesXMLListener * listener_;
+    std::map<View *, BonesObject *>v2bo_;
 };
 
 }

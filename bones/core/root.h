@@ -1,5 +1,5 @@
-﻿#ifndef BONES_CORE_ROOT_VIEW_H_
-#define BONES_CORE_ROOT_VIEW_H_
+﻿#ifndef BONES_CORE_ROOT_H_
+#define BONES_CORE_ROOT_H_
 
 #include "view.h"
 #include "accelerator_manager.h"
@@ -7,13 +7,12 @@
 #include "focus_controller.h"
 #include "pixmap.h"
 #include "rect.h"
+#include <functional>
 
 class SkBaseDevice;
 
 namespace bones
 {
-
-class Widget;
 
 struct NativeEvent
 {
@@ -23,26 +22,24 @@ struct NativeEvent
     LRESULT result;
 };
 
-class RootView : public View
+class Root : public View
 {
 public:
     class Delegate
     {
     public:
-        virtual Widget * getWidget() = 0;
+        virtual void requestFocus(Ref * sender) = 0;
 
-        virtual void requestFocus() = 0;
+        virtual void invalidRect(Ref * sender, const Rect & rect) = 0;
 
-        virtual void invalidateRect(const Rect & rect) = 0;
-
-        virtual void changeCursor(Cursor cursor) = 0;
+        virtual void changeCursor(Ref * sender, Cursor cursor) = 0;
     };
 public:
-    RootView();
+    Root();
 
-    ~RootView();
+    ~Root();
 
-    void setDelegate(Delegate * delegate);
+    void setDelegate(Delegate & delegate);
 
     void draw();
 
@@ -51,8 +48,6 @@ public:
     bool isDirty() const;
 
     Surface & getBackBuffer();
-
-    Widget * getWidget() const;
 
     void handleMouse(NativeEvent & e);
 
@@ -66,13 +61,9 @@ public:
 
     bool isVisible() const override;
 
-    RootView * getRoot() override;
+    Root * getRoot() override;
 
     const char * getClassName() const override;
-protected:
-    //void handleEvent(WheelEvent & e);
-
-    //void handleEvent(Event & e);
 protected:
     virtual void onDraw(SkCanvas & canvas, const Rect & inval) override;
 
@@ -92,12 +83,13 @@ protected:
 private:
     void AdjustPixmap();
 private:
+    Delegate * delegate_;
+
     FocusController focus_;
     MouseController mouse_;
     AcceleratorManager accelerators_;
     Surface back_buffer_;
     SkBaseDevice * device_;
-    Delegate * delegate_;
     Rect dirty_;
     bool has_focus_;
     friend class MouseController;

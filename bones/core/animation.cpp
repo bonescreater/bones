@@ -1,5 +1,6 @@
 ﻿#include "animation.h"
 #include "helper.h"
+#include "logging.h"
 
 namespace bones
 {
@@ -9,6 +10,7 @@ Animation::Animation(Ref * target, uint64_t interval, uint64_t due)
 interval_(interval), due_(due), last_run_(0), running_count_(0),
 run_user_data_(nullptr)
 {
+    LOG_VERBOSE << "create:" << "Animation" << this;
     target_.reset(target);
     for (auto i = 0; i < kCount; i++)
         action_routine_[i].user = nullptr;
@@ -16,7 +18,7 @@ run_user_data_(nullptr)
 
 Animation::~Animation()
 {
-    ;
+    LOG_VERBOSE << "destroy:" << "Animation" << this;
 }
 
 void Animation::bind(Action action, const CFRoutine & routine, void * user_data)
@@ -152,11 +154,6 @@ void Animation::onRun(uint64_t delta)
 
     if (need_stop)
         stop(false);
-}
-
-const char * Animation::getClassName() const
-{
-    return kClassAnimation;
 }
 
 void Animation::pushAction(Action action)

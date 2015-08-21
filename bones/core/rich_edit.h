@@ -6,17 +6,40 @@
 #include "rect.h"
 #include <Richedit.h>
 #include <Textserv.h>
+#include <functional>
 
 namespace bones
 {
 
 class RichEdit : public View, public ITextHost
 {
+public:
+    class Delegate
+    {
+    public:
+        virtual void killTimer(Ref * sender, UINT idTimer) = 0;
+
+        virtual BOOL setTimer(Ref * sender, UINT idTimer, UINT uTimeout) = 0;
+
+        virtual BOOL showCaret(Ref * sender, BOOL fshow) = 0;
+
+        virtual BOOL createCaret(Ref * sender, HBITMAP hbmp, INT xWidth, INT yHeight) = 0;
+
+        virtual BOOL screenToClient(Ref * sender, LPPOINT lppt) = 0;
+
+        virtual BOOL clientToScreen(Ref * sender, LPPOINT lppt) = 0;
+
+        virtual HIMC immGetContext(Ref * sender) = 0;
+
+        virtual void immReleaseContext(Ref * sender, HIMC himc) = 0;
+    };
 
 public:
     RichEdit();
 
     ~RichEdit();
+
+    void setDelegate(Delegate * delegate);
     
     void setText(const wchar_t * text);
 
@@ -210,8 +233,6 @@ protected:
 private:
     void adjustSurface();
 
-    HWND getHWND();
-
     void initDefaultCF();
 
     void initDefaultPF();
@@ -222,7 +243,7 @@ private:
 
     void postprocessSurface(Pixmap & update);
 private:
-    HWND hwnd_;
+    Delegate * delegate_;
     HDC dc_;
     CHARFORMAT2 cf_;
     PARAFORMAT pf_;

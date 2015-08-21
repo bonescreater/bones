@@ -1,15 +1,15 @@
 ﻿#ifndef BONES_LUA_IMAGE_H_
 #define BONES_LUA_IMAGE_H_
 
-#include "bones.h"
+#include "lua_object.h"
 
 namespace bones
 {
 class Image;
-class LuaImage
+class LuaImage : public LuaObject<BonesImage, Image>
 {
 public:
-    static void Create(Image * block);
+    LuaImage(Image * ob);
 };
 
 }

@@ -2,6 +2,7 @@
 #define BONES_LUA_CONTEXT_H_
 
 #include "bones.h"
+#include "lua.hpp"
 
 namespace bones
 {
@@ -24,7 +25,7 @@ public:
 
     static int SafeLOPCall(lua_State * l, int nargs, int nresults);
 
-    static void GetLOFromCO(lua_State * l, void * co);
+    static void GetLOFromCO(lua_State * l, BonesObject * co);
 };
 
 }

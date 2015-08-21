@@ -1,15 +1,15 @@
 ﻿#ifndef BONES_LUA_TEXT_H_
 #define BONES_LUA_TEXT_H_
 
-#include "bones.h"
+#include "lua_object.h"
 
 namespace bones
 {
 class Text;
-class LuaText
+class LuaText : public LuaObject<BonesText, Text>
 {
 public:
-    static void Create(Text * block);
+    LuaText(Text * ob);
 };
 
 }

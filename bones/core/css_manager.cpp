@@ -2,7 +2,6 @@
 #include "logging.h"
 #include "ref.h"
 #include "view.h"
-#include "widget.h"
 
 namespace bones
 {
@@ -309,11 +308,8 @@ error:
 void CSSManager::applyEntries(Ref * ob, const CSSEntries & entries)
 {
     const CSSClassTables * tables = nullptr;
-
-    if (kClassPanel == ob->getClassName())
-        tables = ((Widget *)ob)->getCSSClassTables();
-    else//view
-        tables = ((View *)ob)->getCSSClassTables();
+    //view
+    tables = ((View *)ob)->getCSSClassTables();
 
     for (auto iter = entries.begin(); iter != entries.end(); ++iter)
     {

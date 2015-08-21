@@ -3,6 +3,7 @@
 #include "helper.h"
 #include "SkCanvas.h"
 #include "css_utils.h"
+#include "logging.h"
 
 namespace bones
 {
@@ -10,6 +11,7 @@ static int kInvalidTag = -1;
 
 View::View() :tag_(kInvalidTag), group_id_(-1), children_count_(0), opacity_(1.0f)
 {
+    
     flag_.focusable = true;
     flag_.visible = true;
     flag_.clip = true;
@@ -17,7 +19,7 @@ View::View() :tag_(kInvalidTag), group_id_(-1), children_count_(0), opacity_(1.0
 
 View::~View()
 {
-    ;
+    
 }
 
 void View::setOpacity(float opacity)
@@ -357,7 +359,7 @@ View * View::parent() const
     return parent_.get();
 }
 
-RootView * View::getRoot()
+Root * View::getRoot()
 {
     if (parent_)
         return parent_->getRoot();

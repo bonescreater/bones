@@ -14,7 +14,7 @@ namespace bones
 {
 
 class Rect;
-class RootView;
+class Root;
 
 class View : public Ref, public AcceleratorTarget
 {
@@ -106,7 +106,7 @@ public:
 
     View * parent() const;
 
-    virtual RootView * getRoot();
+    virtual Root * getRoot();
 
     void getGlobalBounds(Rect & rect) const;
 
@@ -152,7 +152,7 @@ public:
 
     bool canProcess() const override;
 
-    const char * getClassName() const override;
+    virtual const char * getClassName() const;
 protected:
     void dispatch(Event & e);
 

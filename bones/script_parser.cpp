@@ -1,22 +1,22 @@
 ﻿#include "script_parser.h"
 #include "lua_context.h"
-
 #include "lua_check.h"
-#include "lua_panel.h"
-#include "lua_area.h"
-#include "lua_image.h"
-#include "lua_text.h"
-#include "lua_shape.h"
-#include "lua_meta_table.h"
-#include "lua_rich_edit.h"
 
+#include "core/root.h"
 #include "core/logging.h"
 #include "core/area.h"
 #include "core/image.h"
 #include "core/text.h"
 #include "core/shape.h"
-#include "core/panel.h"
 #include "core/rich_edit.h"
+
+#include "lua_root.h"
+#include "lua_shape.h"
+#include "lua_image.h"
+#include "lua_text.h"
+#include "lua_rich_edit.h"
+#include "lua_area.h"
+#include "lua_meta_table.h"
 
 namespace bones
 {
@@ -24,26 +24,25 @@ namespace bones
 static const char * kStrName = "name";
 static const char * kStrPhase = "phase";
 static const char * kStrFunc = "func";
-
-//(self, arg1, arg2)
+static const char * kStrScript = "script";
+////(self, arg1, arg2)
 static int ScriptCB(lua_State * l)
 {
     static const int kStatckArgCount = 10;
-    bool bret = false;
-    ScriptArg stack_args[kStatckArgCount] = { 0 };
-    ScriptArg * args = stack_args;
+    BonesScriptArg stack_args[kStatckArgCount] = { (BonesScriptArg::Type)0, 0 };
+    BonesScriptArg * args = stack_args;
+
     auto param_count = lua_gettop(l);
     if (param_count <= 0)
     {
         LOG_VERBOSE << "script callback has no sender Ref???\n";
-        lua_pushboolean(l, bret);
-        return 1;
+        return 0;
     }
         
     size_t arg_count = param_count - 1;
     if (arg_count > kStatckArgCount)
     {
-        args = new ScriptArg[arg_count];
+        args = new BonesScriptArg[arg_count];
         memset(args, 0, sizeof(args[0]) * arg_count);
     }
         
@@ -54,20 +53,21 @@ static int ScriptCB(lua_State * l)
         switch (lua_type(l, i))
         {
         case LUA_TBOOLEAN:
-            args[j].b = !!lua_toboolean(l, i);
+            args[j].boolean = !!lua_toboolean(l, i);
+            args[j].type = BonesScriptArg::kBoolean;
             break;
         case LUA_TSTRING:
-            args[j].c = lua_tostring(l, i);
+            args[j].str = lua_tostring(l, i);
+            args[j].type = BonesScriptArg::kString;
             break;
         case LUA_TNUMBER:
-            args[j].f = (Scalar)lua_tonumber(l, i);
-            break;
-        case LUA_TFUNCTION:
-            args[j].v = (void *)lua_tocfunction(l, i);
+            args[j].number = lua_tonumber(l, i);
+            args[j].type = BonesScriptArg::kNumber;
             break;
         case LUA_TLIGHTUSERDATA:
         case LUA_TUSERDATA:
-            args[j].v = (void *)lua_touserdata(l, i);
+            args[j].ud = (void *)lua_touserdata(l, i);
+            args[j].type = BonesScriptArg::kUserData;
             break;
         default:
             break;
@@ -77,84 +77,114 @@ static int ScriptCB(lua_State * l)
     //获取sender
     lua_pushnil(l);
     lua_copy(l, 1, -1);
-    Ref * sender = (View *)LuaMetaTable::CallGetCObject(l);
+    BonesObject * sender = LuaMetaTable::CallGetBonesObject(l);
 
     assert(sender);
-    ScriptCallBack cb = (ScriptCallBack)lua_touserdata(l, lua_upvalueindex(1));
-    void * userdata = lua_touserdata(l, lua_upvalueindex(2));
-    bret = (*cb)(sender, args, arg_count, userdata);
-    lua_pushboolean(l, bret);
+    BonesScriptListener * lis = (BonesScriptListener *)lua_touserdata(l, lua_upvalueindex(1));
+    auto count = lis->onEvent(sender, args, arg_count);
 
     if (args != stack_args)
         delete[] args;
 
-    return 1;
-}
-
-static const char * kStrScript = "script";
-
-ScriptParser * ScriptParser::Get()
-{
-    static ScriptParser * parser = nullptr;
-    if (!parser)
-        parser = new ScriptParser;
-    return parser;
+    return count;
 }
 
 ScriptParser::ScriptParser()
+:listener_(nullptr)
+{
+    xml_.setDelegate(this);
+}
+
+bool ScriptParser::loadXMLString(const char * data, BonesXMLListener * listener)
+{
+    listener_ = listener;
+    return xml_.loadString(data);
+}
+
+void ScriptParser::cleanXML()
+{
+    LuaContext::Reset();
+    v2bo_.clear();
+    xml_.clean();  
+}
+
+BonesPixmap * ScriptParser::createPixmap(const void * data, int len)
+{
+    assert(0);
+    return nullptr;
+}
+
+void ScriptParser::destroyPixmap(BonesPixmap *)
+{
+    assert(0);
+}
+
+BonesObject * ScriptParser::getObject(const char * id)
+{
+    if (!id)
+        return nullptr;
+    auto v = xml_.getViewByID(id);
+    if (v)
+    {
+        auto iter = v2bo_.find(v);
+        if (iter != v2bo_.end())
+            return iter->second;
+    }
+    return nullptr;
+}
+
+BonesObject * ScriptParser::getObject(BonesObject * ob, const char * id)
+{
+    if (!ob || !id)
+        return nullptr;
+    View * v = nullptr;
+    for (auto iter = v2bo_.begin(); iter != v2bo_.end(); ++iter)
+    {
+        if (iter->second == ob)
+        {
+            v = iter->first;
+            break;
+        }            
+    }
+
+    if (v)
+    {
+        v = xml_.getViewByID(v, id);
+        if (v)
+        {
+            auto iter = v2bo_.find(v);
+            if (iter != v2bo_.end())
+                return iter->second;
+        }
+    }
+    return nullptr;
+}
+
+bool ScriptParser::onLoad()
+{
+    return listener_ ? listener_->onLoad(this) : true;
+}
+
+void ScriptParser::onPrepare(View * v, XMLNode node)
 {
     ;
 }
 
-void ScriptParser::regScriptCallback(Ref * ob, const char * event_name, ScriptCallBack cb, void * userdata)
+bool ScriptParser::preprocessHead(XMLNode node, const char * full_path)
 {
-    using namespace bones;
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-
-    LuaContext::GetLOFromCO(l, ob);
-    lua_pushstring(l, event_name);
-    //创建1个闭包
-    lua_pushlightuserdata(l, cb);
-    lua_pushlightuserdata(l, userdata);
-    lua_pushcclosure(l, ScriptCB, 2);
-    lua_settable(l, -3);
-    lua_pop(l, 1);
-}
-
-void ScriptParser::unregScriptCallback(Ref * ob, const char * event_name)
-{
-    using namespace bones;
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-
-    LuaContext::GetLOFromCO(l, ob);
-    lua_pushstring(l, event_name);
-    lua_pushnil(l);
-    lua_settable(l, -3);
-    lua_pop(l, 1);
-}
-
-void ScriptParser::clean()
-{
-    reset();
-    LuaContext::Reset();
-}
-
-bool ScriptParser::handleLink(XMLNode node, Module & mod)
-{
-    if (XMLController::handleLink(node, mod))
-        return true;
-    if (!node)
+    //只处理link
+    if (!node || !node.name())
         return false;
-    Attribute link[] =
+    if (strcmp(node.name(), kStrLink))
+        return false;
+    XMLNode::Attribute attrs[] = 
     {
         { kStrType, nullptr }, { kStrModule, nullptr }, { kStrFile, nullptr }
     };
-    acquireAttrs(node, link, sizeof(link) / sizeof(link[0]));
-    auto & type = link[0].value;
-    auto & module = link[1].value;
-    auto & file = link[2].value;
+    node.acquire(attrs, sizeof(attrs) / sizeof(attrs[0]));
+    auto & type = attrs[0].value;
+    auto & module = attrs[1].value;
+    auto & file = attrs[2].value;
 
     if (!type || strcmp(type, kStrScript))
         return false;
@@ -176,22 +206,22 @@ bool ScriptParser::handleLink(XMLNode node, Module & mod)
         return true;
 
     std::string path;
-    if (isAbsolutePath(file))
+    if (XMLController::IsAbsolutePath(file))
         path = file;
     else
     {
-        auto dir = getPathFromFullName(mod.xml_fullname.data());
+        auto dir = XMLController::GetPathFromFullName(full_path);
         const char * parts[] = { dir.data(), file };
-        path = joinPath(parts, sizeof(parts) / sizeof(parts[0]));
+        path = XMLController::JoinPath(parts, sizeof(parts) / sizeof(parts[0]));
     }
     //dofile 只支持 char * 路径不清楚会不会支持中文 所以自己读取文件
-    FileStream  fs;
-    if (!readFile(path.data(), fs))
+    XMLController::FileStream  fs;
+    if (!XMLController::ReadFile(path.data(), fs))
     {
         LOG_ERROR << path.data() << " read fail";
         return true;
     }
-        
+
     //skip bom
     int start_count = 0;
     if (fs.size() >= 3)
@@ -221,119 +251,199 @@ bool ScriptParser::handleLink(XMLNode node, Module & mod)
         LOG_ERROR << "lua module " << module << " load fail " << lua_tostring(l, -1);
         lua_pop(l, 1);
     }
-        
+
     return true;
 }
 
-bool ScriptParser::handlePanel(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
+void ScriptParser::postprocessHead(XMLNode node, const char * full_path)
 {
-    bool result = XMLController::handlePanel(node, parent_ob, mod, ob);
-    if (result)
-        LuaPanel::Create(static_cast<Panel *>(*ob));
-    return result;
+    ;
 }
 
-bool ScriptParser::handleArea(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
+bool ScriptParser::preprocessBody(XMLNode node, View * parent_ob, View ** ob)
 {
-    bool result = XMLController::handleArea(node, parent_ob, mod, ob);
-    if (result)
-        LuaArea::Create(static_cast<Area *>(*ob));
-    return result;
-}
-
-bool ScriptParser::handleRichEdit(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
-{
-    bool result = XMLController::handleRichEdit(node, parent_ob, mod, ob);
-    if (result)
-        LuaRichEdit::Create(static_cast<RichEdit *>(*ob));
-    return result;
-}
-
-bool ScriptParser::handleImage(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
-{
-    bool result = XMLController::handleImage(node, parent_ob, mod, ob);
-    if (result)
-        LuaImage::Create(static_cast<Image *>(*ob));
-    return result;
-}
-
-bool ScriptParser::handleText(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
-{
-    bool result = XMLController::handleText(node, parent_ob, mod, ob);
-    if (result)
-        LuaText::Create(static_cast<Text *>(*ob));
-    return result;
-}
-
-bool ScriptParser::handleShape(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
-{
-    bool result = XMLController::handleShape(node, parent_ob, mod, ob);
-    if (result)
-        LuaShape::Create(static_cast<Shape *>(*ob));
-    return result;
-}
-
-
-bool ScriptParser::handleExtendLabel(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
-{
-    if (XMLController::handleExtendLabel(node, parent_ob, mod, ob))
-        return true;
-    auto name = node.name();
-    if (!name)
-        return false;
-
-    if (!strcmp("event", name))
-        return handleELEvent(node, parent_ob, mod, ob);
-
     return false;
 }
 
-void ScriptParser::handleNodeOnPrepare(XMLNode node, Ref * ob)
+void ScriptParser::postprocessBody(XMLNode node, View * parent_ob, View * ob)
 {
-    if (!node || !ob)
+    if (!ob)
         return;
+    if (ob->getClassName() == kClassRoot)
+        handleRoot(static_cast<Root *>(ob));
+    else if (ob->getClassName() == kClassShape)
+        handleShape(static_cast<Shape *>(ob));
+    else if (ob->getClassName() == kClassImage)
+        handleImage(static_cast<Image *>(ob));
+    else if (ob->getClassName() == kClassText)
+        handleText(static_cast<Text *>(ob));
+    else if (ob->getClassName() == kClassRichEdit)
+        handleRichEdit(static_cast<Text *>(ob));
+}
+
+BonesObject * ScriptParser::getObject(View * v)
+{
+    auto iter = v2bo_.find(v);
+    if (iter != v2bo_.end())
+        return iter->second;
+    return nullptr;
+}
+
+void ScriptParser::listen(BonesObject * bo, const char * name, BonesScriptListener * listener)
+{
+    if (!bo || !name)
+        return;
+
+    using namespace bones;
     auto l = LuaContext::State();
     LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetLOFromCO(l, ob);
-    if (lua_istable(l, -1))
-    {
-        lua_getfield(l, -1, "onPrepare");
-        assert(lua_isfunction(l, -1) || lua_isnil(l, -1));
-        lua_pushnil(l);
-        lua_copy(l, -3, -1);
-        LuaContext::SafeLOPCall(l, 1, 0);
-    }
+    
+    LuaContext::GetLOFromCO(l, bo);
+    lua_pushstring(l, name);
+    //创建1个闭包
+    lua_pushlightuserdata(l, listener);
+    lua_pushcclosure(l, ScriptCB, 1);
+    lua_settable(l, -3);
     lua_pop(l, 1);
 }
 
-//给父对象添加事件绑定
-bool ScriptParser::handleELEvent(XMLNode node, Ref * parent_ob, const Module & mod, Ref ** ob)
+void ScriptParser::push(BonesScriptArg * arg)
 {
-    if (!parent_ob)
-        return false;
-    Attribute attrs[] =
+    if (!arg)
+        return;
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK_COUNT(l, 1);
+    switch (arg->type)
     {
-        { kStrName, nullptr },
-        { kStrPhase, nullptr },
-        { kStrModule, nullptr },
-        { kStrFunc, nullptr },
-    };
-
-    acquireAttrs(node, attrs, sizeof(attrs) / sizeof(attrs[0]));
-    if (kClassArea == parent_ob->getClassName())
-        LuaArea::RegisterEvent(static_cast<Area *>(parent_ob),
-        attrs[0].value,
-        attrs[1].value,
-        attrs[2].value,
-        attrs[3].value);
-    else if (kClassPanel == parent_ob->getClassName())
-    LuaPanel::RegisterEvent(static_cast<Panel *>(parent_ob),
-             attrs[0].value,
-             attrs[1].value,
-             attrs[2].value,
-             attrs[3].value);
-    return true;
+    case BonesScriptArg::kString:
+        lua_pushstring(l, arg->str);
+        break;
+    case BonesScriptArg::kNumber:
+        lua_pushnumber(l, arg->number);
+        break;
+    case BonesScriptArg::kBoolean:
+        lua_pushboolean(l, arg->boolean);
+        break;
+    case BonesScriptArg::kUserData:
+        lua_pushlightuserdata(l, arg->ud);
+        break;
+    }
 }
+
+void ScriptParser::handleRoot(Root * ob)
+{
+    auto lo = AdoptRef(new LuaRoot(ob));
+    v2bo_[ob] = lo.get();
+}
+
+void ScriptParser::handleShape(Shape * ob)
+{
+    auto lo = AdoptRef(new LuaShape(ob));
+    v2bo_[ob] = lo.get();
+}
+
+void ScriptParser::handleImage(Image * ob)
+{
+    auto lo = AdoptRef(new LuaImage(ob));
+    v2bo_[ob] = lo.get();
+}
+
+void ScriptParser::handleText(Text * ob)
+{
+    auto lo = AdoptRef(new LuaText(ob));
+    v2bo_[ob] = lo.get();
+}
+
+void ScriptParser::handleRichEdit(Text * ob)
+{
+    auto lo = AdoptRef(new LuaText(ob));
+    v2bo_[ob] = lo.get();
+}
+
+void ScriptParser::handleArea(Area * ob)
+{
+    auto lo = AdoptRef(new LuaArea(ob));
+    v2bo_[ob] = lo.get();
+}
+
+//void ScriptParser::regScriptCallback(Ref * ob, const char * event_name, ScriptCallBack cb, void * userdata)
+//{
+
+//}
+//
+//void ScriptParser::unregScriptCallback(Ref * ob, const char * event_name)
+//{
+//    using namespace bones;
+//    auto l = LuaContext::State();
+//    LUA_STACK_AUTO_CHECK(l);
+//
+//    LuaContext::GetLOFromCO(l, ob);
+//    lua_pushstring(l, event_name);
+//    lua_pushnil(l);
+//    lua_settable(l, -3);
+//    lua_pop(l, 1);
+//}
+//
+//void ScriptParser::clean()
+//{
+//    XMLController::clean();
+//    LuaContext::Reset();
+//}
+//
+//bool ScriptParser::handleExtendLabel(XMLNode node, View * parent_ob, const Module & mod, View ** ob)
+//{
+//    if (XMLController::handleExtendLabel(node, parent_ob, mod, ob))
+//        return true;
+//    auto name = node.name();
+//    if (!name)
+//        return false;
+//
+//    if (!strcmp("event", name))
+//        return handleELEvent(node, parent_ob, mod, ob);
+//
+//    return false;
+//}
+//
+//void ScriptParser::handleNodeOnPrepare(XMLNode node, View * ob)
+//{
+//    if (!node || !ob)
+//        return;
+//    auto l = LuaContext::State();
+//    LUA_STACK_AUTO_CHECK(l);
+//    LuaContext::GetLOFromCO(l, ob);
+//    if (lua_istable(l, -1))
+//    {
+//        lua_getfield(l, -1, "onPrepare");
+//        assert(lua_isfunction(l, -1) || lua_isnil(l, -1));
+//        lua_pushnil(l);
+//        lua_copy(l, -3, -1);
+//        LuaContext::SafeLOPCall(l, 1, 0);
+//    }
+//    lua_pop(l, 1);
+//}
+//
+////给父对象添加事件绑定
+//bool ScriptParser::handleELEvent(XMLNode node, View * parent_ob, const Module & mod, View ** ob)
+//{
+//    if (!parent_ob)
+//        return false;
+//    Attribute attrs[] =
+//    {
+//        { kStrName, nullptr },
+//        { kStrPhase, nullptr },
+//        { kStrModule, nullptr },
+//        { kStrFunc, nullptr },
+//    };
+//
+//    acquireAttrs(node, attrs, sizeof(attrs) / sizeof(attrs[0]));
+//    if (kClassArea == parent_ob->getClassName())
+//        LuaArea::RegisterEvent(static_cast<Area *>(parent_ob),
+//        attrs[0].value,
+//        attrs[1].value,
+//        attrs[2].value,
+//        attrs[3].value);
+//    return true;
+//}
 
 
 

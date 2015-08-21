@@ -2,7 +2,7 @@
 #define BONES_LUA_CHECK_H_
 
 #include "bones.h"
-
+#include "lua.hpp"
 namespace bones
 {
 

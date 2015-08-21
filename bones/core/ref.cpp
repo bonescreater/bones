@@ -7,7 +7,7 @@ namespace bones
 
 Ref::Ref() :count_(1)
 {    
-    LOG_VERBOSE << "create: " << this;
+    ;
 }
 
 Ref::~Ref()
@@ -25,13 +25,8 @@ void Ref::release()
 {
     assert(count_ > 0);
     --count_;
-    if (0 == count_)
-    {
-        LOG_VERBOSE << "destroy:" << this->getClassName() << this;
-        delete this;
-    }
-        
-
+    if (0 == count_)       
+        delete this;      
 }
 
 int Ref::getRefCount() const

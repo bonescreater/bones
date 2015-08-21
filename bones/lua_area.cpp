@@ -18,6 +18,11 @@ static const char * kMethodOnSizeChanged = "onSizeChanged";
 static const char * kMethodOnFocus = "onFocus";
 static const char * kMethodOnBlur = "onBlur";
 
+static const char * kMetaTableArea = "__mt_area";
+static const char * kStrCapture = "capture";
+static const char * kStrTarget = "target";
+static const char * kStrBubbling = "bubbling";
+
 static EventType ToEventType(const char * name)
 {
     assert(name);
@@ -133,24 +138,15 @@ static void OnSizeChanged(Ref * sender)
     PostToLO(sender, kMethodOnSizeChanged);
 }
 
-void LuaArea::Create(Area * co)
+LuaArea::LuaArea(Area * ob)
+:LuaObject(ob)
 {
-    if (!co)
-        return;
-    if (kClassArea != co->getClassName())
-    {
-        LOG_ERROR << co << "class name " << co->getClassName();
-        return;
-    }
     auto l = LuaContext::State();
+    LuaMetaTable::CreatLuaTable(l, kMetaTableArea, this);
+    
     LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetCO2LOTable(l);
-    lua_pushlightuserdata(l, co);
-    lua_newtable(l);//1
-    //lua->c
-    LuaMetaTable::GetArea(l);
-    lua_setmetatable(l, -2);
-    LuaMetaTable::SetClosureCObject(l, co);
+    LuaContext::GetLOFromCO(l, this);
+
     lua_pushinteger(l, Event::kCapture);
     lua_newtable(l);
     lua_settable(l, -3);
@@ -161,7 +157,6 @@ void LuaArea::Create(Area * co)
     lua_newtable(l);
     lua_settable(l, -3);
 
-    lua_settable(l, -3);
     lua_pop(l, 1);
 }
 
@@ -195,7 +190,7 @@ void LuaArea::RegisterEvent(
         return;
     }
 
-    LuaContext::GetLOFromCO(l, co);
+    LuaContext::GetLOFromCO(l, GetCoreInstance()->getObject(co));
     if (lua_istable(l, -1))
     {
         Event::Phase ephase = Event::kTarget;

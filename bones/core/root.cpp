@@ -1,5 +1,5 @@
 ﻿
-#include "root_view.h"
+#include "root.h"
 #include "rect.h"
 #include "event.h"
 #include "event_dispatcher.h"
@@ -12,29 +12,19 @@
 namespace bones
 {
 
-RootView::RootView()
-: delegate_(nullptr), mouse_(this), focus_(this),
-device_(nullptr)
+Root::Root()
+:mouse_(this), focus_(this), device_(nullptr), delegate_(nullptr)
 {
     ;
 }
-RootView::~RootView()
+
+Root::~Root()
 {
     if (device_)
         device_->unref();
 }
 
-Widget * RootView::getWidget() const
-{
-    return delegate_ ? delegate_->getWidget() : nullptr;
-}
-
-void RootView::setDelegate(Delegate * delegate)
-{
-    delegate_ = delegate;
-}
-
-void RootView::handleMouse(NativeEvent & e)
+void Root::handleMouse(NativeEvent & e)
 {
     int flags = Helper::ToFlagsForEvent();
 
@@ -51,7 +41,7 @@ void RootView::handleMouse(NativeEvent & e)
     mouse_.handleEvent(me);
 }
 
-void RootView::handleKey(NativeEvent & e)
+void Root::handleKey(NativeEvent & e)
 {
     //处理键盘事件
     View * focus = focus_.current();
@@ -91,7 +81,7 @@ void RootView::handleKey(NativeEvent & e)
     }
 }
 
-void RootView::handleFocus(NativeEvent & e)
+void Root::handleFocus(NativeEvent & e)
 {
     auto & msg = e.msg;
     if (msg == WM_SETFOCUS)
@@ -106,7 +96,7 @@ void RootView::handleFocus(NativeEvent & e)
     }
 }
 
-void RootView::handleComposition(NativeEvent & e)
+void Root::handleComposition(NativeEvent & e)
 {
     View * focus = focus_.current();
     if (!focus)
@@ -127,7 +117,7 @@ void RootView::handleComposition(NativeEvent & e)
     EventDispatcher::Push(ce);
 }
 
-void RootView::handleWheel(NativeEvent & e)
+void Root::handleWheel(NativeEvent & e)
 {
     int flags = Helper::ToFlagsForEvent();
     auto & msg = e.msg;
@@ -147,22 +137,22 @@ void RootView::handleWheel(NativeEvent & e)
     }
 }
 
-bool RootView::isVisible() const
+bool Root::isVisible() const
 {
     return visible();
 }
 
-RootView * RootView::getRoot()
+Root * Root::getRoot()
 {
     return this;
 }
 
-const char * RootView::getClassName() const
+const char * Root::getClassName() const
 {
-    return kClassRootView;
+    return kClassRoot;
 }
 
-void RootView::draw()
+void Root::draw()
 {
     AdjustPixmap();
     //没有无效区
@@ -186,23 +176,23 @@ void RootView::draw()
     View::draw(canvas, rect);
 }
 
-const Rect & RootView::getDirtyRect() const
+const Rect & Root::getDirtyRect() const
 {
     return dirty_;
 }
 
-bool RootView::isDirty() const
+bool Root::isDirty() const
 {
     return !dirty_.isEmpty();
 }
 
-Surface & RootView::getBackBuffer()
+Surface & Root::getBackBuffer()
 {
     AdjustPixmap();
     return back_buffer_;
 }
 
-void RootView::onDraw(SkCanvas & canvas, const Rect & inval)
+void Root::onDraw(SkCanvas & canvas, const Rect & inval)
 {  
     SkPaint paint;
     paint.setColor(0);
@@ -210,26 +200,26 @@ void RootView::onDraw(SkCanvas & canvas, const Rect & inval)
     canvas.drawPaint(paint);
 }
 
-bool RootView::notifyInval(const Rect & inval)
+bool Root::notifyInval(const Rect & inval)
 {
     dirty_.join(inval);
-    delegate_ ? delegate_->invalidateRect(inval) : 0;
+    delegate_ ? delegate_->invalidRect(this, inval) : 0;
     return true;
 }
 
-bool RootView::notifyAddHierarchy(View * n)
+bool Root::notifyAddHierarchy(View * n)
 {
     return true;
 }
 
-bool RootView::notifyRemoveHierarchy(View * n)
+bool Root::notifyRemoveHierarchy(View * n)
 {
     focus_.removed(n);
     mouse_.removed(n);
     return true;
 }
 
-bool RootView::notifyVisibleChanged(View * n)
+bool Root::notifyVisibleChanged(View * n)
 {
     if (n->visible())
         return true;
@@ -238,21 +228,23 @@ bool RootView::notifyVisibleChanged(View * n)
     return true;
 }
 
-bool RootView::notifySetFocus(View * n)
+bool Root::notifySetFocus(View * n)
 {
-    delegate_ ? delegate_->requestFocus() : 0;
+    if (!has_focus_)
+        delegate_ ? delegate_->requestFocus(this) : 0;
+
     if (has_focus_)
         focus_.shift(n);
     return true;
 }
 
-bool RootView::notifyChangeCursor(Cursor cursor)
+bool Root::notifyChangeCursor(Cursor cursor)
 {
-    delegate_ ? delegate_->changeCursor(cursor) : 0;
+    delegate_ ? delegate_->changeCursor(this, cursor) : 0;
     return true;
 }
 
-void RootView::onVisibleChanged(View * n)
+void Root::onVisibleChanged(View * n)
 {
     assert(this == n);
     if (n->visible())
@@ -261,7 +253,7 @@ void RootView::onVisibleChanged(View * n)
     mouse_.shiftIfNecessary();
 }
 
-void RootView::AdjustPixmap()
+void Root::AdjustPixmap()
 {
     int w = static_cast<int>(getWidth());
     int h = static_cast<int>(getHeight());

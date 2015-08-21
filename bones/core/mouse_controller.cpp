@@ -1,6 +1,6 @@
 ﻿
 #include "mouse_controller.h"
-#include "root_view.h"
+#include "root.h"
 #include "event_dispatcher.h"
 #include "view.h"
 #include "rect.h"
@@ -10,7 +10,7 @@
 namespace bones
 {
 
-MouseController::MouseController(RootView * root)
+MouseController::MouseController(Root * root)
 :root_(root)
 {
     ;

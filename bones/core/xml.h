@@ -35,7 +35,15 @@ private:
 class XMLNode
 {
 public:
+    struct Attribute
+    {
+        const char * name;
+        const char * value;
+    };
+public:
     XMLNode(rapidxml::xml_node<char> * n);
+
+    XMLNode();
 
     XMLNode firstChild() const;
 
@@ -54,6 +62,8 @@ public:
     size_t valueSize() const;
 
     operator bool()  const;
+
+    void acquire(Attribute * attrs, int count) const;
 private:
     rapidxml::xml_node<char> * node_;
 };

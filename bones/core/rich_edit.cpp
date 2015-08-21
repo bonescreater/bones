@@ -1,7 +1,6 @@
 ﻿#include "rich_edit.h"
 #include "helper.h"
-#include "root_view.h"
-#include "widget.h"
+#include "root.h"
 #include "logging.h"
 #include "SkCanvas.h"
 #include "device.h"
@@ -59,11 +58,11 @@ RichEdit::RichEdit()
 scroll_bars_(WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL |
 ES_AUTOHSCROLL | ES_DISABLENOSCROLL), 
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
-services_(nullptr), hwnd_(NULL),
+services_(nullptr), delegate_(nullptr),
 bg_opaque_(true), bg_color_(0xff0000ff), bg_set_color_(true),
 dc_(NULL), traversal_(false)
 {
-    ;
+    lazyInitialize();
 }
 
 RichEdit::~RichEdit()
@@ -353,24 +352,6 @@ void RichEdit::adjustSurface()
     }
 }
 
-HWND RichEdit::getHWND()
-{
-    if (!hwnd_)
-    {
-        auto rv = getRoot();
-        if (rv)
-        {
-            auto widget = rv->getWidget();
-            if (widget)
-                hwnd_ = widget->hwnd();
-        }
-    }
-    assert(hwnd_);
-    if (!hwnd_)
-        LOG_ERROR << "rich edit did't attach to a root view ?";
-    return hwnd_;
-}
-
 void RichEdit::initDefaultCF()
 {
     memset(&cf_, 0, sizeof(cf_));
@@ -468,9 +449,6 @@ void RichEdit::lazyInitialize()
         ITextHost *pITextHost,
         IUnknown **ppUnk);
 
-    if (!hwnd_)
-        getHWND();
-    assert(hwnd_);
     if (!dc_)
         dc_ = ::CreateCompatibleDC(NULL);
     assert(dc_);
@@ -584,32 +562,31 @@ void RichEdit::TxViewChange(BOOL fUpdate)
 
 BOOL RichEdit::TxCreateCaret(HBITMAP hbmp, INT xWidth, INT yHeight)
 {
-    return ::CreateCaret(getHWND(), hbmp, xWidth, yHeight);
+    assert(delegate_);
+    return delegate_ ? delegate_->createCaret(this, hbmp, xWidth, yHeight) : 0;   
 }
 
 BOOL RichEdit::TxShowCaret(BOOL fShow)
 {
-    if (fShow)
-        return ::ShowCaret(getHWND());
-    else
-        return ::HideCaret(getHWND());
+    return delegate_ ? delegate_->showCaret(this, fShow) : 0;
 }
 
 BOOL RichEdit::TxSetCaretPos(INT x, INT y)
 {
     auto pt = mapToGlobal(Point::Make(static_cast<Scalar>(x), 
                                       static_cast<Scalar>(y)));
+
     return ::SetCaretPos(static_cast<INT>(pt.x()), static_cast<INT>(pt.y()));
 }
 
 BOOL RichEdit::TxSetTimer(UINT idTimer, UINT uTimeout)
 {
-    return ::SetTimer(getHWND(), idTimer, uTimeout, NULL);
+    return delegate_?delegate_->setTimer(this, idTimer, uTimeout) : 0;
 }
 
 void RichEdit::TxKillTimer(UINT idTimer)
 {
-    ::KillTimer(getHWND(), idTimer);
+    delegate_ ? delegate_->killTimer(this, idTimer) : 0;
 }
 
 void RichEdit::TxScrollWindowEx(
@@ -643,18 +620,22 @@ BOOL RichEdit::TxScreenToClient(LPPOINT lppt)
 {
     if (!lppt)
         return TRUE;
-
-    return ::ScreenToClient(getHWND(), 
-        &Helper::ToPoint(mapToLocal(Helper::ToPoint(*lppt))));
+    POINT screen = Helper::ToPoint(mapToLocal(Helper::ToPoint(*lppt)));
+    auto ret = delegate_ ? delegate_->screenToClient(this, &screen) : 0;
+    if (ret)
+        *lppt = screen;
+    return ret;
 }
 
 BOOL RichEdit::TxClientToScreen(LPPOINT lppt)
 {
     if (!lppt)
         return TRUE;
-
-    return ::ClientToScreen(getHWND(),
-        &Helper::ToPoint(mapToGlobal(Helper::ToPoint(*lppt))));
+    POINT client = Helper::ToPoint(mapToGlobal(Helper::ToPoint(*lppt)));
+    auto ret = delegate_ ? delegate_->clientToScreen(this, &client) : 0;
+    if (ret)
+        *lppt = client;
+    return ret;
 }
 
 HRESULT	RichEdit::TxActivate(LONG * plOldState)
@@ -778,12 +759,12 @@ HRESULT	RichEdit::TxNotify(DWORD iNotify, void *pv)
 
 HIMC RichEdit::TxImmGetContext()
 {
-    return ::ImmGetContext(getHWND());
+    return delegate_ ? delegate_->immGetContext(this) : 0;
 }
 
 void RichEdit::TxImmReleaseContext(HIMC himc)
 {
-    ::ImmReleaseContext(getHWND(), himc);
+    delegate_ ? delegate_->immReleaseContext(this, himc) : 0;
 }
 
 HRESULT	RichEdit::TxGetSelectionBarWidth(LONG *lSelBarWidth)

@@ -5,7 +5,7 @@
 
 namespace bones
 {
-class RootView;
+class Root;
 class View;
 class KeyEvent;
 
@@ -20,7 +20,7 @@ class FocusController
         kDirectChange,
     };
 public:
-    FocusController(RootView * root);
+    FocusController(Root * root);
 
     ~FocusController();
 
@@ -70,7 +70,7 @@ private:
 
 
 private:
-    RootView * root_;
+    Root * root_;
     RefPtr<View> current_;
     RefPtr<View> stored_;
     FocusChangeReason reason_;

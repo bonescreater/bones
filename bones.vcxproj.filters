@@ -29,21 +29,19 @@
     <ClCompile Include="bones\lua_panel.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
-    <ClCompile Include="bones\bones_export.cpp">
-      <Filter>api</Filter>
-    </ClCompile>
     <ClCompile Include="bones\lua_image.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
     <ClCompile Include="bones\lua_rich_edit.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
+    <ClCompile Include="bones\bones.cpp" />
+    <ClCompile Include="bones\lua_root.cpp">
+      <Filter>lua\proxy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
-    <ClInclude Include="bones\bones_api.h">
-      <Filter>api</Filter>
-    </ClInclude>
     <ClInclude Include="bones\script_parser.h">
       <Filter>lua</Filter>
     </ClInclude>
@@ -71,20 +69,21 @@
     <ClInclude Include="bones\lua_panel.h">
       <Filter>lua\proxy</Filter>
     </ClInclude>
-    <ClInclude Include="bones\bones_export.h">
-      <Filter>api</Filter>
-    </ClInclude>
     <ClInclude Include="bones\lua_image.h">
       <Filter>lua\proxy</Filter>
     </ClInclude>
     <ClInclude Include="bones\lua_rich_edit.h">
       <Filter>lua\proxy</Filter>
     </ClInclude>
+    <ClInclude Include="bones\lua_root.h">
+      <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_object.h">
+      <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\bones_internal.h" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="api">
-      <UniqueIdentifier>{4bda7803-394f-47cd-abf7-a6f4cd672bbc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="lua">
       <UniqueIdentifier>{e345b7ae-52c6-43d4-a53d-97a5cf3ccba1}</UniqueIdentifier>
     </Filter>

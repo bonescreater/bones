@@ -2,13 +2,13 @@
 #include "focus_controller.h"
 #include "event_dispatcher.h"
 #include "event.h"
-#include "root_view.h"
+#include "root.h"
 
 
 namespace bones
 {
 
-FocusController::FocusController(RootView * root)
+FocusController::FocusController(Root * root)
 :root_(root), arrow_key_traversal_enabled_(false),
 reason_(kTraversal)
 {
@@ -230,10 +230,11 @@ View * FocusController::findNextFocusable(View * start, bool reverse)
         if (reverse)
         {
             while (start->getChildCount() > 0)
-                start = start->getLastChild();
-                
-            while (start->getNextFocusable())
-                start = start->getNextFocusable();
+            {
+                start = start->getFirstChild();
+                while (start->getNextFocusable())
+                    start = start->getNextFocusable();
+            }
         }
         else
             start = root->getFirstChild();

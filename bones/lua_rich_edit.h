@@ -1,16 +1,17 @@
 ﻿#ifndef BONES_LUA_RICH_EDIT_H_
 #define BONES_LUA_RICH_EDIT_H_
 
+#include "lua_object.h"
 
 namespace bones
 {
 
 class RichEdit;
 
-class LuaRichEdit
+class LuaRichEdit : public LuaObject<BonesRichEdit, RichEdit>
 {
 public:
-    static void Create(RichEdit * co);
+    LuaRichEdit(RichEdit * ob);
 };
 
 

@@ -32,11 +32,9 @@ public:
 
     virtual ~Animation();
 
-    void bind(Action action, const CFRoutine & routine, void * user_data = nullptr);
+    void bind(Action action, const CFRoutine & routine, void * user_data);
 
-    void bind(const CFRun & rountine, void * user_data = nullptr);
-
-    const char * getClassName() const override;
+    void bind(const CFRun & rountine, void * user_data);
 
     bool isPaused() const;
 

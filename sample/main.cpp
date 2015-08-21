@@ -1,20 +1,29 @@
 ﻿
-#include "bones/bones_api.h"
+#include "bones/bones.h"
 #include <Windows.h>
 #include <stdio.h>
 
-bool TestCB(BonesCObject co, BonesArg * arg, size_t arg_count, void * userdata)
-{
-    BonesUnregScriptCallback(co, "onClick");
-    return true;
-}
+//bool TestCB(BonesCObject co, BonesArg * arg, size_t arg_count, void * userdata)
+//{
+//    BonesUnregScriptCallback(co, "onClick");
+//    return true;
+//}
+//
+//bool TestClose(BonesCObject co, BonesArg * arg, size_t arg_count, void * userdata)
+//{
+//    BonesCleanXML();
+//    ::PostQuitMessage(0);
+//    return true;
+//}
 
-bool TestClose(BonesCObject co, BonesArg * arg, size_t arg_count, void * userdata)
+class LoadListener : public BonesXMLListener
 {
-    BonesCleanXML();
-    ::PostQuitMessage(0);
-    return true;
-}
+public:
+    bool onLoad(BonesCore *) override
+    {
+        return true;
+    }
+};
 //int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 int main()
 {
@@ -23,7 +32,6 @@ int main()
     config.log_level = kBONES_LOG_LEVEL_VERBOSE;
 
     BonesStartUp(config);
-    wprintf(L"%s", BonesGetVersion());
 
     auto f = fopen("..\\..\\sample\\test.xml", "rb");
     fseek(f, 0, SEEK_END);
@@ -33,13 +41,14 @@ int main()
     fread(xml, 1, len, f);
     fclose(f);
     xml[len] = '\0';
-    BonesLoadXMLString(xml);
+    LoadListener load;
+    BonesGetCore()->loadXMLString(xml, &load);
     free(xml);
 
     //BonesCleanXML();
-    auto close_btn = BonesGetCObjectByID("close");
+    auto close_btn = BonesGetCore()->getObject("close");
     if (close_btn)
-        BonesRegScriptCallback(close_btn, "onClick", &TestClose, close_btn);
+        close_btn->listen("onClick", nullptr);
         
 
     //消息循环

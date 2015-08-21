@@ -1,17 +1,17 @@
 ﻿#ifndef BONES_LUA_AREA_H_
 #define BONES_LUA_AREA_H_
 
-#include "bones.h"
+#include "lua_object.h"
 
 
 namespace bones
 {
 class Area;
 
-class LuaArea
+class LuaArea :public LuaObject<BonesArea, Area>
 {
 public:
-    static void Create(Area * co);
+    LuaArea(Area * ob);
 
     static void RegisterEvent(Area * co,
                               const char * name,
