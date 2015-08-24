@@ -62,6 +62,8 @@ private:
     void handleRichEdit(Text * ob);
 
     void handleArea(Area * ob);
+
+    bool handleNotify(XMLNode node, View * parent_ob, View ** ob);
 private:
     XMLController xml_;
     BonesXMLListener * listener_;

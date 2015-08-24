@@ -47,7 +47,9 @@ btn_layered["onClick"] = testLayered;
 btn_layered:applyTextCSS([[{content:"Layered窗口";}]])
 end
 
-
+function mod.onSizeChanged(self, w, h)
+print(string.format("width:%d, height:%d", w, h))
+end
 
 
 return mod;

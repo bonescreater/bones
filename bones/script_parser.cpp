@@ -25,6 +25,8 @@ static const char * kStrName = "name";
 static const char * kStrPhase = "phase";
 static const char * kStrFunc = "func";
 static const char * kStrScript = "script";
+static const char * kStrEvent = "event";
+static const char * kStrNotify = "notify";
 ////(self, arg1, arg2)
 static int ScriptCB(lua_State * l)
 {
@@ -262,6 +264,10 @@ void ScriptParser::postprocessHead(XMLNode node, const char * full_path)
 
 bool ScriptParser::preprocessBody(XMLNode node, View * parent_ob, View ** ob)
 {
+    if (!node || !node.name())
+        return false;
+    if (!strcmp(kStrNotify, node.name()))
+        return handleNotify(node, parent_ob, ob);
     return false;
 }
 
@@ -297,12 +303,18 @@ void ScriptParser::listen(BonesObject * bo, const char * name, BonesScriptListen
     using namespace bones;
     auto l = LuaContext::State();
     LUA_STACK_AUTO_CHECK(l);
-    
     LuaContext::GetLOFromCO(l, bo);
     lua_pushstring(l, name);
-    //创建1个闭包
-    lua_pushlightuserdata(l, listener);
-    lua_pushcclosure(l, ScriptCB, 1);
+    if (listener)
+    {
+        //创建1个闭包
+        lua_pushlightuserdata(l, listener);
+        lua_pushcclosure(l, ScriptCB, 1);
+
+    }
+    else
+        lua_pushnil(l);
+
     lua_settable(l, -3);
     lua_pop(l, 1);
 }
@@ -366,30 +378,29 @@ void ScriptParser::handleArea(Area * ob)
     v2bo_[ob] = lo.get();
 }
 
-//void ScriptParser::regScriptCallback(Ref * ob, const char * event_name, ScriptCallBack cb, void * userdata)
-//{
+bool ScriptParser::handleNotify(XMLNode node, View * parent_ob, View ** ob)
+{
+    if (!parent_ob)
+        return false;
+    XMLNode::Attribute attrs[] =
+    {
+        { kStrName, nullptr }, { kStrModule, nullptr }, { kStrFunc, nullptr }
+    };
 
-//}
-//
-//void ScriptParser::unregScriptCallback(Ref * ob, const char * event_name)
-//{
-//    using namespace bones;
-//    auto l = LuaContext::State();
-//    LUA_STACK_AUTO_CHECK(l);
-//
-//    LuaContext::GetLOFromCO(l, ob);
-//    lua_pushstring(l, event_name);
-//    lua_pushnil(l);
-//    lua_settable(l, -3);
-//    lua_pop(l, 1);
-//}
-//
-//void ScriptParser::clean()
-//{
-//    XMLController::clean();
-//    LuaContext::Reset();
-//}
-//
+    node.acquire(attrs, sizeof(attrs) / sizeof(attrs[0]));
+    auto & name = attrs[0].value;
+    auto & module = attrs[1].value;
+    auto & func = attrs[2].value;
+    BonesObject * bo = getObject(parent_ob);
+
+    bool handle = true;
+    if (kClassRoot == bo->getClassName())
+        (static_cast<LuaRoot *>(bo))->addNotify(name, module, func);
+    else
+        handle = false;
+
+    return handle;
+}
 //bool ScriptParser::handleExtendLabel(XMLNode node, View * parent_ob, const Module & mod, View ** ob)
 //{
 //    if (XMLController::handleExtendLabel(node, parent_ob, mod, ob))

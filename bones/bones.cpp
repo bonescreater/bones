@@ -40,6 +40,8 @@ ScriptParser * GetCoreInstance()
 {
     return core;
 }
+
+const char * kNotifyOrder = "__notify";
 }
 
 BONES_API(BonesCore *) BonesStartUp(const BonesConfig & config)

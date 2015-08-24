@@ -24,6 +24,11 @@ Root::~Root()
         device_->unref();
 }
 
+void Root::setDelegate(Delegate * delegate)
+{
+    delegate_ = delegate;
+}
+
 void Root::handleMouse(NativeEvent & e)
 {
     int flags = Helper::ToFlagsForEvent();
@@ -198,6 +203,11 @@ void Root::onDraw(SkCanvas & canvas, const Rect & inval)
     paint.setColor(0);
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
     canvas.drawPaint(paint);
+}
+
+void Root::onSizeChanged()
+{
+    delegate_ ? delegate_->onSizeChanged(this, getSize()) : 0;
 }
 
 bool Root::notifyInval(const Rect & inval)

@@ -7,6 +7,8 @@
 namespace bones
 {
 extern ScriptParser * GetCoreInstance();
+
+extern const char * kNotifyOrder;
 }
 
 #endif

@@ -20,6 +20,21 @@
 #endif
 
 typedef float Scalar;
+typedef HANDLE BonesCursor;
+
+typedef struct
+{
+    Scalar left;
+    Scalar top;
+    Scalar right;
+    Scalar bottom;
+}BonesRect;
+
+typedef struct
+{
+    Scalar width;
+    Scalar height;
+}BonesSize;
 
 enum BonesLogLevel
 {
@@ -116,6 +131,26 @@ public:
 class BonesRoot : public BonesObject
 {
 public:
+    class Listener
+    {
+    public:
+        virtual void requestFocus(BonesRoot * sender, bool & stop) = 0;
+
+        virtual void invalidRect(BonesRoot * sender, BonesRect & rect, bool & stop) = 0;
+
+        virtual void changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop) = 0;
+
+        virtual void onSizeChanged(BonesRoot * sender, BonesSize cursor, bool & stop) = 0;
+    };
+
+    virtual void setListener(Listener * delegate) = 0;
+
+    virtual bool isDirty() const = 0;
+
+    virtual BonesRect getDirtyRect() const = 0;
+
+    virtual void draw() = 0;
+
     virtual HDC dc() const = 0;
 };
 

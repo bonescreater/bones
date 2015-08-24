@@ -33,13 +33,15 @@ public:
         virtual void invalidRect(Ref * sender, const Rect & rect) = 0;
 
         virtual void changeCursor(Ref * sender, Cursor cursor) = 0;
+
+        virtual void onSizeChanged(Ref * sender, const Size & size) = 0;
     };
 public:
     Root();
 
     ~Root();
 
-    void setDelegate(Delegate & delegate);
+    void setDelegate(Delegate * delegate);
 
     void draw();
 
@@ -66,6 +68,8 @@ public:
     const char * getClassName() const override;
 protected:
     virtual void onDraw(SkCanvas & canvas, const Rect & inval) override;
+
+    virtual void onSizeChanged() override;
 
     virtual void onVisibleChanged(View * start) override;
 

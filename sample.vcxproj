@@ -101,6 +101,11 @@
   <ItemGroup>
     <ClCompile Include="sample\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="bones.vcxproj">
+      <Project>{1251ada2-b795-46b1-8f13-581d62b92a26}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

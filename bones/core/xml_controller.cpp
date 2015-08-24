@@ -157,20 +157,20 @@ void XMLController::parseModuleHead(Module & mod)
     {
         //如果delegate处理 则自己不处理
         bool bret = delegate_ ? delegate_->preprocessHead(node, mod_fullname) : false;
-        if (bret)
-            continue;
-
-        switch (LabelFromName(node.name()))
+        if (!bret)
         {
-        case kLABEL_STYLE:
-            bret = handleStyle(node, mod.xml_fullname.data());
-            break;
-        case kLABEL_LINK:
-            bret = handleLink(node, mod.xml_fullname.data());
-            break;
-        default:
-            //不认识的标签 放过
-            break;
+            switch (LabelFromName(node.name()))
+            {
+            case kLABEL_STYLE:
+                bret = handleStyle(node, mod.xml_fullname.data());
+                break;
+            case kLABEL_LINK:
+                bret = handleLink(node, mod.xml_fullname.data());
+                break;
+            default:
+                //不认识的标签 放过
+                break;
+            }
         }
         if (bret)
             delegate_ ? delegate_->postprocessHead(node, mod_fullname) : 0;
