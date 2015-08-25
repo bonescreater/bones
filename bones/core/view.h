@@ -46,6 +46,8 @@ public:
 
     const Size & getSize() const;
 
+    const Point & getLoc() const;
+
     void setLeft(Scalar left);
 
     void setTop(Scalar top);

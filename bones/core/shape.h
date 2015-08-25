@@ -7,19 +7,21 @@
 #include "rect.h"
 #include "shader.h"
 
+
+class SkPathEffect;
 namespace bones
 {
 
 class Shape : public View
 {
 public:
-    enum Style
+    enum Effect
     {
         kSolid,
-
+        kDash,
     };
 
-    enum Mode
+    enum Style
     {
         kStroke,
         kFill,
@@ -55,7 +57,9 @@ public:
 
     ~Shape();
 
-    void setRender(Mode mode, Style style);
+    void setStyle(Style style);
+
+    void setStrokeEffect(Effect effect, Scalar * interval, size_t count, Scalar offset);
 
     void setStrokeWidth(Scalar stroke_width);
 
@@ -67,7 +71,7 @@ public:
 
     void set(const Point & center, Scalar radius);
 
-    void setBorder(Scalar width, Style style, Color color, Scalar rx, Scalar ry);
+    void setBorder(Scalar width, Effect effect, Color color, Scalar rx, Scalar ry);
 
     const char * getClassName() const override;
 protected:
@@ -87,7 +91,9 @@ protected:
 
     void setRadialGradient(const CSSParams & params);
 
-    void setRender(const CSSParams & params);
+    void setStyle(const CSSParams & params);
+
+    void setStrokeEffect(const CSSParams & params);
 
     void setStrokeWidth(const CSSParams & params);
 
@@ -98,21 +104,22 @@ protected:
     void setBorder(const CSSParams & params);
 private:
     Category category_;
-    Mode mode_;
     Style style_;
+    Scalar stroke_width_;
     RectParam rect_param_;
     CircleParam circle_param_;
-    Scalar stroke_width_;
+    SkPathEffect * effect_;
 
     ColourType colour_type_;
     Color color_;
     Shader shader_;
+    
 
     Scalar border_width_;
-    Style border_style_;
     Color border_color_;
     Scalar border_rx_;
     Scalar border_ry_;
+    SkPathEffect * border_effect_;
 };
 
 

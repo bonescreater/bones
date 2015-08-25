@@ -1,5 +1,8 @@
 ﻿#include "lua_context.h"
+#include "bones_internal.h"
 #include "lua_check.h"
+#include "lua_meta_table.h"
+
 #include "core/logging.h"
 #include "core/ref.h"
 #include "core/encoding.h"
@@ -11,48 +14,38 @@ static const char * kBonesTable = "bones";
 static const char * kCO2LOTable = "__co2lo__";
 static const char * kCacheEvent = "__event__cache__";
 
-static const char * kMethodGetCObjectByID = "getCObjectByID";
-static const char * kMethodGetLuaObjectByID = "getLuaObjectByID";
+static const char * kMethodGetObject = "getObject";
 static const char * kMethodDecodePixmap = "decodePixmap";
 static const char * kMethodFreePixmap = "freePixmap";
 static const char * kMethodLoadImage = "loadImage";
 
 static lua_State * state = nullptr;
-//(id)
-//static int BonesGetCObjectByID(lua_State * l)
-//{   
-//    auto count = lua_gettop(l);  
-//    lua_pushnil(l);
-//    if (1 == count)
-//    {
-//        auto id = lua_tostring(l, 1);
-//        auto co = ::BonesGetCObjectByID(id);
-//        lua_pushlightuserdata(l, co);
-//    }
-//    return 1;
-//}
-//
-//static int BonesGetLuaObjectByID(lua_State * l)
-//{
-//    auto count = lua_gettop(l);
-//    lua_pushnil(l);
-//    if (1 == count)
-//    {
-//        LuaContext::GetGlobalTable(l);
-//        lua_getfield(l, -1, kMethodGetCObjectByID);
-//        lua_pushnil(l);
-//        lua_copy(l, 1, -1);
-//        auto count = LuaContext::SafeLOPCall(l, 1, 1);
-//        assert(lua_isuserdata(l, -1));
-//        auto co = lua_touserdata(l, -1);
-//        LuaContext::GetCO2LOTable(l);
-//        lua_pushnil(l);
-//        lua_copy(l, -3, -1);
-//        lua_gettable(l, -2);
-//        assert(lua_istable(l, -1));
-//    }
-//    return 1;
-//}
+
+//(id) || (ob, id)
+static int BonesGetObject(lua_State * l)
+{
+    auto count = lua_gettop(l);
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    BonesObject * bo = nullptr;
+    if (lua_isstring(l, 1))
+    {//(self, id)
+        bo = GetCoreInstance()->getObject(lua_tostring(l, 1));
+    }
+    else if (lua_istable(l, 1))
+    {//(self, ob, id)
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        BonesObject * ob = LuaMetaTable::CallGetBonesObject(l);
+        bo = GetCoreInstance()->getObject(ob, lua_tostring(l, 2));
+    }
+    if (bo)
+    {
+        LuaContext::GetLOFromCO(l, bo);
+        assert(lua_istable(l, -1));
+    }
+    return 1;
+}
 ////(data, len)
 //static int BonesDecodePixmap(lua_State * l)
 //{
@@ -123,12 +116,9 @@ bool LuaContext::StartUp()
         lua_setfield(state, -2, kCO2LOTable);
         lua_newuserdata(state, sizeof(void *));
         lua_setfield(state, -2, kCacheEvent);
-        
-        //lua_pushcfunction(state, &BonesGetCObjectByID);
-        //lua_setfield(state, -2, kMethodGetCObjectByID);
 
-        //lua_pushcfunction(state, &BonesGetLuaObjectByID);
-        //lua_setfield(state, -2, kMethodGetLuaObjectByID);
+        lua_pushcfunction(state, &BonesGetObject);
+        lua_setfield(state, -2, kMethodGetObject);
 
         //lua_pushcfunction(state, &BonesDecodePixmap);
         //lua_setfield(state, -2, kMethodDecodePixmap);
@@ -163,6 +153,7 @@ void LuaContext::Reset()
     lua_newtable(state);
     lua_setfield(state, -2, kCO2LOTable);
     lua_pop(state, 1);
+    lua_gc(state, LUA_GCCOLLECT, 0);
 }
 
 lua_State * LuaContext::State()

@@ -16,13 +16,13 @@ class LuaObject : public Base, public Ref
 public:
     LuaObject(T * v)
     {
-        LOG_VERBOSE << "create:" << v->getClassName() << v;
         object_.reset(v);
+        LOG_VERBOSE << "create:" << object_->getClassName() << object_.get();
     }
 
     virtual ~LuaObject()
     {
-        LOG_VERBOSE << "destroy:" << this->getClassName() << this;
+        LOG_VERBOSE << "destroy:" << object_->getClassName() << object_.get();
     }
 
     void retain() override

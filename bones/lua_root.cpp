@@ -14,6 +14,8 @@ static const char * kMethodRequestFocus = "requestFocus";
 static const char * kMethodInvalidRect = "invalidRect";
 static const char * kMethodChangeCursor = "changeCursor";
 static const char * kMethodOnSizeChanged = "onSizeChanged";
+static const char * kMethodOnPositionChanged = "onPositionChanged";
+
 
 LuaRoot::LuaRoot(Root * ob)
 :LuaObject(ob), listener_(nullptr)
@@ -27,6 +29,11 @@ LuaRoot::LuaRoot(Root * ob)
     lua_newtable(l);
     lua_setfield(l, -2, kNotifyOrder);
     lua_pop(l, 1);
+}
+
+LuaRoot::~LuaRoot()
+{
+    object_->setDelegate(nullptr);
 }
 
 void LuaRoot::addNotify(const char * notify_name, const char * mod, const char * func)
@@ -83,6 +90,36 @@ HDC LuaRoot::dc() const
 {
     object_->getBackBuffer();
     return Helper::ToHDC(object_->getBackBuffer());
+}
+
+void LuaRoot::handleMouse(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    NativeEvent e = { msg, wparam, lparam, 0 };
+    object_->handleMouse(e);
+}
+
+void LuaRoot::handleKey(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    NativeEvent e = { msg, wparam, lparam, 0 };
+    object_->handleKey(e);
+}
+
+void LuaRoot::handleFocus(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    NativeEvent e = { msg, wparam, lparam, 0 };
+    object_->handleFocus(e);
+}
+
+void LuaRoot::handleComposition(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    NativeEvent e = { msg, wparam, lparam, 0 };
+    object_->handleComposition(e);
+}
+
+void LuaRoot::handleWheel(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    NativeEvent e = { msg, wparam, lparam, 0 };
+    object_->handleWheel(e);
 }
 
 void LuaRoot::requestFocus(Ref * sender)
@@ -163,6 +200,27 @@ void LuaRoot::onSizeChanged(Ref * sender, const Size & size)
     lua_copy(l, -4, -1);
     lua_pushnumber(l, bs.width);
     lua_pushnumber(l, bs.height);
+    LuaContext::SafeLOPCall(l, 3, 0);
+    lua_pop(l, 2);
+}
+
+void LuaRoot::onPositionChanged(Ref * sender, const Point & loc)
+{
+    bool stop = false;
+    BonesPoint bp = { loc.x(), loc.y() };
+    listener_ ? listener_->onPositionChanged(this, bp, stop) : 0;
+    if (stop)
+        return;
+    //(self, w, h)
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, this);
+    lua_getfield(l, -1, kNotifyOrder);
+    lua_getfield(l, -1, kMethodOnPositionChanged);
+    lua_pushnil(l);
+    lua_copy(l, -4, -1);
+    lua_pushnumber(l, bp.x);
+    lua_pushnumber(l, bp.y);
     LuaContext::SafeLOPCall(l, 3, 0);
     lua_pop(l, 2);
 }

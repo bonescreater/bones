@@ -35,6 +35,8 @@ public:
         virtual void changeCursor(Ref * sender, Cursor cursor) = 0;
 
         virtual void onSizeChanged(Ref * sender, const Size & size) = 0;
+
+        virtual void onPositionChanged(Ref * sender, const Point & loc) = 0;
     };
 public:
     Root();
@@ -70,6 +72,8 @@ protected:
     virtual void onDraw(SkCanvas & canvas, const Rect & inval) override;
 
     virtual void onSizeChanged() override;
+
+    virtual void onPositionChanged() override;
 
     virtual void onVisibleChanged(View * start) override;
 

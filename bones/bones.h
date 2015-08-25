@@ -36,6 +36,12 @@ typedef struct
     Scalar height;
 }BonesSize;
 
+typedef struct
+{
+    Scalar x;
+    Scalar y;
+}BonesPoint;
+
 enum BonesLogLevel
 {
     kBONES_LOG_LEVEL_NONE = 0,
@@ -140,7 +146,9 @@ public:
 
         virtual void changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop) = 0;
 
-        virtual void onSizeChanged(BonesRoot * sender, BonesSize cursor, bool & stop) = 0;
+        virtual void onSizeChanged(BonesRoot * sender, BonesSize size, bool & stop) = 0;
+
+        virtual void onPositionChanged(BonesRoot * sender, BonesPoint loc, bool & stop) = 0;
     };
 
     virtual void setListener(Listener * delegate) = 0;
@@ -152,6 +160,16 @@ public:
     virtual void draw() = 0;
 
     virtual HDC dc() const = 0;
+
+    virtual void handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+
+    virtual void handleKey(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+
+    virtual void handleFocus(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+
+    virtual void handleComposition(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+
+    virtual void handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
 };
 
 class BonesShape : public BonesObject

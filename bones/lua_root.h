@@ -13,6 +13,8 @@ class LuaRoot : public LuaObject<BonesRoot, Root>,
 public:
     LuaRoot(Root *);
 
+    ~LuaRoot();
+
     void addNotify(const char * notify_name, const char * mod, const char * func);
 
     void setListener(Listener * listener) override;
@@ -25,6 +27,16 @@ public:
 
     HDC dc() const override;
 
+    void handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) override;
+
+    void handleKey(UINT msg, WPARAM wparam, LPARAM lparam) override;
+
+    void handleFocus(UINT msg, WPARAM wparam, LPARAM lparam) override;
+
+    void handleComposition(UINT msg, WPARAM wparam, LPARAM lparam) override;
+
+    void handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) override;
+
     void requestFocus(Ref * sender) override;
 
     void invalidRect(Ref * sender, const Rect & rect) override;
@@ -32,6 +44,8 @@ public:
     void changeCursor(Ref * sender, Cursor cursor) override;
 
     void onSizeChanged(Ref * sender, const Size & size) override;
+
+    void onPositionChanged(Ref * sender, const Point & loc) override;
 private:
     Listener * listener_;
 };

@@ -293,11 +293,28 @@ void Helper::ToEMForMouse(UINT msg, EventType & type, MouseButton & mb)
         mb = kMB_RIGHT;
     }
         break;
+    case WM_MBUTTONDOWN:
+    {
+        type = kET_MOUSE_DOWN;
+        mb = kMB_MIDDLE;
+    }
+        break;
+    case WM_MBUTTONUP:
+    {
+        type = kET_MOUSE_UP;
+        mb = kMB_MIDDLE;
+    }
+        break;
+    case WM_MBUTTONDBLCLK:
+    {
+        type = kET_MOUSE_DCLICK;
+        mb = kMB_MIDDLE;
+    }
+        break;
     case WM_MOUSELEAVE:
         type = kET_MOUSE_LEAVE;
         break;
     default:
-        assert(0);
         return;
     }
 }

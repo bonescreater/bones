@@ -8,6 +8,7 @@
 #include "SkBitmap.h"
 #include "device.h"
 #include "SkDevice.h"
+#include "logging.h"
 
 namespace bones
 {
@@ -38,6 +39,11 @@ void Root::handleMouse(NativeEvent & e)
     MouseButton mb = kMB_NONE;
 
     Helper::ToEMForMouse(e.msg, et, mb);
+    if (kET_COUNT == et)
+    {
+        LOG_VERBOSE << "Temporarily not supported: " << e.msg;
+        return;
+    }
     auto & lparam = e.lparam;
     Point p(static_cast<Scalar>(GET_X_LPARAM(lparam)),
         static_cast<Scalar>(GET_Y_LPARAM(lparam)));
@@ -208,6 +214,11 @@ void Root::onDraw(SkCanvas & canvas, const Rect & inval)
 void Root::onSizeChanged()
 {
     delegate_ ? delegate_->onSizeChanged(this, getSize()) : 0;
+}
+
+void Root::onPositionChanged()
+{
+    delegate_ ? delegate_->onPositionChanged(this, getLoc()) : 0;
 }
 
 bool Root::notifyInval(const Rect & inval)

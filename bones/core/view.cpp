@@ -98,6 +98,11 @@ const Size & View::getSize() const
     return size_;
 }
 
+const Point & View::getLoc() const
+{
+    return loc_;
+}
+
 Scalar View::getLeft() const
 {
     return loc_.x();

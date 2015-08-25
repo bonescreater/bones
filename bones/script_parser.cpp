@@ -107,7 +107,7 @@ void ScriptParser::cleanXML()
 {
     LuaContext::Reset();
     v2bo_.clear();
-    xml_.clean();  
+    xml_.clean();
 }
 
 BonesPixmap * ScriptParser::createPixmap(const void * data, int len)

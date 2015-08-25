@@ -48,7 +48,9 @@ btn_layered:applyTextCSS([[{content:"Layered窗口";}]])
 end
 
 function mod.onSizeChanged(self, w, h)
-print(string.format("width:%d, height:%d", w, h))
+local css = string.format("{width:%dpx; height:%dpx;}", w, h)
+local bg = bones.getObject("bg")
+bg:applyCSS(css)
 end
 
 

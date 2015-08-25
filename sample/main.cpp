@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <sstream>
+#include <windowsx.h>
 
 //bool TestCB(BonesCObject co, BonesArg * arg, size_t arg_count, void * userdata)
 //{
@@ -31,6 +32,7 @@ public:
     void attach(BonesRoot * root)
     {
         root_ = root;
+        root_->setListener(this);
     }
 
     void attach(HWND hwnd)
@@ -58,7 +60,11 @@ public:
         cursor_ = cursor;
         stop = true;
     }
-    void onSizeChanged(BonesRoot * sender, BonesSize cursor, bool & stop) override
+    void onSizeChanged(BonesRoot * sender, BonesSize size, bool & stop) override
+    {
+        ;
+    }
+    void onPositionChanged(BonesRoot * sender, BonesPoint loc, bool & stop) override
     {
         ;
     }
@@ -66,6 +72,7 @@ private:
     HWND hwnd_;
     BonesRoot * root_;
     BonesCursor cursor_;
+    bool track_mouse_;
 };
 
 TestWindow test_window;
@@ -196,6 +203,7 @@ HWND TestWindow::create()
         (WS_THICKFRAME | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU),
         0, 0, 0, 0,  NULL, 0, 0, this);
     cursor_ = ::LoadCursor(NULL, IDC_ARROW);
+    track_mouse_ = false;
     return hwnd;
 }
 
@@ -228,7 +236,40 @@ LRESULT TestWindow::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
     if (uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST ||
         uMsg == WM_MOUSEHOVER || uMsg == WM_MOUSELEAVE)
     {
-        //return handleMouse(uMsg, wParam, lParam);
+        if (!track_mouse_)
+        {
+            TRACKMOUSEEVENT track_event =
+            {
+                sizeof(track_event),
+                TME_LEAVE,
+                hwnd_,
+                HOVER_DEFAULT
+            };
+            track_mouse_ = ::TrackMouseEvent(&track_event) != FALSE;
+        }
+        if (WM_MOUSEWHEEL == uMsg || WM_MOUSEHWHEEL == uMsg)
+        {
+            POINT pt;
+            pt.x = GET_X_LPARAM(lParam);
+            pt.y = GET_Y_LPARAM(lParam);
+            ::ScreenToClient(hwnd_, &pt);
+            root_->handleWheel(uMsg, wParam, MAKELPARAM(pt.x, pt.y));
+            return 0;
+        }
+        switch (uMsg)
+        {
+        case WM_LBUTTONDOWN:
+            ::SetCapture(hwnd_);
+            break;
+        case WM_LBUTTONUP:
+            ::ReleaseCapture();
+            break;
+        case WM_MOUSELEAVE:
+            track_mouse_ = false;
+            break;
+        }
+        root_->handleMouse(uMsg, wParam, lParam);
+        return 0;
     }
     else
     {
@@ -278,16 +319,23 @@ LRESULT TestWindow::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
             break;
         case WM_DESTROY:
+            BonesGetCore()->cleanXML();
             ::PostQuitMessage(0);
             return 0;
+        case WM_KEYDOWN:
+        case WM_KEYUP:
+        case WM_CHAR:
+        {
+            root_->handleKey(uMsg, wParam, lParam);
+            return 0;
+        }
+            break;
         case WM_CREATE:
         
         case WM_SETFOCUS:
         case WM_KILLFOCUS:
             //return handleFocus(uMsg, wParam, lParam);
-        case WM_KEYDOWN:
-        case WM_KEYUP:
-        case WM_CHAR:
+
             //return handleKey(uMsg, wParam, lParam);
         case WM_IME_STARTCOMPOSITION:
         case WM_IME_COMPOSITION:
