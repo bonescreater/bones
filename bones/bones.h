@@ -2,6 +2,7 @@
 #define BONES_BONES_H_
 
 #include <Windows.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 #define BONES_EXTERN_C extern "C"
@@ -19,28 +20,30 @@
     #define BONES_API(type) BONES_EXTERN_C BONES_DECLSPEC_IMPORT type __cdecl
 #endif
 
-typedef float Scalar;
+typedef float BonesScalar;
 typedef HANDLE BonesCursor;
 
 typedef struct
 {
-    Scalar left;
-    Scalar top;
-    Scalar right;
-    Scalar bottom;
+    BonesScalar left;
+    BonesScalar top;
+    BonesScalar right;
+    BonesScalar bottom;
 }BonesRect;
 
 typedef struct
 {
-    Scalar width;
-    Scalar height;
+    BonesScalar width;
+    BonesScalar height;
 }BonesSize;
 
 typedef struct
 {
-    Scalar x;
-    Scalar y;
+    BonesScalar x;
+    BonesScalar y;
 }BonesPoint;
+
+typedef uint32_t BonesColor;
 
 enum BonesLogLevel
 {
@@ -71,10 +74,6 @@ public:
     virtual bool onLoad(BonesCore *) = 0;
 };
 
-class BonesPixmap
-{
-    ;
-};
 
 struct BonesScriptArg
 {
@@ -102,13 +101,17 @@ public:
     virtual int onEvent(BonesObject * ob, BonesScriptArg * arg, size_t arg_count) = 0;
 };
 
-class BonesObject
+class BonesBase
 {
 public:
     virtual void retain() = 0;
 
     virtual void release() = 0;
+};
 
+class BonesObject : public BonesBase
+{
+public:
     virtual const char * getClassName() = 0;
 
     virtual void * cast() = 0;
@@ -119,19 +122,17 @@ public:
 
     virtual float getOpacity() const = 0;
 
-    virtual void getLoc(Scalar & x, Scalar & y) = 0;
+    virtual BonesPoint getLoc() const = 0;
 
-    virtual void getSize(Scalar & w, Scalar & h) = 0;
+    virtual BonesSize getSize() const = 0;
 
-    virtual bool contains(Scalar x, Scalar y) = 0;
+    virtual bool contains(BonesScalar x, BonesScalar y) = 0;
 
     virtual BonesObject * getChildAt(size_t index) = 0;
 
     virtual void applyCSS(const char * css) = 0;
 
     virtual void applyClass(const char * name) = 0;
-
-
 };
 
 class BonesRoot : public BonesObject
@@ -197,6 +198,43 @@ class BonesArea : public BonesObject
 
 };
 
+class BonesPixmap : public BonesBase
+{
+public:
+    struct LockRec
+    {
+        void * bits;
+        size_t pitch;
+        BonesRect subset;
+    };
+public:
+    virtual bool alloc(int width, int height) = 0;
+
+    virtual bool decode(const void * data, size_t len) = 0;
+
+    virtual int getWidth() const = 0;
+
+    virtual int getHeight() const = 0;
+
+    virtual bool lock(LockRec & rec) = 0;
+
+    virtual void unlock() = 0;
+
+    virtual void erase(BonesColor color) = 0;
+
+    virtual void extractSubset(BonesPixmap & pm, const BonesRect & subset) = 0;
+};
+
+class BonesResManager
+{
+public:
+    virtual void add(const char * key, BonesPixmap & pm) = 0;
+
+    virtual void add(const char * key, BonesCursor cursor) = 0;
+
+    virtual void clean() = 0;
+};
+
 class BonesCore
 {
 public:
@@ -204,9 +242,9 @@ public:
 
     virtual void cleanXML() = 0;
 
-    virtual BonesPixmap * createPixmap(const void * data, int len) = 0;
+    virtual BonesPixmap * create() = 0;
 
-    virtual void destroyPixmap(BonesPixmap *) = 0;
+    virtual BonesResManager * getResManager() = 0;
 
     virtual BonesObject * getObject(const char * id) = 0;
 

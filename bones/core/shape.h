@@ -119,7 +119,7 @@ private:
     Color border_color_;
     Scalar border_rx_;
     Scalar border_ry_;
-    SkPathEffect * border_effect_;
+    Effect border_effect_;
 };
 
 

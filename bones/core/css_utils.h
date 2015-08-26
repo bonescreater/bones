@@ -16,20 +16,31 @@ private:
     std::vector<char> data_;
 };
 
+class Rect;
+class Point;
+class Pixmap;
+
 class CSSUtils
 {
 public:
     static Scalar CSSStrToPX(const CSSString & str);
 
+    static Rect CSSStrToPX(const CSSString & left, 
+                           const CSSString & top,
+                           const CSSString & right,
+                           const CSSString & bottom);
+
+    static Point CSSStrToPX(const CSSString & x, const CSSString & y);
+
     static Cursor CSSStrToCursor(const CSSString & str);
+
+    static Pixmap CSSStrToPixmap(const CSSString & str);
 
     static Color  CSSStrToColor(const CSSString & str);
 
     static float CSSStrToFloat(const CSSString & str);
 
     static Scalar CSSStrToScalar(const CSSString & str);
-
-    static int CSSStrToInt(const CSSString & str);
 
     static Shader CSSParamsToLinearGradientShader(const CSSParams & params);
 

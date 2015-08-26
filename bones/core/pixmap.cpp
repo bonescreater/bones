@@ -148,6 +148,8 @@ Pixmap & Pixmap::operator=(const Pixmap & pm)
 
 bool Pixmap::decode(const void * buffer, size_t len)
 {
+    if (!buffer || !len)
+        return false;
     auto co_hr = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     if (!SUCCEEDED(co_hr) && !(RPC_E_CHANGED_MODE == co_hr))
         return false;

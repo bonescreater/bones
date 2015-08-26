@@ -49,6 +49,17 @@
           stroke-width:1px;
           border:1px solid #8800ff00;
           }
+          .circle
+          {
+          loc:460px 10px;
+          circle: 75px 75px 75px;
+          }
+          .pic
+          {
+          loc: 300px 200px;
+          size: 300px 256px;
+          style: fill;
+          }
         </style>
 		  </head>
       
@@ -56,6 +67,8 @@
             <root id ='main' class = "p">
               <shape id ="bg" class ="bg"></shape>
               <shape class ="dash"></shape>
+              <shape class ="dash circle"></shape>
+              <image id ="pic" class ="pic"></image>
               <!--<button id ="fadein" class ="b11   b12 "></button>
               <button id ="fadeout" class ="b11   b13 "></button>
               <button id ="layered" class ="b11   b14 "></button>

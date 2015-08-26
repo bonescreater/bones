@@ -60,16 +60,16 @@ public:
         return object_->getOpacity();
     }
 
-    void getLoc(Scalar & x, Scalar & y)
+    BonesPoint getLoc() const
     {
-        x = object_->getLeft();
-        y = object_->getTop();
+        BonesPoint bp = { object_->getLeft(), object_->getTop() };
+        return bp;
     }
 
-    void getSize(Scalar & w, Scalar & h)
+    BonesSize getSize() const
     {
-        w = object_->getWidth();
-        h = object_->getHeight();
+        BonesSize bs = { object_->getWidth(), object_->getHeight() };
+        return bs;
     }
 
     bool contains(Scalar x, Scalar y)

@@ -16,27 +16,36 @@ class Image : public View
 private:
     enum Style
     {
-        kImage,
-        kImageNine,
+        kNone,//不进行处理
+        kFill,//填满
+        kNine,//九宫格拉伸
     };
 public:
     Image();
 
     ~Image();
 
-    void set(Pixmap & pm);//直接绘制 不拉伸
+    void setStyle(Style & style, const Rect * r);
 
-    void set(Pixmap & pm, Rect & nine_center);//九宫格拉伸
+    void set(Pixmap & pm);
 
     const char * getClassName() const override;
 protected:
     void onDraw(SkCanvas & canvas, const Rect & inval) override;
 
     bool onHitTest(const Point & pt) override;
-private:
-    void drawImage(SkCanvas & canvas, const Rect & bounds);
+protected:
+    BONES_CSS_TABLE_DECLARE()
 
-    void drawImageNine(SkCanvas & canvas, const Rect & bounds);
+    void setStyle(const CSSParams & params);
+
+    void set(const CSSParams & params);
+private:
+    void drawNone(SkCanvas & canvas, const Rect & bounds);
+
+    void drawFill(SkCanvas & canvas, const Rect & bounds);
+
+    void drawNine(SkCanvas & canvas, const Rect & bounds);
 private:
     Style style_;
     Pixmap pixmap_;

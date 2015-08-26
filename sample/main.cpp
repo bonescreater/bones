@@ -5,13 +5,8 @@
 #include <assert.h>
 #include <sstream>
 #include <windowsx.h>
+#include <vector>
 
-//bool TestCB(BonesCObject co, BonesArg * arg, size_t arg_count, void * userdata)
-//{
-//    BonesUnregScriptCallback(co, "onClick");
-//    return true;
-//}
-//
 //bool TestClose(BonesCObject co, BonesArg * arg, size_t arg_count, void * userdata)
 //{
 //    BonesCleanXML();
@@ -76,6 +71,7 @@ private:
 };
 
 TestWindow test_window;
+std::ostringstream s;
 
 class LoadListener : public BonesXMLListener
 {
@@ -83,34 +79,51 @@ public:
     bool onLoad(BonesCore *) override
     { 
         test_window.attach((BonesRoot *)BonesGetCore()->getObject("main"));
+        s.clear();
+        s.str("");
+        s << "{";
+        s << "content:test_pic;";
+        s << "}";
+        ((BonesImage *)BonesGetCore()->getObject("pic"))->applyCSS(s.str().data());
         return true;
     }
 };
 
+BonesPixmap * lena = nullptr;
+
+void ReadFile(const char * path, std::vector<char> &stream)
+{
+    auto f = fopen(path, "rb");
+    fseek(f, 0, SEEK_END);
+    size_t len = ftell(f);
+    stream.resize(len);
+    fseek(f, 0, SEEK_SET);
+    fread(&stream[0], 1, len, f);
+    fclose(f);
+}
 int main()
 {
-    //创建窗口
     TestWindow::Initialize();
-
-    auto hwnd = test_window.create();
-
     BonesConfig config;
     config.log_file = L"./test.log";
     config.log_level = kBONES_LOG_LEVEL_VERBOSE;
-
     BonesStartUp(config);
+    //创建窗口
+    auto hwnd = test_window.create();
 
-    auto f = fopen("..\\..\\sample\\test.xml", "rb");
-    fseek(f, 0, SEEK_END);
-    size_t len = ftell(f);
-    char * xml = (char *)malloc(len + 1);
-    fseek(f, 0, SEEK_SET);
-    fread(xml, 1, len, f);
-    fclose(f);
-    xml[len] = '\0';
+    std::vector<char> pic;
+    ReadFile("..\\..\\sample\\lena.bmp", pic);
+    auto pm_pic = BonesGetCore()->create();
+    pm_pic->decode(&pic[0], pic.size());
+    //content:key
+    BonesGetCore()->getResManager()->add("test_pic", *pm_pic);
+
+    std::vector<char> xml;
+    ReadFile("..\\..\\sample\\test.xml", xml);
+    xml.push_back(0);
+
     LoadListener load;
-    BonesGetCore()->loadXMLString(xml, &load);
-    free(xml);
+    BonesGetCore()->loadXMLString(&xml[0], &load);
 
      ::SetWindowPos(hwnd, 0, 0, 0, 800, 600, SWP_NOMOVE | SWP_NOZORDER |
         SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
@@ -147,6 +160,10 @@ int main()
         }
 
     }
+
+    BonesGetCore()->getResManager()->clean();
+    pm_pic->release();
+
     BonesShutDown();
     TestWindow::Uninitialize();
     //getchar();
@@ -228,7 +245,7 @@ LRESULT CALLBACK TestWindowProc(HWND hWnd,
     return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-std::ostringstream s;
+
 LRESULT TestWindow::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     bool handle = true;
@@ -280,6 +297,7 @@ LRESULT TestWindow::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
             RECT client;
             ::GetClientRect(hwnd_, &client);
             s.clear();
+            s.str("");
             s << "{";
             s << "height: " << client.bottom - client.top << "px;";
             s << "width:" << client.right - client.left << "px;";

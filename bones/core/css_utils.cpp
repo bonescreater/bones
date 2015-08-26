@@ -1,4 +1,6 @@
 ﻿#include "css_utils.h"
+#include "rect.h"
+#include "res_manager.h"
 
 namespace bones
 {
@@ -65,19 +67,23 @@ Scalar CSSUtils::CSSStrToPX(const CSSString & str)
     return f;
 }
 
-int CSSUtils::CSSStrToInt(const CSSString & str)
+Rect CSSUtils::CSSStrToPX(const CSSString & left,
+    const CSSString & top,
+    const CSSString & right,
+    const CSSString & bottom)
 {
-    const char * begin = nullptr;
-    size_t len = 0;
-    if (!(begin = str.begin) || !(len = str.length))
-        return 0;
-    char * css = const_cast<char *>(begin);
-    char old = css[len];
-    css[len] = '\0';
-    auto f = atoi(begin);
-    css[len] = old;
-    return f;
+    return Rect::MakeLTRB(CSSStrToPX(left),
+        CSSStrToPX(top),
+        CSSStrToPX(right),
+        CSSStrToPX(bottom));
 }
+
+Point CSSUtils::CSSStrToPX(const CSSString & x, const CSSString & y)
+{
+    return Point::Make(CSSStrToPX(x), CSSStrToPX(y));
+}
+
+
 
 Scalar CSSUtils::CSSStrToScalar(const CSSString & str)
 {
@@ -179,7 +185,12 @@ Cursor CSSUtils::CSSStrToCursor(const CSSString & str)
 
     if (cursor)
         return ::LoadImage(NULL, cursor, IMAGE_CURSOR, 0, 0, LR_SHARED);
-    return (Cursor)CSSStrToInt(str);
+    return Core::GetResManager()->getCursor(std::string(str.begin, str.length).data());
+}
+
+Pixmap CSSUtils::CSSStrToPixmap(const CSSString & str)
+{
+    return Core::GetResManager()->getPixmap(std::string(str.begin, str.length).data());
 }
 
 static Shader::TileMode CSSStrToShaderTileMode(const CSSString & str)

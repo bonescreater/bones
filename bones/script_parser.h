@@ -5,6 +5,7 @@
 #include "core/xml_controller.h"
 
 
+
 namespace bones
 {
 
@@ -15,6 +16,7 @@ class Text;
 class Area;
 
 class ScriptParser : public BonesCore, 
+                     public BonesResManager,
                      public XMLController::Delegate
 {
 public:
@@ -24,13 +26,21 @@ public:
 
     void cleanXML() override;
 
-    BonesPixmap * createPixmap(const void * data, int len) override;
-
-    void destroyPixmap(BonesPixmap *) override;
+    BonesPixmap * create() override;
 
     BonesObject * getObject(const char * id) override;
 
     BonesObject * getObject(BonesObject * ob, const char * id) override;
+
+    BonesResManager * getResManager() override;
+    //res manager
+    void add(const char * key, BonesPixmap & pm) override;
+
+    void add(const char * key, BonesCursor cursor) override;
+
+    void clean() override;
+
+    
     //xml controller 
     //XML刚载入时触发 返回false 自动clean
     bool onLoad() override;

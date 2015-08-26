@@ -2,10 +2,12 @@
 #include "logging.h"
 #include "animation_manager.h"
 #include "css_manager.h"
+#include "res_manager.h"
 
 #include "helper.h"
 
 #include "SkGraphics.h"
+#include "SkDashPathEffect.h"
 
 namespace bones
 {
@@ -24,6 +26,10 @@ static AnimationManager * animations = nullptr;
 
 static CSSManager * css = nullptr;
 
+static ResManager * res = nullptr;
+
+static SkPathEffect * dash = nullptr;
+
 bool Core::StartUp(const Config & config)
 {
     SkGraphics::Init();
@@ -32,12 +38,27 @@ bool Core::StartUp(const Config & config)
         bret = !!(animations = new AnimationManager);
     if (bret)
         bret = !!(css = new CSSManager);
-
+    if (bret)
+        bret = !!(res = new ResManager);
+    if (bret)
+    {
+        Scalar interval[2] = { 2, 2 };
+        bret = !!(dash = SkDashPathEffect::Create(interval, 2, 0));
+    }
+        
     return bret;
 }
 
 void Core::ShutDown()
 {
+    if (dash)
+        dash->unref();
+    dash = nullptr;
+
+    if (res)
+        delete res;
+    res = nullptr;
+
     if (css)
         delete css;
     css = nullptr;
@@ -74,6 +95,16 @@ AnimationManager * Core::GetAnimationManager()
 CSSManager * Core::GetCSSManager()
 {
     return css;
+}
+
+ResManager * Core::GetResManager()
+{
+    return res;
+}
+
+SkPathEffect * Core::GetDashEffect()
+{
+    return dash;
 }
 
 }

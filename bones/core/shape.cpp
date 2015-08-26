@@ -11,7 +11,7 @@ namespace bones
 
 Shape::Shape()
 :category_(kNone), style_(kFill), color_(0xff000000), stroke_width_(1),
-border_width_(0), border_effect_(nullptr), border_color_(0xff000000), border_rx_(0), border_ry_(0),
+border_width_(0), border_effect_(kSolid), border_color_(0xff000000), border_rx_(0), border_ry_(0),
 colour_type_(kColor), effect_(nullptr)
 {
     rect_param_.rx = 0;
@@ -25,9 +25,6 @@ Shape::~Shape()
     if (effect_)
         effect_->unref();
     effect_ = nullptr;
-    if (border_effect_)
-        border_effect_->unref();
-    border_effect_ = nullptr;
 }
 
 void Shape::setStyle(Style style)
@@ -44,12 +41,12 @@ void Shape::setStrokeEffect(Effect effect, Scalar * interval, size_t count, Scal
 
     if (kDash == effect)
     {    
-        if (interval && count)
+        if (interval && count && ((count % 2) == 0))
             effect_ = SkDashPathEffect::Create(interval, count, offset);
         else
         {
-            SkScalar default_interval[2] = { 2, 2 };
-            effect_ = SkDashPathEffect::Create(default_interval, 2, 0);
+            effect_ = Core::GetDashEffect();
+            effect_->ref();
         }
     }
     inval();
@@ -103,15 +100,7 @@ void Shape::setBorder(Scalar width, Effect effect, Color color, Scalar rx, Scala
     border_color_ = color;
     border_rx_ = rx;
     border_ry_ = ry;
-    //border effect 不支持自定义
-    if (border_effect_)
-        border_effect_->unref();
-    border_effect_ = nullptr;
-    if (kDash == effect)
-    {
-        SkScalar interval[2] = { 2, 2 };
-        border_effect_ = SkDashPathEffect::Create(interval, 2, 0);
-    }
+    border_effect_ = effect;
 
 
     inval();
@@ -208,7 +197,8 @@ void Shape::drawBorder(SkCanvas & canvas)
     //border_style_暂时用不到
     auto offset = border_width_ / 2;
     paint.setStrokeWidth(border_width_);
-    paint.setPathEffect(border_effect_);
+    if (kDash == border_effect_)
+        paint.setPathEffect(Core::GetDashEffect());
     Rect bounds;
     bounds.setLTRB(offset, offset, getWidth() - offset, getHeight() - offset);
     canvas.drawRoundRect(Helper::ToSkRect(bounds), border_rx_, border_ry_, paint);
@@ -302,10 +292,7 @@ void Shape::setRect(const CSSParams & params)
     Rect r;
     if (params.size() > 5)
     {
-        r.setLTRB(CSSUtils::CSSStrToPX(params[2]),
-            CSSUtils::CSSStrToPX(params[3]),
-            CSSUtils::CSSStrToPX(params[4]),
-            CSSUtils::CSSStrToPX(params[5]));
+        r = CSSUtils::CSSStrToPX(params[2], params[3], params[4], params[5]);
         pr = &r;
     }
     set(CSSUtils::CSSStrToPX(params[0]), CSSUtils::CSSStrToPX(params[1]), pr);
@@ -315,7 +302,7 @@ void Shape::setCircle(const CSSParams & params)
 {
     if (params.size() < 3)
         return;
-    set(Point::Make(CSSUtils::CSSStrToPX(params[0]), CSSUtils::CSSStrToPX(params[1])),
+    set(CSSUtils::CSSStrToPX(params[0], params[1]),
         CSSUtils::CSSStrToPX(params[2]));
 }
 

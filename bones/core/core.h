@@ -10,7 +10,7 @@
 #include <Windows.h>
 #include <windowsx.h>
 
-
+class SkPathEffect;
 namespace bones
 {
 extern const char * kClassRoot;
@@ -42,6 +42,7 @@ typedef HANDLE Cursor;
 class AnimationManager;
 class PanelManager;
 class CSSManager;
+class ResManager;
 
 enum LogLevel
 {
@@ -70,6 +71,10 @@ public:
     static PanelManager * GetPanelManager();
 
     static CSSManager * GetCSSManager();
+
+    static ResManager * GetResManager();
+
+    static SkPathEffect * GetDashEffect();
 };
 
 }

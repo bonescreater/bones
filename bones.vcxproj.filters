@@ -39,6 +39,7 @@
     <ClCompile Include="bones\lua_root.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
+    <ClCompile Include="bones\picture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
@@ -82,6 +83,7 @@
       <Filter>lua\proxy</Filter>
     </ClInclude>
     <ClInclude Include="bones\bones_internal.h" />
+    <ClInclude Include="bones\picture.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="lua">

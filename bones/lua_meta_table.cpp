@@ -186,11 +186,9 @@ static int GetLoc(lua_State * l)
     BonesObject * bob = LuaMetaTable::CallGetBonesObject(l);
     if (bob)
     {
-        Scalar x = 0;
-        Scalar y = 0;
-        bob->getLoc(x, y);
-        lua_pushnumber(l, x);
-        lua_pushnumber(l, y);
+        BonesPoint bp = bob->getLoc();
+        lua_pushnumber(l, bp.x);
+        lua_pushnumber(l, bp.y);
     }
     return 2;
 }
@@ -207,11 +205,9 @@ static int GetSize(lua_State * l)
     BonesObject * bob = LuaMetaTable::CallGetBonesObject(l);
     if (bob)
     {
-        Scalar w = 0;
-        Scalar h = 0;
-        bob->getSize(w, h);
-        lua_pushnumber(l, w);
-        lua_pushnumber(l, h);
+        BonesSize bs = bob->getSize();
+        lua_pushnumber(l, bs.width);
+        lua_pushnumber(l, bs.height);
     }
     return 2;
 }

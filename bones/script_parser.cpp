@@ -1,4 +1,5 @@
 ﻿#include "script_parser.h"
+#include "picture.h"
 #include "lua_context.h"
 #include "lua_check.h"
 
@@ -9,6 +10,7 @@
 #include "core/text.h"
 #include "core/shape.h"
 #include "core/rich_edit.h"
+#include "core/res_manager.h"
 
 #include "lua_root.h"
 #include "lua_shape.h"
@@ -17,6 +19,8 @@
 #include "lua_rich_edit.h"
 #include "lua_area.h"
 #include "lua_meta_table.h"
+
+
 
 namespace bones
 {
@@ -110,17 +114,6 @@ void ScriptParser::cleanXML()
     xml_.clean();
 }
 
-BonesPixmap * ScriptParser::createPixmap(const void * data, int len)
-{
-    assert(0);
-    return nullptr;
-}
-
-void ScriptParser::destroyPixmap(BonesPixmap *)
-{
-    assert(0);
-}
-
 BonesObject * ScriptParser::getObject(const char * id)
 {
     if (!id)
@@ -160,6 +153,31 @@ BonesObject * ScriptParser::getObject(BonesObject * ob, const char * id)
         }
     }
     return nullptr;
+}
+
+BonesResManager * ScriptParser::getResManager()
+{
+    return this;
+}
+//res manager
+void ScriptParser::add(const char * key, BonesPixmap & pm)
+{
+    Core::GetResManager()->add(key, static_cast<Picture *>(&pm)->getPixmap());
+}
+
+void ScriptParser::add(const char * key, BonesCursor cursor)
+{
+    Core::GetResManager()->add(key, cursor);
+}
+
+void ScriptParser::clean()
+{
+    Core::GetResManager()->clean();
+}
+
+BonesPixmap * ScriptParser::create()
+{ 
+    return new Picture();
 }
 
 bool ScriptParser::onLoad()
