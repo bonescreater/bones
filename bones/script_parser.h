@@ -14,6 +14,7 @@ class Shape;
 class Image;
 class Text;
 class Area;
+class RichEdit;
 
 class ScriptParser : public BonesCore, 
                      public BonesResManager,
@@ -69,7 +70,7 @@ private:
 
     void handleText(Text * ob);
 
-    void handleRichEdit(Text * ob);
+    void handleRichEdit(RichEdit * ob);
 
     void handleArea(Area * ob);
 

@@ -10,10 +10,10 @@
 #define BONES_EXTERN_C
 #endif
 
-#ifdef BONES_DLL
+#ifdef BONES_BUILD_DLL
     #define BONES_DECLSPEC_EXPORT __declspec(dllexport)
     #define BONES_API(type) BONES_EXTERN_C BONES_DECLSPEC_EXPORT type __cdecl
-#elif defined BONES_LIB
+#elif defined BONES_BUILD_LIB
     #define BONES_API(type)
 #else
     #define BONES_DECLSPEC_IMPORT __declspec(dllimport)
@@ -152,7 +152,7 @@ public:
         virtual void onPositionChanged(BonesRoot * sender, BonesPoint loc, bool & stop) = 0;
     };
 
-    virtual void setListener(Listener * delegate) = 0;
+    virtual void setListener(Listener * listener) = 0;
 
     virtual bool isDirty() const = 0;
 
@@ -190,7 +190,30 @@ class BonesText : public BonesObject
 
 class BonesRichEdit : public BonesObject
 {
-    ;
+public:
+    class Listener
+    {
+    public:
+        virtual void killTimer(BonesRichEdit * sender, UINT idTimer, bool & stop) = 0;
+
+        virtual BOOL setTimer(BonesRichEdit * sender, UINT idTimer, UINT uTimeout, bool & stop) = 0;
+
+        virtual BOOL showCaret(BonesRichEdit * sender, BOOL fshow, bool & stop) = 0;
+
+        virtual BOOL createCaret(BonesRichEdit * sender, HBITMAP hbmp, INT xWidth, INT yHeight, bool & stop) = 0;
+
+        virtual BOOL setCaretPos(BonesRichEdit * sender, INT x, INT y, bool & stop) = 0;
+
+        virtual BOOL screenToClient(BonesRichEdit * sender, LPPOINT lppt, bool & stop) = 0;
+
+        virtual BOOL clientToScreen(BonesRichEdit * sender, LPPOINT lppt, bool & stop) = 0;
+
+        virtual HIMC immGetContext(BonesRichEdit * sender, bool & stop) = 0;
+
+        virtual void immReleaseContext(BonesRichEdit * sender, HIMC himc, bool & stop) = 0;
+    };
+
+    virtual void setListener(Listener * listener) = 0;
 };
 
 class BonesArea : public BonesObject

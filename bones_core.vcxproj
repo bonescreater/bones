@@ -17,6 +17,7 @@
     <ClCompile Include="bones\core\animation_manager.cpp" />
     <ClCompile Include="bones\core\css_utils.cpp" />
     <ClCompile Include="bones\core\device.cpp" />
+    <ClCompile Include="bones\core\font.cpp" />
     <ClCompile Include="bones\core\image.cpp" />
     <ClCompile Include="bones\core\core.cpp" />
     <ClCompile Include="bones\core\encoding.cpp" />
@@ -63,6 +64,7 @@
     <ClInclude Include="bones\core\css_types.h" />
     <ClInclude Include="bones\core\css_utils.h" />
     <ClInclude Include="bones\core\device.h" />
+    <ClInclude Include="bones\core\font.h" />
     <ClInclude Include="bones\core\image.h" />
     <ClInclude Include="bones\core\color.h" />
     <ClInclude Include="bones\core\core.h" />

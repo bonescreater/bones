@@ -31,7 +31,7 @@ public:
 
     const char * getClassName() const override;
 protected:
-    void onDraw(SkCanvas & canvas, const Rect & inval) override;
+    void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 
     bool onHitTest(const Point & pt) override;
 protected:
@@ -41,11 +41,11 @@ protected:
 
     void set(const CSSParams & params);
 private:
-    void drawNone(SkCanvas & canvas, const Rect & bounds);
+    void drawNone(SkCanvas & canvas, const Rect & bounds, float opacity);
 
-    void drawFill(SkCanvas & canvas, const Rect & bounds);
+    void drawFill(SkCanvas & canvas, const Rect & bounds, float opacity);
 
-    void drawNine(SkCanvas & canvas, const Rect & bounds);
+    void drawNine(SkCanvas & canvas, const Rect & bounds, float opacity);
 private:
     Style style_;
     Pixmap pixmap_;

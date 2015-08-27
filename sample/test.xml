@@ -58,7 +58,11 @@
           {
           loc: 300px 200px;
           size: 300px 256px;
-          style: fill;
+          style: none;
+          }
+          .opacity
+          {
+          opacity:0.5;
           }
         </style>
 		  </head>
@@ -66,16 +70,19 @@
         <body>  
             <root id ='main' class = "p">
               <shape id ="bg" class ="bg"></shape>
-              <shape class ="dash"></shape>
-              <shape class ="dash circle"></shape>
-              <image id ="pic" class ="pic"></image>
-              <!--<button id ="fadein" class ="b11   b12 "></button>
+              <shape id ="opacity" class ="opacity">
+                <shape class ="dash"></shape>
+                <shape class ="dash circle"></shape>
+                <image id ="pic" class ="pic"></image>
+                <!--<button id ="fadein" class ="b11   b12 "></button>
               <button id ="fadeout" class ="b11   b13 "></button>
               <button id ="layered" class ="b11   b14 "></button>
               <button id ="close" class = "   b11     b12  b15 "></button>
               
-              <event name ="onPrepare" module ="test" func ="onPrepare"></event>
-              <richedit id ="rich" class ="rich"></richedit>-->
+              <event name ="onPrepare" module ="test" func ="onPrepare"></event>-->
+                <richedit id ="rich" class ="rich"></richedit>
+              </shape>
+
               <notify name ="onSizeChanged" module ="test" func ="onSizeChanged"></notify>
 			      </root>
         </body>  

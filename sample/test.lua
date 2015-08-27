@@ -51,6 +51,8 @@ function mod.onSizeChanged(self, w, h)
 local css = string.format("{width:%dpx; height:%dpx;}", w, h)
 local bg = bones.getObject("bg")
 bg:applyCSS(css)
+local alpha = bones.getObject("opacity")
+alpha:applyCSS(css)
 end
 
 

@@ -9,6 +9,7 @@ struct SkIRect;
 struct SkPoint;
 class SkBitmap;
 class SkShader;
+class SkPaint;
 
 namespace bones
 {
@@ -19,6 +20,7 @@ class Rect;
 class Point;
 class Shader;
 struct KeyState;
+class Font;
 
 class Helper
 {
@@ -36,6 +38,8 @@ public:
     static SkBitmap ToSkBitmap(Pixmap & pm);
 
     static SkShader * ToSkShader(Shader & shader);
+
+    static void ToSkPaint(const Font & font, SkPaint & pt);
 
     static POINT ToPoint(const Point & pt);
 

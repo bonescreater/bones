@@ -1,8 +1,8 @@
 ﻿#include "text.h"
 #include "encoding.h"
+#include "helper.h"
 
 #include "SkCanvas.h"
-#include "SkTypeface.h"
 #include "css_utils.h"
 
 namespace bones
@@ -10,17 +10,41 @@ namespace bones
 
 static const wchar_t * kStrEllipsis = L"...";
 
-Scalar GetTextHeight(SkPaint & paint)
+static Scalar GetTextHeight(SkPaint & paint)
 {
     SkPaint::FontMetrics fm;
     paint.getFontMetrics(&fm);
     return fm.fBottom - fm.fTop;
 }
 
+static void AdjustSkPaint(SkPaint & paint, Color color, float opacity, Text::Align align)
+{
+    paint.setColor(color);
+    paint.setAlpha(ClampAlpha(opacity, ColorGetA(color)));
+
+    SkPaint::Align skalign;
+    switch (align)
+    {
+    case Text::kLeft:
+        skalign = SkPaint::kLeft_Align;
+        break;
+    case Text::kCenter:
+        skalign = SkPaint::kCenter_Align;
+        break;
+    case Text::kRight:
+        skalign = SkPaint::kRight_Align;
+        break;
+    default:
+        assert(0);
+        skalign = SkPaint::kLeft_Align;
+        break;
+    }
+    paint.setTextAlign(skalign);
+}
+
 Text::Text()
-:cache_dirty_(false), of_(kNone), family_("Microsoft Yahei"),
-font_style_(kNormal), text_size_(12), text_color_(0xff000000),
-text_align_(kCenter), underline_(false)
+:cache_dirty_(false), of_(kNone), text_color_(0xff000000),
+text_align_(kCenter)
 {
     setFocusable(false);
 }
@@ -39,23 +63,9 @@ void Text::set(const wchar_t * text)
     inval();
 }
 
-void Text::setFontFamily(const char * family)
+void Text::setFont(const Font & font)
 {
-    family_ = family;
-    cache_dirty_ = true;
-    inval();
-}
-
-void Text::setFontStyle(FontStyle st)
-{
-    font_style_ = st;
-    cache_dirty_ = true;
-    inval();
-}
-
-void Text::setFontSize(Scalar s)
-{
-    text_size_ = s;
+    font_ = font;
     cache_dirty_ = true;
     inval();
 }
@@ -72,13 +82,7 @@ void Text::setAlign(Align align)
     inval();
 }
 
-void Text::setUnderline(bool ul)
-{
-    underline_ = ul;
-    inval();
-}
-
-void Text::setOverFlow(OverFlow of)
+void Text::setOverflow(Overflow of)
 {
     if (of_ != of)
     {
@@ -88,17 +92,19 @@ void Text::setOverFlow(OverFlow of)
     }
 }
 
-void Text::onDraw(SkCanvas & canvas, const Rect & inval)
+void Text::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 {
     adjustCache();
 
     if (content_.empty())
         return;
 
-    if (opacity_ == 0)
+    if (opacity == 0)
         return;
 
-    auto paint = ToSkPaint();
+    SkPaint paint;
+    Helper::ToSkPaint(font_, paint);
+    AdjustSkPaint(paint, text_color_, opacity, text_align_);
     auto line_height = GetTextHeight(paint);
     auto total_height = line_height * lines_.size();
     //垂直居中
@@ -130,63 +136,7 @@ void Text::onDraw(SkCanvas & canvas, const Rect & inval)
     }
 }
 
-SkPaint Text::ToSkPaint()
-{
-    SkPaint paint;
-    paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-    paint.setAntiAlias(true);
-    paint.setLCDRenderText(true);
-    paint.setUnderlineText(underline_);
-    paint.setTextSize(text_size_);
-    paint.setColor(text_color_);
-    paint.setAlpha(ClampAlpha(opacity_, ColorGetA(text_color_)));
-    SkTypeface::Style st;
-    switch (font_style_)
-    {
-    case Text::kNormal:
-        st = SkTypeface::kNormal;
-        break;
-    case Text::kBold:
-        st = SkTypeface::kBold;
-        break;
-    case Text::kItalic:
-        st = SkTypeface::kItalic;
-        break;
-    case Text::kBoldItalic:
-        st = SkTypeface::kBoldItalic;
-        break;
-    default:
-        assert(0);
-        st = SkTypeface::kNormal;
-        break;
-    }
-    SkTypeface * type_face = SkTypeface::CreateFromName(
-        family_.data(), st);
-    if (type_face)
-    {
-        paint.setTypeface(type_face);
-        type_face->unref();
-    }
-    SkPaint::Align align;
-    switch (text_align_)
-    {
-    case Text::kLeft:
-        align = SkPaint::kLeft_Align;
-        break;
-    case Text::kCenter:
-        align = SkPaint::kCenter_Align;
-        break;
-    case Text::kRight:
-        align = SkPaint::kRight_Align;
-        break;
-    default:
-        assert(0);
-        align = SkPaint::kLeft_Align;
-        break;
-    }
-    paint.setTextAlign(align);
-    return paint;
-}
+
 
 void Text::onSizeChanged()
 {
@@ -244,7 +194,10 @@ void Text::appendEllipsis(size_t begin, size_t length)
         lines_.push_back(std::wstring());
         return;
     }
-    auto paint = ToSkPaint();
+    SkPaint paint;
+    Helper::ToSkPaint(font_, paint);
+    AdjustSkPaint(paint, text_color_, 1.0f, text_align_);
+
     std::vector<Scalar> widths;
     paint.getTextWidths(content_.data() + begin, sizeof(wchar_t)* length, &widths[0]);
     Scalar line_width = 0;
@@ -280,7 +233,10 @@ void Text::appendEllipsis(size_t begin, size_t length)
 
 void Text::wordWrap(size_t begin, size_t length)
 {
-    auto paint = ToSkPaint();
+    SkPaint paint;
+    Helper::ToSkPaint(font_, paint);
+    AdjustSkPaint(paint, text_color_, 1.0f, text_align_);
+
     std::vector<Scalar> widths;
     paint.getTextWidths(content_.data() + begin, sizeof(wchar_t)* length, &widths[0]);
     Scalar line_width = 0;
@@ -315,6 +271,9 @@ void Text::wordWrap(size_t begin, size_t length)
 BONES_CSS_TABLE_BEGIN(Text, View)
 BONES_CSS_SET_FUNC("color", &Text::setColor)
 BONES_CSS_SET_FUNC("content", &Text::setContent)
+BONES_CSS_SET_FUNC("overflow", &Text::setOverflow)
+BONES_CSS_SET_FUNC("font", &Text::setFont)
+BONES_CSS_SET_FUNC("align", &Text::setAlign)
 BONES_CSS_TABLE_END()
 
 void Text::setColor(const CSSParams & params)
@@ -330,6 +289,60 @@ void Text::setContent(const CSSParams & params)
         return;
     CSSText content(params[0]);
     set(Encoding::FromUTF8(content.begin, content.length).data());
+}
+
+void Text::setOverflow(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    auto & str = params[0];
+    Overflow of = kNone;
+    if (str == "word-wrap")
+        of = kWordWrap;
+    else if (str == "ellipsis")
+        of = kEllipsis;
+    setOverflow(of);
+}
+
+void Text::setFont(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    Font ft;
+    ft.setSize(params[0]);
+    if (params.size() > 1)
+    {
+        ft.setFamily(std::string(params[1].begin, params[1].length).data());
+        uint32_t style = Font::kNormal;
+        for (size_t i = 2; i < params.size(); i++)
+        {
+            auto & str = params[i];
+            if (str == "bold")
+                style |= Font::kBold;
+            else if (str == "italic")
+                style |= Font::kItalic;
+            else if (str == "underline")
+                style |= Font::kUnderline;
+            else if (str == "strike")
+                style |= Font::kStrikeOut;
+        }
+        ft.setStyle(style);
+    }  
+    setFont(ft);
+}
+
+void Text::setAlign(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    Text::Align align = kLeft;
+    auto & str = params[0];
+    if (str == "center")
+        align = Text::kCenter;
+    else if (str == "right")
+        align = Text::kRight;
+
+    setAlign(align);
 }
 
 }

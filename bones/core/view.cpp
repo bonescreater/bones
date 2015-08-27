@@ -528,7 +528,7 @@ bool View::notifyChangeCursor(Cursor cursor)
     return true;
 }
 
-void View::draw(SkCanvas & canvas, const Rect & inval)
+void View::draw(SkCanvas & canvas, const Rect & inval, float opacity)
 {
     if (!visible() || inval.isEmpty())
         return;
@@ -538,12 +538,16 @@ void View::draw(SkCanvas & canvas, const Rect & inval)
     Rect local_bounds;
     getLocalBounds(local_bounds);
     Rect intersect_bounds(local_bounds);
+    //透明度受父影响 不能超过父的透明度
+    float self_opacity = opacity > opacity_ ? opacity_ : opacity;
+
     if (intersect_bounds.intersect(inval) && !intersect_bounds.isEmpty())
     {
         //绘制自己的时候 不能超出矩形
         auto count = canvas.save();
         canvas.clipRect(Helper::ToSkRect(intersect_bounds));
-        onDraw(canvas, intersect_bounds);
+
+        onDraw(canvas, intersect_bounds, self_opacity);
         canvas.restoreToCount(count);
     }
     else if (c)
@@ -567,7 +571,7 @@ void View::draw(SkCanvas & canvas, const Rect & inval)
         child_inval.offset(-child->getLeft(), -child->getTop());
         auto child_count = canvas.save();
         canvas.translate(child->getLeft(), child->getTop());
-        child->draw(canvas, child_inval);
+        child->draw(canvas, child_inval, self_opacity);
         canvas.restoreToCount(child_count);
 
         child = child->getNextSibling();
@@ -589,7 +593,7 @@ void View::onTrigger(int tag, uint32_t interval)
 
 }
 
-void View::onDraw(SkCanvas & canvas, const Rect & inval)
+void View::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 {
     ;
 }

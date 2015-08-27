@@ -3,8 +3,8 @@
 
 #include "view.h"
 #include "color.h"
+#include "font.h"
 
-class SkPaint;
 namespace bones
 {
 
@@ -18,15 +18,8 @@ public:
         kCenter,//!<中间对齐
         kRight,//!<右对齐
     };
-    enum FontStyle//字体样式
-    {
-        kNormal,//!<普通
-        kBold,//!<粗体
-        kItalic,//!<倾斜
-        kBoldItalic,//!<粗体倾斜
-    };
 
-    enum OverFlow
+    enum Overflow
     {
         kNone,//超长不特殊处理
         kWordWrap,//超长自动换行
@@ -41,21 +34,15 @@ public:
 
     void set(const wchar_t * text);
 
-    void setFontFamily(const char * family);
-
-    void setFontStyle(FontStyle st);
-
-    void setFontSize(Scalar s);
+    void setFont(const Font & font);
 
     void setColor(Color c);
 
     void setAlign(Align align);
 
-    void setUnderline(bool ul);
-
-    void setOverFlow(OverFlow of);
+    void setOverflow(Overflow of);
 protected:
-    void onDraw(SkCanvas & canvas, const Rect & inval) override;
+    void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 
     void onSizeChanged() override;
 
@@ -69,24 +56,25 @@ private:
 
     void wordWrap(size_t begin, size_t length);
 
-    SkPaint ToSkPaint();
-
     BONES_CSS_TABLE_DECLARE()
 
     void setColor(const CSSParams & params);
 
     void setContent(const CSSParams & params);
+
+    void setOverflow(const CSSParams & params);
+
+    void setFont(const CSSParams & params);
+
+    void setAlign(const CSSParams & params);
 private:
     bool cache_dirty_;
     std::wstring content_;
     Lines lines_;
-    std::string family_;
-    FontStyle font_style_;
-    Scalar text_size_;
     Color text_color_;
     Align text_align_;
-    bool underline_;
-    OverFlow of_;
+    Overflow of_;
+    Font font_;
 };
 
 }

@@ -4,6 +4,8 @@
 #include "logging.h"
 #include "SkCanvas.h"
 #include "device.h"
+#include "font.h"
+#include "encoding.h"
 
 namespace bones
 {
@@ -59,18 +61,21 @@ scroll_bars_(WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL |
 ES_AUTOHSCROLL | ES_DISABLENOSCROLL), 
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
 services_(nullptr), delegate_(nullptr),
-bg_opaque_(true), bg_color_(0xff0000ff), bg_set_color_(true),
-dc_(NULL), traversal_(false)
+bg_opaque_(true), bg_color_(0xff000088), bg_set_color_(true),
+traversal_(false)
 {
     lazyInitialize();
 }
 
 RichEdit::~RichEdit()
 {
-    if (dc_)
-        ::DeleteDC(dc_);
     if (services_)
         services_->Release();
+}
+
+void RichEdit::setDelegate(Delegate * delegate)
+{
+    delegate_ = delegate;
 }
 
 void RichEdit::setText(const wchar_t * text)
@@ -147,26 +152,31 @@ void RichEdit::setBackground(bool opaque, Color * bg_color)
     services_->OnTxPropertyBitsChange(TXTBIT_BACKSTYLECHANGE, TXTBIT_BACKSTYLECHANGE);
 }
 
-void RichEdit::setFont(const wchar_t * family, int text_size, bool bBold, bool bUnderline, bool bItalic)
+void RichEdit::setFont(const Font & font)
 {
     LOGFONT lf = { 0 };
     ::GetObject(::GetStockObject(DEFAULT_GUI_FONT), sizeof(LOGFONT), &lf);
-    if (family)
+    if (font.getFamily())
     {
+        auto family = Encoding::FromUTF8(font.getFamily());
         size_t len = LF_FACESIZE;
-        size_t family_len = wcslen(family) + 1;//0结尾
+        size_t family_len = family.size() + 1;//0结尾
         len = family_len < len ? family_len : len;
-        memcpy(lf.lfFaceName, family, len * sizeof(wchar_t));
+        memcpy(lf.lfFaceName, family.data(), len * sizeof(wchar_t));
     }
     
     lf.lfCharSet = DEFAULT_CHARSET;
-    lf.lfHeight = text_size;
-    if (bBold) 
+    lf.lfHeight = static_cast<LONG>(font.getSize());
+    auto st = font.getStyle();
+    if (Font::kBold & st)
         lf.lfWeight += FW_BOLD;
-    if (bUnderline) 
+    if (Font::kUnderline & st)
         lf.lfUnderline = TRUE;
-    if (bItalic) 
+    if (Font::kItalic & st)
         lf.lfItalic = TRUE;
+    if (Font::kStrikeOut & st)
+        lf.lfStrikeOut = TRUE;
+
     HFONT hfont = ::CreateFontIndirect(&lf);
     if (hfont)
     {
@@ -184,9 +194,12 @@ const char * RichEdit::getClassName() const
     return kClassRichEdit;
 }
 
-void RichEdit::onDraw(SkCanvas & canvas, const Rect & inval)
+void RichEdit::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 {
     adjustSurface();
+    if (0 == opacity)
+        return;
+
     if (surface_.isEmpty() || !surface_.isValid())
         return;
 
@@ -219,7 +232,7 @@ void RichEdit::onDraw(SkCanvas & canvas, const Rect & inval)
     SkPaint paint;
     //paint.setAntiAlias(true);
     //paint.setFilterLevel(SkPaint::kHigh_FilterLevel);
-    paint.setAlpha(ClampAlpha(opacity_));
+    paint.setAlpha(ClampAlpha(opacity));
     canvas.drawBitmap(Helper::ToSkBitmap(surface_), 0, 0, &paint);
 }
 
@@ -243,7 +256,7 @@ void RichEdit::onMouseMove(MouseEvent & e)
     {
         auto & loc = e.getLoc();
         services_->OnTxSetCursor(DVASPECT_CONTENT, 0, NULL, NULL,
-            dc_, NULL, NULL, (INT)loc.x(), (INT)loc.y());
+            Core::GetCompatibleDC(), NULL, NULL, (INT)loc.x(), (INT)loc.y());
     }
 
 
@@ -357,7 +370,7 @@ void RichEdit::initDefaultCF()
     memset(&cf_, 0, sizeof(cf_));
     cf_.cbSize = sizeof(CHARFORMAT2);
     cf_.crTextColor = RGB(0xff, 0, 0);
-    setFont(L"Microsoft Yahei", 20, false, false, false);  
+    setFont(Font());
 }
 
 void RichEdit::initDefaultPF()
@@ -449,10 +462,6 @@ void RichEdit::lazyInitialize()
         ITextHost *pITextHost,
         IUnknown **ppUnk);
 
-    if (!dc_)
-        dc_ = ::CreateCompatibleDC(NULL);
-    assert(dc_);
-
     if (!services_)
     {
         HMODULE rich = ::GetModuleHandle(L"Msftedit.dll");
@@ -515,7 +524,7 @@ ULONG STDMETHODCALLTYPE RichEdit::Release(void)
 
 HDC RichEdit::TxGetDC()
 {
-    return dc_;
+    return Core::GetCompatibleDC();
 }
 
 INT RichEdit::TxReleaseDC(HDC hdc)
@@ -576,7 +585,8 @@ BOOL RichEdit::TxSetCaretPos(INT x, INT y)
     auto pt = mapToGlobal(Point::Make(static_cast<Scalar>(x), 
                                       static_cast<Scalar>(y)));
 
-    return ::SetCaretPos(static_cast<INT>(pt.x()), static_cast<INT>(pt.y()));
+    return delegate_ ? 
+        delegate_->setCaretPos(this, static_cast<INT>(pt.x()), static_cast<INT>(pt.y())) : 0;
 }
 
 BOOL RichEdit::TxSetTimer(UINT idTimer, UINT uTimeout)

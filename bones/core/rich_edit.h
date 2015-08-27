@@ -11,6 +11,7 @@
 namespace bones
 {
 
+class Font;
 class RichEdit : public View, public ITextHost
 {
 public:
@@ -24,6 +25,8 @@ public:
         virtual BOOL showCaret(Ref * sender, BOOL fshow) = 0;
 
         virtual BOOL createCaret(Ref * sender, HBITMAP hbmp, INT xWidth, INT yHeight) = 0;
+
+        virtual BOOL setCaretPos(Ref * sender, INT x, INT y) = 0;
 
         virtual BOOL screenToClient(Ref * sender, LPPOINT lppt) = 0;
 
@@ -61,7 +64,7 @@ public:
 
     void setBackground(bool opaque, Color * bg_color);
 
-    void setFont(const wchar_t * family, int text_size, bool bBold, bool bUnderline, bool bItalic);
+    void setFont(const Font & font);
 
     const char * getClassName() const override;
     //ITextHost
@@ -201,7 +204,7 @@ public:
     //@cmember Returns HIMETRIC size of the control bar.
     virtual HRESULT	TxGetSelectionBarWidth(LONG *lSelBarWidth) override;
 protected:
-    void onDraw(SkCanvas & canvas, const Rect & inval) override;
+    void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 
     void onPositionChanged() override;
 
@@ -244,7 +247,6 @@ private:
     void postprocessSurface(Pixmap & update);
 private:
     Delegate * delegate_;
-    HDC dc_;
     CHARFORMAT2 cf_;
     PARAFORMAT pf_;
     DWORD max_length_;

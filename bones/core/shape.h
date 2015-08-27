@@ -75,13 +75,13 @@ public:
 
     const char * getClassName() const override;
 protected:
-    void onDraw(SkCanvas & canvas, const Rect & inval) override;
+    void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 
     bool onHitTest(const Point & pt) override;
 
-    void drawBackground(SkCanvas & canvas);
+    void drawBackground(SkCanvas & canvas, float opacity);
 
-    void drawBorder(SkCanvas & canvas);
+    void drawBorder(SkCanvas & canvas, float opacity);
 
     BONES_CSS_TABLE_DECLARE()
 

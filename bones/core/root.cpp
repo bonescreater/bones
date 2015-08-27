@@ -184,7 +184,7 @@ void Root::draw()
     if (!device_)
         return;
     SkCanvas canvas(device_);
-    View::draw(canvas, rect);
+    View::draw(canvas, rect, 1.0f);
 }
 
 const Rect & Root::getDirtyRect() const
@@ -203,7 +203,7 @@ Surface & Root::getBackBuffer()
     return back_buffer_;
 }
 
-void Root::onDraw(SkCanvas & canvas, const Rect & inval)
+void Root::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 {  
     SkPaint paint;
     paint.setColor(0);

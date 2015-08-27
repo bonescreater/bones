@@ -133,6 +133,9 @@
     <ClCompile Include="bones\core\res_manager.cpp">
       <Filter>base\css</Filter>
     </ClCompile>
+    <ClCompile Include="bones\core\font.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\core\accelerator.h">
@@ -243,6 +246,9 @@
     </ClInclude>
     <ClInclude Include="bones\core\res_manager.h">
       <Filter>base\css</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\font.h">
+      <Filter>base</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -111,12 +111,12 @@ const char * Shape::getClassName() const
     return kClassShape;
 }
 
-void Shape::onDraw(SkCanvas & canvas, const Rect & inval)
+void Shape::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 {
-    if (opacity_ == 0)
+    if (opacity == 0)
         return;
-    drawBackground(canvas);
-    drawBorder(canvas);
+    drawBackground(canvas, opacity);
+    drawBorder(canvas, opacity);
 }
 
 bool Shape::onHitTest(const Point & pt)
@@ -124,7 +124,7 @@ bool Shape::onHitTest(const Point & pt)
     return false;
 }
 
-void Shape::drawBackground(SkCanvas & canvas)
+void Shape::drawBackground(SkCanvas & canvas, float opacity)
 {
     if (kNone == category_)
         return;
@@ -133,12 +133,12 @@ void Shape::drawBackground(SkCanvas & canvas)
     if (kShader == colour_type_)
     {
         paint.setShader(Helper::ToSkShader(shader_));
-        paint.setAlpha(ClampAlpha(opacity_));
+        paint.setAlpha(ClampAlpha(opacity));
     }  
     else if (kColor == colour_type_)
     {
         paint.setColor(color_);
-        paint.setAlpha(ClampAlpha(opacity_, ColorGetA(color_)));
+        paint.setAlpha(ClampAlpha(opacity, ColorGetA(color_)));
     }
     else
         assert(0);
@@ -185,14 +185,14 @@ void Shape::drawBackground(SkCanvas & canvas)
     
 }
 
-void Shape::drawBorder(SkCanvas & canvas)
+void Shape::drawBorder(SkCanvas & canvas, float opacity)
 {
     if (0 == border_width_)
         return;
 
     SkPaint paint;
     paint.setColor(border_color_);
-    paint.setAlpha(ClampAlpha(opacity_, ColorGetA(border_color_)));
+    paint.setAlpha(ClampAlpha(opacity, ColorGetA(border_color_)));
     paint.setStyle(SkPaint::kStroke_Style);
     //border_style_暂时用不到
     auto offset = border_width_ / 2;

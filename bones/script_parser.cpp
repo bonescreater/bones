@@ -302,7 +302,7 @@ void ScriptParser::postprocessBody(XMLNode node, View * parent_ob, View * ob)
     else if (ob->getClassName() == kClassText)
         handleText(static_cast<Text *>(ob));
     else if (ob->getClassName() == kClassRichEdit)
-        handleRichEdit(static_cast<Text *>(ob));
+        handleRichEdit(static_cast<RichEdit *>(ob));
 }
 
 BonesObject * ScriptParser::getObject(View * v)
@@ -384,9 +384,9 @@ void ScriptParser::handleText(Text * ob)
     v2bo_[ob] = lo.get();
 }
 
-void ScriptParser::handleRichEdit(Text * ob)
+void ScriptParser::handleRichEdit(RichEdit * ob)
 {
-    auto lo = AdoptRef(new LuaText(ob));
+    auto lo = AdoptRef(new LuaRichEdit(ob));
     v2bo_[ob] = lo.get();
 }
 

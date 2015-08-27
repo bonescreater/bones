@@ -22,13 +22,6 @@ LuaRoot::LuaRoot(Root * ob)
 {
     ob->setDelegate(this);
     LuaMetaTable::CreatLuaTable(LuaContext::State(), kMetaTableRoot, this);
-    //创建1个存放nofity的通知
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetLOFromCO(l, this);
-    lua_newtable(l);
-    lua_setfield(l, -2, kNotifyOrder);
-    lua_pop(l, 1);
 }
 
 LuaRoot::~LuaRoot()
@@ -43,7 +36,17 @@ void LuaRoot::addNotify(const char * notify_name, const char * mod, const char *
     auto l = LuaContext::State();
     LUA_STACK_AUTO_CHECK(l);
     LuaContext::GetLOFromCO(l, this);
+    assert(lua_istable(l, -1));
+
     lua_getfield(l, -1, kNotifyOrder);
+    if (!lua_istable(l, -1))
+    {
+        lua_pop(l, 1);
+        lua_newtable(l);
+        assert(lua_istable(l, -2));
+        lua_setfield(l, -2, kNotifyOrder);
+        lua_getfield(l, -1, kNotifyOrder);
+    }
     lua_pushnil(l);
     //得到func
     if (mod)
@@ -134,10 +137,14 @@ void LuaRoot::requestFocus(Ref * sender)
     LUA_STACK_AUTO_CHECK(l);
     LuaContext::GetLOFromCO(l, this);
     lua_getfield(l, -1, kNotifyOrder);
-    lua_getfield(l, -1, kMethodRequestFocus);
-    lua_pushnil(l);
-    lua_copy(l, -4, -1);
-    LuaContext::SafeLOPCall(l, 1, 0);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, kMethodRequestFocus);
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        LuaContext::SafeLOPCall(l, 1, 0);
+    }
+
     lua_pop(l, 2);
 }
 
@@ -153,14 +160,17 @@ void LuaRoot::invalidRect(Ref * sender, const Rect & rect)
     LUA_STACK_AUTO_CHECK(l);
     LuaContext::GetLOFromCO(l, this);
     lua_getfield(l, -1, kNotifyOrder);
-    lua_getfield(l, -1, kMethodInvalidRect);
-    lua_pushnil(l);
-    lua_copy(l, -4, -1);
-    lua_pushnumber(l, r.left);
-    lua_pushnumber(l, r.top);
-    lua_pushnumber(l, r.right);
-    lua_pushnumber(l, r.bottom);
-    LuaContext::SafeLOPCall(l, 5, 0);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, kMethodInvalidRect);
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        lua_pushnumber(l, r.left);
+        lua_pushnumber(l, r.top);
+        lua_pushnumber(l, r.right);
+        lua_pushnumber(l, r.bottom);
+        LuaContext::SafeLOPCall(l, 5, 0);
+    }
     lua_pop(l, 2);
 }
 
@@ -175,11 +185,14 @@ void LuaRoot::changeCursor(Ref * sender, Cursor cursor)
     LUA_STACK_AUTO_CHECK(l);
     LuaContext::GetLOFromCO(l, this);
     lua_getfield(l, -1, kNotifyOrder);
-    lua_getfield(l, -1, kMethodChangeCursor);
-    lua_pushnil(l);
-    lua_copy(l, -4, -1);
-    lua_pushinteger(l, (lua_Integer)cursor);
-    LuaContext::SafeLOPCall(l, 2, 0);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, kMethodChangeCursor);
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        lua_pushinteger(l, (lua_Integer)cursor);
+        LuaContext::SafeLOPCall(l, 2, 0);
+    }
     lua_pop(l, 2);
 }
 
@@ -195,12 +208,15 @@ void LuaRoot::onSizeChanged(Ref * sender, const Size & size)
     LUA_STACK_AUTO_CHECK(l);
     LuaContext::GetLOFromCO(l, this);
     lua_getfield(l, -1, kNotifyOrder);
-    lua_getfield(l, -1, kMethodOnSizeChanged);
-    lua_pushnil(l);
-    lua_copy(l, -4, -1);
-    lua_pushnumber(l, bs.width);
-    lua_pushnumber(l, bs.height);
-    LuaContext::SafeLOPCall(l, 3, 0);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, kMethodOnSizeChanged);
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        lua_pushnumber(l, bs.width);
+        lua_pushnumber(l, bs.height);
+        LuaContext::SafeLOPCall(l, 3, 0);
+    }
     lua_pop(l, 2);
 }
 
@@ -216,12 +232,15 @@ void LuaRoot::onPositionChanged(Ref * sender, const Point & loc)
     LUA_STACK_AUTO_CHECK(l);
     LuaContext::GetLOFromCO(l, this);
     lua_getfield(l, -1, kNotifyOrder);
-    lua_getfield(l, -1, kMethodOnPositionChanged);
-    lua_pushnil(l);
-    lua_copy(l, -4, -1);
-    lua_pushnumber(l, bp.x);
-    lua_pushnumber(l, bp.y);
-    LuaContext::SafeLOPCall(l, 3, 0);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, kMethodOnPositionChanged);
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        lua_pushnumber(l, bp.x);
+        lua_pushnumber(l, bp.y);
+        LuaContext::SafeLOPCall(l, 3, 0);
+    }
     lua_pop(l, 2);
 }
 

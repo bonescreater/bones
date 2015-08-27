@@ -42,9 +42,9 @@ const char * Image::getClassName() const
     return kClassImage;
 }
 
-void Image::onDraw(SkCanvas & canvas, const Rect & inval)
+void Image::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 {
-    if (opacity_ == 0)
+    if (opacity == 0)
         return;
 
     Rect r;
@@ -52,13 +52,13 @@ void Image::onDraw(SkCanvas & canvas, const Rect & inval)
     switch (style_)
     {
     case kNone:
-        drawNone(canvas, r);
+        drawNone(canvas, r, opacity);
         break;
     case kFill:
-        drawFill(canvas, r);
+        drawFill(canvas, r, opacity);
         break;
     case kNine:
-        drawNine(canvas, r);
+        drawNine(canvas, r, opacity);
         break;
     }
 }
@@ -68,24 +68,24 @@ bool Image::onHitTest(const Point & pt)
     return false;
 }
 
-void Image::drawNone(SkCanvas & canvas, const Rect & bounds)
+void Image::drawNone(SkCanvas & canvas, const Rect & bounds, float opacity)
 {
     SkPaint paint;
-    paint.setAlpha(ClampAlpha(opacity_));
+    paint.setAlpha(ClampAlpha(opacity));
     canvas.drawBitmap(Helper::ToSkBitmap(pixmap_), 0, 0, &paint);
 }
 
-void Image::drawFill(SkCanvas & canvas, const Rect & bounds)
+void Image::drawFill(SkCanvas & canvas, const Rect & bounds, float opacity)
 {
     SkPaint paint;
-    paint.setAlpha(ClampAlpha(opacity_));
+    paint.setAlpha(ClampAlpha(opacity));
     canvas.drawBitmapRect(Helper::ToSkBitmap(pixmap_), 0, Helper::ToSkRect(bounds), &paint);
 }
 
-void Image::drawNine(SkCanvas & canvas, const Rect & bounds)
+void Image::drawNine(SkCanvas & canvas, const Rect & bounds, float opacity)
 {
     SkPaint paint;
-    paint.setAlpha(ClampAlpha(opacity_));
+    paint.setAlpha(ClampAlpha(opacity));
     Rect center(nine_center_);
     if (center.isEmpty())
     {

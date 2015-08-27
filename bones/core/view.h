@@ -158,13 +158,13 @@ public:
 protected:
     void dispatch(Event & e);
 
-    void draw(SkCanvas & canvas, const Rect & inval);
+    void draw(SkCanvas & canvas, const Rect & inval, float opacity);
 protected:
     virtual bool onHitTest(const Point & pt);
 
     virtual void onTrigger(int tag, uint32_t interval);
 
-    virtual void onDraw(SkCanvas & canvas, const Rect & inval);
+    virtual void onDraw(SkCanvas & canvas, const Rect & inval, float opacity);
 
     virtual void onSizeChanging(Size & size);
 

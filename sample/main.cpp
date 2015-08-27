@@ -15,7 +15,7 @@
 //}
 
 //int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-class TestWindow : public BonesRoot::Listener
+class TestWindow : public BonesRoot::Listener, public BonesRichEdit::Listener
 {
 public:
     static bool Initialize();
@@ -63,6 +63,65 @@ public:
     {
         ;
     }
+
+    void killTimer(BonesRichEdit * sender, UINT idTimer, bool & stop) override
+    {
+        stop = true;
+        ::KillTimer(hwnd_, idTimer);
+    }
+
+    BOOL setTimer(BonesRichEdit * sender, UINT idTimer, UINT uTimeout, bool & stop) override
+    {       
+        stop = true;
+        return ::SetTimer(hwnd_, idTimer, uTimeout, NULL);
+    }
+
+    BOOL showCaret(BonesRichEdit * sender, BOOL fshow, bool & stop) override
+    {
+        stop = true;
+
+        if (fshow)
+            return ::ShowCaret(hwnd_);
+        else
+            return ::HideCaret(hwnd_);
+        
+    }
+
+    BOOL createCaret(BonesRichEdit * sender, HBITMAP hbmp, INT xWidth, INT yHeight, bool & stop) override
+    {      
+        stop = true;
+        return ::CreateCaret(hwnd_, hbmp, xWidth, yHeight);
+    }
+
+    BOOL setCaretPos(BonesRichEdit * sender, INT x, INT y, bool & stop) override
+    {
+        stop = true;
+        return ::SetCaretPos(x, y);
+    }
+
+    BOOL screenToClient(BonesRichEdit * sender, LPPOINT lppt, bool & stop) override
+    {
+        stop = true;
+        return ::ScreenToClient(hwnd_, lppt);
+    }
+
+    BOOL clientToScreen(BonesRichEdit * sender, LPPOINT lppt, bool & stop) override
+    {
+        stop = true;
+        return ::ClientToScreen(hwnd_, lppt);
+    }
+
+    HIMC immGetContext(BonesRichEdit * sender, bool & stop) override
+    {
+        stop = true;
+        return ::ImmGetContext(hwnd_);
+    }
+
+    void immReleaseContext(BonesRichEdit * sender, HIMC himc, bool & stop)
+    {
+        stop = true;
+        ::ImmReleaseContext(hwnd_, himc);
+    }
 private:
     HWND hwnd_;
     BonesRoot * root_;
@@ -85,6 +144,7 @@ public:
         s << "content:test_pic;";
         s << "}";
         ((BonesImage *)BonesGetCore()->getObject("pic"))->applyCSS(s.str().data());
+        ((BonesRichEdit *)BonesGetCore()->getObject("rich"))->setListener(&test_window);
         return true;
     }
 };
@@ -114,9 +174,12 @@ int main()
     std::vector<char> pic;
     ReadFile("..\\..\\sample\\lena.bmp", pic);
     auto pm_pic = BonesGetCore()->create();
+    auto sub_pm_pic = BonesGetCore()->create();
     pm_pic->decode(&pic[0], pic.size());
+    BonesRect r = { 0, 0, 128, 128 };
+    pm_pic->extractSubset(*sub_pm_pic, r);
     //content:key
-    BonesGetCore()->getResManager()->add("test_pic", *pm_pic);
+    BonesGetCore()->getResManager()->add("test_pic", *sub_pm_pic);
 
     std::vector<char> xml;
     ReadFile("..\\..\\sample\\test.xml", xml);
