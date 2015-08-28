@@ -17,23 +17,17 @@ public:
 
     void setListener(Listener * listener) override;
 
-    void killTimer(Ref * sender, UINT idTimer) override;
+    BOOL screenToClient(RichEdit * sender, LPPOINT lppt) override;
 
-    BOOL setTimer(Ref * sender, UINT idTimer, UINT uTimeout) override;
+    BOOL clientToScreen(RichEdit * sender, LPPOINT lppt) override;
 
-    BOOL showCaret(Ref * sender, BOOL fshow) override;
+    HIMC immGetContext(RichEdit * sender) override;
 
-    BOOL createCaret(Ref * sender, HBITMAP hbmp, INT xWidth, INT yHeight) override;
+    void immReleaseContext(RichEdit * sender, HIMC himc) override;
 
-    BOOL setCaretPos(Ref * sender, INT x, INT y) override;
+    HRESULT txNotify(RichEdit * sender, DWORD iNotify, void  *pv) override;
 
-    BOOL screenToClient(Ref * sender, LPPOINT lppt) override;
-
-    BOOL clientToScreen(Ref * sender, LPPOINT lppt) override;
-
-    HIMC immGetContext(Ref * sender) override;
-
-    void immReleaseContext(Ref * sender, HIMC himc) override;
+    void onReturn(RichEdit * sender) override;
 private:
     Listener * listener_;
 };

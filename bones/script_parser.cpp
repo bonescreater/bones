@@ -11,6 +11,8 @@
 #include "core/shape.h"
 #include "core/rich_edit.h"
 #include "core/res_manager.h"
+#include "core/animation_manager.h"
+#include "core/animation.h"
 
 #include "lua_root.h"
 #include "lua_shape.h"
@@ -19,7 +21,7 @@
 #include "lua_rich_edit.h"
 #include "lua_area.h"
 #include "lua_meta_table.h"
-
+#include "lua_animation.h"
 
 
 namespace bones
@@ -109,6 +111,9 @@ bool ScriptParser::loadXMLString(const char * data, BonesXMLListener * listener)
 
 void ScriptParser::cleanXML()
 {
+    //停止所有的定时器
+    Core::GetAnimationManager()->removeAll(false);
+
     LuaContext::Reset();
     v2bo_.clear();
     xml_.clean();
@@ -132,16 +137,7 @@ BonesObject * ScriptParser::getObject(BonesObject * ob, const char * id)
 {
     if (!ob || !id)
         return nullptr;
-    View * v = nullptr;
-    for (auto iter = v2bo_.begin(); iter != v2bo_.end(); ++iter)
-    {
-        if (iter->second == ob)
-        {
-            v = iter->first;
-            break;
-        }            
-    }
-
+    View * v = getObject(ob);
     if (v)
     {
         v = xml_.getViewByID(v, id);
@@ -313,6 +309,18 @@ BonesObject * ScriptParser::getObject(View * v)
     return nullptr;
 }
 
+View * ScriptParser::getObject(BonesObject * bo)
+{
+    if (!bo)
+        return nullptr;
+    for (auto iter = v2bo_.begin(); iter != v2bo_.end(); ++iter)
+    {
+        if (iter->second == bo)
+            return iter->first;
+    }
+    return nullptr;
+}
+
 void ScriptParser::listen(BonesObject * bo, const char * name, BonesScriptListener * listener)
 {
     if (!bo || !name)
@@ -358,6 +366,50 @@ void ScriptParser::push(BonesScriptArg * arg)
         lua_pushlightuserdata(l, arg->ud);
         break;
     }
+}
+
+BonesAnimation * ScriptParser::createAnimate(
+    BonesObject * target,
+    uint64_t interval, uint64_t due,
+    BonesAnimation::RunListener * run,
+    BonesAnimation::ActionListener * stop,
+    BonesAnimation::ActionListener * start,
+    BonesAnimation::ActionListener * pause,
+    BonesAnimation::ActionListener * resume, 
+    AnimationType type)
+{
+    return new LuaAnimation(getObject(target), interval, due,
+        run, stop, start, pause, resume, type);
+}
+
+void ScriptParser::startAnimate(BonesAnimation * ani)
+{
+    Core::GetAnimationManager()->add(
+        static_cast<LuaAnimation *>(ani)->ani());
+}
+
+void ScriptParser::stopAnimate(BonesAnimation * ani, bool toend)
+{
+    Core::GetAnimationManager()->remove(
+        static_cast<LuaAnimation *>(ani)->ani(), toend);
+}
+
+void ScriptParser::pauseAnimate(BonesAnimation * ani)
+{
+    Core::GetAnimationManager()->pause(
+        static_cast<LuaAnimation *>(ani)->ani());
+}
+
+void ScriptParser::resumeAnimate(BonesAnimation * ani)
+{
+    Core::GetAnimationManager()->resume(
+        static_cast<LuaAnimation *>(ani)->ani());
+}
+
+void ScriptParser::stopAllAnimate(BonesAnimation * ani, bool toend)
+{
+    Core::GetAnimationManager()->remove(
+        static_cast<LuaAnimation *>(ani)->ani()->target(), toend);
 }
 
 void ScriptParser::handleRoot(Root * ob)

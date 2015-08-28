@@ -26,6 +26,8 @@ public:
     static int SafeLOPCall(lua_State * l, int nargs, int nresults);
 
     static void GetLOFromCO(lua_State * l, BonesObject * co);
+
+    static void GetLOFromCO(lua_State * l, BonesAnimation * ani);
 };
 
 }

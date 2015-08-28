@@ -38,6 +38,7 @@ extern const char * kClassWebView;
 
 typedef float Scalar;
 typedef HANDLE Cursor;
+typedef HBITMAP Caret;
 
 class AnimationManager;
 class PanelManager;

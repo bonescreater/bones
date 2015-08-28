@@ -43,7 +43,7 @@ public:
         stop = true;
     }
 
-    void invalidRect(BonesRoot * sender, BonesRect & rect, bool & stop) override
+    void invalidRect(BonesRoot * sender, const BonesRect & rect, bool & stop) override
     {
         RECT r = { rect.left, rect.top, rect.right, rect.bottom };
         ::InvalidateRect(hwnd_, &r, TRUE);
@@ -55,48 +55,48 @@ public:
         cursor_ = cursor;
         stop = true;
     }
-    void onSizeChanged(BonesRoot * sender, BonesSize size, bool & stop) override
-    {
-        ;
-    }
-    void onPositionChanged(BonesRoot * sender, BonesPoint loc, bool & stop) override
-    {
-        ;
-    }
 
-    void killTimer(BonesRichEdit * sender, UINT idTimer, bool & stop) override
-    {
-        stop = true;
-        ::KillTimer(hwnd_, idTimer);
-    }
-
-    BOOL setTimer(BonesRichEdit * sender, UINT idTimer, UINT uTimeout, bool & stop) override
-    {       
-        stop = true;
-        return ::SetTimer(hwnd_, idTimer, uTimeout, NULL);
-    }
-
-    BOOL showCaret(BonesRichEdit * sender, BOOL fshow, bool & stop) override
+    void showCaret(BonesRoot * sender, bool fshow, bool & stop) override
     {
         stop = true;
 
         if (fshow)
-            return ::ShowCaret(hwnd_);
+            ::ShowCaret(hwnd_);
         else
-            return ::HideCaret(hwnd_);
-        
+            ::HideCaret(hwnd_);
+
     }
 
-    BOOL createCaret(BonesRichEdit * sender, HBITMAP hbmp, INT xWidth, INT yHeight, bool & stop) override
-    {      
-        stop = true;
-        return ::CreateCaret(hwnd_, hbmp, xWidth, yHeight);
-    }
-
-    BOOL setCaretPos(BonesRichEdit * sender, INT x, INT y, bool & stop) override
+    void createCaret(BonesRoot * sender, BonesCaret hbmp, const BonesSize & size, bool & stop) override
     {
         stop = true;
-        return ::SetCaretPos(x, y);
+        ::CreateCaret(hwnd_, hbmp, size.width, size.height);
+    }
+
+    void changeCaretPos(BonesRoot * sender, const BonesPoint & pt, bool & stop) override
+    {
+        stop = true;
+        ::SetCaretPos(pt.x, pt.y);
+    }
+
+    void onSizeChanged(BonesRoot * sender, const BonesSize & size, bool & stop) override
+    {
+        ;
+    }
+    void onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool & stop) override
+    {
+        ;
+    }
+
+    HRESULT txNotify(BonesRichEdit * sender, DWORD iNotify, void  *pv, bool & stop) override
+    {
+        stop = true;
+        return S_OK;
+    }
+
+    void onReturn(BonesRichEdit * sender, bool & stop) override
+    {       
+        stop = true;
     }
 
     BOOL screenToClient(BonesRichEdit * sender, LPPOINT lppt, bool & stop) override
@@ -411,6 +411,12 @@ LRESULT TestWindow::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
             return 0;
         }
             break;
+        case WM_IME_STARTCOMPOSITION:
+        case WM_IME_COMPOSITION:
+        case WM_IME_ENDCOMPOSITION:
+            root_->handleComposition(uMsg, wParam, lParam);
+            return 0;
+            break;
         case WM_CREATE:
         
         case WM_SETFOCUS:
@@ -418,10 +424,7 @@ LRESULT TestWindow::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
             //return handleFocus(uMsg, wParam, lParam);
 
             //return handleKey(uMsg, wParam, lParam);
-        case WM_IME_STARTCOMPOSITION:
-        case WM_IME_COMPOSITION:
-        case WM_IME_ENDCOMPOSITION:
-            //return handleIME(uMsg, wParam, lParam);
+
         default:
             handle = false;
         }

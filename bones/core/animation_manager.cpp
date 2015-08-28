@@ -1,6 +1,7 @@
 ﻿#include "animation_manager.h"
 #include "animation.h"
 #include "logging.h"
+#include "view.h"
 
 namespace bones
 {
@@ -35,9 +36,9 @@ void AnimationManager::removeAll(bool end)
     }
 }
 
-void AnimationManager::remove(Ref * ref, bool end)
+void AnimationManager::remove(View * ref, bool end)
 {
-    RefPtr<Ref> key;
+    RefPtr<View> key;
     key.reset(ref);
     auto iter = animations_.find(key);
     if (iter == animations_.end())
@@ -59,7 +60,7 @@ void AnimationManager::add(Animation * ani)
 {
     if (!ani)
         return;
-    RefPtr<Ref> rp;
+    RefPtr<View> rp;
     rp.reset(ani->target());
     RefPtr<Animation> rpa;
     rpa.reset(ani);
@@ -79,7 +80,7 @@ void AnimationManager::remove(Animation * ani, bool end)
 {
     if (!ani)
         return;
-    RefPtr<Ref> key;
+    RefPtr<View> key;
     key.reset(ani->target());
     auto iter = animations_.find(key);
     if (iter == animations_.end())
@@ -99,7 +100,7 @@ void AnimationManager::pause(Animation * ani)
 {
     if (!ani)
         return;
-    RefPtr<Ref> key;
+    RefPtr<View> key;
     key.reset(ani->target());
     auto iter = animations_.find(key);
     if (iter == animations_.end())
@@ -118,7 +119,7 @@ void AnimationManager::resume(Animation * ani)
 {
     if (!ani)
         return;
-    RefPtr<Ref> key;
+    RefPtr<View> key;
     key.reset(ani->target());
     auto iter = animations_.find(key);
     if (iter == animations_.end())

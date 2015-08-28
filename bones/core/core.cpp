@@ -55,6 +55,9 @@ bool Core::StartUp(const Config & config)
 
 void Core::ShutDown()
 {
+    //关闭所有定时器
+    animations->removeAll(false);
+
     if (dc)
         ::DeleteDC(dc);
     dc = 0;

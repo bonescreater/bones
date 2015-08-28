@@ -42,6 +42,12 @@ ScriptParser * GetCoreInstance()
 }
 
 const char * kNotifyOrder = "__notify";
+const char * kMethodAnimateRun = "__run";
+const char * kMethodAnimateStart = "__start";
+const char * kMethodAnimateStop = "__stop";
+const char * kMethodAnimatePause = "__pause";
+const char * kMethodAnimateResume = "__resume";
+
 }
 
 BONES_API(BonesCore *) BonesStartUp(const BonesConfig & config)

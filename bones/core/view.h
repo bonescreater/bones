@@ -140,6 +140,12 @@ public:
 
     void setCursor(Cursor cursor);
 
+    void showCaret(bool show);
+
+    void setCaretPos(const Point & pt);
+
+    void createCaret(Caret caret, const Size & size);
+
     virtual bool isGroupFocusTraversable() const;
 
     virtual bool skipDefaultKeyEventProcessing(const KeyEvent & ke);
@@ -161,8 +167,6 @@ protected:
     void draw(SkCanvas & canvas, const Rect & inval, float opacity);
 protected:
     virtual bool onHitTest(const Point & pt);
-
-    virtual void onTrigger(int tag, uint32_t interval);
 
     virtual void onDraw(SkCanvas & canvas, const Rect & inval, float opacity);
 
@@ -231,6 +235,12 @@ protected:
     virtual bool notifyUnregAccelerator(View * n, const Accelerator & accelerator);
 
     virtual bool notifyChangeCursor(Cursor cursor);
+
+    virtual bool notifyShowCaret(bool show);
+
+    virtual bool notifyChangeCaretPos(const Point & pt);
+
+    virtual bool notifyCreateCaret(Caret caret, const Size & size);
 private:
     void insertFocusSblings(View * v, int index);
 

@@ -6,6 +6,8 @@
 #include "device.h"
 #include "font.h"
 #include "encoding.h"
+#include "animation.h"
+#include "animation_manager.h"
 
 namespace bones
 {
@@ -62,15 +64,21 @@ ES_AUTOHSCROLL | ES_DISABLENOSCROLL),
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
 services_(nullptr), delegate_(nullptr),
 bg_opaque_(true), bg_color_(0xff000088), bg_set_color_(true),
-traversal_(false)
+traversal_(false), want_(kNone)
 {
-    lazyInitialize();
+    //lazyInitialize();
 }
 
 RichEdit::~RichEdit()
 {
     if (services_)
         services_->Release();
+    //移除当前所有的定时器
+    for (auto iter = animations_.begin(); iter != animations_.end(); ++iter)
+    {
+        Core::GetAnimationManager()->remove(iter->second, false);
+        iter->second->release();
+    }
 }
 
 void RichEdit::setDelegate(Delegate * delegate)
@@ -81,6 +89,12 @@ void RichEdit::setDelegate(Delegate * delegate)
 void RichEdit::setText(const wchar_t * text)
 {
     services_->TxSetText(text);
+    inval();
+}
+
+void RichEdit::setWant(uint64_t want)
+{
+    want_ = want;
 }
 
 void RichEdit::setRichText(bool rich)
@@ -299,9 +313,15 @@ void RichEdit::onKeyDown(KeyEvent & e)
 {
     switch (e.key())
     {
-    case kVKEY_BACK:
     case kVKEY_RETURN:
-    //case kVKEY_TAB: tab用于切换焦点
+    {
+        if ((want_ & kReturn) && !(txt_bits_ & TXTBIT_MULTILINE))
+        {//单行模式下 而且需要return
+            delegate_ ? delegate_->onReturn(this) : 0;
+            break;
+        }
+    }      
+    case kVKEY_BACK:   
     case kVKEY_UP:
     case kVKEY_DOWN:
     case kVKEY_LEFT:
@@ -311,9 +331,29 @@ void RichEdit::onKeyDown(KeyEvent & e)
         
 }
 
+void RichEdit::onKeyUp(KeyEvent & e)
+{
+    switch (e.key())
+    {
+    case kVKEY_RETURN:
+    {
+        if ((want_ & kReturn) && !(txt_bits_ & TXTBIT_MULTILINE))
+        {//单行模式下 而且需要return
+            break;
+        }
+    }
+    case kVKEY_BACK:
+    case kVKEY_UP:
+    case kVKEY_DOWN:
+    case kVKEY_LEFT:
+    case kVKEY_RIGHT:
+        services_->TxSendMessage(WM_KEYUP, e.key(), Helper::ToKeyStateForKey(e.state()), 0);
+    }
+}
+
 void RichEdit::onKeyPress(KeyEvent & e)
 {
-    if (e.ch() != '\t')
+    if (e.ch() != '\t' || (want_ & kTab) )
         services_->TxSendMessage(WM_CHAR, e.ch(), Helper::ToKeyStateForKey(e.state()), 0);
 }
 
@@ -345,6 +385,10 @@ void RichEdit::onAddHierarchy(View * start)
 
 bool RichEdit::skipDefaultKeyEventProcessing(const KeyEvent & ke)
 {
+    //如果want tab 只能打断tab默认处理流程
+    if (want_ & kTab)
+        return true;
+
     return false;
 }
 
@@ -453,6 +497,13 @@ void RichEdit::postprocessSurface(Pixmap & update)
         cs += lr.pitch;
     }
     update.unlock();
+}
+
+void RichEdit::onAnimationRun(Animation * sender, Ref * target, float progress)
+{
+    assert(sender);
+    if (sender)
+        services_->TxSendMessage(WM_TIMER, (WPARAM)sender->userData(), 0, nullptr);
 }
 
 void RichEdit::lazyInitialize()
@@ -571,32 +622,44 @@ void RichEdit::TxViewChange(BOOL fUpdate)
 
 BOOL RichEdit::TxCreateCaret(HBITMAP hbmp, INT xWidth, INT yHeight)
 {
-    assert(delegate_);
-    return delegate_ ? delegate_->createCaret(this, hbmp, xWidth, yHeight) : 0;   
+    createCaret(hbmp, 
+        Size::Make(static_cast<Scalar>(xWidth), static_cast<Scalar>(yHeight)));
+    return TRUE;
 }
 
 BOOL RichEdit::TxShowCaret(BOOL fShow)
 {
-    return delegate_ ? delegate_->showCaret(this, fShow) : 0;
+    showCaret(!!fShow);
+    return TRUE;
 }
 
 BOOL RichEdit::TxSetCaretPos(INT x, INT y)
 {
-    auto pt = mapToGlobal(Point::Make(static_cast<Scalar>(x), 
-                                      static_cast<Scalar>(y)));
-
-    return delegate_ ? 
-        delegate_->setCaretPos(this, static_cast<INT>(pt.x()), static_cast<INT>(pt.y())) : 0;
+    setCaretPos(
+        Point::Make(static_cast<Scalar>(x), static_cast<Scalar>(y)));
+    return TRUE;
 }
 
 BOOL RichEdit::TxSetTimer(UINT idTimer, UINT uTimeout)
 {
-    return delegate_?delegate_->setTimer(this, idTimer, uTimeout) : 0;
+    TxKillTimer(idTimer);
+    auto ani = new Animation(this, uTimeout, -1, (void *)idTimer);
+    ani->bind(BONES_CLASS_CALLBACK_3(&RichEdit::onAnimationRun, this));
+    animations_[idTimer] = ani;
+    Core::GetAnimationManager()->add(ani);
+
+    return TRUE;
 }
 
 void RichEdit::TxKillTimer(UINT idTimer)
 {
-    delegate_ ? delegate_->killTimer(this, idTimer) : 0;
+    auto iter = animations_.find(idTimer);
+    if (iter != animations_.end())
+    {
+        Core::GetAnimationManager()->remove(iter->second, false);
+        iter->second->release();
+        animations_.erase(iter);
+    }
 }
 
 void RichEdit::TxScrollWindowEx(
@@ -623,7 +686,7 @@ void RichEdit::TxSetFocus()
 
 void RichEdit::TxSetCursor(HCURSOR hcur, BOOL fText)
 {
-    notifyChangeCursor(hcur);
+    setCursor(hcur);
 }
 
 BOOL RichEdit::TxScreenToClient(LPPOINT lppt)
@@ -764,7 +827,7 @@ HRESULT	RichEdit::TxGetPropertyBits(DWORD dwMask, DWORD *pdwBits)
 
 HRESULT	RichEdit::TxNotify(DWORD iNotify, void *pv)
 {
-    return S_OK;
+    return delegate_ ? delegate_->txNotify(this, iNotify, pv) : S_OK;
 }
 
 HIMC RichEdit::TxImmGetContext()

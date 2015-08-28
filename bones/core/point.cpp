@@ -48,4 +48,17 @@ bool Point::operator != (const Point & rh)
     return !(*this == rh);
 }
 
+void Point::offset(Scalar x, Scalar y)
+{
+    x_ += x;
+    y_ += y;
+}
+
+void Point::offset(const Point & pt)
+{
+    x_ += pt.x_;
+    y_ += pt.y_;
+}
+
+
 }

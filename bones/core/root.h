@@ -28,15 +28,21 @@ public:
     class Delegate
     {
     public:
-        virtual void requestFocus(Ref * sender) = 0;
+        virtual void requestFocus(Root * sender) = 0;
 
-        virtual void invalidRect(Ref * sender, const Rect & rect) = 0;
+        virtual void invalidRect(Root * sender, const Rect & rect) = 0;
 
-        virtual void changeCursor(Ref * sender, Cursor cursor) = 0;
+        virtual void changeCursor(Root * sender, Cursor cursor) = 0;
 
-        virtual void onSizeChanged(Ref * sender, const Size & size) = 0;
+        virtual void createCaret(Root * sender, Caret caret, const Size & size) = 0;
 
-        virtual void onPositionChanged(Ref * sender, const Point & loc) = 0;
+        virtual void showCaret(Root * sender, bool show) = 0;        
+
+        virtual void changeCaretPos(Root * sender, const Point & pt) = 0;
+
+        virtual void onSizeChanged(Root * sender, const Size & size) = 0;
+
+        virtual void onPositionChanged(Root * sender, const Point & loc) = 0;
     };
 public:
     Root();
@@ -88,6 +94,12 @@ protected:
     virtual bool notifySetFocus(View * n) override;
 
     virtual bool notifyChangeCursor(Cursor cursor) override;
+
+    virtual bool notifyShowCaret(bool show) override;   
+
+    virtual bool notifyChangeCaretPos(const Point & pt) override;
+
+    virtual bool notifyCreateCaret(Caret caret, const Size & size) override;
 private:
     void AdjustPixmap();
 private:

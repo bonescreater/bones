@@ -4,7 +4,7 @@
 #include "core/root.h"
 #include "core/helper.h"
 #include "lua_meta_table.h"
-
+#include "script_parser.h"
 namespace bones
 {
 
@@ -13,15 +13,18 @@ static const char * kMetaTableRoot = "__mt_root";
 static const char * kMethodRequestFocus = "requestFocus";
 static const char * kMethodInvalidRect = "invalidRect";
 static const char * kMethodChangeCursor = "changeCursor";
+static const char * kMethodcreateCaret = "createCaret";
+static const char * kMethodshowCaret = "showCaret";
+static const char * kMethodchangeCaretPos = "changeCaretPos";
+
 static const char * kMethodOnSizeChanged = "onSizeChanged";
 static const char * kMethodOnPositionChanged = "onPositionChanged";
 
 
 LuaRoot::LuaRoot(Root * ob)
-:LuaObject(ob), listener_(nullptr)
+:LuaObject(ob, kMetaTableRoot), listener_(nullptr)
 {
     ob->setDelegate(this);
-    LuaMetaTable::CreatLuaTable(LuaContext::State(), kMetaTableRoot, this);
 }
 
 LuaRoot::~LuaRoot()
@@ -125,7 +128,7 @@ void LuaRoot::handleWheel(UINT msg, WPARAM wparam, LPARAM lparam)
     object_->handleWheel(e);
 }
 
-void LuaRoot::requestFocus(Ref * sender)
+void LuaRoot::requestFocus(Root * sender)
 {
     bool stop = false;
     listener_ ? listener_->requestFocus(this, stop): 0;
@@ -148,7 +151,7 @@ void LuaRoot::requestFocus(Ref * sender)
     lua_pop(l, 2);
 }
 
-void LuaRoot::invalidRect(Ref * sender, const Rect & rect)
+void LuaRoot::invalidRect(Root * sender, const Rect & rect)
 {
     bool stop = false;
     BonesRect r = { rect.left(), rect.top(), rect.right(), rect.bottom() };
@@ -174,7 +177,7 @@ void LuaRoot::invalidRect(Ref * sender, const Rect & rect)
     lua_pop(l, 2);
 }
 
-void LuaRoot::changeCursor(Ref * sender, Cursor cursor)
+void LuaRoot::changeCursor(Root * sender, Cursor cursor)
 {
     bool stop = false;
     listener_ ? listener_->changeCursor(this, cursor, stop) : 0;
@@ -196,7 +199,78 @@ void LuaRoot::changeCursor(Ref * sender, Cursor cursor)
     lua_pop(l, 2);
 }
 
-void LuaRoot::onSizeChanged(Ref * sender, const Size & size)
+void LuaRoot::createCaret(Root * sender, Caret caret, const Size & size)
+{
+    bool stop = false;
+    BonesSize bs = { size.width(), size.height() };
+    listener_ ? listener_->createCaret(this, caret, bs, stop) : 0;
+    if (stop)
+        return;
+    //(self, cursor)
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, this);
+    lua_getfield(l, -1, kNotifyOrder);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, kMethodcreateCaret);
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        lua_pushinteger(l, (lua_Integer)caret);
+        lua_pushnumber(l, size.width());
+        lua_pushnumber(l, size.height());
+        LuaContext::SafeLOPCall(l, 4, 0);
+    }
+    lua_pop(l, 2);
+}
+
+void LuaRoot::showCaret(Root * sender, bool show)
+{
+    bool stop = false;
+    listener_ ? listener_->showCaret(this, show, stop) : 0;
+    if (stop)
+        return;
+    //(self, cursor)
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, this);
+    lua_getfield(l, -1, kNotifyOrder);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, kMethodshowCaret);
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        lua_pushboolean(l, show);
+        LuaContext::SafeLOPCall(l, 2, 0);
+    }
+    lua_pop(l, 2);
+}
+
+void LuaRoot::changeCaretPos(Root * sender, const Point & pt)
+{
+    bool stop = false;
+    BonesPoint bp = { pt.x(), pt.y() };
+    listener_ ? listener_->changeCaretPos(this, bp, stop) : 0;
+    if (stop)
+        return;
+    //(self, cursor)
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, this);
+    lua_getfield(l, -1, kNotifyOrder);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, kMethodchangeCaretPos);
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        lua_pushnumber(l, pt.x());
+        lua_pushnumber(l, pt.y());
+        LuaContext::SafeLOPCall(l, 3, 0);
+    }
+    lua_pop(l, 2);
+}
+
+void LuaRoot::onSizeChanged(Root * sender, const Size & size)
 {
     bool stop = false;
     BonesSize bs = { size.width(), size.height() };
@@ -220,7 +294,7 @@ void LuaRoot::onSizeChanged(Ref * sender, const Size & size)
     lua_pop(l, 2);
 }
 
-void LuaRoot::onPositionChanged(Ref * sender, const Point & loc)
+void LuaRoot::onPositionChanged(Root * sender, const Point & loc)
 {
     bool stop = false;
     BonesPoint bp = { loc.x(), loc.y() };

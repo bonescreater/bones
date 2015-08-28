@@ -22,6 +22,7 @@
 
 typedef float BonesScalar;
 typedef HANDLE BonesCursor;
+typedef HBITMAP BonesCaret;
 
 typedef struct
 {
@@ -109,6 +110,29 @@ public:
     virtual void release() = 0;
 };
 
+class BonesAnimation : public BonesBase
+{
+public:
+    enum Action
+    {
+        kStart,
+        kStop,
+        kPause,
+        kResume,
+    };
+    class RunListener
+    {
+    public:
+        virtual void onEvent(BonesAnimation * ani, BonesObject * ob, float progress) = 0;
+    };
+
+    class ActionListener
+    {
+    public:
+        virtual void onEvent(BonesAnimation * ani, BonesObject * ob, Action action) = 0;
+    };
+};
+
 class BonesObject : public BonesBase
 {
 public:
@@ -133,6 +157,22 @@ public:
     virtual void applyCSS(const char * css) = 0;
 
     virtual void applyClass(const char * name) = 0;
+
+    virtual BonesAnimation * animate(
+        uint64_t interval, uint64_t due, 
+        BonesAnimation::RunListener * run,
+        BonesAnimation::ActionListener * stop,
+        BonesAnimation::ActionListener * start,
+        BonesAnimation::ActionListener * pause,
+        BonesAnimation::ActionListener * resume) = 0;
+
+    virtual void stopAnimate(BonesAnimation * ani, bool toend) = 0;
+
+    virtual void pauseAnimate(BonesAnimation * ani) = 0;
+
+    virtual void resumeAnimate(BonesAnimation * ani) = 0;
+
+    virtual void stopAllAnimate(BonesAnimation * ani, bool toend) = 0;
 };
 
 class BonesRoot : public BonesObject
@@ -143,13 +183,19 @@ public:
     public:
         virtual void requestFocus(BonesRoot * sender, bool & stop) = 0;
 
-        virtual void invalidRect(BonesRoot * sender, BonesRect & rect, bool & stop) = 0;
+        virtual void invalidRect(BonesRoot * sender, const BonesRect & rect, bool & stop) = 0;
 
         virtual void changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop) = 0;
 
-        virtual void onSizeChanged(BonesRoot * sender, BonesSize size, bool & stop) = 0;
+        virtual void showCaret(BonesRoot * sender, bool fshow, bool & stop) = 0;
 
-        virtual void onPositionChanged(BonesRoot * sender, BonesPoint loc, bool & stop) = 0;
+        virtual void createCaret(BonesRoot * sender, BonesCaret hbmp, const BonesSize & size, bool & stop) = 0;
+
+        virtual void changeCaretPos(BonesRoot * sender, const BonesPoint & pt, bool & stop) = 0;
+
+        virtual void onSizeChanged(BonesRoot * sender, const BonesSize & size, bool & stop) = 0;
+
+        virtual void onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool & stop) = 0;
     };
 
     virtual void setListener(Listener * listener) = 0;
@@ -194,16 +240,6 @@ public:
     class Listener
     {
     public:
-        virtual void killTimer(BonesRichEdit * sender, UINT idTimer, bool & stop) = 0;
-
-        virtual BOOL setTimer(BonesRichEdit * sender, UINT idTimer, UINT uTimeout, bool & stop) = 0;
-
-        virtual BOOL showCaret(BonesRichEdit * sender, BOOL fshow, bool & stop) = 0;
-
-        virtual BOOL createCaret(BonesRichEdit * sender, HBITMAP hbmp, INT xWidth, INT yHeight, bool & stop) = 0;
-
-        virtual BOOL setCaretPos(BonesRichEdit * sender, INT x, INT y, bool & stop) = 0;
-
         virtual BOOL screenToClient(BonesRichEdit * sender, LPPOINT lppt, bool & stop) = 0;
 
         virtual BOOL clientToScreen(BonesRichEdit * sender, LPPOINT lppt, bool & stop) = 0;
@@ -211,6 +247,10 @@ public:
         virtual HIMC immGetContext(BonesRichEdit * sender, bool & stop) = 0;
 
         virtual void immReleaseContext(BonesRichEdit * sender, HIMC himc, bool & stop) = 0;
+
+        virtual HRESULT txNotify(BonesRichEdit * sender, DWORD iNotify, void  *pv, bool & stop) = 0;
+
+        virtual void onReturn(BonesRichEdit * sender, bool & stop) = 0;
     };
 
     virtual void setListener(Listener * listener) = 0;

@@ -2,6 +2,7 @@
 #include "bones_internal.h"
 #include "lua_check.h"
 #include "lua_meta_table.h"
+#include "script_parser.h"
 
 #include "core/logging.h"
 #include "core/ref.h"
@@ -228,5 +229,17 @@ void LuaContext::GetLOFromCO(lua_State * l, BonesObject * co)
         LOG_ERROR << co << "::GetLOFromCO failed\n";
 }
 
+void LuaContext::GetLOFromCO(lua_State * l, BonesAnimation * ani)
+{
+    LUA_STACK_AUTO_CHECK_COUNT(l, 1);
+    lua_pushnil(l);
+    LuaContext::GetCO2LOTable(l);
+    lua_pushlightuserdata(l, ani);
+    lua_gettable(l, -2);
+    lua_copy(l, -1, -3);
+    lua_pop(l, 2);
+    if (!lua_istable(l, -1))
+        LOG_ERROR << ani << "::GetLOFromCO failed\n";
+}
 
 }

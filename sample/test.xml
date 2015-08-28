@@ -62,7 +62,7 @@
           }
           .opacity
           {
-          opacity:0.5;
+          opacity:1.0;
           }
         </style>
 		  </head>

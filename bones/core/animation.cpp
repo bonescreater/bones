@@ -5,15 +5,12 @@
 namespace bones
 {
 
-Animation::Animation(Ref * target, uint64_t interval, uint64_t due)
-:stopped_(true), paused_(true), start_(false),
-interval_(interval), due_(due), last_run_(0), running_count_(0),
-run_user_data_(nullptr)
+Animation::Animation(View * target, uint64_t interval, uint64_t due, void * ud)
+:stopped_(true), paused_(true), start_(false), user_data_(ud),
+interval_(interval), due_(due), last_run_(0), running_count_(0)
 {
     LOG_VERBOSE << "create:" << "Animation" << this;
     target_.reset(target);
-    for (auto i = 0; i < kCount; i++)
-        action_routine_[i].user = nullptr;
 }
 
 Animation::~Animation()
@@ -21,18 +18,16 @@ Animation::~Animation()
     LOG_VERBOSE << "destroy:" << "Animation" << this;
 }
 
-void Animation::bind(Action action, const CFRoutine & routine, void * user_data)
+void Animation::bind(Action action, const CFRoutine & routine)
 {
     if (action >= kCount)
         return;
-    action_routine_[action].func = routine;
-    action_routine_[action].user = user_data;
+    action_routine_[action] = routine;
 }
 
-void Animation::bind(const CFRun & routine, void * user_data)
+void Animation::bind(const CFRun & routine)
 {
     run_routine_ = routine;
-    run_user_data_ = user_data;
 }
 //避免重复start  每个Animation只能start 和 stop 一次
 void Animation::start()
@@ -52,7 +47,7 @@ void Animation::stop(bool end)
     {
         stopped_ = true;
         if (end)
-            run_routine_ ? run_routine_(this, target(), 1, run_user_data_) : 0;
+            run_routine_ ? run_routine_(this, target(), 1) : 0;
         onStop();
     } 
 }
@@ -60,6 +55,11 @@ void Animation::stop(bool end)
 bool Animation::isStopped() const
 {
     return stopped_;
+}
+
+void * Animation::userData() const
+{
+    return user_data_;
 }
 
 void Animation::pause()
@@ -91,7 +91,7 @@ bool Animation::isRunning() const
     return !isStopped() && !isPaused();
 }
 
-Ref * Animation::target() const
+View * Animation::target() const
 {
     return target_.get();
 }
@@ -142,13 +142,13 @@ void Animation::onRun(uint64_t delta)
     if (notify)
     {
         float progress = 0;
-        if (running_count_ == due_)
-            progress = 1.0f;
-        else if (running_count_ == 0)
+        if (running_count_ == 0 || -1 == due_)
             progress = 0.f;
+        else if (running_count_ == due_)
+            progress = 1.0f;
         else
             progress = (float)running_count_ / due_;
-        run_routine_ ? run_routine_(this, target(), progress, run_user_data_) : 0;
+        run_routine_ ? run_routine_(this, target(), progress) : 0;
         last_run_ = running_count_;
     }
 
@@ -159,7 +159,7 @@ void Animation::onRun(uint64_t delta)
 void Animation::pushAction(Action action)
 {
     auto & routine = action_routine_[action];
-    routine.func ? routine.func(this, target(), routine.user) : 0;
+    routine? routine(this, target()) : 0;
 }
 
 }

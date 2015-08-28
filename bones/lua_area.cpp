@@ -139,11 +139,9 @@ static void OnSizeChanged(Ref * sender)
 }
 
 LuaArea::LuaArea(Area * ob)
-:LuaObject(ob)
+:LuaObject(ob, kMetaTableArea)
 {
     auto l = LuaContext::State();
-    LuaMetaTable::CreatLuaTable(l, kMetaTableArea, this);
-    
     LUA_STACK_AUTO_CHECK(l);
     LuaContext::GetLOFromCO(l, this);
 

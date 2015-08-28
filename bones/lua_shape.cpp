@@ -10,8 +10,8 @@ namespace bones
 static const char * kMetaTableShape = "__mt_shape";
 
 LuaShape::LuaShape(Shape * co)
-:LuaObject(co)
+:LuaObject(co, kMetaTableShape)
 {
-    LuaMetaTable::CreatLuaTable(LuaContext::State(), kMetaTableShape, this);
+    
 }
 }

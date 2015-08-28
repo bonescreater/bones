@@ -9,9 +9,9 @@ namespace bones
 static const char * kMetaTableText = "__mt_text";
 
 LuaText::LuaText(Text * ob)
-:LuaObject(ob)
+:LuaObject(ob, kMetaTableText)
 {
-    LuaMetaTable::CreatLuaTable(LuaContext::State(), kMetaTableText, this);
+    ;
 }
 
 }

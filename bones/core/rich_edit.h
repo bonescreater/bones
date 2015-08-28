@@ -12,37 +12,41 @@ namespace bones
 {
 
 class Font;
+class Animation;
+
 class RichEdit : public View, public ITextHost
 {
 public:
     class Delegate
     {
     public:
-        virtual void killTimer(Ref * sender, UINT idTimer) = 0;
+        virtual BOOL screenToClient(RichEdit * sender, LPPOINT lppt) = 0;
 
-        virtual BOOL setTimer(Ref * sender, UINT idTimer, UINT uTimeout) = 0;
+        virtual BOOL clientToScreen(RichEdit * sender, LPPOINT lppt) = 0;
 
-        virtual BOOL showCaret(Ref * sender, BOOL fshow) = 0;
+        virtual HIMC immGetContext(RichEdit * sender) = 0;
 
-        virtual BOOL createCaret(Ref * sender, HBITMAP hbmp, INT xWidth, INT yHeight) = 0;
+        virtual void immReleaseContext(RichEdit * sender, HIMC himc) = 0;
 
-        virtual BOOL setCaretPos(Ref * sender, INT x, INT y) = 0;
+        virtual HRESULT txNotify(RichEdit * sender, DWORD iNotify, void  *pv) = 0;
 
-        virtual BOOL screenToClient(Ref * sender, LPPOINT lppt) = 0;
-
-        virtual BOOL clientToScreen(Ref * sender, LPPOINT lppt) = 0;
-
-        virtual HIMC immGetContext(Ref * sender) = 0;
-
-        virtual void immReleaseContext(Ref * sender, HIMC himc) = 0;
+        virtual void onReturn(RichEdit * sender) = 0;
     };
 
+    enum Want
+    {
+        kNone = 0,
+        kTab = 1 << 0,
+        kReturn = 1 << 1,//单行模式下按enter 有return通知
+    };
 public:
     RichEdit();
 
     ~RichEdit();
 
     void setDelegate(Delegate * delegate);
+
+    void setWant(uint64_t want);
     
     void setText(const wchar_t * text);
 
@@ -222,6 +226,8 @@ protected:
 
     void onKeyDown(KeyEvent & e) override;
 
+    void onKeyUp(KeyEvent & e) override;
+
     void onKeyPress(KeyEvent & e) override;
 
     void onCompositionStart(CompositionEvent & e) override;
@@ -245,6 +251,8 @@ private:
     void preprocessSurface(Pixmap & render, Pixmap & update);
 
     void postprocessSurface(Pixmap & update);
+
+    void onAnimationRun(Animation * sender, Ref * target, float progress);
 private:
     Delegate * delegate_;
     CHARFORMAT2 cf_;
@@ -260,6 +268,9 @@ private:
     Color bg_color_;
     bool bg_set_color_;
     bool traversal_;
+
+    uint64_t want_;
+    std::map<UINT, Animation*> animations_;
 };
 
 }

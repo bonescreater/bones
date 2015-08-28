@@ -10,8 +10,8 @@ namespace bones
 static const char * kMetaTableImage = "__mt_image";
 
 LuaImage::LuaImage(Image * ob)
-:LuaObject(ob)
+:LuaObject(ob, kMetaTableImage)
 {
-    LuaMetaTable::CreatLuaTable(LuaContext::State(), kMetaTableImage, this);
+    ;
 }
 }

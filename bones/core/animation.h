@@ -1,7 +1,7 @@
 ﻿#ifndef BONES_CORE_ANIMATION_H_
 #define BONES_CORE_ANIMATION_H_
 
-#include "ref.h"
+#include "view.h"
 
 namespace bones
 {
@@ -10,8 +10,8 @@ class Animation : public Ref
 {
 public:
     //progress 0~1
-    typedef std::function<void(Ref * sender, Ref * target, float progress, void * user_data)> CFRun;
-    typedef std::function<void(Ref * sender, Ref * target, void * user_data)> CFRoutine;
+    typedef std::function<void(Animation * sender, View * target, float progress)> CFRun;
+    typedef std::function<void(Animation * sender, View * target)> CFRoutine;
 
     enum Action
     {
@@ -22,27 +22,24 @@ public:
         kCount,
     };
 
-    struct Routine
-    {
-        CFRoutine func;
-        void * user;
-    };
 public:
-    Animation(Ref * target, uint64_t interval, uint64_t due);
+    Animation(View * target, uint64_t interval, uint64_t due, void * ud = nullptr);
 
     virtual ~Animation();
 
-    void bind(Action action, const CFRoutine & routine, void * user_data);
+    void bind(Action action, const CFRoutine & routine);
 
-    void bind(const CFRun & rountine, void * user_data);
+    void bind(const CFRun & rountine);
 
     bool isPaused() const;
 
     bool isRunning() const;
 
-    Ref * target() const;
+    View * target() const;
 
     bool isStopped() const;
+
+    void * userData() const;
 protected:
     void start();
 
@@ -69,15 +66,15 @@ private:
     bool stopped_;
     bool paused_;
     bool start_;
-    RefPtr<Ref> target_;
+    RefPtr<View> target_;
+    void * user_data_;
 
     uint64_t interval_;
     uint64_t due_;
     uint64_t last_run_;
     uint64_t running_count_;
     CFRun run_routine_;
-    void * run_user_data_;
-    Routine action_routine_[kCount];
+    CFRoutine action_routine_[kCount];
 
     friend class AnimationManager;
 };

@@ -37,15 +37,21 @@ public:
 
     void handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
-    void requestFocus(Ref * sender) override;
+    void requestFocus(Root * sender) override;
 
-    void invalidRect(Ref * sender, const Rect & rect) override;
+    void invalidRect(Root * sender, const Rect & rect) override;
 
-    void changeCursor(Ref * sender, Cursor cursor) override;
+    void changeCursor(Root * sender, Cursor cursor) override;
 
-    void onSizeChanged(Ref * sender, const Size & size) override;
+    void createCaret(Root * sender, Caret caret, const Size & size) override;
 
-    void onPositionChanged(Ref * sender, const Point & loc) override;
+    void showCaret(Root * sender, bool show) override;
+
+    void changeCaretPos(Root * sender, const Point & pt) override;
+
+    void onSizeChanged(Root * sender, const Size & size) override;
+
+    void onPositionChanged(Root * sender, const Point & loc) override;
 private:
     Listener * listener_;
 };

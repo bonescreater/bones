@@ -89,6 +89,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bones\bones.cpp" />
+    <ClCompile Include="bones\lua_animation.cpp" />
     <ClCompile Include="bones\lua_area.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -141,6 +142,7 @@
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
     <ClInclude Include="bones\bones_internal.h" />
+    <ClInclude Include="bones\lua_animation.h" />
     <ClInclude Include="bones\lua_object.h" />
     <ClInclude Include="bones\lua_area.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>

@@ -25,6 +25,10 @@ public:
     bool operator == (const Point & rh);
     
     bool operator != (const Point & rh);
+
+    void offset(Scalar x, Scalar y);
+
+    void offset(const Point & pt);
 private:
     Scalar x_;
     Scalar y_;

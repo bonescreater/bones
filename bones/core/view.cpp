@@ -528,6 +528,28 @@ bool View::notifyChangeCursor(Cursor cursor)
     return true;
 }
 
+bool View::notifyShowCaret(bool show)
+{
+    if (parent_)
+        return parent_->notifyShowCaret(show);
+    return true;
+}
+
+bool View::notifyChangeCaretPos(const Point & pt)
+{
+    if (parent_)
+        return parent_->notifyChangeCaretPos(Point::Make(loc_.x() + pt.x(), loc_.y() + pt.y()));
+        
+    return true;
+}
+
+bool View::notifyCreateCaret(Caret caret, const Size & size)
+{
+    if (parent_)
+        return parent_->notifyCreateCaret(caret, size);
+    return true;
+}
+
 void View::draw(SkCanvas & canvas, const Rect & inval, float opacity)
 {
     if (!visible() || inval.isEmpty())
@@ -585,12 +607,6 @@ void View::draw(SkCanvas & canvas, const Rect & inval, float opacity)
 bool View::onHitTest(const Point & pt)
 {
     return true;
-}
-
-
-void View::onTrigger(int tag, uint32_t interval)
-{
-
 }
 
 void View::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
@@ -817,6 +833,21 @@ void View::requestFocus()
 void View::setCursor(Cursor cursor)
 {
     notifyChangeCursor(cursor);
+}
+
+void View::showCaret(bool show)
+{
+    notifyShowCaret(show);
+}
+
+void View::setCaretPos(const Point & pt)
+{
+    notifyChangeCaretPos(pt);
+}
+
+void View::createCaret(Caret caret, const Size & size)
+{
+    notifyCreateCaret(caret, size);
 }
 
 bool View::isGroupFocusTraversable() const

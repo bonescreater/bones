@@ -265,6 +265,24 @@ bool Root::notifyChangeCursor(Cursor cursor)
     return true;
 }
 
+bool Root::notifyShowCaret(bool show)
+{
+    delegate_ ? delegate_->showCaret(this, show) : 0;
+    return true;
+}
+
+bool Root::notifyChangeCaretPos(const Point & pt)
+{
+    delegate_ ? delegate_->changeCaretPos(this, pt) : 0;
+    return true;
+}
+
+bool Root::notifyCreateCaret(Caret caret, const Size & size)
+{
+    delegate_ ? delegate_->createCaret(this ,caret, size) : 0;
+    return true;
+}
+
 void Root::onVisibleChanged(View * n)
 {
     assert(this == n);

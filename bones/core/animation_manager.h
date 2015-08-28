@@ -9,6 +9,7 @@
 namespace bones
 {
 class Animation;
+class View;
 
 class AnimationManager
 {
@@ -17,7 +18,7 @@ public:
 
     void removeAll(bool end);
 
-    void remove(Ref * ref, bool end);
+    void remove(View * ref, bool end);
 
     void add(Animation * ani);
 
@@ -31,7 +32,7 @@ public:
 protected:
     AnimationManager();
 private:
-    std::map<RefPtr<Ref>, std::list<RefPtr<Animation>>> animations_;
+    std::map<RefPtr<View>, std::list<RefPtr<Animation>>> animations_;
 
     friend class Core;
 };

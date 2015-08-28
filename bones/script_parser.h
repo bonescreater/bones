@@ -3,7 +3,7 @@
 
 #include "bones.h"
 #include "core/xml_controller.h"
-
+#include "lua_animation.h"
 
 
 namespace bones
@@ -58,9 +58,31 @@ public:
 
     BonesObject * getObject(View *);
 
+    View * getObject(BonesObject *);
+
     void listen(BonesObject * bo, const char * name, BonesScriptListener * listener);
 
     void push(BonesScriptArg * arg);
+
+    BonesAnimation * createAnimate(
+        BonesObject * target,
+        uint64_t interval, uint64_t due,
+        BonesAnimation::RunListener * run,
+        BonesAnimation::ActionListener * stop,
+        BonesAnimation::ActionListener * start,
+        BonesAnimation::ActionListener * pause,
+        BonesAnimation::ActionListener * resume,
+        AnimationType type);
+
+    void startAnimate(BonesAnimation * ani);
+
+    void stopAnimate(BonesAnimation * ani, bool toend);
+
+    void pauseAnimate(BonesAnimation * ani);
+
+    void resumeAnimate(BonesAnimation * ani);
+
+    void stopAllAnimate(BonesAnimation * ani, bool toend);
 private:
     void handleRoot(Root * ob);
 
