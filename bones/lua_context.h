@@ -21,7 +21,7 @@ public:
 
     static void GetCO2LOTable(lua_State * l);
 
-    static void GetEventCache(lua_State * l);
+    static void GetEventCacheTable(lua_State * l);
 
     static int SafeLOPCall(lua_State * l, int nargs, int nresults);
 

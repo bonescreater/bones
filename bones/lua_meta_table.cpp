@@ -15,11 +15,9 @@
 
 namespace bones
 {
-static const char * kMetaTablePanel = "__bone__panel__";
 
 static const char * kMetaTableMouseEvent = "__mt_mouse_event";
 static const char * kMetaTableFocusEvent = "__mt_focus_event";
-static const char * kMetaTableAnimation = "__mt_animation";
 
 static const char * kMethodIndex = "__index";
 static const char * kMethodGC = "__gc";
@@ -71,7 +69,8 @@ static int GC(lua_State * l)
     {
         lua_pushnil(l);
         lua_copy(l, 1, -1);
-        BonesObject * ref = LuaMetaTable::CallGetBonesObject(l);
+        BonesBase * ref = static_cast<BonesBase *>(
+            LuaMetaTable::CallGetCObject(l));
         if (ref)
             ref->release();
     }
@@ -85,7 +84,8 @@ static int GetOpacity(lua_State * l)
 
     lua_pushnil(l);
     lua_copy(l, 1, -1);
-    BonesObject * bob = LuaMetaTable::CallGetBonesObject(l);
+    BonesObject * bob = static_cast<BonesObject *>(
+        LuaMetaTable::CallGetCObject(l));
     if (bob)
         lua_pushnumber(l, bob->getOpacity());
 
@@ -101,7 +101,8 @@ static int GetLoc(lua_State * l)
 
     lua_pushnil(l);
     lua_copy(l, 1, -1);
-    BonesObject * bob = LuaMetaTable::CallGetBonesObject(l);
+    BonesObject * bob = static_cast<BonesObject *>(
+        LuaMetaTable::CallGetCObject(l));
     if (bob)
     {
         BonesPoint bp = bob->getLoc();
@@ -120,7 +121,8 @@ static int GetSize(lua_State * l)
 
     lua_pushnil(l);
     lua_copy(l, 1, -1);
-    BonesObject * bob = LuaMetaTable::CallGetBonesObject(l);
+    BonesObject * bob = static_cast<BonesObject *>(
+        LuaMetaTable::CallGetCObject(l));
     if (bob)
     {
         BonesSize bs = bob->getSize();
@@ -140,7 +142,8 @@ static int Contains(lua_State * l)
         Scalar y = static_cast<Scalar>(lua_tonumber(l, 3));
         lua_pushnil(l);
         lua_copy(l, 1, -1);
-        BonesObject * bob = LuaMetaTable::CallGetBonesObject(l);
+        BonesObject * bob = static_cast<BonesObject *>(
+            LuaMetaTable::CallGetCObject(l));
         if (bob)
             lua_pushboolean(l, bob->contains(x, y));
     }
@@ -157,7 +160,8 @@ static int GetChildAt(lua_State * l)
         size_t index = static_cast<size_t>(lua_tonumber(l, 2));
         lua_pushnil(l);
         lua_copy(l, 1, -1);
-        BonesObject * bob = LuaMetaTable::CallGetBonesObject(l);
+        BonesObject * bob = static_cast<BonesObject *>(
+            LuaMetaTable::CallGetCObject(l));
         if (bob)
         {
             auto child = bob->getChildAt(index);
@@ -179,7 +183,8 @@ static int ApplyCSS(lua_State * l)
     auto css = lua_tostring(l, 2);
     lua_pushnil(l);
     lua_copy(l, 1, -1);
-    BonesObject * bob = LuaMetaTable::CallGetBonesObject(l);
+    BonesObject * bob = static_cast<BonesObject *>(
+        LuaMetaTable::CallGetCObject(l));
     if (bob)
         bob->applyCSS(css);
     return 0;
@@ -193,7 +198,8 @@ static int ApplyClass(lua_State * l)
     const char * class_name = lua_tostring(l, 2);
     lua_pushnil(l);
     lua_copy(l, 1, -1);
-    BonesObject * bob = LuaMetaTable::CallGetBonesObject(l);
+    BonesObject * bob = static_cast<BonesObject *>
+                         (LuaMetaTable::CallGetCObject(l));
     if (bob)
         bob->applyClass(class_name);
     return 0;
@@ -218,7 +224,7 @@ static int Animate(lua_State * l)
 
     lua_pushnil(l);
     lua_copy(l, 1, -1);
-    auto bo = LuaMetaTable::CallGetBonesObject(l);
+    auto bo = static_cast<BonesObject *>(LuaMetaTable::CallGetCObject(l));
     uint64_t interval = lua_tointeger(l, 2);
     uint64_t due = lua_tointeger(l, 3);
 
@@ -245,6 +251,50 @@ static int Animate(lua_State * l)
     GetCoreInstance()->startAnimate(ani);
 
     return 1;
+}
+
+//(self, animate, bool)
+static int StopAnimate(lua_State * l)
+{
+    lua_settop(l, 3);
+    lua_pushnil(l);
+    lua_copy(l, 2, -1);
+    auto ani = static_cast<BonesAnimation *>(LuaMetaTable::CallGetCObject(l));
+    GetCoreInstance()->stopAnimate(ani, !!lua_toboolean(l, 3));
+    return 0;
+}
+
+//(self, ani)
+static int PauseAnimate(lua_State * l)
+{
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    lua_copy(l, 2, -1);
+    auto ani = static_cast<BonesAnimation *>(LuaMetaTable::CallGetCObject(l));
+    GetCoreInstance()->pauseAnimate(ani);
+    return 0;
+}
+
+//(self, ani)
+static int ResumeAnimate(lua_State * l)
+{
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    lua_copy(l, 2, -1);
+    auto ani = static_cast<BonesAnimation *>(LuaMetaTable::CallGetCObject(l));
+    GetCoreInstance()->resumeAnimate(ani);
+    return 0;
+}
+
+//(self, bool)
+static int StopAllAnimate(lua_State * l)
+{
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    auto bo = static_cast<BonesObject *>(LuaMetaTable::CallGetCObject(l));
+    GetCoreInstance()->stopAllAnimate(bo, !!lua_toboolean(l, 2));
+    return 0;
 }
 
 void LuaMetaTable::CreatLuaTable(lua_State * l, const char * meta, BonesObject * bob)
@@ -291,14 +341,14 @@ void LuaMetaTable::CreatLuaTable(lua_State * l, const char * meta, BonesObject *
         //animate method
         lua_pushcfunction(l, &Animate);
         lua_setfield(l, -2, kMethodAnimate);
-        //lua_pushcfunction(l, &StopAnimate);
-        //lua_setfield(l, -2, kMethodStop);
-        //lua_pushcfunction(l, &PauseAnimate);
-        //lua_setfield(l, -2, kMethodPause);
-        //lua_pushcfunction(l, &ResumeAnimate);
-        //lua_setfield(l, -2, kMethodResume);
-        //lua_pushcfunction(l, &StopAllAnimate);
-        //lua_setfield(l, -2, kMethodStopAll);
+        lua_pushcfunction(l, &StopAnimate);
+        lua_setfield(l, -2, kMethodStop);
+        lua_pushcfunction(l, &PauseAnimate);
+        lua_setfield(l, -2, kMethodPause);
+        lua_pushcfunction(l, &ResumeAnimate);
+        lua_setfield(l, -2, kMethodResume);
+        lua_pushcfunction(l, &StopAllAnimate);
+        lua_setfield(l, -2, kMethodStopAll);
     }
     lua_setmetatable(l, -2);
     //lua table增加引用计数
@@ -312,7 +362,40 @@ void LuaMetaTable::CreatLuaTable(lua_State * l, const char * meta, BonesObject *
     lua_pop(l, 1);
 }
 
-void LuaMetaTable::RemoveLuaTable(lua_State * l, BonesObject * bob)
+static const char * kMetaTableAnimation = "__mt_animation";
+
+void LuaMetaTable::CreateLuaTable(lua_State * l, BonesAnimation * bob)
+{
+    if (!bob)
+        return;
+    //将自己添加到LuaTable中去
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetCO2LOTable(l);
+    lua_pushlightuserdata(l, bob);
+    lua_newtable(l);//1
+    luaL_getmetatable(l, kMetaTableAnimation);
+    if (!lua_istable(l, -1))
+    {
+        lua_pop(l, 1);
+        luaL_newmetatable(l, kMetaTableAnimation);
+        lua_pushnil(l);
+        lua_copy(l, -2, -1);
+        lua_setfield(l, -2, kMethodIndex);
+        lua_pushcfunction(l, &GC);
+        lua_setfield(l, -2, kMethodGC);
+    }
+    lua_setmetatable(l, -2);
+    bob->retain();
+    lua_pushstring(l, kMethodGetCObject);
+    lua_pushlightuserdata(l, bob);
+    lua_pushcclosure(l, &GetCObject, 1);
+    lua_settable(l, -3);
+
+    lua_settable(l, -3);
+    lua_pop(l, 1);
+}
+
+void LuaMetaTable::RemoveLuaTable(lua_State * l, BonesBase * bob)
 {
     if (!bob)
         return;
@@ -325,7 +408,7 @@ void LuaMetaTable::RemoveLuaTable(lua_State * l, BonesObject * bob)
     lua_pop(l, 1);
 }
 //调用LO的GetCObject
-BonesObject * LuaMetaTable::CallGetBonesObject(lua_State *l)
+BonesBase * LuaMetaTable::CallGetCObject(lua_State *l)
 {
     LUA_STACK_AUTO_CHECK_COUNT(l, -1);
     assert(lua_istable(l, -1));

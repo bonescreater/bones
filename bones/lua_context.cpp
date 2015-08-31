@@ -12,8 +12,8 @@ namespace bones
 {
 
 static const char * kBonesTable = "bones";
-static const char * kCO2LOTable = "__co2lo__";
-static const char * kCacheEvent = "__event__cache__";
+static const char * kCO2LOTable = "__co2lo";
+static const char * kCacheEvent = "__event__cache";
 
 static const char * kMethodGetObject = "getObject";
 static const char * kMethodDecodePixmap = "decodePixmap";
@@ -37,7 +37,7 @@ static int BonesGetObject(lua_State * l)
     {//(self, ob, id)
         lua_pushnil(l);
         lua_copy(l, 1, -1);
-        BonesObject * ob = LuaMetaTable::CallGetBonesObject(l);
+        auto ob = static_cast<BonesObject *>(LuaMetaTable::CallGetCObject(l));
         bo = GetCoreInstance()->getObject(ob, lua_tostring(l, 2));
     }
     if (bo)
@@ -47,62 +47,6 @@ static int BonesGetObject(lua_State * l)
     }
     return 1;
 }
-////(data, len)
-//static int BonesDecodePixmap(lua_State * l)
-//{
-//    auto count = lua_gettop(l);
-//    lua_pushnil(l);
-//    if (2 == count)
-//    {
-//        auto data = lua_tostring(l, 1);
-//        auto len = (int)lua_tointeger(l, 2);
-//        auto pm = ::BonesDecodePixmap(data, len);
-//        //lua_pushlightuserdata(l, pm);
-//        //user data 在lua 代码中无法转为数字 所以只能使用数字替代
-//        lua_pushinteger(l, (lua_Integer)pm);
-//    }
-//    return 1;
-//}
-////(pixmap *)
-//static int BonesFreePixmap(lua_State * l)
-//{
-//    auto count = lua_gettop(l);
-//    if (1 == count)
-//    {
-//        auto pm = lua_tointeger(l, 1);
-//        ::BonesFreePixmap((Pixmap *)(pm));
-//    }
-//    return 0;
-//}
-//
-////equal ::LoadImage
-//static int BonesLoadImage(lua_State * l)
-//{
-//    auto count = lua_gettop(l);
-//    lua_pushnil(l);
-//    if (6 == count)
-//    {
-//        auto hinst = ::lua_touserdata(l, 1);
-//        const wchar_t * n = nullptr;
-//        std::wstring wname;
-//        if (lua_isinteger(l, 2))
-//            n = MAKEINTRESOURCE(lua_tointeger(l, 2));
-//        else
-//        {
-//            auto name = lua_tostring(l, 2);
-//            wname = Encoding::FromUTF8(name);
-//            n = wname.data();
-//        }
-//        auto type = lua_tointeger(l, 3);
-//        auto cx = lua_tointeger(l, 4);
-//        auto cy = lua_tointeger(l, 5);
-//        auto fuload = lua_tointeger(l, 6);
-//        
-//        auto h = ::LoadImage((HINSTANCE)hinst, n, (UINT)type, (int)cx, (int)cy, (UINT)fuload);
-//        lua_pushinteger(l, (lua_Integer)h);
-//    }
-//    return 1;
-//}
 
 bool LuaContext::StartUp()
 {
@@ -115,7 +59,7 @@ bool LuaContext::StartUp()
         lua_newtable(state);
         lua_newtable(state);
         lua_setfield(state, -2, kCO2LOTable);
-        lua_newuserdata(state, sizeof(void *));
+        lua_newtable(state);
         lua_setfield(state, -2, kCacheEvent);
 
         lua_pushcfunction(state, &BonesGetObject);
@@ -182,16 +126,16 @@ void LuaContext::GetCO2LOTable(lua_State * l)
     lua_pop(l, 2);
 }
 
-void LuaContext::GetEventCache(lua_State * l)
+void LuaContext::GetEventCacheTable(lua_State * l)
 {
     LUA_STACK_AUTO_CHECK_COUNT(l, 1);
     lua_pushnil(l);
     GetGlobalTable(l);
     lua_getfield(l, -1, kCacheEvent);
+    if (!lua_istable(l, -1))
+        LOG_ERROR << kCacheEvent << "push failed";
     lua_copy(l, -1, -3);
     lua_pop(l, 2);
-    if (!lua_isuserdata(l, -1))
-        LOG_ERROR << "CacheEvent Error\n";
 }
 
 int LuaContext::SafeLOPCall(lua_State * l, int nargs, int nresults)

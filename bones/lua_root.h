@@ -17,7 +17,7 @@ public:
 
     void addNotify(const char * notify_name, const char * mod, const char * func);
 
-    void setListener(Listener * listener) override;
+    void setListener(NotifyListener * listener) override;
 
     bool isDirty() const override;
 
@@ -53,7 +53,7 @@ public:
 
     void onPositionChanged(Root * sender, const Point & loc) override;
 private:
-    Listener * listener_;
+    NotifyListener * listener_;
 };
 
 

@@ -128,9 +128,9 @@ public:
         GetCoreInstance()->resumeAnimate(ani);
     }
 
-    void stopAllAnimate(BonesAnimation * ani, bool toend)  override
+    void stopAllAnimate(bool toend)  override
     {
-        GetCoreInstance()->stopAllAnimate(ani, toend);
+        GetCoreInstance()->stopAllAnimate(this, toend);
     }
 protected:
     RefPtr<T> object_;

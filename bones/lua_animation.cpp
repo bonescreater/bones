@@ -4,6 +4,7 @@
 #include "lua_context.h"
 #include "lua_check.h"
 #include "script_parser.h"
+#include "lua_meta_table.h"
 
 namespace bones
 {
@@ -32,26 +33,12 @@ LuaAnimation::LuaAnimation(
     animation_->bind(Animation::kResume,
         BONES_CLASS_CALLBACK_2(&LuaAnimation::resume, this));
 
-    //将自己添加到LuaTable中去
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetCO2LOTable(l);
-    lua_pushlightuserdata(l, this);
-    lua_newtable(l);//1
-    lua_settable(l, -3);
-    lua_pop(l, 1);
+    LuaMetaTable::CreateLuaTable(LuaContext::State(), this);
 }
 
 LuaAnimation::~LuaAnimation()
 {
-    //将自己从LuaTable中删除
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetCO2LOTable(l);
-    lua_pushlightuserdata(l, this);
-    lua_pushnil(l);
-    lua_settable(l, -3);
-    lua_pop(l, 1);
+    LuaMetaTable::RemoveLuaTable(LuaContext::State(), this);
 
     animation_->release();
 }

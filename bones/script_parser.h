@@ -82,7 +82,7 @@ public:
 
     void resumeAnimate(BonesAnimation * ani);
 
-    void stopAllAnimate(BonesAnimation * ani, bool toend);
+    void stopAllAnimate(BonesObject * ani, bool toend);
 private:
     void handleRoot(Root * ob);
 

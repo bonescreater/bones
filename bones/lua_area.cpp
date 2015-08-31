@@ -23,212 +23,425 @@ static const char * kStrCapture = "capture";
 static const char * kStrTarget = "target";
 static const char * kStrBubbling = "bubbling";
 
-static EventType ToEventType(const char * name)
-{
-    assert(name);
-    if (!name)
-        return kET_CUSTOM;
-
-    if (!strcmp(kMethodOnMouseDown, name))
-        return kET_MOUSE_DOWN;
-    if (!strcmp(kMethodOnMouseUp, name))
-        return kET_MOUSE_UP;
-    if (!strcmp(kMethodOnMouseMove, name))
-        return kET_MOUSE_MOVE;
-    if (!strcmp(kMethodOnMouseLeave, name))
-        return kET_MOUSE_LEAVE;
-    if (!strcmp(kMethodOnMouseEnter, name))
-        return kET_MOUSE_ENTER;
-    if (!strcmp(kMethodOnFocus, name))
-        return kET_FOCUS;
-    if (!strcmp(kMethodOnBlur, name))
-        return kET_BLUR;
-    assert(0);
-    LOG_VERBOSE << "unknown event type: " << name;
-    return kET_CUSTOM;
-}
-
-static void PostToLO(Ref * co, Event & e, const char * method_name)
-{
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-
-    LuaContext::GetCO2LOTable(l);
-    lua_pushlightuserdata(l, co);
-    lua_gettable(l, -2);
-    assert(lua_istable(l, -1));
-    lua_pushinteger(l, e.phase());
-    lua_gettable(l, -2);
-    assert(lua_istable(l, -1));
-
-    lua_getfield(l, -1, method_name);
-    lua_pushnil(l);
-    lua_copy(l, -4, -1);
-    LuaEvent::Get(l, e);
-    LuaContext::SafeLOPCall(l, 2, 0);
-    lua_pop(l, 1);
-
-    lua_pop(l, 2);
-}
-
-static void PostToLO(Ref * co, const char * method_name)
-{
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetCO2LOTable(l);
-    lua_pushlightuserdata(l, co);
-    lua_gettable(l, -2);
-    assert(lua_istable(l, -1));
-    lua_getfield(l, -1, method_name);
-    lua_pushnil(l);
-    lua_copy(l, -3, -1);
-    LuaContext::SafeLOPCall(l, 1, 0);
-    lua_pop(l, 2);
-}
-
-static void OnEvent(Ref * sender, Event & e)
-{
-    const char * method = nullptr;
-    switch (e.type())
-    {
-    case kET_MOUSE_ENTER:
-        method = kMethodOnMouseEnter;
-        break;
-    case kET_MOUSE_MOVE:
-        method = kMethodOnMouseMove;
-        break;
-    case kET_MOUSE_DOWN:
-        method = kMethodOnMouseDown;
-        break;
-    case kET_MOUSE_UP:
-        method = kMethodOnMouseUp;
-        break;
-    case kET_MOUSE_CLICK:
-        break;
-    case kET_MOUSE_DCLICK:
-        break;
-    case kET_MOUSE_LEAVE:
-        method = kMethodOnMouseLeave;
-        break;
-    case kET_MOUSE_WHEEL:
-        break;
-    case kET_KEY_DOWN:
-        break;
-    case kET_KEY_UP:
-        break;
-    case kET_FOCUS_OUT:
-        break;
-    case kET_FOCUS_IN:
-        break;
-    case kET_BLUR:
-        method = kMethodOnBlur;
-        break;
-    case kET_FOCUS:
-        method = kMethodOnFocus;
-        break;
-    default:
-        break;
-    }
-    if (method)
-        PostToLO(sender, e, method);
-}
-
-static void OnSizeChanged(Ref * sender)
-{
-    PostToLO(sender, kMethodOnSizeChanged);
-}
+//static EventType ToEventType(const char * name)
+//{
+//    assert(name);
+//    if (!name)
+//        return kET_CUSTOM;
+//
+//    if (!strcmp(kMethodOnMouseDown, name))
+//        return kET_MOUSE_DOWN;
+//    if (!strcmp(kMethodOnMouseUp, name))
+//        return kET_MOUSE_UP;
+//    if (!strcmp(kMethodOnMouseMove, name))
+//        return kET_MOUSE_MOVE;
+//    if (!strcmp(kMethodOnMouseLeave, name))
+//        return kET_MOUSE_LEAVE;
+//    if (!strcmp(kMethodOnMouseEnter, name))
+//        return kET_MOUSE_ENTER;
+//    if (!strcmp(kMethodOnFocus, name))
+//        return kET_FOCUS;
+//    if (!strcmp(kMethodOnBlur, name))
+//        return kET_BLUR;
+//    assert(0);
+//    LOG_VERBOSE << "unknown event type: " << name;
+//    return kET_CUSTOM;
+//}
+//
+//static void PostToLO(Ref * co, Event & e, const char * method_name)
+//{
+//    auto l = LuaContext::State();
+//    LUA_STACK_AUTO_CHECK(l);
+//
+//    LuaContext::GetCO2LOTable(l);
+//    lua_pushlightuserdata(l, co);
+//    lua_gettable(l, -2);
+//    assert(lua_istable(l, -1));
+//    lua_pushinteger(l, e.phase());
+//    lua_gettable(l, -2);
+//    assert(lua_istable(l, -1));
+//
+//    lua_getfield(l, -1, method_name);
+//    lua_pushnil(l);
+//    lua_copy(l, -4, -1);
+//    LuaEvent::Get(l, e);
+//    LuaContext::SafeLOPCall(l, 2, 0);
+//    lua_pop(l, 1);
+//
+//    lua_pop(l, 2);
+//}
+//
+//static void PostToLO(Ref * co, const char * method_name)
+//{
+//    auto l = LuaContext::State();
+//    LUA_STACK_AUTO_CHECK(l);
+//    LuaContext::GetCO2LOTable(l);
+//    lua_pushlightuserdata(l, co);
+//    lua_gettable(l, -2);
+//    assert(lua_istable(l, -1));
+//    lua_getfield(l, -1, method_name);
+//    lua_pushnil(l);
+//    lua_copy(l, -3, -1);
+//    LuaContext::SafeLOPCall(l, 1, 0);
+//    lua_pop(l, 2);
+//}
+//
+//static void OnEvent(Ref * sender, Event & e)
+//{
+//    const char * method = nullptr;
+//    switch (e.type())
+//    {
+//    case kET_MOUSE_ENTER:
+//        method = kMethodOnMouseEnter;
+//        break;
+//    case kET_MOUSE_MOVE:
+//        method = kMethodOnMouseMove;
+//        break;
+//    case kET_MOUSE_DOWN:
+//        method = kMethodOnMouseDown;
+//        break;
+//    case kET_MOUSE_UP:
+//        method = kMethodOnMouseUp;
+//        break;
+//    case kET_MOUSE_CLICK:
+//        break;
+//    case kET_MOUSE_DCLICK:
+//        break;
+//    case kET_MOUSE_LEAVE:
+//        method = kMethodOnMouseLeave;
+//        break;
+//    case kET_MOUSE_WHEEL:
+//        break;
+//    case kET_KEY_DOWN:
+//        break;
+//    case kET_KEY_UP:
+//        break;
+//    case kET_FOCUS_OUT:
+//        break;
+//    case kET_FOCUS_IN:
+//        break;
+//    case kET_BLUR:
+//        method = kMethodOnBlur;
+//        break;
+//    case kET_FOCUS:
+//        method = kMethodOnFocus;
+//        break;
+//    default:
+//        break;
+//    }
+//    if (method)
+//        PostToLO(sender, e, method);
+//}
+//
+//static void OnSizeChanged(Ref * sender)
+//{
+//    PostToLO(sender, kMethodOnSizeChanged);
+//}
 
 LuaArea::LuaArea(Area * ob)
-:LuaObject(ob, kMetaTableArea)
+:LuaObject(ob, kMetaTableArea), mouse_(nullptr),
+key_(nullptr), focus_(nullptr), wheel_(nullptr),
+notify_(nullptr)
 {
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetLOFromCO(l, this);
+    ob->setDelegate(this);
+    //auto l = LuaContext::State();
+    //LUA_STACK_AUTO_CHECK(l);
+    //LuaContext::GetLOFromCO(l, this);
 
-    lua_pushinteger(l, Event::kCapture);
-    lua_newtable(l);
-    lua_settable(l, -3);
-    lua_pushinteger(l, Event::kTarget);
-    lua_newtable(l);
-    lua_settable(l, -3);
-    lua_pushinteger(l, Event::kBubbling);
-    lua_newtable(l);
-    lua_settable(l, -3);
+    //lua_pushinteger(l, Event::kCapture);
+    //lua_newtable(l);
+    //lua_settable(l, -3);
+    //lua_pushinteger(l, Event::kTarget);
+    //lua_newtable(l);
+    //lua_settable(l, -3);
+    //lua_pushinteger(l, Event::kBubbling);
+    //lua_newtable(l);
+    //lua_settable(l, -3);
 
-    lua_pop(l, 1);
+    //lua_pop(l, 1);
 }
 
-void LuaArea::RegisterEvent(
-    Area * co,
-    const char * name,
-    const char * phase,
-    const char * module,
-    const char * func)
+LuaArea::~LuaArea()
 {
-    if (!name || !module || !func)
+    object_->setDelegate(nullptr);
+}
+
+void LuaArea::setListener(MouseListener * lis)
+{
+    mouse_ = lis;
+}
+
+void LuaArea::setListener(KeyListener * lis)
+{
+    key_ = lis;
+}
+
+void LuaArea::setListener(FocusListener * lis)
+{
+    focus_ = lis;
+}
+
+void LuaArea::setListener(WheelListener * lis)
+{
+    wheel_ = lis;
+}
+
+void LuaArea::setListener(NotifyListener * notify)
+{
+    notify_ = notify;
+}
+
+static int event_stack_count = 0;
+
+class EventStack
+{
+public:
+    EventStack(){event_stack_count++; }
+
+    ~EventStack(){ assert(event_stack_count); event_stack_count--; }
+
+    int getCount() const{ return event_stack_count; }
+};
+
+void LuaArea::onMouseEnter(Area * sender, MouseEvent & e)
+{
+    EventStack es;
+    bool stop = false;
+    LuaMouseEvent le(e);
+    mouse_ ? mouse_->onMouseEnter(this, le, stop) : 0;
+    if (stop)
         return;
     auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-
-    lua_getglobal(l, module);
-    //{mod} 入栈
-    assert(lua_istable(l, -1));
-    if (!lua_istable(l, -1))
+    LuaContext::GetEventCacheTable(l);
+    lua_pushinteger(l, es.getCount());
+    lua_gettable(l, -2);
+    if (!lua_isuserdata(l, -1))
     {
-        lua_pop(l, 1);
-        LOG_VERBOSE << "require mod fail: " << module;
-        return;
+        lua_pop(l, -1);
+        lua_newuserdata(l, sizeof(void *));
     }
-    lua_getfield(l, -1, func);
-    assert(lua_isfunction(l, -1));
-    if (!lua_isfunction(l, -1))
-    {
-        lua_pop(l, 2);
-        LOG_VERBOSE << "not function: " << func;
-        return;
-    }
+    void ** ud = (void **)lua_touserdata(l, -1);
+    *ud = &le;
+    LuaMetaTable::GetMouseEvent(l);
+    lua_setmetatable(l, -2);
 
-    LuaContext::GetLOFromCO(l, GetCoreInstance()->getObject(co));
-    if (lua_istable(l, -1))
-    {
-        Event::Phase ephase = Event::kTarget;
-        if (phase)
-        {
-            if (!strcmp(kStrCapture, phase))
-                ephase = Event::kCapture;
-            else if (!strcmp(kStrTarget, phase))
-                ephase = Event::kTarget;
-            else if (!strcmp(kStrBubbling, phase))
-                ephase = Event::kBubbling;
-            else
-                LOG_VERBOSE << "unknown event phase\n";
-            lua_pushinteger(l, ephase);
-            lua_gettable(l, -2);
-            assert(lua_istable(l, -1));
-            if (lua_istable(l, -1))
-            {
-                lua_pushnil(l);
-                lua_copy(l, -4, -1);
-                lua_setfield(l, -2, name);
-            }
-            lua_pop(l, 1);
-            
-            co->bind(ToEventType(name), ephase, BONES_CALLBACK_2(&OnEvent));
-        }
-        else
-        {
-            lua_pushnil(l);
-            lua_copy(l, -3, -1);
-            lua_setfield(l, -2, name);
-            if (!strcmp(kMethodOnSizeChanged, name))
-                co->bind(BONES_CALLBACK_1(&OnSizeChanged));
-        }
 
-    }
-    lua_pop(l, 1);
 
-    lua_pop(l, 2);
 }
+
+void LuaArea::onMouseMove(Area * sender, MouseEvent & e)
+{
+    bool stop = false;
+    mouse_ ? mouse_->onMouseMove(this, LuaMouseEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onMouseDown(Area * sender, MouseEvent & e)
+{
+    bool stop = false;
+    mouse_ ? mouse_->onMouseDown(this, LuaMouseEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onMouseUp(Area * sender, MouseEvent & e)
+{
+    bool stop = false;
+    mouse_ ? mouse_->onMouseUp(this, LuaMouseEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onMouseClick(Area * sender, MouseEvent & e)
+{
+    bool stop = false;
+    mouse_ ? mouse_->onMouseClick(this, LuaMouseEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onMouseDClick(Area * sender, MouseEvent & e)
+{
+    bool stop = false;
+    mouse_ ? mouse_->onMouseDClick(this, LuaMouseEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onMouseLeave(Area * sender, MouseEvent & e)
+{
+    bool stop = false;
+    mouse_ ? mouse_->onMouseLeave(this, LuaMouseEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onKeyDown(Area * sender, KeyEvent & e)
+{
+    bool stop = false;
+    key_ ? key_->onKeyDown(this, LuaKeyEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onKeyUp(Area * sender, KeyEvent & e)
+{
+    bool stop = false;
+    key_ ? key_->onKeyUp(this, LuaKeyEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onKeyPress(Area * sender, KeyEvent & e)
+{
+    bool stop = false;
+    key_ ? key_->onKeyPress(this, LuaKeyEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onFocusOut(Area * sender, FocusEvent & e)
+{
+    bool stop = false;
+    focus_ ? focus_->onFocusOut(this, LuaFocusEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onFocusIn(Area * sender, FocusEvent & e)
+{
+    bool stop = false;
+    focus_ ? focus_->onFocusOut(this, LuaFocusEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onBlur(Area * sender, FocusEvent & e)
+{
+    bool stop = false;
+    focus_ ? focus_->onFocusOut(this, LuaFocusEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onFocus(Area * sender, FocusEvent & e)
+{
+    bool stop = false;
+    focus_ ? focus_->onFocusOut(this, LuaFocusEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onWheel(Area * sender, WheelEvent & e)
+{
+    bool stop = false;
+    wheel_ ? wheel_->onWheel(this, LuaWheelEvent(e), stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onSizeChanged(Area * sender, const Size & size)
+{
+    bool stop = false;
+    BonesSize bs = { size.width(), size.height() };
+    notify_ ? notify_->onSizeChanged(this, bs, stop) : 0;
+    if (stop)
+        return;
+}
+
+void LuaArea::onPositionChanged(Area * sender, const Point & loc)
+{
+    bool stop = false;
+    BonesPoint bp = { loc.x(), loc.y() };
+    notify_ ? notify_->onPositionChanged(this, bp, stop) : 0;
+    if (stop)
+        return;
+}
+
+bool LuaArea::onHitTest(Area * sender, const Point & loc)
+{
+    bool stop = false;
+    BonesPoint bp = { loc.x(), loc.y() };
+    bool ht = notify_ ? notify_->onHitTest(this, bp, stop) : true;
+    if (stop)
+        return ht;
+
+
+    return ht;
+}
+
+//void LuaArea::RegisterEvent(
+//    Area * co,
+//    const char * name,
+//    const char * phase,
+//    const char * module,
+//    const char * func)
+//{
+//    if (!name || !module || !func)
+//        return;
+//    auto l = LuaContext::State();
+//    LUA_STACK_AUTO_CHECK(l);
+//
+//    lua_getglobal(l, module);
+//    //{mod} 入栈
+//    assert(lua_istable(l, -1));
+//    if (!lua_istable(l, -1))
+//    {
+//        lua_pop(l, 1);
+//        LOG_VERBOSE << "require mod fail: " << module;
+//        return;
+//    }
+//    lua_getfield(l, -1, func);
+//    assert(lua_isfunction(l, -1));
+//    if (!lua_isfunction(l, -1))
+//    {
+//        lua_pop(l, 2);
+//        LOG_VERBOSE << "not function: " << func;
+//        return;
+//    }
+//
+//    LuaContext::GetLOFromCO(l, GetCoreInstance()->getObject(co));
+//    if (lua_istable(l, -1))
+//    {
+//        Event::Phase ephase = Event::kTarget;
+//        if (phase)
+//        {
+//            if (!strcmp(kStrCapture, phase))
+//                ephase = Event::kCapture;
+//            else if (!strcmp(kStrTarget, phase))
+//                ephase = Event::kTarget;
+//            else if (!strcmp(kStrBubbling, phase))
+//                ephase = Event::kBubbling;
+//            else
+//                LOG_VERBOSE << "unknown event phase\n";
+//            lua_pushinteger(l, ephase);
+//            lua_gettable(l, -2);
+//            assert(lua_istable(l, -1));
+//            if (lua_istable(l, -1))
+//            {
+//                lua_pushnil(l);
+//                lua_copy(l, -4, -1);
+//                lua_setfield(l, -2, name);
+//            }
+//            lua_pop(l, 1);
+//            
+//            co->bind(ToEventType(name), ephase, BONES_CALLBACK_2(&OnEvent));
+//        }
+//        else
+//        {
+//            lua_pushnil(l);
+//            lua_copy(l, -3, -1);
+//            lua_setfield(l, -2, name);
+//            if (!strcmp(kMethodOnSizeChanged, name))
+//                co->bind(BONES_CALLBACK_1(&OnSizeChanged));
+//        }
+//
+//    }
+//    lua_pop(l, 1);
+//
+//    lua_pop(l, 2);
+//}
 
 
 }

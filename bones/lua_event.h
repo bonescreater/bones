@@ -1,21 +1,165 @@
 ﻿#ifndef BONES_LUA_EVENT_H_
 #define BONES_LUA_EVENT_H_
 
-#include "bones.h"
-#include "lua_check.h"
-#include "lua_context.h"
+#include "bones_internal.h"
+#include "script_parser.h"
+#include "core/event.h"
 
 namespace bones
 {
 
 class Event;
 
-class LuaEvent
+template<class Base, class Object>
+class LuaEvent : public Base
 {
 public:
-    static void Get(lua_State * l, Event & e);
+    LuaEvent(Object & e)
+        :event_(&e)
+    {
+
+    }
+
+    void stopPropagation() override
+    {
+        event_->stopPropagation();
+    }
+
+    void preventDefault() override
+    {
+        event_->preventDefault();
+    }
+
+    bool canceled() override
+    {
+        return event_->canceled();
+    }
+
+    BonesObject * target() override
+    {
+        return GetCoreInstance()->getObject(event_->target());
+    }
+
+    BonesEvent::Phase phase() override
+    {
+        auto phase = event_->phase();
+        if (Event::kCapture == phase)
+            return BonesEvent::kCapture;
+        if (Event::kTarget == phase)
+            return BonesEvent::kTarget;
+        if (Event::kBubbling == phase)
+            return BonesEvent::kBubbling;
+        return BonesEvent::kPhaseCount;
+    }
+protected:
+    Object * event_;
 };
 
+template<class Base, class Object>
+class LuaUIEvent : public LuaEvent<Base, Object>
+{
+public:
+    LuaUIEvent(Object & e)
+        :LuaEvent(e)
+    {
+
+    }
+    bool isShiftDown() const override
+    {
+        return event_->isShiftDown();
+    }
+
+    bool isControlDown() const override
+    {
+        return event_->isControlDown();
+    }
+
+    bool isCapsLockDown() const override
+    {
+        return event_->isCapsLockDown();
+    }
+
+    bool isAltDown() const override
+    {
+        return event_->isAltDown();
+    }
+
+    bool isAltGrDown() const override
+    {
+        return event_->isAltGrDown();
+    }
+
+    bool isCommandDown() const override
+    {
+        return event_->isCommandDown();
+    }
+
+    bool isLeftMouseDown() const override
+    {
+        return event_->isLeftMouseDown();
+    }
+
+    bool isMiddleMouseDown() const override
+    {
+        return event_->isMiddleMouseDown();
+    }
+
+    bool isRightMouseDown() const override
+    {
+        return event_->isRightMouseDown();
+    }
+};
+
+class LuaMouseEvent : public LuaUIEvent<BonesMouseEvent, MouseEvent>
+{
+public:
+    LuaMouseEvent(MouseEvent & e);
+
+    virtual Type type() const override;
+
+    virtual bool isLeftMouse() const override;
+
+    virtual bool isMiddleMouse() const override;
+
+    virtual bool isRightMouse() const override;
+
+    virtual BonesPoint getLoc() const override;
+
+    virtual BonesPoint getRootLoc() const override;
+
+};
+
+class LuaKeyEvent : public LuaUIEvent<BonesKeyEvent, KeyEvent>
+{
+public:
+    LuaKeyEvent(KeyEvent & e);
+
+    Type type() const override;
+
+    wchar_t ch() const override;
+
+    KeyState state() const override;
+};
+
+class LuaFocusEvent : public LuaEvent<BonesFocusEvent, FocusEvent>
+{
+public:
+    LuaFocusEvent(FocusEvent & e);
+
+    Type type() const override;
+
+    bool isTabTraversal() const override;
+};
+
+class LuaWheelEvent : public LuaUIEvent<BonesWheelEvent, WheelEvent>
+{
+public:
+    LuaWheelEvent(WheelEvent & e);
+
+    int dx() const override;
+
+    int dy() const override;
+};
 
 }
 #endif

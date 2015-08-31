@@ -3,8 +3,6 @@
 
 #include "view.h"
 #include "event.h"
-#include <vector>
-#include <functional>
 
 namespace bones
 {
@@ -12,16 +10,51 @@ namespace bones
 class Area : public View
 {
 public:
-    typedef std::function <void(Ref * sender, Event & e)> CFEvent;
-    typedef std::function <void(Ref * sender)> CFNotifyOnSizeChanged;
+    class Delegate
+    {
+    public:
+        virtual void onMouseEnter(Area * sender, MouseEvent & e) = 0;
+
+        virtual void onMouseMove(Area * sender, MouseEvent & e) = 0;
+
+        virtual void onMouseDown(Area * sender, MouseEvent & e) = 0;
+
+        virtual void onMouseUp(Area * sender, MouseEvent & e) = 0;
+
+        virtual void onMouseClick(Area * sender, MouseEvent & e) = 0;
+
+        virtual void onMouseDClick(Area * sender, MouseEvent & e) = 0;
+
+        virtual void onMouseLeave(Area * sender, MouseEvent & e) = 0;
+
+        virtual void onKeyDown(Area * sender, KeyEvent & e) = 0;
+
+        virtual void onKeyUp(Area * sender, KeyEvent & e) = 0;
+
+        virtual void onKeyPress(Area * sender, KeyEvent & e) = 0;
+
+        virtual void onFocusOut(Area * sender, FocusEvent & e) = 0;
+
+        virtual void onFocusIn(Area * sender, FocusEvent & e) = 0;
+
+        virtual void onBlur(Area * sender, FocusEvent & e) = 0;
+
+        virtual void onFocus(Area * sender, FocusEvent & e) = 0;
+
+        virtual void onWheel(Area * sender, WheelEvent & e) = 0;
+
+        virtual void onSizeChanged(Area * sender, const Size & size) = 0;
+
+        virtual void onPositionChanged(Area * sender, const Point & loc) = 0;
+
+        virtual bool onHitTest(Area * sender, const Point & loc) = 0;
+    };
 
     Area();
 
+    void setDelegate(Delegate * delegate);
+
     const char * getClassName() const override;
-
-    void bind(EventType type, Event::Phase phase, const CFEvent & cf);
-
-    void bind(const CFNotifyOnSizeChanged & cf);
 protected:
     void onMouseEnter(MouseEvent & e) override;
 
@@ -41,6 +74,8 @@ protected:
 
     void onKeyUp(KeyEvent & e) override;
 
+    void onKeyPress(KeyEvent & e) override;
+
     void onFocusOut(FocusEvent & e) override;
 
     void onFocusIn(FocusEvent & e) override;
@@ -52,11 +87,12 @@ protected:
     void onWheel(WheelEvent & e) override;
 
     void onSizeChanged() override;
+
+    void onPositionChanged()override;
+
+    bool onHitTest(const Point & loc) override;
 private:
-    void pushEvent(Event & e);
-private:
-    CFEvent delegates_[Event::kPhaseCount][kET_COUNT];
-    CFNotifyOnSizeChanged on_size_changed_;
+    Delegate * delegate_;
 };
 
 

@@ -15,7 +15,7 @@ public:
 
     ~LuaRichEdit();
 
-    void setListener(Listener * listener) override;
+    void setListener(NotifyListener * listener) override;
 
     BOOL screenToClient(RichEdit * sender, LPPOINT lppt) override;
 
@@ -29,7 +29,7 @@ public:
 
     void onReturn(RichEdit * sender) override;
 private:
-    Listener * listener_;
+    NotifyListener * listener_;
 };
 
 

@@ -102,6 +102,136 @@ public:
     virtual int onEvent(BonesObject * ob, BonesScriptArg * arg, size_t arg_count) = 0;
 };
 
+class BonesEvent
+{
+public:
+    enum Phase
+    {
+        kCapture,
+        kTarget,
+        kBubbling,
+
+        kPhaseCount,
+    };
+public:
+    virtual void stopPropagation() = 0;
+
+    virtual void preventDefault() = 0;
+
+    virtual bool canceled() = 0;
+
+    virtual BonesObject * target() = 0;
+
+    virtual Phase phase() = 0;
+};
+
+class BonesEventFlag
+{
+public:
+    virtual bool isShiftDown() const = 0;
+
+    virtual bool isControlDown() const = 0;
+
+    virtual bool isCapsLockDown() const = 0;
+
+    virtual bool isAltDown() const = 0;
+
+    virtual bool isAltGrDown() const = 0;
+
+    virtual bool isCommandDown() const = 0;
+
+    virtual bool isLeftMouseDown() const = 0;
+
+    virtual bool isMiddleMouseDown() const = 0;
+
+    virtual bool isRightMouseDown() const = 0;
+};
+
+class BonesMouseEvent : public BonesEvent, public BonesEventFlag
+{
+public:
+    enum Type
+    {
+        kMouseEnter,
+        kMouseMove,
+        kMouseDown,
+        kMouseUp,
+        kMouseClick,
+        kMouseDClick,
+        kMouseLeave,
+
+        kTypeCount,
+    };
+
+    virtual Type type() const = 0;
+
+    virtual bool isLeftMouse() const = 0; 
+
+    virtual bool isMiddleMouse() const = 0;
+
+    virtual bool isRightMouse() const = 0;
+
+    virtual BonesPoint getLoc() const = 0;
+
+    virtual BonesPoint getRootLoc() const = 0;
+};
+
+class BonesKeyEvent : public BonesEvent, public BonesEventFlag
+{
+public:
+    enum Type
+    {
+        kKeyDown,
+        kKeyPress,
+        kKeyUp,
+
+        kTypeCount,
+    };
+
+    struct KeyState
+    {
+        uint32_t repeat_count : 16;
+        uint32_t scan_code : 8;
+        uint32_t extended_key : 1;
+        uint32_t reserved : 4;
+        uint32_t context_code : 1;
+        uint32_t previous_state : 1;
+        uint32_t transition_state : 1;
+    };
+
+    virtual Type type() const = 0;
+
+    virtual wchar_t ch() const = 0;
+
+    virtual KeyState state() const = 0;
+};
+
+class BonesFocusEvent : public BonesEvent
+{
+public:
+    enum Type
+    {
+        kFocusIn,
+        kFocusOut,
+        kBlur,
+        kFocus,
+
+        kTypeCount,
+    };
+
+    virtual Type type() const = 0;
+
+    virtual bool isTabTraversal() const = 0;
+};
+
+class BonesWheelEvent : public BonesEvent, public BonesEventFlag
+{
+public:
+    virtual int dx() const = 0;
+
+    virtual int dy() const = 0;
+};
+
 class BonesBase
 {
 public:
@@ -172,13 +302,13 @@ public:
 
     virtual void resumeAnimate(BonesAnimation * ani) = 0;
 
-    virtual void stopAllAnimate(BonesAnimation * ani, bool toend) = 0;
+    virtual void stopAllAnimate(bool toend) = 0;
 };
 
 class BonesRoot : public BonesObject
 {
 public:
-    class Listener
+    class NotifyListener
     {
     public:
         virtual void requestFocus(BonesRoot * sender, bool & stop) = 0;
@@ -198,7 +328,7 @@ public:
         virtual void onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool & stop) = 0;
     };
 
-    virtual void setListener(Listener * listener) = 0;
+    virtual void setListener(NotifyListener * listener) = 0;
 
     virtual bool isDirty() const = 0;
 
@@ -237,7 +367,7 @@ class BonesText : public BonesObject
 class BonesRichEdit : public BonesObject
 {
 public:
-    class Listener
+    class NotifyListener
     {
     public:
         virtual BOOL screenToClient(BonesRichEdit * sender, LPPOINT lppt, bool & stop) = 0;
@@ -253,12 +383,77 @@ public:
         virtual void onReturn(BonesRichEdit * sender, bool & stop) = 0;
     };
 
-    virtual void setListener(Listener * listener) = 0;
+    virtual void setListener(NotifyListener * listener) = 0;
 };
 
 class BonesArea : public BonesObject
 {
+public:
+    class MouseListener
+    {
+    public:
+        virtual void onMouseEnter(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
 
+        virtual void onMouseMove(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+
+        virtual void onMouseDown(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+
+        virtual void onMouseUp(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+
+        virtual void onMouseClick(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+
+        virtual void onMouseDClick(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+
+        virtual void onMouseLeave(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+    };
+
+    class KeyListener
+    {
+    public:
+        virtual void onKeyDown(BonesArea * sender, BonesKeyEvent & e, bool & stop) = 0;
+
+        virtual void onKeyUp(BonesArea * sender, BonesKeyEvent & e, bool & stop) = 0;
+
+        virtual void onKeyPress(BonesArea * sender, BonesKeyEvent & e, bool & stop) = 0;
+    };
+
+    class FocusListener
+    {
+    public:
+        virtual void onFocusOut(BonesArea * sender, BonesFocusEvent & e, bool & stop) = 0;
+
+        virtual void onFocusIn(BonesArea * sender, BonesFocusEvent & e, bool & stop) = 0;
+
+        virtual void onBlur(BonesArea * sender, BonesFocusEvent & e, bool & stop) = 0;
+
+        virtual void onFocus(BonesArea * sender, BonesFocusEvent & e, bool & stop) = 0;
+    };
+
+    class WheelListener
+    {
+    public:
+        virtual void onWheel(BonesArea * sender, BonesWheelEvent & e, bool & stop) = 0;
+    };
+
+    class NotifyListener
+    {
+    public:
+        virtual void onSizeChanged(BonesArea * sender, const BonesSize & size, bool & stop) = 0;
+
+        virtual void onPositionChanged(BonesArea * sender, const BonesPoint & loc, bool & stop) = 0;
+
+        virtual bool onHitTest(BonesArea * sender, const BonesPoint & loc, bool & stop) = 0;
+    };
+
+    virtual void setListener(MouseListener * lis) = 0;
+
+    virtual void setListener(KeyListener * lis) = 0;
+
+    virtual void setListener(FocusListener * lis) = 0;
+
+    virtual void setListener(WheelListener * lis) = 0;
+
+    virtual void setListener(NotifyListener * notify) = 0;
 };
 
 class BonesPixmap : public BonesBase

@@ -13,9 +13,11 @@ class LuaMetaTable
 public:
     static void CreatLuaTable(lua_State * l, const char * meta, BonesObject * bob);
 
-    static void RemoveLuaTable(lua_State * l, BonesObject * bob);
+    static void CreateLuaTable(lua_State * l, BonesAnimation * bob);
+
+    static void RemoveLuaTable(lua_State * l, BonesBase * bob);
     
-    static BonesObject * CallGetBonesObject(lua_State *l);
+    static BonesBase * CallGetCObject(lua_State *l);
 
     static void GetMouseEvent(lua_State * l);
     

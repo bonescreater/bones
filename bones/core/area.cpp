@@ -5,18 +5,14 @@ namespace bones
 
 
 Area::Area()
+:delegate_(nullptr)
 {
     ;
 }
 
-void Area::bind(EventType type, Event::Phase phase, const CFEvent & cf)
+void Area::setDelegate(Delegate * delegate)
 {
-    delegates_[phase][type] = cf;
-}
-
-void Area::bind(const CFNotifyOnSizeChanged & cf)
-{
-    on_size_changed_ = cf;
+    delegate_ = delegate;
 }
 
 const char * Area::getClassName() const
@@ -26,82 +22,94 @@ const char * Area::getClassName() const
 
 void Area::onMouseEnter(MouseEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onMouseEnter(this, e) : 0;
 }
 
 void Area::onMouseMove(MouseEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onMouseMove(this, e) : 0;
 }
 
 void Area::onMouseDown(MouseEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onMouseDown(this, e) : 0;
 }
 
 void Area::onMouseUp(MouseEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onMouseUp(this, e) : 0;
 }
 
 void Area::onMouseClick(MouseEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onMouseClick(this, e) : 0;
 }
 
 void Area::onMouseDClick(MouseEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onMouseDClick(this, e) : 0;
 }
 
 void Area::onMouseLeave(MouseEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onMouseLeave(this, e) : 0;
 }
 
 void Area::onKeyDown(KeyEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onKeyDown(this, e) : 0;
 }
 
 void Area::onKeyUp(KeyEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onKeyUp(this, e) : 0;
+}
+
+void Area::onKeyPress(KeyEvent & e)
+{
+    delegate_ ? delegate_->onKeyPress(this, e) : 0;
 }
 
 void Area::onFocusOut(FocusEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onFocusOut(this, e) : 0;
 }
 
 void Area::onFocusIn(FocusEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onFocusIn(this, e) : 0;
+
 }
 
 void Area::onBlur(FocusEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onBlur(this, e) : 0;
 }
 
 void Area::onFocus(FocusEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onFocus(this, e) : 0;
 }
 
 void Area::onWheel(WheelEvent & e)
 {
-    pushEvent(e);
+    delegate_ ? delegate_->onWheel(this, e) : 0;
 }
 
 void Area::onSizeChanged()
 {
-    on_size_changed_ ? on_size_changed_(this): 0;
+    delegate_ ? delegate_->onSizeChanged(this, getSize()) : 0;
 }
 
-void Area::pushEvent(Event & e)
+void Area::onPositionChanged()
 {
-    delegates_[e.phase()][e.type()] ? delegates_[e.phase()][e.type()](this, e) : 0;
+    delegate_ ? delegate_->onPositionChanged(this, getLoc()) : 0;
 }
+
+bool Area::onHitTest(const Point & loc)
+{
+    return delegate_ ? delegate_->onHitTest(this, loc) : true;
+}
+
 
 }

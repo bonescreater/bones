@@ -29,7 +29,7 @@ LuaRichEdit::~LuaRichEdit()
     object_->setDelegate(nullptr);
 }
 
-void LuaRichEdit::setListener(Listener * listener)
+void LuaRichEdit::setListener(NotifyListener * listener)
 {
     listener_ = listener;
 }

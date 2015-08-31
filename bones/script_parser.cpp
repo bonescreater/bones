@@ -85,7 +85,7 @@ static int ScriptCB(lua_State * l)
     //获取sender
     lua_pushnil(l);
     lua_copy(l, 1, -1);
-    BonesObject * sender = LuaMetaTable::CallGetBonesObject(l);
+    auto * sender = static_cast<BonesObject *>(LuaMetaTable::CallGetCObject(l));
 
     assert(sender);
     BonesScriptListener * lis = (BonesScriptListener *)lua_touserdata(l, lua_upvalueindex(1));
@@ -406,10 +406,9 @@ void ScriptParser::resumeAnimate(BonesAnimation * ani)
         static_cast<LuaAnimation *>(ani)->ani());
 }
 
-void ScriptParser::stopAllAnimate(BonesAnimation * ani, bool toend)
+void ScriptParser::stopAllAnimate(BonesObject * bo, bool toend)
 {
-    Core::GetAnimationManager()->remove(
-        static_cast<LuaAnimation *>(ani)->ani()->target(), toend);
+    Core::GetAnimationManager()->remove(getObject(bo), toend);
 }
 
 void ScriptParser::handleRoot(Root * ob)

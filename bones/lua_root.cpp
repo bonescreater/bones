@@ -71,7 +71,7 @@ void LuaRoot::addNotify(const char * notify_name, const char * mod, const char *
     lua_pop(l, 2);
 }
 
-void LuaRoot::setListener(Listener * listener)
+void LuaRoot::setListener(NotifyListener * listener)
 {
     listener_ = listener;
 }
