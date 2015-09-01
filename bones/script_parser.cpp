@@ -105,6 +105,7 @@ ScriptParser::ScriptParser()
 
 bool ScriptParser::loadXMLString(const char * data, BonesXMLListener * listener)
 {
+    Core::GetAnimationManager()->removeAll(false);
     LuaContext::Reset();
     v2bo_.clear();
 

@@ -39,6 +39,18 @@ LuaAnimation::LuaAnimation(
 LuaAnimation::~LuaAnimation()
 {
     LuaMetaTable::RemoveLuaTable(LuaContext::State(), this);
+    typedef void(*CFRUN)(Animation * sender, View * target, float progress);
+    typedef void(*CFROUTINE)(Animation * sender, View * target);
+    animation_->bind(
+        BONES_CALLBACK_3((CFRUN)nullptr));
+    animation_->bind(Animation::kStop,
+        BONES_CALLBACK_2((CFROUTINE)nullptr));
+    animation_->bind(Animation::kStart,
+        BONES_CALLBACK_2((CFROUTINE)nullptr));
+    animation_->bind(Animation::kPause,
+        BONES_CALLBACK_2((CFROUTINE)nullptr));
+    animation_->bind(Animation::kResume,
+        BONES_CALLBACK_2((CFROUTINE)nullptr));
 
     animation_->release();
 }
