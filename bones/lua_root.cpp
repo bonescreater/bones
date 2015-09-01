@@ -17,9 +17,6 @@ static const char * kMethodcreateCaret = "createCaret";
 static const char * kMethodshowCaret = "showCaret";
 static const char * kMethodchangeCaretPos = "changeCaretPos";
 
-static const char * kMethodOnSizeChanged = "onSizeChanged";
-static const char * kMethodOnPositionChanged = "onPositionChanged";
-
 
 LuaRoot::LuaRoot(Root * ob)
 :LuaObject(ob, kMetaTableRoot), listener_(nullptr)

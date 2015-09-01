@@ -200,7 +200,7 @@ UINT Helper::ToMsgForMouse(EventType type, MouseButton button)
 
 LPARAM Helper::ToKeyStateForKey(const KeyState & state)
 {
-    return (LPARAM)*(uint32_t *)(&state);
+    return (LPARAM)state.state;
 }
 
 int Helper::ToFlagsForEvent()

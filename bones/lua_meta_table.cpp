@@ -1,16 +1,10 @@
 ﻿#include "lua_meta_table.h"
 #include "lua_context.h"
 #include "lua_check.h"
-
-#include "core/root.h"
-#include "core/view.h"
 #include "core/logging.h"
-#include "core/text.h"
-#include "core/encoding.h"
-#include "core/animation_manager.h"
-#include "core/animation.h"
-#include "core/rich_edit.h"
-#include "lua_animation.h"
+
+
+
 #include "script_parser.h"
 
 namespace bones
@@ -18,6 +12,8 @@ namespace bones
 
 static const char * kMetaTableMouseEvent = "__mt_mouse_event";
 static const char * kMetaTableFocusEvent = "__mt_focus_event";
+static const char * kMetaTableKeyEvent = "__mt_key_event";
+static const char * kMetaTableWheelEvent = "__mt_wheel_event";
 
 static const char * kMethodIndex = "__index";
 static const char * kMethodGC = "__gc";
@@ -59,8 +55,13 @@ static const char * kMethodIsLeftMouse = "isLeftMouse";
 static const char * kMethodIsMiddleMouse = "isMiddleMouse";
 static const char * kMethodIsRightMouse = "isRightMouse";
 
+static const char * kMethodCH = "ch";
+static const char * kMethodState = "state";
+
 static const char * kMethodIsTabTraversal = "isTabTraversal";
 
+static const char * kMethodDX = "dx";
+static const char * kMethodDY = "dy";
 //(self)
 static int GC(lua_State * l)
 {
@@ -431,7 +432,8 @@ event
 */
 static int StopPropagation(lua_State * l)
 {
-    Event * e = *(Event **)lua_touserdata(l, 1);
+    lua_settop(l, 1);
+    auto e = *(BonesEvent **)lua_touserdata(l, 1);
     if (e)
         e->stopPropagation();
     return 0;
@@ -439,7 +441,8 @@ static int StopPropagation(lua_State * l)
 
 static int PreventDefault(lua_State * l)
 {
-    Event * e = *(Event **)lua_touserdata(l, 1);
+    lua_settop(l, 1);
+    auto e = *(BonesEvent **)lua_touserdata(l, 1);
     if (e)
         e->preventDefault();
     return 0;
@@ -447,7 +450,8 @@ static int PreventDefault(lua_State * l)
 
 static int Canceled(lua_State * l)
 {
-    Event * e = *(Event **)lua_touserdata(l, 1);
+    lua_settop(l, 1);
+    auto e = *(BonesEvent **)lua_touserdata(l, 1);
     if (e)
         e->canceled();
     return 0;
@@ -455,138 +459,140 @@ static int Canceled(lua_State * l)
 
 static int Target(lua_State * l)
 {
-    lua_settop(l, 1);
+    lua_settop(l, 1);    
+    auto e = *(BonesEvent **)lua_touserdata(l, 1);
     lua_pushnil(l);
-    Event * e = *(Event **)lua_touserdata(l, 1);
-    View * target = nullptr;
+    BonesObject * target = nullptr;
     if (e)
         target = e->target();
     if (target)
-        LuaContext::GetLOFromCO(l, GetCoreInstance()->getObject(target));
+        LuaContext::GetLOFromCO(l, target);
 
-    return 1;
-}
-
-static int Type(lua_State * l)
-{
-    Event * e = *(Event **)lua_touserdata(l, 1);
-    const char * desc = nullptr;
-    if (e)
-        lua_pushinteger(l, e->type());
-    else
-        lua_pushnil(l);
     return 1;
 }
 
 static int Phase(lua_State * l)
 {
-    Event * e = *(Event **)lua_touserdata(l, 1);
-    const char * desc = nullptr;
+    lua_settop(l, 1);
+    auto e = *(BonesEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+
     if (e)
         lua_pushinteger(l, e->phase());
-    else
-        lua_pushnil(l);
     return 1;
 }
+
+//static int Type(lua_State * l)
+//{
+//    lua_settop(l, 1);
+//    auto e = *(BonesEvent **)lua_touserdata(l, 1);
+//    lua_pushnil(l);
+//    if (e)
+//        lua_pushinteger(l, e->type());
+//
+//    return 1;
+//}
+
+
 /*
 ui event
 */
 static int IsShiftDown(lua_State * l)
 {
-    bool bret = false;
-    UIEvent * e = *(UIEvent **)lua_touserdata(l, 1);
+    lua_settop(l, 1);
+    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
+    lua_pushnil(l);
     if (e)
-        bret = e->isShiftDown();
+        lua_pushboolean(l, e->isShiftDown());
 
-    lua_pushboolean(l, bret);
     return 1;
 }
 
 static int IsControlDown(lua_State * l)
 {
-    bool bret = false;
-    UIEvent * e = *(UIEvent **)lua_touserdata(l, 1);
+    lua_settop(l, 1);
+    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
+    lua_pushnil(l);
     if (e)
-        bret = e->isControlDown();
+        lua_pushboolean(l, e->isControlDown());
 
-    lua_pushboolean(l, bret);
     return 1;
 }
 
 static int IsCapsLockDown(lua_State * l)
 {
-    bool bret = false;
-    UIEvent * e = *(UIEvent **)lua_touserdata(l, 1);
+    lua_settop(l, 1);
+    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
+    lua_pushnil(l);
     if (e)
-        bret = e->isCapsLockDown();
+        lua_pushboolean(l, e->isCapsLockDown());
 
-    lua_pushboolean(l, bret);
     return 1;
 }
 
 static int IsAltDown(lua_State * l)
 {
-    bool bret = false;
-    UIEvent * e = *(UIEvent **)lua_touserdata(l, 1);
+    lua_settop(l, 1);
+    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
+    lua_pushnil(l);
     if (e)
-        bret = e->isAltDown();
+        lua_pushboolean(l, e->isAltDown());
 
-    lua_pushboolean(l, bret);
     return 1;
 }
 
 static int IsAltGrDown(lua_State * l)
 {
-    bool bret = false;
-    UIEvent * e = *(UIEvent **)lua_touserdata(l, 1);
+    lua_settop(l, 1);
+    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
+    lua_pushnil(l);
     if (e)
-        bret = e->isAltGrDown();
+        lua_pushboolean(l, e->isAltGrDown());
 
-    lua_pushboolean(l, bret);
     return 1;
 }
 
 static int IsCommandDown(lua_State * l)
 {
-    bool bret = false;
-    UIEvent * e = *(UIEvent **)lua_touserdata(l, 1);
+    lua_settop(l, 1);
+    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
+    lua_pushnil(l);
     if (e)
-        bret = e->isCommandDown();
+        lua_pushboolean(l, e->isCommandDown());
 
-    lua_pushboolean(l, bret);
     return 1;
 }
 
 static int IsLeftMouseDown(lua_State * l)
 {
-    bool bret = false;
-    UIEvent * e = *(UIEvent **)lua_touserdata(l, 1);
+    lua_settop(l, 1);
+    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
+    lua_pushnil(l);
     if (e)
-        bret = e->isLeftMouseDown();
+        lua_pushboolean(l, e->isLeftMouseDown());
 
-    lua_pushboolean(l, bret);
     return 1;
 }
 
 static int IsMiddleMouseDown(lua_State * l)
 {
-    bool bret = false;
-    UIEvent * e = *(UIEvent **)lua_touserdata(l, 1);
+    lua_settop(l, 1);
+    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
+    lua_pushnil(l);
     if (e)
-        bret = e->isMiddleMouseDown();
+        lua_pushboolean(l, e->isMiddleMouseDown());
 
-    lua_pushboolean(l, bret);
     return 1;
 }
 
 static int IsRightMouseDown(lua_State * l)
 {
-    bool bret = false;
-    UIEvent * e = *(UIEvent **)lua_touserdata(l, 1);
+    lua_settop(l, 1);
+    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
+    lua_pushnil(l);
     if (e)
-        bret = e->isRightMouseDown();
+        lua_pushboolean(l, e->isRightMouseDown());
 
-    lua_pushboolean(l, bret);
     return 1;
 }
 
@@ -595,61 +601,104 @@ mouse event
 */
 static int Loc(lua_State * l)
 {
-    MouseEvent * e = *(MouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
-    Scalar x = 0;
-    Scalar y = 0;
+    lua_settop(l, 1);
+    auto e = *(BonesMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_pushnil(l);
+    lua_pushnil(l);
     if (e)
     {
-        x = e->getLoc().x();
-        y = e->getLoc().y();
+        auto bp = e->getLoc();
+        lua_pushnumber(l, bp.x);
+        lua_pushnumber(l, bp.y);
     }
-    lua_pushnumber(l, x);
-    lua_pushnumber(l, y);
     return 2;
 }
 
 static int RootLoc(lua_State *l)
 {
-    MouseEvent * e = *(MouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
-    Scalar x = 0;
-    Scalar y = 0;
+    lua_settop(l, 1);
+    auto e = *(BonesMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_pushnil(l);
+    lua_pushnil(l);
     if (e)
     {
-        x = e->getRootLoc().x();
-        y = e->getRootLoc().y();
+        auto bp = e->getRootLoc();
+        lua_pushnumber(l, bp.x);
+        lua_pushnumber(l, bp.y);
     }
-    lua_pushnumber(l, x);
-    lua_pushnumber(l, y);
     return 2;
 }
 
 static int IsLeftMouse(lua_State * l)
 {
-    bool ret = false;
-    MouseEvent * e = *(MouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_settop(l, 1);
+    auto e = *(BonesMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_pushnil(l);
     if (e)
-        ret = e->isLeftMouse();
-    lua_pushboolean(l, ret);
+        lua_pushboolean(l, e->isLeftMouse());
     return 1;
 }
 
 static int IsMiddleMouse(lua_State * l)
 {
-    bool ret = false;
-    MouseEvent * e = *(MouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_settop(l, 1);
+    auto e = *(BonesMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_pushnil(l);
     if (e)
-        ret = e->isMiddleMouse();
-    lua_pushboolean(l, ret);
+        lua_pushboolean(l, e->isMiddleMouse());
     return 1;
 }
 
 static int IsRightMouse(lua_State * l)
 {
-    bool ret = false;
-    MouseEvent * e = *(MouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_settop(l, 1);
+    auto e = *(BonesMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_pushnil(l);
     if (e)
-        ret = e->isRightMouse();
-    lua_pushboolean(l, ret);
+        lua_pushboolean(l, e->isRightMouse());
+
+    return 1;
+}
+
+static int MouseType(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(BonesMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_pushnil(l);
+    if (e)
+        lua_pushinteger(l, e->type());
+    return 1;
+}
+/*............................................................
+key event
+*/
+static int ch(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(BonesKeyEvent **)luaL_checkudata(l, 1, kMetaTableKeyEvent);
+    lua_pushnil(l);
+    if (e)
+        lua_pushinteger(l, e->ch());
+    return 1;
+}
+
+static int State(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(BonesKeyEvent **)luaL_checkudata(l, 1, kMetaTableKeyEvent);
+    lua_pushnil(l);
+    if (e)
+        lua_pushinteger(l, e->state().state);
+    return 1;
+}
+
+static int KeyType(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(BonesKeyEvent **)luaL_checkudata(l, 1, kMetaTableKeyEvent);
+    lua_pushnil(l);
+    if (e)
+        lua_pushinteger(l, e->type());
     return 1;
 }
 
@@ -658,11 +707,43 @@ focus event
 */
 static int IsTabTraversal(lua_State * l)
 {
-    bool ret = false;
-    FocusEvent * e = *(FocusEvent **)luaL_checkudata(l, 1, kMetaTableFocusEvent);
+    lua_settop(l, 1);
+    auto e = *(BonesFocusEvent **)luaL_checkudata(l, 1, kMetaTableFocusEvent);
+    lua_pushnil(l);
     if (e)
-        ret = e->isTabTraversal();
-    lua_pushboolean(l, ret);
+        lua_pushboolean(l, e->isTabTraversal());
+    return 1;
+}
+
+static int FocusType(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(BonesFocusEvent **)luaL_checkudata(l, 1, kMetaTableFocusEvent);
+    lua_pushnil(l);
+    if (e)
+        lua_pushinteger(l, e->type());
+    return 1;
+}
+/*............................................................
+WHEEL event
+*/
+static int DX(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(BonesWheelEvent **)luaL_checkudata(l, 1, kMetaTableWheelEvent);
+    lua_pushnil(l);
+    if (e)
+        lua_pushinteger(l, e->dx());
+    return 1;
+}
+
+static int DY(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(BonesWheelEvent **)luaL_checkudata(l, 1, kMetaTableWheelEvent);
+    lua_pushnil(l);
+    if (e)
+        lua_pushinteger(l, e->dy());
     return 1;
 }
 
@@ -679,6 +760,8 @@ void LuaMetaTable::GetMouseEvent(lua_State * l)
     lua_setfield(l, -2, kMethodIsMiddleMouse);
     lua_pushcfunction(l, &IsRightMouse);
     lua_setfield(l, -2, kMethodIsRightMouse);
+    lua_pushcfunction(l, &MouseType);
+    lua_setfield(l, -2, kMethodType);
 }
 
 void LuaMetaTable::GetFocusEvent(lua_State * l)
@@ -686,6 +769,28 @@ void LuaMetaTable::GetFocusEvent(lua_State * l)
     GetUIEvent(l, kMetaTableFocusEvent);
     lua_pushcfunction(l, &IsTabTraversal);
     lua_setfield(l, -2, kMethodIsTabTraversal);
+    lua_pushcfunction(l, &FocusType);
+    lua_setfield(l, -2, kMethodType);
+}
+
+void LuaMetaTable::GetWheelEvent(lua_State * l)
+{
+    GetEvent(l, kMetaTableWheelEvent);
+    lua_pushcfunction(l, &DX);
+    lua_setfield(l, -2, kMethodDX);
+    lua_pushcfunction(l, &DY);
+    lua_setfield(l, -2, kMethodDY);
+}
+
+void LuaMetaTable::GetKeyEvent(lua_State * l)
+{
+    GetUIEvent(l, kMetaTableKeyEvent);
+    lua_pushcfunction(l, &ch);
+    lua_setfield(l, -2, kMethodCH);
+    lua_pushcfunction(l, &State);
+    lua_setfield(l, -2, kMethodState);
+    lua_pushcfunction(l, &KeyType);
+    lua_setfield(l, -2, kMethodType);
 }
 
 void LuaMetaTable::GetUIEvent(lua_State * l, const char * class_name)
@@ -731,8 +836,6 @@ void LuaMetaTable::GetEvent(lua_State * l, const char * class_name)
         lua_setfield(l, -2, kMethodCanceled);
         lua_pushcfunction(l, &Target);
         lua_setfield(l, -2, kMethodTarget);
-        lua_pushcfunction(l, &Type);
-        lua_setfield(l, -2, kMethodType);
         lua_pushcfunction(l, &Phase);
         lua_setfield(l, -2, kMethodPhase);
     }

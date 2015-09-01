@@ -171,13 +171,20 @@ private:
 // equal lParam
 struct KeyState
 {
-    uint32_t repeat_count : 16;
-    uint32_t scan_code : 8;
-    uint32_t extended_key : 1;
-    uint32_t reserved : 4;
-    uint32_t context_code : 1;
-    uint32_t previous_state : 1;
-    uint32_t transition_state : 1;
+    union
+    {
+        struct
+        {
+            uint32_t repeat_count : 16;
+            uint32_t scan_code : 8;
+            uint32_t extended_key : 1;
+            uint32_t reserved : 4;
+            uint32_t context_code : 1;
+            uint32_t previous_state : 1;
+            uint32_t transition_state : 1;
+        };
+        uint32_t state;
+    };
 };
 
 class KeyEvent : public UIEvent

@@ -3,7 +3,6 @@
 
 #include "bones_internal.h"
 #include "lua_context.h"
-#include "core/ref.h"
 
 namespace bones
 {
@@ -22,31 +21,15 @@ public:
     static void GetMouseEvent(lua_State * l);
     
     static void GetFocusEvent(lua_State * l);
+
+    static void GetWheelEvent(lua_State * l);
+
+    static void GetKeyEvent(lua_State * l);
 private:
     static void GetEvent(lua_State * l, const char * class_name);
     
     static void GetUIEvent(lua_State * l, const char * class_name);
 };
-
-//class LuaMetaTable
-//{
-//public:
-//    static void GetPanel(lua_State * l);
-//
-//    static void GetArea(lua_State * l);
-//
-
-//
-//    static void GetAnimation(lua_State * l);
-//
-
-//public:
-//    static void GetRef(lua_State *l, const char * class_name);
-//
-//    static void GetView(lua_State * l, const char * class_name);
-//
-
-//};
 
 }
 #endif

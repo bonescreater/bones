@@ -42,12 +42,31 @@ ScriptParser * GetCoreInstance()
 }
 
 const char * kNotifyOrder = "__notify";
+const char * kEventOrder = "__event";
 const char * kMethodAnimateRun = "__run";
 const char * kMethodAnimateStart = "__start";
 const char * kMethodAnimateStop = "__stop";
 const char * kMethodAnimatePause = "__pause";
 const char * kMethodAnimateResume = "__resume";
+const char * kMethodOnMouseDown = "onMouseDown";
+const char * kMethodOnMouseUp = "onMouseUp";
+const char * kMethodOnMouseMove = "onMouseMove";
+const char * kMethodOnMouseLeave = "onMouseLeave";
+const char * kMethodOnMouseEnter = "onMouseEnter";
+const char * kMethodOnMouseClick = "onMouseClick";
+const char * kMethodOnMouseDClick = "onMouseDClick";
+const char * kMethodOnKeyDown = "onKeyDown";
+const char * kMethodOnKeyPress = "onKeyPress";
+const char * kMethodOnKeyUp = "onKeyUp";
+const char * kMethodOnFocusIn = "onFocusIn";
+const char * kMethodOnFocusOut = "onFocusOut";
+const char * kMethodOnFocus = "onFocus";
+const char * kMethodOnBlur = "onBlur";
+const char * kMethodOnWheel = "onWheel";
 
+const char * kMethodOnSizeChanged = "onSizeChanged";
+const char * kMethodOnPositionChanged = "onPositionChanged";
+const char * kMethodOnHitTest = "onHitTest";
 }
 
 BONES_API(BonesCore *) BonesStartUp(const BonesConfig & config)

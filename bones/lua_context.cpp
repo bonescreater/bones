@@ -126,7 +126,7 @@ void LuaContext::GetCO2LOTable(lua_State * l)
     lua_pop(l, 2);
 }
 
-void LuaContext::GetEventCacheTable(lua_State * l)
+void * LuaContext::GetEventCache(lua_State * l, int count)
 {
     LUA_STACK_AUTO_CHECK_COUNT(l, 1);
     lua_pushnil(l);
@@ -136,6 +136,20 @@ void LuaContext::GetEventCacheTable(lua_State * l)
         LOG_ERROR << kCacheEvent << "push failed";
     lua_copy(l, -1, -3);
     lua_pop(l, 2);
+    //得到cache table
+    lua_pushinteger(l, count);
+    lua_gettable(l, -2);
+    if (!lua_isuserdata(l, -1))
+    {
+        lua_pop(l, -1);
+        lua_pushinteger(l, count);
+        lua_newuserdata(l, sizeof(void *));
+        lua_settable(l, -3);
+        lua_pushinteger(l, count);
+        lua_gettable(l, -2);
+    }
+
+    return lua_touserdata(l, -1);
 }
 
 int LuaContext::SafeLOPCall(lua_State * l, int nargs, int nresults)
