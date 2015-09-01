@@ -98,25 +98,24 @@ static int ScriptCB(lua_State * l)
 }
 
 ScriptParser::ScriptParser()
-:listener_(nullptr)
+:listener_(nullptr), last_listener_(nullptr)
 {
     xml_.setDelegate(this);
 }
 
 bool ScriptParser::loadXMLString(const char * data, BonesXMLListener * listener)
 {
+    LuaContext::Reset();
+    v2bo_.clear();
+
+    last_listener_ = listener_;
     listener_ = listener;
     return xml_.loadString(data);
 }
 
 void ScriptParser::cleanXML()
 {
-    //停止所有的定时器
-    Core::GetAnimationManager()->removeAll(false);
-
-    LuaContext::Reset();
-    v2bo_.clear();
-    xml_.clean();
+    loadXMLString(nullptr, nullptr);
 }
 
 BonesObject * ScriptParser::getObject(const char * id)
@@ -181,9 +180,29 @@ bool ScriptParser::onLoad()
     return listener_ ? listener_->onLoad(this) : true;
 }
 
+void ScriptParser::onUnload()
+{
+    last_listener_ ? last_listener_->onUnload(this) : 0;
+}
+
 void ScriptParser::onPrepare(View * v, XMLNode node)
 {
-    ;
+    if (!v)
+        return;
+    //调用每个节点的onPrepare函数
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, getObject(v));
+    lua_getfield(l, -1, kNotifyOrder);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, "onPrepare");
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        auto count = LuaContext::SafeLOPCall(l, 1, 0);
+        lua_pop(l, count);
+    }
+    lua_pop(l, 2);
 }
 
 bool ScriptParser::preprocessHead(XMLNode node, const char * full_path)
@@ -282,6 +301,8 @@ bool ScriptParser::preprocessBody(XMLNode node, View * parent_ob, View ** ob)
         return false;
     if (!strcmp(kStrNotify, node.name()))
         return handleNotify(node, parent_ob, ob);
+    else if (!strcmp(kStrEvent, node.name()))
+        return handleEvent(node, parent_ob, ob);
     return false;
 }
 
@@ -299,6 +320,8 @@ void ScriptParser::postprocessBody(XMLNode node, View * parent_ob, View * ob)
         handleText(static_cast<Text *>(ob));
     else if (ob->getClassName() == kClassRichEdit)
         handleRichEdit(static_cast<RichEdit *>(ob));
+    else if (ob->getClassName() == kClassArea)
+        handleArea(static_cast<Area *>(ob));
 }
 
 BonesObject * ScriptParser::getObject(View * v)
@@ -465,25 +488,43 @@ bool ScriptParser::handleNotify(XMLNode node, View * parent_ob, View ** ob)
     bool handle = true;
     if (kClassRoot == bo->getClassName())
         (static_cast<LuaRoot *>(bo))->addNotify(name, module, func);
+    else if (kClassArea == bo->getClassName())
+        (static_cast<LuaArea *>(bo))->addNotify(name, module, func);
     else
         handle = false;
 
     return handle;
 }
-//bool ScriptParser::handleExtendLabel(XMLNode node, View * parent_ob, const Module & mod, View ** ob)
-//{
-//    if (XMLController::handleExtendLabel(node, parent_ob, mod, ob))
-//        return true;
-//    auto name = node.name();
-//    if (!name)
-//        return false;
-//
-//    if (!strcmp("event", name))
-//        return handleELEvent(node, parent_ob, mod, ob);
-//
-//    return false;
-//}
-//
+
+bool ScriptParser::handleEvent(XMLNode node, View * parent_ob, View ** ob)
+{
+    if (!parent_ob)
+        return false;
+    XMLNode::Attribute attrs[] =
+    {
+        { kStrName, nullptr }, 
+        { kStrModule, nullptr }, 
+        { kStrFunc, nullptr },
+        { kStrPhase, nullptr },
+    };
+
+    node.acquire(attrs, sizeof(attrs) / sizeof(attrs[0]));
+    auto & name = attrs[0].value;
+    auto & module = attrs[1].value;
+    auto & func = attrs[2].value;
+    auto & phase = attrs[3].value;
+
+    BonesObject * bo = getObject(parent_ob);
+
+    bool handle = true;
+    if (kClassArea == bo->getClassName())
+        (static_cast<LuaArea *>(bo))->addEvent(name, phase, module, func);
+    else
+        handle = false;
+
+    return handle;
+}
+
 //void ScriptParser::handleNodeOnPrepare(XMLNode node, View * ob)
 //{
 //    if (!node || !ob)
@@ -500,29 +541,6 @@ bool ScriptParser::handleNotify(XMLNode node, View * parent_ob, View ** ob)
 //        LuaContext::SafeLOPCall(l, 1, 0);
 //    }
 //    lua_pop(l, 1);
-//}
-//
-////给父对象添加事件绑定
-//bool ScriptParser::handleELEvent(XMLNode node, View * parent_ob, const Module & mod, View ** ob)
-//{
-//    if (!parent_ob)
-//        return false;
-//    Attribute attrs[] =
-//    {
-//        { kStrName, nullptr },
-//        { kStrPhase, nullptr },
-//        { kStrModule, nullptr },
-//        { kStrFunc, nullptr },
-//    };
-//
-//    acquireAttrs(node, attrs, sizeof(attrs) / sizeof(attrs[0]));
-//    if (kClassArea == parent_ob->getClassName())
-//        LuaArea::RegisterEvent(static_cast<Area *>(parent_ob),
-//        attrs[0].value,
-//        attrs[1].value,
-//        attrs[2].value,
-//        attrs[3].value);
-//    return true;
 //}
 
 

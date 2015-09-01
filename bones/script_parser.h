@@ -45,6 +45,8 @@ public:
     //xml controller 
     //XML刚载入时触发 返回false 自动clean
     bool onLoad() override;
+
+    void onUnload() override;
     //节点初始化完毕触发 此时禁止clean
     void onPrepare(View * v, XMLNode node) override;
 
@@ -97,9 +99,12 @@ private:
     void handleArea(Area * ob);
 
     bool handleNotify(XMLNode node, View * parent_ob, View ** ob);
+
+    bool handleEvent(XMLNode node, View * parent_ob, View ** ob);
 private:
     XMLController xml_;
     BonesXMLListener * listener_;
+    BonesXMLListener * last_listener_;
     std::map<View *, BonesObject *>v2bo_;
 };
 

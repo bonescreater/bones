@@ -15,7 +15,7 @@
 //}
 
 //int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-class TestWindow : public BonesRoot::Listener, public BonesRichEdit::Listener
+class TestWindow : public BonesRoot::NotifyListener, public BonesRichEdit::NotifyListener
 {
 public:
     static bool Initialize();
@@ -147,6 +147,11 @@ public:
         ((BonesRichEdit *)BonesGetCore()->getObject("rich"))->setListener(&test_window);
         return true;
     }
+
+    void onUnload(BonesCore *) override
+    {
+        ;
+    }
 };
 
 BonesPixmap * lena = nullptr;
@@ -223,7 +228,7 @@ int main()
         }
 
     }
-
+    BonesGetCore()->cleanXML();
     BonesGetCore()->getResManager()->clean();
     pm_pic->release();
 
@@ -400,7 +405,6 @@ LRESULT TestWindow::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
             break;
         case WM_DESTROY:
-            BonesGetCore()->cleanXML();
             ::PostQuitMessage(0);
             return 0;
         case WM_KEYDOWN:

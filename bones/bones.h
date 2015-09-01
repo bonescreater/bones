@@ -73,6 +73,8 @@ class BonesXMLListener
 {
 public:
     virtual bool onLoad(BonesCore *) = 0;
+
+    virtual void onUnload(BonesCore *) = 0;
 };
 
 

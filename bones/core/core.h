@@ -63,6 +63,8 @@ public:
 public:
     static bool StartUp(const Config & config);
 
+    static void Clean();
+
     static void ShutDown();
 
     static void Update();

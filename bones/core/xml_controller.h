@@ -22,6 +22,8 @@ public:
     public:
         //XML刚载入时触发 返回false 自动clean
         virtual bool onLoad() = 0;
+
+        virtual void onUnload() = 0;
         //节点初始化完毕触发 此时禁止clean
         virtual void onPrepare(View * v, XMLNode node) = 0;
 
@@ -38,6 +40,11 @@ public:
     //xml 文件和CSS文件常驻内存
     struct Module
     {
+        void clean()
+        {
+            xml_file.clear();
+            xml_fullname.clear();
+        }
         FileStream xml_file;//xml文件内容
         std::string xml_fullname;
         XMLDocument doc;
@@ -60,8 +67,6 @@ public:
     void setDelegate(Delegate * delegate);
     //zero-terminated XML string
     bool loadString(const char * data);
-
-    void clean();
 
     View * getViewByID(const char * id);
 
@@ -88,6 +93,8 @@ protected:
     //返回指定节点树 根节点的对象
     bool createViewFromNode(XMLNode node, View * parent_ob, View ** ob);
 private:
+    void clean(bool notify);
+
     bool loadMainModule(Module & mod);
 
     void parseModuleHead(Module & mod);
@@ -120,7 +127,7 @@ private:
     std::map<RefPtr<View>, XMLNode> ob2node_;
     std::vector<RefPtr<Root>> roots_;
     //模块的描述
-    std::vector<Module> main_modules_;
+    Module main_module_;
     std::map<std::string, Module> modules_;
     std::vector<FileStream> css_files_;//多个css文件内容
 };

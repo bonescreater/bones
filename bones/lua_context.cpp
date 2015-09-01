@@ -16,9 +16,6 @@ static const char * kCO2LOTable = "__co2lo";
 static const char * kCacheEvent = "__event__cache";
 
 static const char * kMethodGetObject = "getObject";
-static const char * kMethodDecodePixmap = "decodePixmap";
-static const char * kMethodFreePixmap = "freePixmap";
-static const char * kMethodLoadImage = "loadImage";
 
 static lua_State * state = nullptr;
 
@@ -81,8 +78,8 @@ bool LuaContext::StartUp()
 
 void LuaContext::ShutDown()
 {
-    lua_gc(state, LUA_GCCOLLECT, 0);
     //应该close前 清空table
+    Reset();  
     lua_pushnil(state);
     lua_setglobal(state, kBonesTable);
     if (state)
@@ -134,20 +131,22 @@ void * LuaContext::GetEventCache(lua_State * l, int count)
     lua_getfield(l, -1, kCacheEvent);
     if (!lua_istable(l, -1))
         LOG_ERROR << kCacheEvent << "push failed";
-    lua_copy(l, -1, -3);
-    lua_pop(l, 2);
+
     //得到cache table
     lua_pushinteger(l, count);
     lua_gettable(l, -2);
     if (!lua_isuserdata(l, -1))
     {
-        lua_pop(l, -1);
+        lua_pop(l, 1);
         lua_pushinteger(l, count);
         lua_newuserdata(l, sizeof(void *));
+        assert(lua_istable(l, -3));
         lua_settable(l, -3);
         lua_pushinteger(l, count);
         lua_gettable(l, -2);
     }
+    lua_copy(l, -1, -4);
+    lua_pop(l, 3);
 
     return lua_touserdata(l, -1);
 }

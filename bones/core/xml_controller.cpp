@@ -64,16 +64,15 @@ void XMLController::setDelegate(Delegate * delegate)
 
 bool XMLController::loadString(const char * data)
 {
+    clean(true);
     size_t len = 0;
     if ( !data || !(len = strlen(data)) )
         return false;
+    
+    main_module_.xml_file.resize(len + 1, 0);
+    memcpy(&main_module_.xml_file[0], data, len);
 
-    main_modules_.push_back(Module());
-    auto & main_module = main_modules_[main_modules_.size() - 1];
-    main_module.xml_file.resize(len + 1, 0);
-    memcpy(&main_module.xml_file[0], data, len);
-
-    return loadMainModule(main_module);
+    return loadMainModule(main_module_);
 }
 
 bool XMLController::loadMainModule(Module & mod)
@@ -336,6 +335,14 @@ void XMLController::applyClass(View * ob)
     if (!ob)
         return;
     RefPtr<View> pv;
+    auto child = ob->getFirstChild();
+    while (child)
+    {
+        pv.reset(child);
+        applyClass(child);
+        child = child->getNextSibling();
+    }
+
     pv.reset(ob);
     auto iter = ob2node_.find(pv);
     if (iter == ob2node_.end())
@@ -349,18 +356,16 @@ void XMLController::applyClass(View * ob)
 
     if (attrs[0].value)
         Core::GetCSSManager()->applyClass(ob, attrs[0].value);
-    
-    auto child = ob->getFirstChild();
-    while (child)
-    {       
-        pv.reset(child);
-        applyClass(child);
-        child = child->getNextSibling();
-    }
 }
 
-void XMLController::clean()
+void XMLController::clean(bool notify)
 {
+    //停止所有动画
+    Core::Clean();
+    //发送通知
+    if (notify)
+        delegate_ ? delegate_->onUnload() : 0;
+    //删除节点父子结构
     for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
     {
         (*iter)->recursiveDetachChildren();
@@ -371,9 +376,7 @@ void XMLController::clean()
     roots_.clear();
 
     modules_.clear();
-    main_modules_.clear();
-    Core::GetCSSManager()->clean();
-
+    main_module_.clean();
 }
 
 void XMLController::parseModuleBody(const Module & mod)
@@ -393,11 +396,14 @@ void XMLController::parseModuleBody(const Module & mod)
     auto load = delegate_ ? delegate_->onLoad() : true;
     if (load)
     {
-        applyClass();
+        //prepare 和class 都是 先子后父
+        //prepare在前 是因为应用class时 可能有事件回调
+        //prepare中可以注册好回调等待处理
         notifyPrepare();
+        applyClass();        
     }
     else
-        clean();
+        clean(false);
 }
 
 bool XMLController::createViewFromNode(XMLNode node, View * parent_ob, View ** ob)
@@ -409,6 +415,7 @@ bool XMLController::createViewFromNode(XMLNode node, View * parent_ob, View ** o
     bool bret = delegate_ ? delegate_->preprocessBody(node, parent_ob, &node_ob) : 0;
     if (!bret)
     {//没有被预处理
+        bool extend = false;
         switch (LabelFromName(node.name()))
         {
         case kLABEL_ROOT:
@@ -431,10 +438,11 @@ bool XMLController::createViewFromNode(XMLNode node, View * parent_ob, View ** o
             bret = handleShape(node, parent_ob, &node_ob);
             break;
         default:
+            extend = true;
             bret = handleExtendLabel(node, parent_ob, &node_ob);
             break;
         }
-        if (bret)
+        if (bret && !extend)
             delegate_ ? delegate_->postprocessBody(node, parent_ob, node_ob) : 0;
     }
     
@@ -470,7 +478,10 @@ bool XMLController::handleExtendLabel(XMLNode node, View * parent_ob, View ** ob
     View * node_ob = nullptr;
     bool bret = createViewFromNode(body.firstChild(), parent_ob, &node_ob);
     if (bret && node_ob)
-    {
+    {//如果是扩展标签的话 node 应该是当前的node
+        RefPtr<View> rv;
+        rv.reset(node_ob);
+        ob2node_[rv] = node;
         if (ob)
             *ob = node_ob;
     }

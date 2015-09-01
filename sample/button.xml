@@ -5,8 +5,9 @@
 </head>
 <body>
 	                <area>
-                    <event name ="onPrepare" module ="button" func ="onPrepare"></event>
-                    <event name ="onSizeChanged" module ="button" func ="onSizeChanged"></event>
+                    <notify name ="onPrepare" module ="button" func ="onPrepare"></notify>
+                    <notify name ="onSizeChanged" module ="button" func ="onSizeChanged"></notify>
+                    
                     <event name ="onMouseDown" phase ="target" module ="button" func ="onMouseDown"></event>
                     <event name ="onMouseUp" phase ="target" module ="button" func ="onMouseUp"></event>
                     <event name ="onMouseMove" phase ="target" module ="button" func ="onMouseMove"></event>
