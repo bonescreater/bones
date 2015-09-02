@@ -26,9 +26,6 @@
     <ClCompile Include="bones\lua_shape.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
-    <ClCompile Include="bones\lua_panel.cpp">
-      <Filter>lua\proxy</Filter>
-    </ClCompile>
     <ClCompile Include="bones\lua_image.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
@@ -68,9 +65,6 @@
       <Filter>lua\proxy</Filter>
     </ClInclude>
     <ClInclude Include="bones\lua_shape.h">
-      <Filter>lua\proxy</Filter>
-    </ClInclude>
-    <ClInclude Include="bones\lua_panel.h">
       <Filter>lua\proxy</Filter>
     </ClInclude>
     <ClInclude Include="bones\lua_image.h">

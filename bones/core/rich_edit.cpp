@@ -8,6 +8,7 @@
 #include "encoding.h"
 #include "animation.h"
 #include "animation_manager.h"
+#include "css_utils.h"
 
 namespace bones
 {
@@ -67,6 +68,7 @@ bg_opaque_(true), bg_color_(0xff000088), bg_set_color_(true),
 traversal_(false), want_(kNone)
 {
     //lazyInitialize();
+    dc_ = ::CreateCompatibleDC(NULL);
 }
 
 RichEdit::~RichEdit()
@@ -260,6 +262,16 @@ void RichEdit::onSizeChanged()
     services_->OnTxPropertyBitsChange(TXTBIT_CLIENTRECTCHANGE, TRUE);
 }
 
+void RichEdit::onMouseEnter(MouseEvent & e)
+{
+    services_->OnTxInPlaceActivate(NULL);
+}
+
+void RichEdit::onMouseLeave(MouseEvent & e)
+{
+    //services_->OnTxInPlaceDeactivate();
+}
+
 void RichEdit::onMouseMove(MouseEvent & e)
 {
     LRESULT lr = 1;
@@ -270,7 +282,7 @@ void RichEdit::onMouseMove(MouseEvent & e)
     {
         auto & loc = e.getLoc();
         services_->OnTxSetCursor(DVASPECT_CONTENT, 0, NULL, NULL,
-            Core::GetCompatibleDC(), NULL, NULL, (INT)loc.x(), (INT)loc.y());
+            dc_, NULL, NULL, (INT)loc.x(), (INT)loc.y());
     }
 
 
@@ -298,7 +310,8 @@ void RichEdit::onMouseUp(MouseEvent & e)
 
 void RichEdit::onFocus(FocusEvent & e)
 {
-    services_->OnTxInPlaceActivate(NULL);
+    //services_->OnTxInPlaceActivate(NULL);
+    services_->OnTxUIActivate();
     services_->TxSendMessage(WM_SETFOCUS, 0, 0, nullptr);
     traversal_ = e.isTabTraversal();
 }
@@ -306,7 +319,9 @@ void RichEdit::onFocus(FocusEvent & e)
 void RichEdit::onBlur(FocusEvent & e)
 {
     services_->TxSendMessage(WM_KILLFOCUS, 0, 0, nullptr);
-    services_->OnTxInPlaceActivate(NULL);
+    services_->OnTxUIDeactivate();
+    //services_->OnTxInPlaceDeactivate(NULL);
+    
 }
 
 void RichEdit::onKeyDown(KeyEvent & e)
@@ -548,8 +563,9 @@ void RichEdit::lazyInitialize()
         assert(services_);
         initDefaultCF();
         initDefaultPF();
-        services_->OnTxInPlaceActivate(NULL);
+        //services_->OnTxInPlaceActivate(NULL);
     }
+    
 }
 
 HRESULT STDMETHODCALLTYPE RichEdit::QueryInterface(
@@ -575,7 +591,8 @@ ULONG STDMETHODCALLTYPE RichEdit::Release(void)
 
 HDC RichEdit::TxGetDC()
 {
-    return Core::GetCompatibleDC();
+    return dc_;
+    /*return Core::GetCompatibleDC();*/
 }
 
 INT RichEdit::TxReleaseDC(HDC hdc)
@@ -847,5 +864,42 @@ HRESULT	RichEdit::TxGetSelectionBarWidth(LONG *lSelBarWidth)
 }
 
 
+BONES_CSS_TABLE_BEGIN(RichEdit, View)
+BONES_CSS_SET_FUNC("content", &RichEdit::setText)
+BONES_CSS_SET_FUNC("background-style", &RichEdit::setBackground)
+BONES_CSS_SET_FUNC("font", &RichEdit::setFont)
+BONES_CSS_TABLE_END()
+
+void RichEdit::setText(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    CSSText content(params[0]);
+    setText(Encoding::FromUTF8(content.begin, content.length).data());
+}
+
+void RichEdit::setBackground(const CSSParams & params)
+{
+    if (params.empty())
+        return; 
+    bool opaque = true;
+    if (params[0] == "transparent")
+        opaque = false;
+    Color * c = nullptr;
+    Color color = 0;
+    if (params.size() > 1)
+    {
+        color = CSSUtils::CSSStrToColor(params[1]);
+        c = &color;
+    }
+    setBackground(opaque, c);
+}
+
+void RichEdit::setFont(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setFont(CSSUtils::CSSParamsToFont(params));
+}
 
 }

@@ -190,20 +190,20 @@ void ScriptParser::onPrepare(View * v, XMLNode node)
 {
     if (!v)
         return;
-    //调用每个节点的onPrepare函数
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetLOFromCO(l, getObject(v));
-    lua_getfield(l, -1, kNotifyOrder);
-    if (lua_istable(l, -1))
-    {
-        lua_getfield(l, -1, "onPrepare");
-        lua_pushnil(l);
-        lua_copy(l, -4, -1);
-        auto count = LuaContext::SafeLOPCall(l, 1, 0);
-        lua_pop(l, count);
-    }
-    lua_pop(l, 2);
+    auto ob = getObject(v);
+    if (ob->getClassName() == kClassRoot)
+        static_cast<LuaRoot *>(ob)->notifyPrepare();
+    else if (ob->getClassName() == kClassShape)
+        static_cast<LuaShape *>(ob)->notifyPrepare();
+    else if (ob->getClassName() == kClassImage)
+        static_cast<LuaImage *>(ob)->notifyPrepare();
+    else if (ob->getClassName() == kClassText)
+        static_cast<LuaText *>(ob)->notifyPrepare();
+    else if (ob->getClassName() == kClassRichEdit)
+        static_cast<LuaRichEdit *>(ob)->notifyPrepare();
+    else if (ob->getClassName() == kClassArea)
+        static_cast<LuaArea *>(ob)->notifyPrepare();
+
 }
 
 bool ScriptParser::preprocessHead(XMLNode node, const char * full_path)
@@ -359,12 +359,11 @@ void ScriptParser::listen(BonesObject * bo, const char * name, BonesScriptListen
     {
         //创建1个闭包
         lua_pushlightuserdata(l, listener);
-        lua_pushcclosure(l, ScriptCB, 1);
+        lua_pushcclosure(l, &ScriptCB, 1);
 
     }
     else
         lua_pushnil(l);
-
     lua_settable(l, -3);
     lua_pop(l, 1);
 }

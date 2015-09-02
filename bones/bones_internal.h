@@ -13,6 +13,7 @@ extern ScriptParser * GetCoreInstance();
 extern const char * kNotifyOrder;
 extern const char * kEventOrder;
 
+extern const char * kMethodOnPrepare;
 extern const char * kMethodAnimateRun;
 extern const char * kMethodAnimateStart;
 extern const char * kMethodAnimateStop;

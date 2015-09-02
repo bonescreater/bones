@@ -29,43 +29,9 @@ LuaRoot::~LuaRoot()
     object_->setDelegate(nullptr);
 }
 
-void LuaRoot::addNotify(const char * notify_name, const char * mod, const char * func)
+BonesRoot::NotifyListener * LuaRoot::getNotify() const
 {
-    if (!notify_name || !func)
-        return;
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetLOFromCO(l, this);
-    assert(lua_istable(l, -1));
-
-    lua_getfield(l, -1, kNotifyOrder);
-    if (!lua_istable(l, -1))
-    {
-        lua_pop(l, 1);
-        lua_newtable(l);
-        assert(lua_istable(l, -2));
-        lua_setfield(l, -2, kNotifyOrder);
-        lua_getfield(l, -1, kNotifyOrder);
-    }
-    lua_pushnil(l);
-    //得到func
-    if (mod)
-    {
-        lua_getglobal(l, mod);
-        assert(lua_istable(l, -1));
-        lua_getfield(l, -1, func);
-        lua_copy(l, -1, -3);
-        lua_pop(l, 2);
-    }
-    else
-    {
-        lua_getglobal(l, func);
-        lua_copy(l, -1, -2);
-        lua_pop(l, 1);
-    }
-    assert(lua_isfunction(l, -1));
-    lua_setfield(l, -2, notify_name);
-    lua_pop(l, 2);
+    return listener_;
 }
 
 void LuaRoot::setListener(NotifyListener * listener)
@@ -224,7 +190,7 @@ void LuaRoot::createCaret(Root * sender, Caret caret, const Size & size)
 void LuaRoot::showCaret(Root * sender, bool show)
 {
     bool stop = false;
-    listener_ ? listener_->showCaret(this, show, stop) : 0;
+    listener_ ? listener_->showCaret(this, show, stop) : true;
     if (stop)
         return;
     //(self, cursor)

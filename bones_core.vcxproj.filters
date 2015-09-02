@@ -10,9 +10,6 @@
     <Filter Include="bone\facade">
       <UniqueIdentifier>{40e24cfd-a1ae-489d-b1d1-f530f6dcae8e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="bone\win32">
-      <UniqueIdentifier>{14aff335-91f1-4ee3-999d-ccc7fdcbec74}</UniqueIdentifier>
-    </Filter>
     <Filter Include="bone\naked">
       <UniqueIdentifier>{501ad653-d803-4635-846f-2cbfcd09b305}</UniqueIdentifier>
     </Filter>
@@ -88,9 +85,6 @@
     <ClCompile Include="bones\core\area.cpp">
       <Filter>bone\naked</Filter>
     </ClCompile>
-    <ClCompile Include="bones\core\widget.cpp">
-      <Filter>bone\win32</Filter>
-    </ClCompile>
     <ClCompile Include="bones\core\animation_manager.cpp">
       <Filter>base</Filter>
     </ClCompile>
@@ -106,9 +100,6 @@
     <ClCompile Include="bones\core\shader.cpp">
       <Filter>3rd_ext\skia_ext</Filter>
     </ClCompile>
-    <ClCompile Include="bones\core\panel_manager.cpp">
-      <Filter>bone\win32</Filter>
-    </ClCompile>
     <ClCompile Include="bones\core\rich_edit.cpp">
       <Filter>bone\naked</Filter>
     </ClCompile>
@@ -123,9 +114,6 @@
     </ClCompile>
     <ClCompile Include="bones\core\css_utils.cpp">
       <Filter>base\css</Filter>
-    </ClCompile>
-    <ClCompile Include="bones\core\panel_widget.cpp">
-      <Filter>bone\win32</Filter>
     </ClCompile>
     <ClCompile Include="bones\core\root.cpp">
       <Filter>base</Filter>
@@ -199,9 +187,6 @@
     <ClInclude Include="bones\core\area.h">
       <Filter>bone\naked</Filter>
     </ClInclude>
-    <ClInclude Include="bones\core\widget.h">
-      <Filter>bone\win32</Filter>
-    </ClInclude>
     <ClInclude Include="bones\core\animation_manager.h">
       <Filter>base</Filter>
     </ClInclude>
@@ -216,9 +201,6 @@
     </ClInclude>
     <ClInclude Include="bones\core\shader.h">
       <Filter>3rd_ext\skia_ext</Filter>
-    </ClInclude>
-    <ClInclude Include="bones\core\panel_manager.h">
-      <Filter>bone\win32</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\rich_edit.h">
       <Filter>bone\naked</Filter>
@@ -237,9 +219,6 @@
     </ClInclude>
     <ClInclude Include="bones\core\css_utils.h">
       <Filter>base\css</Filter>
-    </ClInclude>
-    <ClInclude Include="bones\core\panel_widget.h">
-      <Filter>bone\win32</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\root.h">
       <Filter>base</Filter>

@@ -6,10 +6,16 @@
 namespace bones
 {
 class Image;
-class LuaImage : public LuaObject<BonesImage, Image>
+class LuaImage : public LuaObject<BonesImage, BonesImage::NotifyListener, Image>
 {
 public:
     LuaImage(Image * ob);
+
+    NotifyListener * getNotify() const override;
+
+    void setListener(NotifyListener * lis) override;
+private:
+    NotifyListener * notify_;
 };
 
 }

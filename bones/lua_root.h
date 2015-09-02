@@ -7,7 +7,7 @@
 namespace bones
 {
 
-class LuaRoot : public LuaObject<BonesRoot, Root>, 
+class LuaRoot : public LuaObject<BonesRoot, BonesRoot::NotifyListener, Root>,
                 public Root::Delegate
 {
 public:
@@ -15,7 +15,7 @@ public:
 
     ~LuaRoot();
 
-    void addNotify(const char * notify_name, const char * mod, const char * func);
+    NotifyListener * getNotify() const override;
 
     void setListener(NotifyListener * listener) override;
 

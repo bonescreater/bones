@@ -10,8 +10,20 @@ namespace bones
 static const char * kMetaTableShape = "__mt_shape";
 
 LuaShape::LuaShape(Shape * co)
-:LuaObject(co, kMetaTableShape)
+:LuaObject(co, kMetaTableShape), notify_(nullptr)
 {
     
 }
+
+BonesShape::NotifyListener * LuaShape::getNotify() const
+{
+    return notify_;
+}
+
+void LuaShape::setListener(NotifyListener * lis) 
+{
+    notify_ = lis;
+}
+
+
 }

@@ -7,7 +7,7 @@
 namespace bones
 {
 
-class LuaArea : public LuaObject<BonesArea, Area>,
+class LuaArea : public LuaObject<BonesArea, BonesArea::NotifyListener, Area>,
                 public Area::Delegate
 {
 public:
@@ -15,13 +15,11 @@ public:
 
     ~LuaArea();
 
+    NotifyListener * getNotify() const override;
+
     void addEvent(const char * name,
         const char * phase,
         const char * module,
-        const char * func);
-
-    void addNotify(const char * notify_name,
-        const char * mod,
         const char * func);
 
     void setListener(MouseListener * lis) override;

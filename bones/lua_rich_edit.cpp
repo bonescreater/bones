@@ -29,6 +29,11 @@ LuaRichEdit::~LuaRichEdit()
     object_->setDelegate(nullptr);
 }
 
+BonesRichEdit::NotifyListener * LuaRichEdit::getNotify() const
+{
+    return listener_;
+}
+
 void LuaRichEdit::setListener(NotifyListener * listener)
 {
     listener_ = listener;

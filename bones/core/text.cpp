@@ -199,6 +199,7 @@ void Text::appendEllipsis(size_t begin, size_t length)
     AdjustSkPaint(paint, text_color_, 1.0f, text_align_);
 
     std::vector<Scalar> widths;
+    widths.resize(length);
     paint.getTextWidths(content_.data() + begin, sizeof(wchar_t)* length, &widths[0]);
     Scalar line_width = 0;
     Scalar max_width = getWidth();
@@ -209,7 +210,8 @@ void Text::appendEllipsis(size_t begin, size_t length)
         lines_.push_back(std::wstring(content_.data() + begin, length));
     else
     {
-        auto ellipsis_length = paint.measureText(kStrEllipsis, sizeof(kStrEllipsis[0]) * length);
+        auto ellipsis_length = paint.measureText(kStrEllipsis, 
+                              sizeof(kStrEllipsis[0]) * wcslen(kStrEllipsis));
         if (ellipsis_length > max_width)
             lines_.push_back(kStrEllipsis);
         else
@@ -238,6 +240,7 @@ void Text::wordWrap(size_t begin, size_t length)
     AdjustSkPaint(paint, text_color_, 1.0f, text_align_);
 
     std::vector<Scalar> widths;
+    widths.resize(length);
     paint.getTextWidths(content_.data() + begin, sizeof(wchar_t)* length, &widths[0]);
     Scalar line_width = 0;
     Scalar max_width = getWidth();
@@ -263,7 +266,14 @@ void Text::wordWrap(size_t begin, size_t length)
             }
             lines_.push_back(line);                
         }
+    }
 
+    size_t line_length = widths.size() - line_start;
+    if (0 != line_length)
+    {
+        std::wstring line;
+        line.append(content_.data() + begin + line_start, line_length);
+        lines_.push_back(line);
     }
         
 }
@@ -308,27 +318,7 @@ void Text::setFont(const CSSParams & params)
 {
     if (params.empty())
         return;
-    Font ft;
-    ft.setSize(params[0]);
-    if (params.size() > 1)
-    {
-        ft.setFamily(std::string(params[1].begin, params[1].length).data());
-        uint32_t style = Font::kNormal;
-        for (size_t i = 2; i < params.size(); i++)
-        {
-            auto & str = params[i];
-            if (str == "bold")
-                style |= Font::kBold;
-            else if (str == "italic")
-                style |= Font::kItalic;
-            else if (str == "underline")
-                style |= Font::kUnderline;
-            else if (str == "strike")
-                style |= Font::kStrikeOut;
-        }
-        ft.setStyle(style);
-    }  
-    setFont(ft);
+    setFont(CSSUtils::CSSParamsToFont(params));
 }
 
 void Text::setAlign(const CSSParams & params)

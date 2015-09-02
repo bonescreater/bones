@@ -96,15 +96,22 @@
   </ItemGroup>
   <ItemGroup>
     <Xml Include="sample\button.xml" />
-    <Xml Include="sample\test.xml" />
+    <Xml Include="sample\test.xml">
+      <SubType>Designer</SubType>
+    </Xml>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sample\main.cpp" />
+    <ClCompile Include="sample\panel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="bones.vcxproj">
       <Project>{1251ada2-b795-46b1-8f13-581d62b92a26}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sample\panel.h" />
+    <ClInclude Include="sample\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

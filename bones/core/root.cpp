@@ -267,7 +267,7 @@ bool Root::notifyChangeCursor(Cursor cursor)
 
 bool Root::notifyShowCaret(bool show)
 {
-    delegate_ ? delegate_->showCaret(this, show) : 0;
+    delegate_ ? delegate_->showCaret(this, show) : true;
     return true;
 }
 

@@ -1,6 +1,7 @@
 ﻿#include "css_utils.h"
 #include "rect.h"
 #include "res_manager.h"
+#include "font.h"
 
 namespace bones
 {
@@ -287,6 +288,34 @@ Shader CSSUtils::CSSParamsToRadialGradientShader(const CSSParams & params)
     }
     shader.setGradient(pt, radius, &colors[0], &pos[0], colors.size(), m);
     return shader;
+}
+
+Font CSSUtils::CSSParamsToFont(const CSSParams & params)
+{
+    Font ft;
+    if (params.empty())
+        return ft;
+    ft.setSize(CSSUtils::CSSStrToPX(params[0]));
+    if (params.size() > 1)
+    {
+        CSSText family(params[1]);
+        ft.setFamily(std::string(family.begin, family.length).data());
+        uint32_t style = Font::kNormal;
+        for (size_t i = 2; i < params.size(); i++)
+        {
+            auto & str = params[i];
+            if (str == "bold")
+                style |= Font::kBold;
+            else if (str == "italic")
+                style |= Font::kItalic;
+            else if (str == "underline")
+                style |= Font::kUnderline;
+            else if (str == "strike")
+                style |= Font::kStrikeOut;
+        }
+        ft.setStyle(style);
+    }
+    return ft;
 }
 
 }

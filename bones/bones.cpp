@@ -43,6 +43,7 @@ ScriptParser * GetCoreInstance()
 
 const char * kNotifyOrder = "__notify";
 const char * kEventOrder = "__event";
+const char * kMethodOnPrepare = "onPrepare";
 const char * kMethodAnimateRun = "__run";
 const char * kMethodAnimateStart = "__start";
 const char * kMethodAnimateStop = "__stop";

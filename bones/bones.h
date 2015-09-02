@@ -275,6 +275,14 @@ public:
 class BonesObject : public BonesBase
 {
 public:
+    //每个Object都支持onPrepare事件
+    template<class T>
+    class NotifyBase
+    {
+    public:
+        virtual void onPrepare(T * sender, bool & stop) = 0;
+    };
+public:
     virtual const char * getClassName() = 0;
 
     virtual void * cast() = 0;
@@ -288,6 +296,10 @@ public:
     virtual BonesPoint getLoc() const = 0;
 
     virtual BonesSize getSize() const = 0;
+
+    virtual void setVisible(bool visible) = 0;
+
+    virtual void setFocusable(bool focusable) = 0;
 
     virtual bool contains(BonesScalar x, BonesScalar y) = 0;
 
@@ -317,7 +329,7 @@ public:
 class BonesRoot : public BonesObject
 {
 public:
-    class NotifyListener
+    class NotifyListener : public NotifyBase<BonesRoot>
     {
     public:
         virtual void requestFocus(BonesRoot * sender, bool & stop) = 0;
@@ -360,23 +372,41 @@ public:
 
 class BonesShape : public BonesObject
 {
+public:
+    class NotifyListener : public NotifyBase<BonesShape>
+    {
+        ;
+    };
 
+    virtual void setListener(NotifyListener * lis) = 0;
 };
 
 class BonesImage : public BonesObject
 {
+public:
+    class NotifyListener : public NotifyBase<BonesImage>
+    {
+        ;
+    };
 
+    virtual void setListener(NotifyListener * lis) = 0;
 };
 
 class BonesText : public BonesObject
 {
+public:
+    class NotifyListener : public NotifyBase<BonesText>
+    {
+        ;
+    };
 
+    virtual void setListener(NotifyListener * lis) = 0;
 };
 
 class BonesRichEdit : public BonesObject
 {
 public:
-    class NotifyListener
+    class NotifyListener : public NotifyBase<BonesRichEdit>
     {
     public:
         virtual BOOL screenToClient(BonesRichEdit * sender, LPPOINT lppt, bool & stop) = 0;
@@ -401,50 +431,50 @@ public:
     class MouseListener
     {
     public:
-        virtual void onMouseEnter(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseEnter(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
 
-        virtual void onMouseMove(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseMove(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
 
-        virtual void onMouseDown(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseDown(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
 
-        virtual void onMouseUp(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseUp(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
 
-        virtual void onMouseClick(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseClick(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
 
-        virtual void onMouseDClick(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseDClick(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
 
-        virtual void onMouseLeave(BonesArea * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseLeave(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
     };
 
     class KeyListener
     {
     public:
-        virtual void onKeyDown(BonesArea * sender, BonesKeyEvent & e, bool & stop) = 0;
+        virtual void onKeyDown(BonesObject * sender, BonesKeyEvent & e, bool & stop) = 0;
 
-        virtual void onKeyUp(BonesArea * sender, BonesKeyEvent & e, bool & stop) = 0;
+        virtual void onKeyUp(BonesObject * sender, BonesKeyEvent & e, bool & stop) = 0;
 
-        virtual void onKeyPress(BonesArea * sender, BonesKeyEvent & e, bool & stop) = 0;
+        virtual void onKeyPress(BonesObject * sender, BonesKeyEvent & e, bool & stop) = 0;
     };
 
     class FocusListener
     {
     public:
-        virtual void onFocusOut(BonesArea * sender, BonesFocusEvent & e, bool & stop) = 0;
+        virtual void onFocusOut(BonesObject * sender, BonesFocusEvent & e, bool & stop) = 0;
 
-        virtual void onFocusIn(BonesArea * sender, BonesFocusEvent & e, bool & stop) = 0;
+        virtual void onFocusIn(BonesObject * sender, BonesFocusEvent & e, bool & stop) = 0;
 
-        virtual void onBlur(BonesArea * sender, BonesFocusEvent & e, bool & stop) = 0;
+        virtual void onBlur(BonesObject * sender, BonesFocusEvent & e, bool & stop) = 0;
 
-        virtual void onFocus(BonesArea * sender, BonesFocusEvent & e, bool & stop) = 0;
+        virtual void onFocus(BonesObject * sender, BonesFocusEvent & e, bool & stop) = 0;
     };
 
     class WheelListener
     {
     public:
-        virtual void onWheel(BonesArea * sender, BonesWheelEvent & e, bool & stop) = 0;
+        virtual void onWheel(BonesObject * sender, BonesWheelEvent & e, bool & stop) = 0;
     };
 
-    class NotifyListener
+    class NotifyListener : public NotifyBase<BonesArea>
     {
     public:
         virtual void onSizeChanged(BonesArea * sender, const BonesSize & size, bool & stop) = 0;

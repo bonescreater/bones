@@ -6,10 +6,16 @@
 namespace bones
 {
 class Text;
-class LuaText : public LuaObject<BonesText, Text>
+class LuaText : public LuaObject<BonesText, BonesText::NotifyListener, Text>
 {
 public:
     LuaText(Text * ob);
+
+    NotifyListener * getNotify() const override;
+
+    void setListener(NotifyListener * lis) override;
+private:
+    NotifyListener * notify_;
 };
 
 }

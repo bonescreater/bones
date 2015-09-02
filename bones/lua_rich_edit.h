@@ -7,13 +7,15 @@
 namespace bones
 {
 
-class LuaRichEdit : public LuaObject<BonesRichEdit, RichEdit>,
+class LuaRichEdit : public LuaObject<BonesRichEdit, BonesRichEdit::NotifyListener, RichEdit>,
                     public RichEdit::Delegate
 {
 public:
     LuaRichEdit(RichEdit * ob);
 
     ~LuaRichEdit();
+
+    NotifyListener * getNotify() const override;
 
     void setListener(NotifyListener * listener) override;
 

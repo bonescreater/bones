@@ -29,5 +29,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sample\main.cpp" />
+    <ClCompile Include="sample\panel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sample\panel.h" />
+    <ClInclude Include="sample\utils.h" />
   </ItemGroup>
 </Project>

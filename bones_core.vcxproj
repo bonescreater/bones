@@ -37,22 +37,10 @@
     <ClCompile Include="bones\core\root.cpp" />
     <ClCompile Include="bones\core\shader.cpp" />
     <ClCompile Include="bones\core\shape.cpp" />
-    <ClCompile Include="bones\core\panel_widget.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="bones\core\css_manager.cpp" />
     <ClCompile Include="bones\core\size.cpp" />
     <ClCompile Include="bones\core\text.cpp" />
     <ClCompile Include="bones\core\view.cpp" />
-    <ClCompile Include="bones\core\widget.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="bones\core\panel_manager.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="bones\core\xml.cpp" />
     <ClCompile Include="bones\core\xml_controller.cpp" />
   </ItemGroup>
@@ -86,22 +74,10 @@
     <ClInclude Include="bones\core\root.h" />
     <ClInclude Include="bones\core\shader.h" />
     <ClInclude Include="bones\core\shape.h" />
-    <ClInclude Include="bones\core\panel_widget.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="bones\core\css_manager.h" />
     <ClInclude Include="bones\core\size.h" />
     <ClInclude Include="bones\core\text.h" />
     <ClInclude Include="bones\core\view.h" />
-    <ClInclude Include="bones\core\widget.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="bones\core\panel_manager.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="bones\core\xml.h" />
     <ClInclude Include="bones\core\xml_controller.h" />
   </ItemGroup>

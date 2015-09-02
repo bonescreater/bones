@@ -214,6 +214,10 @@ protected:
 
     void onSizeChanged() override;
 
+    void onMouseEnter(MouseEvent & e) override;
+
+    void onMouseLeave(MouseEvent & e) override;
+
     void onMouseMove(MouseEvent & e) override;
 
     void onMouseDown(MouseEvent & e) override;
@@ -239,6 +243,14 @@ protected:
     void onAddHierarchy(View * start) override;
 
     bool skipDefaultKeyEventProcessing(const KeyEvent & ke) override;
+protected:
+    BONES_CSS_TABLE_DECLARE()
+
+    void setText(const CSSParams & params);
+
+    void setBackground(const CSSParams & params);
+
+    void setFont(const CSSParams & params);
 private:
     void adjustSurface();
 
@@ -255,6 +267,7 @@ private:
     void onAnimationRun(Animation * sender, Ref * target, float progress);
 private:
     Delegate * delegate_;
+    HDC dc_;
     CHARFORMAT2 cf_;
     PARAFORMAT pf_;
     DWORD max_length_;

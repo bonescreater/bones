@@ -19,6 +19,7 @@ private:
 class Rect;
 class Point;
 class Pixmap;
+class Font;
 
 class CSSUtils
 {
@@ -45,6 +46,8 @@ public:
     static Shader CSSParamsToLinearGradientShader(const CSSParams & params);
 
     static Shader CSSParamsToRadialGradientShader(const CSSParams & params);
+
+    static Font CSSParamsToFont(const CSSParams & params);
 };
 
 

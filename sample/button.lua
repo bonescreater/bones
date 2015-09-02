@@ -22,10 +22,10 @@ local function stateChanged(self, force)
 		state = highlight;
 	end
     local width, height = self:getSize();
-    common_css = string.format("{rect:0px 0px;border:1px solid #ff999999;linear-gradient:0px 0px 0px %dpx clamp #ffffffff #ffd9d9d9;}", height);
-    highlight_css = string.format("{rect:0px 0px;border:1px solid #ffaaaaaa;linear-gradient:0px 0px %dpx clamp #ffffffff #ffeaeaea;}", height);
-    press_css = string.format("{rect:0px 0px;border:1px solid #ff999999;linear-gradient:0px 0px %dpx clamp #ffffffff #ffd3d3d3;}", height);
-    disable_css = string.format("{rect:0px 0px;border:1px solid #ffbbbbbb;linear-gradient:0px 0px %dpx clamp #ffffffff #ffd9d9d9;}", height);
+    local common_css = string.format("{rect:0px 0px;border:1px solid #ff999999;linear-gradient:0px 0px 0px %dpx clamp #ffA9DB80 #ff96C56F;}", height);
+    local highlight_css = string.format("{rect:0px 0px;border:1px solid #ffaaaaaa;linear-gradient:0px 0px 0px %dpx clamp #ffA9DB80 #ff96C56F;}", height);
+    local press_css = string.format("{rect:0px 0px;border:1px solid #ff999999;linear-gradient:0px 0px 0px %dpx clamp #ff80ab5d #ff80ab5d;}", height);
+    local disable_css = string.format("{rect:0px 0px;border:1px solid #ffbbbbbb;linear-gradient:0px 0px 0px %dpx clamp #ff80ab5d #ff80ab5d;}", height);
 	if state ~= self.state_ or force then 
 		self.state_ = state;
 		if self.state_ == common then
@@ -104,6 +104,7 @@ function mod.onMouseUp(self, e)
 			stateChanged(self)
 		end
         if notify then
+            print(self:getCObject())
         	if type(self.onClick) == "function" then
 					self:onClick();
             end

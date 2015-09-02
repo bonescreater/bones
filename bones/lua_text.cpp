@@ -9,9 +9,19 @@ namespace bones
 static const char * kMetaTableText = "__mt_text";
 
 LuaText::LuaText(Text * ob)
-:LuaObject(ob, kMetaTableText)
+:LuaObject(ob, kMetaTableText), notify_(nullptr)
 {
     ;
 }
 
+BonesText::NotifyListener * LuaText::getNotify() const
+{
+    return notify_;
+}
+
+void LuaText::setListener(NotifyListener * lis)
+{
+    notify_ = lis;
+
+}
 }

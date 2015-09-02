@@ -10,8 +10,19 @@ namespace bones
 static const char * kMetaTableImage = "__mt_image";
 
 LuaImage::LuaImage(Image * ob)
-:LuaObject(ob, kMetaTableImage)
+:LuaObject(ob, kMetaTableImage), notify_(nullptr)
 {
     ;
 }
+
+BonesImage::NotifyListener * LuaImage::getNotify() const
+{
+    return notify_;
+}
+
+void LuaImage::setListener(NotifyListener * lis)
+{
+    notify_ = lis;
+}
+
 }
