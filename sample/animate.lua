@@ -27,7 +27,6 @@ function mod.fadeOut(ani, bone, progress)
     end
     
     new_opacity = (org_opacity) * (1 - progress)
-    print(new_opacity)
     bone:applyCSS(string.format("{opacity: %f;}", new_opacity))
     if progress == 1 then
         bone["__current_opacity__"] = nil
