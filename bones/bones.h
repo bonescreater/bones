@@ -548,6 +548,14 @@ public:
     virtual BonesObject * getObject(const char * id) = 0;
 
     virtual BonesObject * getObject(BonesObject * ob, const char * id) = 0;
+
+    virtual BonesObject * createObject(BonesObject * parent,
+                                       const char * label,
+                                       const char * id,
+                                       const char * group_id,
+                                       const char * class_name) = 0;
+
+    virtual void cleanObject(BonesObject * bo, bool recursive) = 0;
 };
 
 

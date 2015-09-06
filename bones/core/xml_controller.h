@@ -17,6 +17,10 @@ class Root;
 class XMLController
 {
 public:
+    //rapid xml 删除节点时 不释放内存
+    //因此使用Node结构来描述 方便动态创建标签时释放内存
+    typedef std::map<std::string, std::string> NodeAttrs;
+
     class Delegate
     { 
     public:
@@ -25,15 +29,15 @@ public:
 
         virtual void onUnload() = 0;
         //节点初始化完毕触发 此时禁止clean
-        virtual void onPrepare(View * v, XMLNode node) = 0;
+        virtual void onPrepare(View * v) = 0;
 
-        virtual bool preprocessHead(XMLNode node, const char * full_path) = 0;
+        virtual bool preprocessHead(XMLNode node, const char * label, const char * full_path) = 0;
 
-        virtual void postprocessHead(XMLNode node, const char * full_path) = 0;
+        virtual void postprocessHead(XMLNode node, const char * label, const char * full_path) = 0;
 
-        virtual bool preprocessBody(XMLNode node, View * parent_ob, View ** ob) = 0;
+        virtual bool preprocessBody(XMLNode node, const char * label, View * parent_ob, View ** ob) = 0;
 
-        virtual void postprocessBody(XMLNode node, View * parent_ob, View * ob) = 0;
+        virtual void postprocessBody(XMLNode node, const char * label, View * parent_ob, View * ob) = 0;
     };
 public:
     typedef std::vector<char> FileStream;
@@ -49,16 +53,13 @@ public:
         std::string xml_fullname;
         XMLDocument doc;
     };
+
 public:
-    static std::string GetPathFromFullName(const char * fullname);
-
-    static std::string JoinPath(const char ** path, int count);
-
-    static bool IsAbsolutePath(const char * path);
-
     static bool ReadFile(const char * file_path, FileStream & file);
+    //确保0结尾
+    static bool ReadString(const char * file_path, FileStream & file);
 
-    static bool ReadFile(const wchar_t * file_path, FileStream & file);
+    static std::string GetRealPath(const char * file_value, const char * module_path);
 public:
     XMLController();
 
@@ -71,6 +72,14 @@ public:
     View * getViewByID(const char * id);
 
     View * getViewByID(View * ob, const char * id);
+
+    View * createView(View * parent,
+                      const char * label,
+                      const char * id,
+                      const char * group_id,
+                      const char * class_name);
+
+    void clean(View * v);
 protected:
     virtual bool handleStyle(XMLNode node, const char * full_path);
 
@@ -88,10 +97,10 @@ protected:
 
     virtual bool handleShape(XMLNode node, View * parent_ob, View ** ob);
 
-    virtual bool handleExtendLabel(XMLNode node, View * parent_ob, View ** ob);
+    virtual bool handleExtendLabel(XMLNode node, const char * label, View * parent_ob, View ** ob);
 protected:
     //返回指定节点树 根节点的对象
-    bool createViewFromNode(XMLNode node, View * parent_ob, View ** ob);
+    bool createViewFromNode(XMLNode node, const char * label, View * parent_ob, View ** ob);
 private:
     void clean(bool notify);
 
@@ -103,7 +112,7 @@ private:
 
     bool checkFormat(XMLDocument & doc);
 
-    bool checkRoot(XMLNode node);
+    bool checkBones(XMLNode node);
 
     bool checkHead(XMLNode node);
 
@@ -115,16 +124,28 @@ private:
 
     void notifyPrepare();
 
-    void notifyPrepare(View * ob, XMLNode node);
+    void notifyPrepare(View * ob);
 
     void applyClass();
 
     void applyClass(View * ob);
 private:
+    static std::string GetPathFromFullName(const char * fullname);
+
+    static std::string JoinPath(const char ** path, int count);
+
+    static bool IsAbsolutePath(const char * path);
+
+    static bool ReadFile(const wchar_t * file_path, FileStream & file);
+
+    const char * acquire(NodeAttrs & n, const char * attr_name);
+
+    void saveNode(View * v, XMLNode node);
+private:
     //delegate
     Delegate * delegate_;
     //存放所有的view 
-    std::map<RefPtr<View>, XMLNode> ob2node_;
+    std::map<RefPtr<View>, NodeAttrs> ob2node_;
     std::vector<RefPtr<Root>> roots_;
     //模块的描述
     Module main_module_;
@@ -135,14 +156,25 @@ private:
 //字符串常量
 extern const char * kStrType;
 extern const char * kStrModule;
+extern const char * kStrName;
 extern const char * kStrCSS;
-extern const char * kStrLink;
 extern const char * kStrXML;
 extern const char * kStrID;
 extern const char * kStrClass;
 extern const char * kStrGroup;
 extern const char * kStrFile;
-
+extern const char * kStrPixmap;
+extern const char * kStrBones;
+extern const char * kStrHead;
+extern const char * kStrBody;
+extern const char * kStrStyle;
+extern const char * kStrLink;
+extern const char * kStrRoot;
+extern const char * kStrArea;
+extern const char * kStrRichEdit;
+extern const char * kStrImage;
+extern const char * kStrText;
+extern const char * kStrShape;
 }
 
 #endif

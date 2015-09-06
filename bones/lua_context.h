@@ -21,6 +21,8 @@ public:
 
     static void GetCO2LOTable(lua_State * l);
 
+    static void ClearLOFromCO(lua_State * l, BonesObject * co);
+
     static void * GetEventCache(lua_State * l, int count);
 
     static int SafeLOPCall(lua_State * l, int nargs, int nresults);

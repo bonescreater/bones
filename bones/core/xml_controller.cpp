@@ -10,41 +10,34 @@
 
 #include "logging.h"
 #include "css_manager.h"
+#include "res_manager.h"
 
-#include <functional>
 #include <fstream>
 
 namespace bones
 {
 
-enum Label
-{
-    kLABEL_UNKNOWN,
-    kLABEL_BONES,
-    kLABEL_HEAD,
-    kLABEL_LINK,
-    kLABEL_STYLE,
-    kLABEL_BODY,
-    kLABEL_ROOT,
-    kLABEL_AREA,
-    kLABEL_RICHEDIT,
-    kLABEL_IMAGE,
-    kLABEL_TEXT,
-    kLABEL_SHAPE,
-};
-
 const char * kStrType = "type";
 const char * kStrModule = "module";
+const char * kStrName = "name";
 const char * kStrFile = "file";
 const char * kStrCSS = "css";
-const char * kStrLink = "link";
 const char * kStrXML = "xml";
 const char * kStrID = "id";
 const char * kStrClass = "class";
 const char * kStrGroup = "group";
-
-
-Label LabelFromName(const char * name);
+const char * kStrPixmap = "pixmap";
+const char * kStrBones = "bones";
+const char * kStrHead = "head";
+const char * kStrBody = "body";
+const char * kStrStyle = "style";
+const char * kStrLink = "link";
+const char * kStrRoot = "root";
+const char * kStrArea = "area";
+const char * kStrRichEdit = "richedit";
+const char * kStrImage = "image";
+const char * kStrText = "text";
+const char * kStrShape = "shape";
 
 XMLController::XMLController()
 :delegate_(nullptr)
@@ -69,8 +62,9 @@ bool XMLController::loadString(const char * data)
     if ( !data || !(len = strlen(data)) )
         return false;
     
-    main_module_.xml_file.resize(len + 1, 0);
+    main_module_.xml_file.resize(len + 1);
     memcpy(&main_module_.xml_file[0], data, len);
+    main_module_.xml_file[len] = 0;
 
     return loadMainModule(main_module_);
 }
@@ -81,8 +75,6 @@ bool XMLController::loadMainModule(Module & mod)
 
     if (!doc.parse(mod.xml_file.data()))
         return false;
-
-    auto root = doc.root();
 
     if (!checkFormat(doc))
         return false;
@@ -119,10 +111,8 @@ View * XMLController::getViewByID(View * ob, const char * id)
 
         if (iter != ob2node_.end())
         {
-            XMLNode::Attribute attr = { kStrID, nullptr };
-            iter->second.acquire(&attr, 1);
-
-            if (attr.value && !strcmp(attr.value, id))
+            auto attr = acquire(iter->second, kStrID);
+            if (attr && !strcmp(attr, id))
                 return iter->first.get();
             else
             {//找子
@@ -140,10 +130,64 @@ View * XMLController::getViewByID(View * ob, const char * id)
     return nullptr;
 }
 
+View * XMLController::createView(View * parent,
+                                 const char * label,
+                                 const char * id,
+                                 const char * group_id,
+                                 const char * class_name)
+
+{
+    if (!label)
+        return nullptr;
+
+    View * v = nullptr;
+    bool bret = createViewFromNode(XMLNode(), label, parent, &v);
+    if (bret)
+    {
+        RefPtr<View> rv;
+        rv.reset(v);
+        auto & attrs = ob2node_[rv];
+        attrs[kStrID] = id ? id : "";
+        attrs[kStrGroup] = group_id ? group_id : "";
+        attrs[kStrClass] = class_name ? class_name : "";
+        //设置通知
+        notifyPrepare(v);
+        applyClass(v);
+        return v;
+    }
+    return nullptr;
+}
+
+void XMLController::clean(View * v)
+{
+    //释放指定节点
+    if (!v)
+        return;
+    RefPtr<View> rv;
+    rv.reset(v);
+    //解除父子结构
+    if (kClassRoot == rv->getClassName())
+    {
+        auto iter = roots_.begin();
+        for (; iter != roots_.end(); ++iter)
+        {
+            if ((*iter).get() != v)
+                continue;
+            NativeEvent n = { WM_MOUSELEAVE, 0, 0, 0 };
+            (*iter)->handleMouse(n);
+            roots_.erase(iter);
+            break;
+        }
+    }
+    rv->detachChildren();
+    rv->detachFromParent();
+    ob2node_.erase(rv);
+    //删除xml中的节点
+    //rapidxml并不会释放node的内存所以 删除xml节点没意义了
+}
 
 void XMLController::parseModuleHead(Module & mod)
 {
-    using namespace rapidxml;
     auto & doc = mod.doc;
     if (!checkFormat(doc))
         return;
@@ -155,24 +199,17 @@ void XMLController::parseModuleHead(Module & mod)
     while (node)
     {
         //如果delegate处理 则自己不处理
-        bool bret = delegate_ ? delegate_->preprocessHead(node, mod_fullname) : false;
-        if (!bret)
+        auto name = node.name();
+        bool bret = delegate_ ? delegate_->preprocessHead(node, name, mod_fullname) : false;
+        if (!bret && name)
         {
-            switch (LabelFromName(node.name()))
-            {
-            case kLABEL_STYLE:
+            if (!strcmp(name, kStrStyle))
                 bret = handleStyle(node, mod.xml_fullname.data());
-                break;
-            case kLABEL_LINK:
+            else if (!strcmp(name, kStrLink))
                 bret = handleLink(node, mod.xml_fullname.data());
-                break;
-            default:
-                //不认识的标签 放过
-                break;
-            }
         }
         if (bret)
-            delegate_ ? delegate_->postprocessHead(node, mod_fullname) : 0;
+            delegate_ ? delegate_->postprocessHead(node, name, mod_fullname) : 0;
         node = node.nextSibling();
     }
 }
@@ -188,13 +225,16 @@ bool XMLController::handleLink(XMLNode node, const char * full_path)
 {
     XMLNode::Attribute link[] =
     { 
-        { kStrType, nullptr }, { kStrModule, nullptr }, { kStrFile, nullptr } 
+        { kStrType, nullptr }, { kStrModule, nullptr }, { kStrFile, nullptr },
+        { kStrName, nullptr}
     };
     node.acquire(link, sizeof(link) / sizeof(link[0]));
 
     auto & type = link[0].value;
-    auto & module = link[1].value;
+    auto & mod = link[1].value;
     auto & file = link[2].value;
+    auto & name = link[3].value;
+
     if (!type)
         return false;
 
@@ -206,42 +246,26 @@ bool XMLController::handleLink(XMLNode node, const char * full_path)
 
         css_files_.push_back(FileStream());
         auto & file_stream = css_files_.back();
-        std::string path;
-        if (IsAbsolutePath(file))
-            path = file;
-        else
-        {
-            auto dir = GetPathFromFullName(full_path);
-            const char * parts[] = { dir.data(), file };
-            path = JoinPath(parts, sizeof(parts) / sizeof(parts[0]));
-        }
-        if (ReadFile(path.data(), file_stream))
+        if (ReadString(GetRealPath(file, full_path).data(), file_stream))
             Core::GetCSSManager()->append(file_stream.data());
         return true;
     }
     else if (!strcmp(kStrXML, type))
     {//xml 文件 作为一个新的module
         //link xml 必须指明 module 否则忽略掉
-        if (!module)
+        if (!mod)
             return true;
         //module已经存在直接跳过
-        if (modules_.find(module) != modules_.end())
+        if (modules_.find(mod) != modules_.end())
             return true;
         //file 不存在 module link失败
         if (!file)
             return true;
-        auto & sub_mod = modules_[module];
-        if (IsAbsolutePath(file))
-            sub_mod.xml_fullname = file;
-        else
-        {            
-            auto path = GetPathFromFullName(full_path);
-            const char * parts[] = { path.data(), file };
-            sub_mod.xml_fullname = JoinPath(parts, sizeof(parts) / sizeof(parts[0]));
-        }
 
+        auto & sub_mod = modules_[mod];
+        sub_mod.xml_fullname = GetRealPath(file, full_path);
         //读取xml文件内容
-        if (!ReadFile(sub_mod.xml_fullname.data(), sub_mod.xml_file))
+        if (!ReadString(sub_mod.xml_fullname.data(), sub_mod.xml_file))
             return false;
         auto & sub_doc = sub_mod.doc;
         if (!sub_doc.parse(sub_mod.xml_file.data()))
@@ -252,13 +276,36 @@ bool XMLController::handleLink(XMLNode node, const char * full_path)
         parseModuleHead(sub_mod);
         return true;
     }
+    else if (!strcmp(kStrPixmap, type))
+    {//必须指定name
+        if (!name)
+            return true;
+        //查找name是否存在
+        auto pm = Core::GetResManager()->getPixmap(name);
+        if (pm.isValid())
+            return true;
+        //位图不存在则载入
+        if (!file)
+            return true;
+        auto path = GetRealPath(file, full_path);
+        FileStream fs;
+        if (ReadFile(path.data(), fs))
+        {//增加1个位图
+            if (pm.decode(&fs[0], fs.size()))
+                Core::GetResManager()->add(name, pm);
+            else
+                LOG_ERROR << path << " can't decode to pixmap";
+        }
+        else
+            LOG_ERROR << path << " read fail";
+    }
     return false;
 }
 
 bool XMLController::checkFormat(XMLDocument & doc)
 {
     auto root = doc.root();
-    if (!checkRoot(root))
+    if (!checkBones(root))
         return false;
     auto node = root.firstChild();
     if (checkHead(node))
@@ -266,25 +313,25 @@ bool XMLController::checkFormat(XMLDocument & doc)
     return checkBody(node);
 }
 
-bool XMLController::checkRoot(XMLNode root)
+bool XMLController::checkBones(XMLNode root)
 {
-    return root && LabelFromName(root.name()) == kLABEL_BONES;
+    return root && !strcmp(root.name(), kStrBones);
 }
 
 bool XMLController::checkHead(XMLNode node)
 {
-    return node && LabelFromName(node.name()) == kLABEL_HEAD;
+    return node && !strcmp(node.name(), kStrHead);
 }
 
 bool XMLController::checkBody(XMLNode node)
 {
-    return node && LabelFromName(node.name()) == kLABEL_BODY;
+    return node && !strcmp(node.name(), kStrBody);
 }
 
 XMLNode XMLController::getBody(const XMLDocument & doc)
 {
     auto root = doc.root();
-    if (!checkRoot(root))
+    if (!checkBones(root))
         return nullptr;
     auto node = root.firstChild();
     if (checkHead(node))
@@ -297,7 +344,7 @@ XMLNode XMLController::getBody(const XMLDocument & doc)
 XMLNode XMLController::getHead(const XMLDocument & doc)
 {
     auto root = doc.root();
-    if (!checkRoot(root))
+    if (!checkBones(root))
         return nullptr;
     auto head = root.firstChild();
     if (!checkHead(head))
@@ -308,20 +355,20 @@ XMLNode XMLController::getHead(const XMLDocument & doc)
 void XMLController::notifyPrepare()
 {//prepare过程中不要clean
     for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
-        notifyPrepare(iter->get(), ob2node_[*iter]);
+        notifyPrepare(iter->get());
 }
 
-void XMLController::notifyPrepare(View * ob, XMLNode node)
+void XMLController::notifyPrepare(View * ob)
 {
     RefPtr<View> pv;
     auto child = ob->getFirstChild();
     while (child)
     {
         pv.reset(child);
-        notifyPrepare(child, ob2node_[pv]);
+        notifyPrepare(child);
         child = child->getNextSibling();
     }
-    delegate_ ? delegate_->onPrepare(ob, node) : 0;
+    delegate_ ? delegate_->onPrepare(ob) : 0;
 }
 
 void XMLController::applyClass()
@@ -348,14 +395,9 @@ void XMLController::applyClass(View * ob)
     if (iter == ob2node_.end())
         return;
 
-    XMLNode::Attribute attrs[] =
-    {
-        { kStrClass, nullptr }, { kStrID, nullptr }, { kStrGroup, nullptr }
-    };
-    iter->second.acquire(attrs, sizeof(attrs) / sizeof(attrs[0]));
-
-    if (attrs[0].value)
-        Core::GetCSSManager()->applyClass(ob, attrs[0].value);
+    auto attr = acquire(iter->second, kStrClass);
+    if (attr)
+        Core::GetCSSManager()->applyClass(ob, attr);
 }
 
 void XMLController::clean(bool notify)
@@ -388,7 +430,7 @@ void XMLController::parseModuleBody(const Module & mod)
     while (node)
     {//遍历node 所有的兄弟
         //迭代每个node
-        createViewFromNode(node, nullptr, nullptr);
+        createViewFromNode(node, node.name(), nullptr, nullptr);
         node = node.nextSibling();
     }
     //创建XML 节点完毕
@@ -406,82 +448,75 @@ void XMLController::parseModuleBody(const Module & mod)
         clean(false);
 }
 
-bool XMLController::createViewFromNode(XMLNode node, View * parent_ob, View ** ob)
+bool XMLController::createViewFromNode(XMLNode node, const char * label, View * parent_ob, View ** ob)
 {
-    if (!node)
+    if (!label)
         return false;
 
     View * node_ob = nullptr;
-    bool bret = delegate_ ? delegate_->preprocessBody(node, parent_ob, &node_ob) : 0;
+    bool bret = delegate_ ? delegate_->preprocessBody(node, label, parent_ob, &node_ob) : 0;
     if (!bret)
     {//没有被预处理
         bool extend = false;
-        switch (LabelFromName(node.name()))
-        {
-        case kLABEL_ROOT:
-            //创建窗口或者rootview
-            bret = handleRoot(node, parent_ob, &node_ob);           
-            break;
-        case kLABEL_AREA:
+
+        if (!strcmp(label, kStrRoot))
+            bret = handleRoot(node, parent_ob, &node_ob);
+        else if (!strcmp(label, kStrArea))
             bret = handleArea(node, parent_ob, &node_ob);
-            break;
-        case kLABEL_RICHEDIT:
+        else if (!strcmp(label, kStrRichEdit))
             bret = handleRichEdit(node, parent_ob, &node_ob);
-            break;
-        case kLABEL_IMAGE:
+        else if (!strcmp(label, kStrImage))
             bret = handleImage(node, parent_ob, &node_ob);
-            break;
-        case kLABEL_TEXT:
+        else if (!strcmp(label, kStrText))
             bret = handleText(node, parent_ob, &node_ob);
-            break;
-        case kLABEL_SHAPE:
+        else if (!strcmp(label, kStrShape))
             bret = handleShape(node, parent_ob, &node_ob);
-            break;
-        default:
+        else
+        {
             extend = true;
-            bret = handleExtendLabel(node, parent_ob, &node_ob);
-            break;
+            bret = handleExtendLabel(node, label, parent_ob, &node_ob);
         }
         if (bret && !extend)
-            delegate_ ? delegate_->postprocessBody(node, parent_ob, node_ob) : 0;
+            delegate_ ? delegate_->postprocessBody(node, label, parent_ob, node_ob) : 0;
     }
-    
 
     if (bret)
     {
         auto child = node.firstChild();
         while (child)
         {
-            createViewFromNode(child, node_ob, nullptr);
+            createViewFromNode(child, child.name(), node_ob, nullptr);
             child = child.nextSibling();
         }
         if (ob)
             *ob = node_ob;
     }
+
     return bret;
 }
 
-bool XMLController::handleExtendLabel(XMLNode node, View * parent_ob, View ** ob)
+bool XMLController::handleExtendLabel(XMLNode node, const char * label, View * parent_ob, View ** ob)
 {
-    if (!node.name() || !node.nameSize())
+    if (!label)
         return false;
-    auto iter = modules_.find(node.name());
+
+    auto iter = modules_.find(label);
     if (iter == modules_.end())
         return false;
     auto & other_mod = iter->second;
     auto body = getBody(other_mod.doc);
     if (!body)
     {
-        LOG_VERBOSE << "module: " << node.name() << "empty ????";
+        LOG_VERBOSE << "module: " << label << "empty ????";
         return false;
     }
     View * node_ob = nullptr;
-    bool bret = createViewFromNode(body.firstChild(), parent_ob, &node_ob);
+    auto child = body.firstChild();
+
+    bool bret = createViewFromNode(child, child.name(), parent_ob, &node_ob);
     if (bret && node_ob)
     {//如果是扩展标签的话 node 应该是当前的node
-        RefPtr<View> rv;
-        rv.reset(node_ob);
-        ob2node_[rv] = node;
+        saveNode(node_ob, node);
         if (ob)
             *ob = node_ob;
     }
@@ -492,20 +527,19 @@ bool XMLController::handleRoot(XMLNode node, View * parent_ob, View ** ob)
 {
     //root 不能添加到父上
     assert(!parent_ob);
-    auto root = AdoptRef(new Root);
-
-    ob2node_[root] = node;
-    roots_.push_back(root);
+    auto v = AdoptRef(new Root);
+    saveNode(v.get(), node);
+    roots_.push_back(v);
     if (ob)
-        *ob = root.get();
-    return root != nullptr;
+        *ob = v.get();
+    return v != nullptr;
 }
 
 bool XMLController::handleText(XMLNode node, View * parent_ob, View ** ob)
 {
     assert(parent_ob);
     auto v = AdoptRef(new Text);
-    ob2node_[v] = node;
+    saveNode(v.get(), node);
 
     if (parent_ob)
         ((View *)parent_ob)->attachChildToBack(v.get());
@@ -517,7 +551,7 @@ bool XMLController::handleText(XMLNode node, View * parent_ob, View ** ob)
 bool XMLController::handleShape(XMLNode node, View * parent_ob, View ** ob)
 {
     auto v = AdoptRef(new Shape);
-    ob2node_[v] = node;
+    saveNode(v.get(), node);
     if (parent_ob)
         ((View *)parent_ob)->attachChildToBack(v.get());
     if (ob)
@@ -530,7 +564,7 @@ bool XMLController::handleShape(XMLNode node, View * parent_ob, View ** ob)
 bool XMLController::handleImage(XMLNode node, View * parent_ob, View ** ob)
 {
     auto v = AdoptRef(new Image);
-    ob2node_[v] = node;
+    saveNode(v.get(), node);
     if (parent_ob)
         ((View *)parent_ob)->attachChildToBack(v.get());
     if (ob)
@@ -541,7 +575,7 @@ bool XMLController::handleImage(XMLNode node, View * parent_ob, View ** ob)
 bool XMLController::handleArea(XMLNode node, View * parent_ob, View ** ob)
 {
     auto v = AdoptRef(new Area);
-    ob2node_[v] = node;
+    saveNode(v.get(), node);
     if (parent_ob)
         ((View *)parent_ob)->attachChildToBack(v.get());
     if (ob)
@@ -552,13 +586,27 @@ bool XMLController::handleArea(XMLNode node, View * parent_ob, View ** ob)
 bool XMLController::handleRichEdit(XMLNode node, View * parent_ob, View ** ob)
 {
     auto v = AdoptRef(new RichEdit);
-    ob2node_[v] = node;
+    saveNode(v.get(), node);
     if (parent_ob)
         ((View *)parent_ob)->attachChildToBack(v.get());
 
     if (ob)
         *ob = v.get();
     return v != nullptr;
+}
+
+bool XMLController::ReadString(const char * file_path, FileStream & file)
+{
+    using namespace std;
+    if (!file_path)
+        return false;
+    auto wfile_path = Encoding::FromUTF8(file_path);
+    if (ReadFile(wfile_path.data(), file))
+    {
+        file.push_back(0);
+        return true;
+    }
+    return false;
 }
 
 bool XMLController::ReadFile(const char * file_path, FileStream & file)
@@ -588,10 +636,53 @@ bool XMLController::ReadFile(const wchar_t * file_path, FileStream & file)
     size_t size = static_cast<size_t>(stream.tellg() - begin);
     stream.seekg(0);
     file.clear();
-    file.resize(size + 1);
+    file.resize(size);
     stream.read(&file[0], size);
-    file[size] = 0;
     return true;
+}
+
+const char * XMLController::acquire(NodeAttrs & attrs, const char * attr_name)
+{
+    auto iter = attrs.find(attr_name);
+    if (iter != attrs.end())
+        return iter->second.data();
+    return nullptr;
+}
+
+void XMLController::saveNode(View * v, XMLNode node)
+{
+    RefPtr<View> rv;
+    rv.reset(v);
+    auto & attrs = ob2node_[rv];
+    if (!node)
+        attrs.clear();
+    else
+    {
+        auto attr = node.firstAttribute();
+        while (attr)
+        {
+            auto name = attr.name();
+            auto value = attr.value();
+            if (name && value)
+                attrs[name] = value;
+            attr = attr.nextSibling();
+        }
+    }
+}
+
+std::string XMLController::GetRealPath(const char * file_value, const char * module_path)
+{
+    if (!file_value)
+        return "";
+
+    if (IsAbsolutePath(file_value))
+        return file_value;
+    else
+    {
+        auto dir = GetPathFromFullName(module_path);
+        const char * parts[] = { dir.data(), file_value };
+        return JoinPath(parts, sizeof(parts) / sizeof(parts[0]));
+    }
 }
 
 std::string XMLController::GetPathFromFullName(const char * fullname)
@@ -647,38 +738,6 @@ bool XMLController::IsAbsolutePath(const char * path)
     if (strlen(path) < 2)
         return false;
     return isalpha(path[0]) && ':' == path[1];
-}
-
-
-
-Label LabelFromName(const char * name)
-{
-    if (!name)
-        return kLABEL_UNKNOWN;
-    if (!strcmp("bones", name))
-        return kLABEL_BONES;
-    else if (!strcmp("head", name))
-        return kLABEL_HEAD;
-    else if (!strcmp("link", name))
-        return kLABEL_LINK;
-    else if (!strcmp("style", name))
-        return kLABEL_STYLE;
-    else if (!strcmp("body", name))
-        return kLABEL_BODY;
-    else if (!strcmp("root", name))
-        return kLABEL_ROOT;
-    else if (!strcmp("area", name))
-        return kLABEL_AREA;
-    else if (!strcmp("richedit", name))
-        return kLABEL_RICHEDIT;
-    else if (!strcmp("image", name))
-        return kLABEL_IMAGE;
-    else if (!strcmp("text", name))
-        return kLABEL_TEXT;
-    else if (!strcmp("shape", name))
-        return kLABEL_SHAPE;
-    else
-        return kLABEL_UNKNOWN;
 }
 
 }

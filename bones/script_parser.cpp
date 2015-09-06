@@ -26,8 +26,6 @@
 
 namespace bones
 {
-
-static const char * kStrName = "name";
 static const char * kStrPhase = "phase";
 static const char * kStrFunc = "func";
 static const char * kStrScript = "script";
@@ -151,6 +149,28 @@ BonesObject * ScriptParser::getObject(BonesObject * ob, const char * id)
     return nullptr;
 }
 
+BonesObject * ScriptParser::createObject(BonesObject * parent,
+                                         const char * label,
+                                         const char * id,
+                                         const char * group_id,
+                                         const char * class_name)
+{
+    return getObject(
+        xml_.createView(getObject(parent), label, id, group_id, class_name));
+}
+
+void ScriptParser::cleanObject(BonesObject * bo, bool recursive)
+{
+    if (!bo)
+        return;
+
+    auto v = getObject(bo);
+    Core::GetAnimationManager()->remove(v, false);
+    LuaContext::ClearLOFromCO(LuaContext::State(), bo);
+    v2bo_.erase(v);
+    xml_.clean(v);
+}
+
 BonesResManager * ScriptParser::getResManager()
 {
     return this;
@@ -186,7 +206,7 @@ void ScriptParser::onUnload()
     last_listener_ ? last_listener_->onUnload(this) : 0;
 }
 
-void ScriptParser::onPrepare(View * v, XMLNode node)
+void ScriptParser::onPrepare(View * v)
 {
     if (!v)
         return;
@@ -206,12 +226,12 @@ void ScriptParser::onPrepare(View * v, XMLNode node)
 
 }
 
-bool ScriptParser::preprocessHead(XMLNode node, const char * full_path)
+bool ScriptParser::preprocessHead(XMLNode node, const char * label, const char * full_path)
 {
     //只处理link
-    if (!node || !node.name())
+    if (!label)
         return false;
-    if (strcmp(node.name(), kStrLink))
+    if (strcmp(label, kStrLink))
         return false;
     XMLNode::Attribute attrs[] = 
     {
@@ -219,18 +239,18 @@ bool ScriptParser::preprocessHead(XMLNode node, const char * full_path)
     };
     node.acquire(attrs, sizeof(attrs) / sizeof(attrs[0]));
     auto & type = attrs[0].value;
-    auto & module = attrs[1].value;
+    auto & name = attrs[1].value;
     auto & file = attrs[2].value;
 
     if (!type || strcmp(type, kStrScript))
         return false;
-    if (!module)
+    if (!name)
         return true;
 
     //link script module
     auto l = LuaContext::State();
     LUA_STACK_AUTO_CHECK(l);
-    lua_getglobal(l, module);
+    lua_getglobal(l, name);
     if (lua_istable(l, -1))
     {//模块已经load
         lua_pop(l, 1);
@@ -241,18 +261,10 @@ bool ScriptParser::preprocessHead(XMLNode node, const char * full_path)
     if (!file)
         return true;
 
-    std::string path;
-    if (XMLController::IsAbsolutePath(file))
-        path = file;
-    else
-    {
-        auto dir = XMLController::GetPathFromFullName(full_path);
-        const char * parts[] = { dir.data(), file };
-        path = XMLController::JoinPath(parts, sizeof(parts) / sizeof(parts[0]));
-    }
+    std::string path = XMLController::GetRealPath(file, full_path);
     //dofile 只支持 char * 路径不清楚会不会支持中文 所以自己读取文件
     XMLController::FileStream  fs;
-    if (!XMLController::ReadFile(path.data(), fs))
+    if (!XMLController::ReadString(path.data(), fs))
     {
         LOG_ERROR << path.data() << " read fail";
         return true;
@@ -277,37 +289,37 @@ bool ScriptParser::preprocessHead(XMLNode node, const char * full_path)
             LOG_ERROR << "lua module must return a table";
         if (lua_istable(l, -1))
         {
-            lua_setglobal(l, module);
+            lua_setglobal(l, name);
             count--;
         }
         lua_pop(l, count);
     }
     else
     {
-        LOG_ERROR << "lua module " << module << " load fail " << lua_tostring(l, -1);
+        LOG_ERROR << "lua module " << name << " load fail " << lua_tostring(l, -1);
         lua_pop(l, 1);
     }
 
     return true;
 }
 
-void ScriptParser::postprocessHead(XMLNode node, const char * full_path)
+void ScriptParser::postprocessHead(XMLNode node, const char * label, const char * full_path)
 {
     ;
 }
 
-bool ScriptParser::preprocessBody(XMLNode node, View * parent_ob, View ** ob)
+bool ScriptParser::preprocessBody(XMLNode node, const char * label, View * parent_ob, View ** ob)
 {
-    if (!node || !node.name())
+    if (!label)
         return false;
-    if (!strcmp(kStrNotify, node.name()))
+    if (!strcmp(kStrNotify, label))
         return handleNotify(node, parent_ob, ob);
-    else if (!strcmp(kStrEvent, node.name()))
+    else if (!strcmp(kStrEvent, label))
         return handleEvent(node, parent_ob, ob);
     return false;
 }
 
-void ScriptParser::postprocessBody(XMLNode node, View * parent_ob, View * ob)
+void ScriptParser::postprocessBody(XMLNode node, const char * label, View * parent_ob, View * ob)
 {
     if (!ob)
         return;

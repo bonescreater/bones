@@ -123,6 +123,16 @@ void LuaContext::GetCO2LOTable(lua_State * l)
     lua_pop(l, 2);
 }
 
+void LuaContext::ClearLOFromCO(lua_State * l, BonesObject * co)
+{
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetCO2LOTable(l);
+    lua_pushlightuserdata(l, co);
+    lua_pushnil(l);
+    lua_settable(l, -3);
+    lua_pop(l, 1);
+}
+
 void * LuaContext::GetEventCache(lua_State * l, int count)
 {
     LUA_STACK_AUTO_CHECK_COUNT(l, 1);

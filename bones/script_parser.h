@@ -33,6 +33,14 @@ public:
 
     BonesObject * getObject(BonesObject * ob, const char * id) override;
 
+    BonesObject * createObject(BonesObject * parent,
+                               const char * label,
+                               const char * id,
+                               const char * group_id,
+                               const char * class_name) override;
+
+    void cleanObject(BonesObject * bo, bool recursive) override;
+
     BonesResManager * getResManager() override;
     //res manager
     void add(const char * key, BonesPixmap & pm) override;
@@ -48,15 +56,15 @@ public:
 
     void onUnload() override;
     //节点初始化完毕触发 此时禁止clean
-    void onPrepare(View * v, XMLNode node) override;
+    void onPrepare(View * v) override;
 
-    bool preprocessHead(XMLNode node, const char * full_path) override;
+    bool preprocessHead(XMLNode node, const char * label, const char * full_path) override;
 
-    void postprocessHead(XMLNode node, const char * full_path) override;
+    void postprocessHead(XMLNode node, const char * label, const char * full_path) override;
 
-    bool preprocessBody(XMLNode node, View * parent_ob, View ** ob) override;
+    bool preprocessBody(XMLNode node, const char * label, View * parent_ob, View ** ob) override;
 
-    void postprocessBody(XMLNode node, View * parent_ob, View * ob) override;
+    void postprocessBody(XMLNode node, const char * label, View * parent_ob, View * ob) override;
 
     BonesObject * getObject(View *);
 
