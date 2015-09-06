@@ -55,10 +55,14 @@ void LuaRoot::draw()
     object_->draw();
 }
 
-HDC LuaRoot::dc() const
+HBITMAP LuaRoot::getBackBuffer() const
 {
-    object_->getBackBuffer();
-    return Helper::ToHDC(object_->getBackBuffer());
+    return Helper::ToHBITMAP(object_->getBackBuffer());
+}
+
+void LuaRoot::getBackBuffer(const void * & data, size_t & pitch) const
+{
+    object_->getBackBuffer(data, pitch);
 }
 
 void LuaRoot::handleMouse(UINT msg, WPARAM wparam, LPARAM lparam)

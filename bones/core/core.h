@@ -78,8 +78,6 @@ public:
     static ResManager * GetResManager();
 
     static SkPathEffect * GetDashEffect();
-
-    static HDC GetCompatibleDC();
 };
 
 }

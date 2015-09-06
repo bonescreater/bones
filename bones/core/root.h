@@ -57,7 +57,9 @@ public:
 
     bool isDirty() const;
 
-    Surface & getBackBuffer();
+    const Surface & getBackBuffer() const;
+
+    void getBackBuffer(const void * & bits, size_t & pitch) const;
 
     void handleMouse(NativeEvent & e);
 
@@ -101,7 +103,7 @@ protected:
 
     virtual bool notifyCreateCaret(Caret caret, const Size & size) override;
 private:
-    void AdjustPixmap();
+    void adjustPixmap();
 private:
     Delegate * delegate_;
 
@@ -112,6 +114,8 @@ private:
     SkBaseDevice * device_;
     Rect dirty_;
     bool has_focus_;
+    void * bits_;
+    size_t pitch_;
     friend class MouseController;
 };
 

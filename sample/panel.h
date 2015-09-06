@@ -97,6 +97,7 @@ protected:
     LRESULT handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
     HWND hwnd_;
+    HDC dc_;
     BonesRoot * root_;
     bool track_mouse_;
     BonesCursor cursor_;

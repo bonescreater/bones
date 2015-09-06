@@ -58,12 +58,6 @@ private:
 
 class Surface : public Pixmap
 {
-private:
-    struct Context
-    {
-        HGDIOBJ obj;
-        HDC dc;
-    };
 public:
     Surface();
 
@@ -73,8 +67,8 @@ protected:
 private:
     static void PixelRefFree(void * addr, void * context);
 private:
-    Context * context_;
     friend class Helper;
+    HBITMAP hbm_;
 };
 
 }

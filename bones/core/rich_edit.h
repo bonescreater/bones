@@ -268,6 +268,7 @@ private:
 private:
     Delegate * delegate_;
     HDC dc_;
+    HGDIOBJ old_obj_;
     CHARFORMAT2 cf_;
     PARAFORMAT pf_;
     DWORD max_length_;

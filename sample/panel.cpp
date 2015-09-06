@@ -64,7 +64,7 @@ bool BSPanel::Uninitialize()
 }
 
 BSPanel::BSPanel() :track_mouse_(false), ex_style_(0), hwnd_(NULL),
-root_(nullptr), cursor_(NULL)
+root_(nullptr), cursor_(NULL), dc_(NULL)
 {
     ;
 }
@@ -162,14 +162,16 @@ void BSPanel::layeredDraw()
                   win_rect.bottom - win_rect.top };
     POINT src_pos = { 0, 0 };
     BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-    ::UpdateLayeredWindow(hwnd(), NULL, &pos, &size, root_->dc(), &src_pos, 0, &bf, ULW_ALPHA);
+    auto old = ::SelectObject(dc_, root_->getBackBuffer());
+    ::UpdateLayeredWindow(hwnd(), NULL, &pos, &size, dc_, &src_pos, 0, &bf, ULW_ALPHA);
+    ::SelectObject(dc_, old);
 }
 
 LRESULT BSPanel::handleCreate(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     cursor_ = ::LoadCursor(NULL, IDC_ARROW);
     ex_style_ = ::GetWindowLongPtr(hwnd_, GWL_EXSTYLE);
-
+    dc_ = ::CreateCompatibleDC(NULL);
     return 0;
 }
 
@@ -179,6 +181,7 @@ LRESULT BSPanel::handleDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam)
     if (root_)
         root_->setListener(nullptr);
     root_ = nullptr;
+    ::DeleteDC(dc_);
     ::PostQuitMessage(0);
     return 0;
 }
@@ -334,8 +337,10 @@ void BSPanel::onPaint(HDC hdc, const RECT & rect)
         root_->draw();
 
     //只更新脏区
+    auto old = ::SelectObject(dc_, root_->getBackBuffer());
     ::BitBlt(hdc, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
-        root_->dc(), rect.left, rect.top, SRCCOPY);
+        dc_, rect.left, rect.top, SRCCOPY);
+    ::SelectObject(dc_, old);
 }
 
 LRESULT BSPanel::defProcessEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)

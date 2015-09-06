@@ -357,7 +357,9 @@ public:
 
     virtual void draw() = 0;
 
-    virtual HDC dc() const = 0;
+    virtual HBITMAP getBackBuffer() const = 0;
+
+    virtual void getBackBuffer(const void * & data, size_t & pitch) const = 0;
 
     virtual void handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
 

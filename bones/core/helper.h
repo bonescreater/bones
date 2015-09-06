@@ -45,7 +45,7 @@ public:
 
     static RECT ToRect(const Rect & r);
 
-    static HDC ToHDC(Surface & sf);
+    static HBITMAP ToHBITMAP(const Surface & sf);
 
     static HMODULE GetModuleFromAddress(void * address);
 

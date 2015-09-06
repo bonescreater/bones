@@ -61,26 +61,31 @@ void UpdateCHARFORMAT2(LOGFONT & lf, CHARFORMAT2 & cf)
 RichEdit::RichEdit()
 :accel_pos_(-1), max_length_(INFINITE), password_(L'*'),
 scroll_bars_(WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL |
-ES_AUTOHSCROLL | ES_DISABLENOSCROLL), 
+ES_AUTOHSCROLL | ES_DISABLENOSCROLL),
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
 services_(nullptr), delegate_(nullptr),
 bg_opaque_(true), bg_color_(0xff000088), bg_set_color_(true),
-traversal_(false), want_(kNone)
+traversal_(false), want_(kNone), old_obj_(NULL), dc_(NULL)
 {
-    //lazyInitialize();
-    dc_ = ::CreateCompatibleDC(NULL);
+    lazyInitialize();
 }
 
 RichEdit::~RichEdit()
 {
-    if (services_)
-        services_->Release();
     //移除当前所有的定时器
     for (auto iter = animations_.begin(); iter != animations_.end(); ++iter)
     {
         Core::GetAnimationManager()->remove(iter->second, false);
         iter->second->release();
     }
+    if (dc_)
+    {
+        if (old_obj_)
+            ::SelectObject(dc_, old_obj_);
+        ::DeleteDC(dc_);
+    }
+    if (services_)
+        services_->Release();
 }
 
 void RichEdit::setDelegate(Delegate * delegate)
@@ -228,14 +233,13 @@ void RichEdit::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
     auto wbounds = Helper::ToRect(bounds);
     RECTL rcL = { wbounds.left, wbounds.top, wbounds.right, wbounds.bottom };
     RECT winval = Helper::ToRect(inval);
-
     //只更新脏区
     services_->TxDraw(
         DVASPECT_CONTENT,
         0,
         NULL,
         NULL,
-        Helper::ToHDC(surface_),
+        dc_,
         NULL,
         &rcL,
         NULL,
@@ -243,7 +247,6 @@ void RichEdit::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
         NULL,
         NULL,
         TXTVIEW_ACTIVE);
-
     postprocessSurface(update);
     SkPaint paint;
     //paint.setAntiAlias(true);
@@ -278,7 +281,7 @@ void RichEdit::onMouseMove(MouseEvent & e)
     auto root = getRoot();
     //WM_SETCURSOR仅在非Capture下WM_MOUSEMOVE才会发送
     //模拟WINDOWS 的SetCursor
-    if (NULL == ::GetCapture())
+    if (!e.isLeftMouse())
     {
         auto & loc = e.getLoc();
         services_->OnTxSetCursor(DVASPECT_CONTENT, 0, NULL, NULL,
@@ -415,11 +418,14 @@ void RichEdit::adjustSurface()
     if (surface_.getWidth() != iwidth ||
         surface_.getHeight() != iheight)
     {
+        if (old_obj_)
+            ::SelectObject(dc_, old_obj_);
         surface_.free();
         if (iwidth && iheight)
         {
             surface_.allocate(iwidth, iheight);
             assert(surface_.isValid());
+            old_obj_ = ::SelectObject(dc_, Helper::ToHBITMAP(surface_));
         }
     }
 }
@@ -528,6 +534,11 @@ void RichEdit::lazyInitialize()
         ITextHost *pITextHost,
         IUnknown **ppUnk);
 
+    if (!dc_)
+        dc_ = ::CreateCompatibleDC(NULL);
+        
+    assert(dc_);
+
     if (!services_)
     {
         HMODULE rich = ::GetModuleHandle(L"Msftedit.dll");
@@ -592,7 +603,6 @@ ULONG STDMETHODCALLTYPE RichEdit::Release(void)
 HDC RichEdit::TxGetDC()
 {
     return dc_;
-    /*return Core::GetCompatibleDC();*/
 }
 
 INT RichEdit::TxReleaseDC(HDC hdc)
@@ -814,9 +824,8 @@ HRESULT	RichEdit::TxGetAcceleratorPos(LONG *pcp)
 
 HRESULT	RichEdit::TxGetExtent(LPSIZEL lpExtent)
 {//zooming
-    auto dc = Helper::ToHDC(surface_);
-    LONG xPerInch = ::GetDeviceCaps(dc, LOGPIXELSX);
-    LONG yPerInch = ::GetDeviceCaps(dc, LOGPIXELSY);
+    LONG xPerInch = ::GetDeviceCaps(dc_, LOGPIXELSX);
+    LONG yPerInch = ::GetDeviceCaps(dc_, LOGPIXELSY);
 
     lpExtent->cx = DXtoHimetricX((LONG)getWidth(), xPerInch);
     lpExtent->cy = DYtoHimetricY((LONG)getHeight(), yPerInch);

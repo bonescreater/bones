@@ -165,7 +165,7 @@ const char * Root::getClassName() const
 
 void Root::draw()
 {
-    AdjustPixmap();
+    adjustPixmap();
     //没有无效区
     if (!isDirty())
         return;
@@ -197,10 +197,16 @@ bool Root::isDirty() const
     return !dirty_.isEmpty();
 }
 
-Surface & Root::getBackBuffer()
+const Surface & Root::getBackBuffer() const
 {
-    AdjustPixmap();
+    const_cast<Root *>(this)->adjustPixmap();
     return back_buffer_;
+}
+
+void Root::getBackBuffer(const void * & bits, size_t & pitch) const
+{
+    bits = bits_;
+    pitch = pitch_;
 }
 
 void Root::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
@@ -292,7 +298,7 @@ void Root::onVisibleChanged(View * n)
     mouse_.shiftIfNecessary();
 }
 
-void Root::AdjustPixmap()
+void Root::adjustPixmap()
 {
     int w = static_cast<int>(getWidth());
     int h = static_cast<int>(getHeight());
@@ -303,11 +309,16 @@ void Root::AdjustPixmap()
             device_->unref();
             device_ = nullptr;
         }
+        back_buffer_.unlock();
         back_buffer_.free();
         if (w && h)
         {
             back_buffer_.allocate(w, h);
             device_ = Device::Create(back_buffer_);
+            Pixmap::LockRec lr;
+            back_buffer_.lock(lr);
+            bits_ = lr.bits;
+            pitch_ = lr.pitch;
         }            
     }
 }

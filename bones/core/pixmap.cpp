@@ -47,6 +47,9 @@ void Pixmap::free()
 
 bool Pixmap::lock(LockRec & rec)
 {
+    rec.bits = 0;
+    rec.pitch = 0;
+    rec.subset.setEmpty();
     if (!pixel_ref_)
         return false;
     SkPixelRef::LockRec lr;
@@ -247,7 +250,7 @@ bool Pixmap::decode(const void * buffer, size_t len)
 
 
 Surface::Surface()
-:context_(nullptr)
+:hbm_(NULL)
 {
     ;
 }
@@ -257,7 +260,6 @@ Surface & Surface::operator=(const Surface & right)
     Pixmap * pl = this;
     Pixmap * pr = (Pixmap *)&right;
     *pl = *pr;
-    this->context_ = right.context_;
     return *this;
 }
 
@@ -276,29 +278,19 @@ SkPixelRef * Surface::allocatePixelRef(int width, int height, bool is_opaque)
     hdr.biClrUsed = 0;
     hdr.biClrImportant = 0;
     void * data = nullptr;
-    auto hbm = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(&hdr),
+    hbm_ = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(&hdr),
         0, &data, NULL, 0);
-    context_ = new Context;
-    context_->dc = ::CreateCompatibleDC(NULL);
-    context_->obj = ::SelectObject(context_->dc, hbm);
-    ::SetGraphicsMode(context_->dc, GM_ADVANCED);
 
     auto info = SkImageInfo::Make(width, height, kPMColor_SkColorType,
         is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
     return SkMallocPixelRef::NewWithProc(info, info.minRowBytes(), nullptr,
-        data, &Surface::PixelRefFree, context_);
+        data, &Surface::PixelRefFree, hbm_);
 }
 
 void Surface::PixelRefFree(void * addr, void * context)
 {
     if (context)
-    {
-        Context * c = (Context *)context; 
-        ::DeleteObject(::SelectObject(c->dc, c->obj));
-        ::DeleteDC(c->dc);
-        delete c;
-    }
-        
+        ::DeleteObject((HBITMAP)context);      
 }
 
 }

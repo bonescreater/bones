@@ -25,7 +25,9 @@ public:
 
     void draw() override;
 
-    HDC dc() const override;
+    HBITMAP getBackBuffer() const override;
+
+    void getBackBuffer(const void * & data, size_t & pitch) const;
 
     void handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) override;
 

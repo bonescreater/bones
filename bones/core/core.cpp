@@ -30,8 +30,6 @@ static ResManager * res = nullptr;
 
 static SkPathEffect * dash = nullptr;
 
-static HDC dc = 0;
-
 bool Core::StartUp(const Config & config)
 {
     SkGraphics::Init();
@@ -47,8 +45,6 @@ bool Core::StartUp(const Config & config)
         Scalar interval[2] = { 2, 2 };
         bret = !!(dash = SkDashPathEffect::Create(interval, 2, 0));
     }
-    if (bret)
-        bret = !!(dc = ::CreateCompatibleDC(NULL));
         
     return bret;
 }
@@ -57,10 +53,6 @@ void Core::ShutDown()
 {
     //关闭所有定时器
     animations->removeAll(false);
-
-    if (dc)
-        ::DeleteDC(dc);
-    dc = 0;
 
     if (dash)
         dash->unref();
@@ -123,11 +115,6 @@ ResManager * Core::GetResManager()
 SkPathEffect * Core::GetDashEffect()
 {
     return dash;
-}
-
-HDC Core::GetCompatibleDC()
-{
-    return dc;
 }
 
 }

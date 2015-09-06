@@ -119,10 +119,10 @@ RECT Helper::ToRect(const Rect & r)
     return wr;
 }
 
-HDC Helper::ToHDC(Surface & sf)
+HBITMAP Helper::ToHBITMAP(const Surface & sf)
 {
-    if (sf.context_)
-        return sf.context_->dc;
+    if (sf.hbm_)
+        return sf.hbm_;
     return NULL;
 }
 
