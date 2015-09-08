@@ -30,7 +30,8 @@
 static const wchar_t * third =
 L"skia unknown\n"
 L"rapidxml 1.13\n"
-L"lua 5.3.0\n";
+L"lua 5.3.0\n"
+L"cef 3.2171.1979";
 
 bones::ScriptParser * core = nullptr;
 
