@@ -2,7 +2,6 @@
 #include "lua_context.h"
 #include "lua_check.h"
 #include "lua_event.h"
-#include "lua_meta_table.h"
 #include "core/area.h"
 #include "core/logging.h"
 
@@ -30,7 +29,7 @@ LuaArea::LuaArea(Area * ob)
 key_(nullptr), focus_(nullptr), wheel_(nullptr),
 notify_(nullptr)
 {
-    ob->setDelegate(this);
+    ;
 }
 
 void LuaArea::addEvent(const char * name,
@@ -94,6 +93,18 @@ BonesArea::NotifyListener * LuaArea::getNotify() const
     return notify_;
 }
 
+void LuaArea::notifyCreate()
+{
+    object_->setDelegate(this);
+    LuaObject::notifyCreate();
+}
+
+void LuaArea::notifyDestroy()
+{
+    LuaObject::notifyDestroy();
+    object_->setDelegate(nullptr);
+}
+
 void LuaArea::setListener(MouseListener * lis)
 {
     mouse_ = lis;
@@ -131,8 +142,8 @@ public:
     int getCount() const{ return event_stack_count; }
 };
 
-template<class T, class F>
-static void PostToScript(LuaArea * ob, T & e, const char * type, F * f)
+template<class T>
+static void PostToScript(LuaArea * ob, T & e, const char * type)
 {
     auto l = LuaContext::State();
     LUA_STACK_AUTO_CHECK(l);
@@ -149,7 +160,7 @@ static void PostToScript(LuaArea * ob, T & e, const char * type, F * f)
             void ** ud = (void **)LuaContext::GetEventCache(l,
                 EventStack().getCount());
             *ud = &e;
-            (*f)(l);
+            T::GetMetaTable(l);
             lua_setmetatable(l, -2);
             LuaContext::SafeLOPCall(l, 2, 0);
         }
@@ -165,7 +176,7 @@ void LuaArea::onMouseEnter(Area * sender, MouseEvent & e)
     mouse_ ? mouse_->onMouseEnter(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnMouseEnter, &LuaMetaTable::GetMouseEvent);
+    PostToScript(this, le, kMethodOnMouseEnter);
 }
 
 void LuaArea::onMouseMove(Area * sender, MouseEvent & e)
@@ -175,7 +186,7 @@ void LuaArea::onMouseMove(Area * sender, MouseEvent & e)
     mouse_ ? mouse_->onMouseMove(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnMouseMove, &LuaMetaTable::GetMouseEvent);
+    PostToScript(this, le, kMethodOnMouseMove);
 }
 
 void LuaArea::onMouseDown(Area * sender, MouseEvent & e)
@@ -185,7 +196,7 @@ void LuaArea::onMouseDown(Area * sender, MouseEvent & e)
     mouse_ ? mouse_->onMouseDown(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnMouseDown, &LuaMetaTable::GetMouseEvent);
+    PostToScript(this, le, kMethodOnMouseDown);
 }
 
 void LuaArea::onMouseUp(Area * sender, MouseEvent & e)
@@ -195,7 +206,7 @@ void LuaArea::onMouseUp(Area * sender, MouseEvent & e)
     mouse_ ? mouse_->onMouseUp(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnMouseUp, &LuaMetaTable::GetMouseEvent);
+    PostToScript(this, le, kMethodOnMouseUp);
 }
 
 void LuaArea::onMouseClick(Area * sender, MouseEvent & e)
@@ -205,7 +216,7 @@ void LuaArea::onMouseClick(Area * sender, MouseEvent & e)
     mouse_ ? mouse_->onMouseClick(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnMouseClick, &LuaMetaTable::GetMouseEvent);
+    PostToScript(this, le, kMethodOnMouseClick);
 }
 
 void LuaArea::onMouseDClick(Area * sender, MouseEvent & e)
@@ -215,7 +226,7 @@ void LuaArea::onMouseDClick(Area * sender, MouseEvent & e)
     mouse_ ? mouse_->onMouseDClick(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnMouseDClick, &LuaMetaTable::GetMouseEvent);
+    PostToScript(this, le, kMethodOnMouseDClick);
 }
 
 void LuaArea::onMouseLeave(Area * sender, MouseEvent & e)
@@ -225,7 +236,7 @@ void LuaArea::onMouseLeave(Area * sender, MouseEvent & e)
     mouse_ ? mouse_->onMouseLeave(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnMouseLeave, &LuaMetaTable::GetMouseEvent);
+    PostToScript(this, le, kMethodOnMouseLeave);
 }
 
 void LuaArea::onKeyDown(Area * sender, KeyEvent & e)
@@ -235,7 +246,7 @@ void LuaArea::onKeyDown(Area * sender, KeyEvent & e)
     key_ ? key_->onKeyDown(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnKeyDown, &LuaMetaTable::GetKeyEvent);
+    PostToScript(this, le, kMethodOnKeyDown);
 }
 
 void LuaArea::onKeyUp(Area * sender, KeyEvent & e)
@@ -245,7 +256,7 @@ void LuaArea::onKeyUp(Area * sender, KeyEvent & e)
     key_ ? key_->onKeyUp(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnKeyUp, &LuaMetaTable::GetKeyEvent);
+    PostToScript(this, le, kMethodOnKeyUp);
 }
 
 void LuaArea::onKeyPress(Area * sender, KeyEvent & e)
@@ -255,7 +266,7 @@ void LuaArea::onKeyPress(Area * sender, KeyEvent & e)
     key_ ? key_->onKeyPress(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnKeyPress, &LuaMetaTable::GetKeyEvent);
+    PostToScript(this, le, kMethodOnKeyPress);
 }
 
 void LuaArea::onFocusOut(Area * sender, FocusEvent & e)
@@ -265,7 +276,7 @@ void LuaArea::onFocusOut(Area * sender, FocusEvent & e)
     focus_ ? focus_->onFocusOut(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnFocusOut, &LuaMetaTable::GetFocusEvent);
+    PostToScript(this, le, kMethodOnFocusOut);
 }
 
 void LuaArea::onFocusIn(Area * sender, FocusEvent & e)
@@ -275,7 +286,7 @@ void LuaArea::onFocusIn(Area * sender, FocusEvent & e)
     focus_ ? focus_->onFocusOut(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnFocusIn, &LuaMetaTable::GetFocusEvent);
+    PostToScript(this, le, kMethodOnFocusIn);
 }
 
 void LuaArea::onBlur(Area * sender, FocusEvent & e)
@@ -285,7 +296,7 @@ void LuaArea::onBlur(Area * sender, FocusEvent & e)
     focus_ ? focus_->onFocusOut(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnBlur, &LuaMetaTable::GetFocusEvent);
+    PostToScript(this, le, kMethodOnBlur);
 }
 
 void LuaArea::onFocus(Area * sender, FocusEvent & e)
@@ -295,7 +306,7 @@ void LuaArea::onFocus(Area * sender, FocusEvent & e)
     focus_ ? focus_->onFocusOut(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnFocus, &LuaMetaTable::GetFocusEvent);
+    PostToScript(this, le, kMethodOnFocus);
 }
 
 void LuaArea::onWheel(Area * sender, WheelEvent & e)
@@ -305,7 +316,7 @@ void LuaArea::onWheel(Area * sender, WheelEvent & e)
     wheel_ ? wheel_->onWheel(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnWheel, &LuaMetaTable::GetWheelEvent);
+    PostToScript(this, le, kMethodOnWheel);
 }
 
 void LuaArea::onSizeChanged(Area * sender, const Size & size)

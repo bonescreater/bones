@@ -78,7 +78,7 @@ void Helper::ToSkPaint(const Font & font, SkPaint & paint)
     paint.setTextSize(font.getSize());
     paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
     paint.setAntiAlias(true);
-    paint.setLCDRenderText(true);    
+    //paint.setDistanceFieldTextTEMP(true);
     paint.setUnderlineText(!!(style & Font::kUnderline));
     paint.setStrikeThruText(!!(style & Font::kStrikeOut));
 

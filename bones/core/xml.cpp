@@ -165,4 +165,10 @@ XMLNode XMLDocument::root() const
 {
     return document_ ? document_->first_node() : nullptr;
 }
+
+XMLDocument::operator bool()  const
+{
+    return document_ != nullptr;
+}
+
 }

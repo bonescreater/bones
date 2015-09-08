@@ -27,11 +27,17 @@ public:
 
     void cleanXML() override;
 
-    BonesPixmap * create() override;
+    BonesPixmap * createPixmap() override;
+
+    void destroyPixmap(BonesPixmap *) override;
 
     BonesObject * getObject(const char * id) override;
 
     BonesObject * getObject(BonesObject * ob, const char * id) override;
+
+    BonesRoot * createRoot(const char * id,
+                             const char * group_id,
+                             const char * class_name) override;
 
     BonesObject * createObject(BonesObject * parent,
                                const char * label,
@@ -39,13 +45,17 @@ public:
                                const char * group_id,
                                const char * class_name) override;
 
-    void cleanObject(BonesObject * bo, bool recursive) override;
+    void cleanObject(BonesObject * bo) override;
 
     BonesResManager * getResManager() override;
     //res manager
-    void add(const char * key, BonesPixmap & pm) override;
+    void clonePixmap(const char * key, BonesPixmap & pm) override;
 
-    void add(const char * key, BonesCursor cursor) override;
+    void cloneCursor(const char * key, BonesCursor cursor) override;
+
+    void getPixmap(const char * key, BonesPixmap & pm) override;
+
+    void getCursor(const char * key, BonesCursor & cursor) override;
 
     void clean() override;
 
@@ -56,7 +66,13 @@ public:
 
     void onUnload() override;
     //节点初始化完毕触发 此时禁止clean
-    void onPrepare(View * v) override;
+    void onCreate(View * v) override;
+
+    void onDestroy(View * v) override;
+
+    void onCreating(View * v) override;
+
+    void onDestroying(View * v) override;
 
     bool preprocessHead(XMLNode node, const char * label, const char * full_path) override;
 
@@ -74,23 +90,23 @@ public:
 
     void push(BonesScriptArg * arg);
 
-    BonesAnimation * createAnimate(
+    BonesObject::Animation createAnimate(
         BonesObject * target,
         uint64_t interval, uint64_t due,
-        BonesAnimation::RunListener * run,
-        BonesAnimation::ActionListener * stop,
-        BonesAnimation::ActionListener * start,
-        BonesAnimation::ActionListener * pause,
-        BonesAnimation::ActionListener * resume,
+        BonesObject::AnimationRunListener * run,
+        BonesObject::AnimationActionListener * stop,
+        BonesObject::AnimationActionListener * start,
+        BonesObject::AnimationActionListener * pause,
+        BonesObject::AnimationActionListener * resume,
         AnimationType type);
 
-    void startAnimate(BonesAnimation * ani);
+    void startAnimate(BonesObject::Animation ani);
 
-    void stopAnimate(BonesAnimation * ani, bool toend);
+    void stopAnimate(BonesObject::Animation ani, bool toend);
 
-    void pauseAnimate(BonesAnimation * ani);
+    void pauseAnimate(BonesObject::Animation ani);
 
-    void resumeAnimate(BonesAnimation * ani);
+    void resumeAnimate(BonesObject::Animation ani);
 
     void stopAllAnimate(BonesObject * ani, bool toend);
 private:

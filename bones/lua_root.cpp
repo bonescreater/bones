@@ -3,7 +3,6 @@
 #include "lua_check.h"
 #include "core/root.h"
 #include "core/helper.h"
-#include "lua_meta_table.h"
 #include "script_parser.h"
 namespace bones
 {
@@ -21,17 +20,29 @@ static const char * kMethodchangeCaretPos = "changeCaretPos";
 LuaRoot::LuaRoot(Root * ob)
 :LuaObject(ob, kMetaTableRoot), listener_(nullptr)
 {
-    ob->setDelegate(this);
+    ;
 }
 
 LuaRoot::~LuaRoot()
 {
-    object_->setDelegate(nullptr);
+    ;
 }
 
 BonesRoot::NotifyListener * LuaRoot::getNotify() const
 {
     return listener_;
+}
+
+void LuaRoot::notifyCreate() 
+{
+    object_->setDelegate(this);
+    LuaObject::notifyCreate();
+}
+
+void LuaRoot::notifyDestroy() 
+{
+    LuaObject::notifyDestroy();
+    object_->setDelegate(nullptr);
 }
 
 void LuaRoot::setListener(NotifyListener * listener)

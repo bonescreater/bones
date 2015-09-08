@@ -1,7 +1,6 @@
 ﻿#include "lua_context.h"
 #include "bones_internal.h"
 #include "lua_check.h"
-#include "lua_meta_table.h"
 #include "script_parser.h"
 
 #include "core/logging.h"
@@ -34,7 +33,7 @@ static int BonesGetObject(lua_State * l)
     {//(self, ob, id)
         lua_pushnil(l);
         lua_copy(l, 1, -1);
-        auto ob = static_cast<BonesObject *>(LuaMetaTable::CallGetCObject(l));
+        auto ob = static_cast<BonesObject *>(LuaContext::CallGetCObject(l));
         bo = GetCoreInstance()->getObject(ob, lua_tostring(l, 2));
     }
     if (bo)
@@ -123,7 +122,7 @@ void LuaContext::GetCO2LOTable(lua_State * l)
     lua_pop(l, 2);
 }
 
-void LuaContext::ClearLOFromCO(lua_State * l, BonesObject * co)
+void LuaContext::ClearLOFromCO(lua_State * l, void * co)
 {
     LUA_STACK_AUTO_CHECK(l);
     LuaContext::GetCO2LOTable(l);
@@ -183,7 +182,7 @@ int LuaContext::SafeLOPCall(lua_State * l, int nargs, int nresults)
     return lua_gettop(l) - top;
 }
 
-void LuaContext::GetLOFromCO(lua_State * l, BonesObject * co)
+void LuaContext::GetLOFromCO(lua_State * l, void * co)
 {
     LUA_STACK_AUTO_CHECK_COUNT(l, 1);
     lua_pushnil(l);
@@ -196,17 +195,42 @@ void LuaContext::GetLOFromCO(lua_State * l, BonesObject * co)
         LOG_ERROR << co << "::GetLOFromCO failed\n";
 }
 
-void LuaContext::GetLOFromCO(lua_State * l, BonesAnimation * ani)
+static int GetCObject(lua_State * l)
 {
-    LUA_STACK_AUTO_CHECK_COUNT(l, 1);
+    lua_settop(l, 1);
     lua_pushnil(l);
-    LuaContext::GetCO2LOTable(l);
-    lua_pushlightuserdata(l, ani);
-    lua_gettable(l, -2);
-    lua_copy(l, -1, -3);
-    lua_pop(l, 2);
-    if (!lua_istable(l, -1))
-        LOG_ERROR << ani << "::GetLOFromCO failed\n";
+    lua_pushlightuserdata(l, lua_touserdata(l, lua_upvalueindex(1)));
+
+    return 1;
+}
+
+void LuaContext::SetGetCObject(lua_State * l, void * co)
+{
+    if (lua_istable(l, -1))
+    {
+        lua_pushstring(l, kMethodGetCObject);
+        lua_pushlightuserdata(l, co);
+        lua_pushcclosure(l, &GetCObject, 1);
+        lua_settable(l, -3);
+    }
+}
+
+void * LuaContext::CallGetCObject(lua_State *l)
+{
+    LUA_STACK_AUTO_CHECK_COUNT(l, -1);
+    assert(lua_istable(l, -1));
+    lua_getfield(l, -1, kMethodGetCObject);
+    assert(lua_isfunction(l, -1));
+    if (!lua_isfunction(l, -1))
+        return nullptr;
+    lua_pushnil(l);
+    lua_copy(l, -3, -1);
+    auto ret = LuaContext::SafeLOPCall(l, 1, 1);
+    assert(1 == ret);
+    void * ud = lua_touserdata(l, -1);
+    lua_pop(l, ret + 1);
+    assert(ud);
+    return ud;
 }
 
 }

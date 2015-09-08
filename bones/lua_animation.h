@@ -10,26 +10,22 @@ namespace bones
 class View;
 class Animation;
 
-class LuaAnimation : public BonesAnimation, public Ref
+class LuaAnimation :public Ref
 {
 
 public:
     LuaAnimation(
         View * target,
         uint64_t interval, uint64_t due,
-        BonesAnimation::RunListener * run,
-        BonesAnimation::ActionListener * stop,
-        BonesAnimation::ActionListener * start,
-        BonesAnimation::ActionListener * pause,
-        BonesAnimation::ActionListener * resume,
+        BonesObject::AnimationRunListener * run,
+        BonesObject::AnimationActionListener * stop,
+        BonesObject::AnimationActionListener * start,
+        BonesObject::AnimationActionListener * pause,
+        BonesObject::AnimationActionListener * resume,
         AnimationType type);
 
     ~LuaAnimation();
 public:
-    void retain() override;
-
-    void release() override;
-
     Animation * ani();
 protected:
     void run(Animation * sender, View * target, float progress);
@@ -42,13 +38,15 @@ protected:
 
     void resume(Animation * sender, View * target);
 private:
+    void createLuaTable();
+private:
     AnimationType type_;
     Animation * animation_;
-    BonesAnimation::RunListener * run_;
-    BonesAnimation::ActionListener * stop_;
-    BonesAnimation::ActionListener * start_;
-    BonesAnimation::ActionListener * pause_;
-    BonesAnimation::ActionListener * resume_;
+    BonesObject::AnimationRunListener * run_;
+    BonesObject::AnimationActionListener * stop_;
+    BonesObject::AnimationActionListener * start_;
+    BonesObject::AnimationActionListener * pause_;
+    BonesObject::AnimationActionListener * resume_;
 };
 
 }

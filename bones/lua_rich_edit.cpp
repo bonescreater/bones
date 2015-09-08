@@ -1,7 +1,6 @@
 ﻿#include "lua_rich_edit.h"
 #include "lua_context.h"
 #include "lua_check.h"
-#include "lua_meta_table.h"
 #include "core/rich_edit.h"
 
 namespace bones
@@ -21,17 +20,29 @@ static const char * kMethodonReturn = "onReturn";
 LuaRichEdit::LuaRichEdit(RichEdit * ob)
 :LuaObject(ob, kMetaTableRichEdit), listener_(nullptr)
 {
-    ob->setDelegate(this);
+    ;
 }
 
 LuaRichEdit::~LuaRichEdit()
 {
-    object_->setDelegate(nullptr);
+    ;
 }
 
 BonesRichEdit::NotifyListener * LuaRichEdit::getNotify() const
 {
     return listener_;
+}
+
+void LuaRichEdit::notifyCreate()
+{
+    object_->setDelegate(this);
+    LuaObject::notifyCreate();
+}
+
+void LuaRichEdit::notifyDestroy()
+{
+    LuaObject::notifyDestroy();
+    object_->setDelegate(nullptr);
 }
 
 void LuaRichEdit::setListener(NotifyListener * listener)

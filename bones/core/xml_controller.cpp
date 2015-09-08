@@ -11,6 +11,7 @@
 #include "logging.h"
 #include "css_manager.h"
 #include "res_manager.h"
+#include "animation_manager.h"
 
 #include <fstream>
 
@@ -38,7 +39,17 @@ const char * kStrRichEdit = "richedit";
 const char * kStrImage = "image";
 const char * kStrText = "text";
 const char * kStrShape = "shape";
+/*
+Delegate事件顺序
 
+onCreating: xml解析body生成对象时 每创建一个view 调用一次 顺序从上到下
+onLoad:所有节点创建完 调用onload onload返回false 则直接onDestroying
+onCreate:所有节点创建完 onload成功 则 发送onCreate 顺序是从下到上
+onDestroy：顺序从上到下
+onUnload
+onDestroying：顺序从下到上
+
+*/
 XMLController::XMLController()
 :delegate_(nullptr)
 {
@@ -57,7 +68,11 @@ void XMLController::setDelegate(Delegate * delegate)
 
 bool XMLController::loadString(const char * data)
 {
-    clean(true);
+    notifyDestroy();
+    if (main_module_.doc)
+        delegate_ ? delegate_->onUnload() : 0;
+
+    clear();
     size_t len = 0;
     if ( !data || !(len = strlen(data)) )
         return false;
@@ -151,7 +166,7 @@ View * XMLController::createView(View * parent,
         attrs[kStrGroup] = group_id ? group_id : "";
         attrs[kStrClass] = class_name ? class_name : "";
         //设置通知
-        notifyPrepare(v);
+        notifyCreate(v);
         applyClass(v);
         return v;
     }
@@ -160,16 +175,17 @@ View * XMLController::createView(View * parent,
 
 void XMLController::clean(View * v)
 {
-    //释放指定节点
+    //递归释放指定节点
     if (!v)
         return;
+    
+    notifyDestroy(v);
+
     RefPtr<View> rv;
     rv.reset(v);
-    //解除父子结构
     if (kClassRoot == rv->getClassName())
-    {
-        auto iter = roots_.begin();
-        for (; iter != roots_.end(); ++iter)
+    {     
+        for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
         {
             if ((*iter).get() != v)
                 continue;
@@ -179,9 +195,7 @@ void XMLController::clean(View * v)
             break;
         }
     }
-    rv->detachChildren();
-    rv->detachFromParent();
-    ob2node_.erase(rv);
+    recursiveClear(v);
     //删除xml中的节点
     //rapidxml并不会释放node的内存所以 删除xml节点没意义了
 }
@@ -352,23 +366,49 @@ XMLNode XMLController::getHead(const XMLDocument & doc)
     return head;
 }
 
-void XMLController::notifyPrepare()
+void XMLController::notifyCreate()
 {//prepare过程中不要clean
-    for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
-        notifyPrepare(iter->get());
+    for (auto iter = roots_.rbegin(); iter != roots_.rend(); ++iter)
+        notifyCreate(iter->get());
 }
 
-void XMLController::notifyPrepare(View * ob)
+void XMLController::notifyCreate(View * ob)
 {
+    if (!ob)
+        return;
     RefPtr<View> pv;
     auto child = ob->getFirstChild();
     while (child)
     {
         pv.reset(child);
-        notifyPrepare(child);
+        notifyCreate(child);
         child = child->getNextSibling();
     }
-    delegate_ ? delegate_->onPrepare(ob) : 0;
+    delegate_ ? delegate_->onCreate(ob) : 0;
+}
+
+void XMLController::notifyDestroy()
+{
+    for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
+        notifyDestroy(iter->get());
+}
+
+void XMLController::notifyDestroy(View * ob)
+{
+    if (!ob)
+        return;
+    //停止定时器
+    Core::GetAnimationManager()->remove(ob, false);
+    //发送通知
+    delegate_ ? delegate_->onDestroy(ob) : 0;
+    RefPtr<View> pv;
+    auto child = ob->getFirstChild();
+    while (child)
+    {
+        pv.reset(child);
+        notifyDestroy(child);
+        child = child->getNextSibling();
+    } 
 }
 
 void XMLController::applyClass()
@@ -400,17 +440,15 @@ void XMLController::applyClass(View * ob)
         Core::GetCSSManager()->applyClass(ob, attr);
 }
 
-void XMLController::clean(bool notify)
+void XMLController::clear()
 {
-    //停止所有动画
-    Core::Clean();
-    //发送通知
-    if (notify)
-        delegate_ ? delegate_->onUnload() : 0;
+
     //删除节点父子结构
-    for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
+    for (auto iter = roots_.rbegin(); iter != roots_.rend(); ++iter)
     {
-        (*iter)->recursiveDetachChildren();
+        recursiveClear(iter->get());
+
+        //(*iter)->recursiveDetachChildren();
         NativeEvent n = { WM_MOUSELEAVE, 0, 0, 0 };
         (*iter)->handleMouse(n);
     }
@@ -418,7 +456,24 @@ void XMLController::clean(bool notify)
     roots_.clear();
 
     modules_.clear();
-    main_module_.clean();
+    main_module_.clean();   
+    Core::GetCSSManager()->clean();
+    css_files_.clear();
+}
+
+void XMLController::recursiveClear(View * v)
+{
+    if (!v)
+        return;
+    while (auto child = v->getFirstChild())
+        recursiveClear(child);
+
+    delegate_ ? delegate_->onDestroying(v) : 0;
+
+    v->detachFromParent();
+    RefPtr<View> rv;
+    rv.reset(v);
+    ob2node_.erase(rv);   
 }
 
 void XMLController::parseModuleBody(const Module & mod)
@@ -438,14 +493,14 @@ void XMLController::parseModuleBody(const Module & mod)
     auto load = delegate_ ? delegate_->onLoad() : true;
     if (load)
     {
-        //prepare 和class 都是 先子后父
-        //prepare在前 是因为应用class时 可能有事件回调
-        //prepare中可以注册好回调等待处理
-        notifyPrepare();
+        //create 和class 都是 先子后父
+        //create在前 是因为应用class时 可能有事件回调
+        //create中可以注册好回调等待处理
+        notifyCreate();
         applyClass();        
     }
     else
-        clean(false);
+        clear();
 }
 
 bool XMLController::createViewFromNode(XMLNode node, const char * label, View * parent_ob, View ** ob)
@@ -477,7 +532,11 @@ bool XMLController::createViewFromNode(XMLNode node, const char * label, View * 
             bret = handleExtendLabel(node, label, parent_ob, &node_ob);
         }
         if (bret && !extend)
+        {
+            delegate_ ? delegate_->onCreating(node_ob) : 0;
             delegate_ ? delegate_->postprocessBody(node, label, parent_ob, node_ob) : 0;
+        }
+            
     }
 
     if (bret)
@@ -526,6 +585,8 @@ bool XMLController::handleExtendLabel(XMLNode node, const char * label, View * p
 bool XMLController::handleRoot(XMLNode node, View * parent_ob, View ** ob)
 {
     //root 不能添加到父上
+    if (parent_ob)
+        return false;
     assert(!parent_ob);
     auto v = AdoptRef(new Root);
     saveNode(v.get(), node);
@@ -537,12 +598,13 @@ bool XMLController::handleRoot(XMLNode node, View * parent_ob, View ** ob)
 
 bool XMLController::handleText(XMLNode node, View * parent_ob, View ** ob)
 {
+    if (!parent_ob)
+        return false;
     assert(parent_ob);
     auto v = AdoptRef(new Text);
     saveNode(v.get(), node);
 
-    if (parent_ob)
-        ((View *)parent_ob)->attachChildToBack(v.get());
+    parent_ob->attachChildToBack(v.get());
     if (ob)
         *ob = v.get();
     return v != nullptr;
@@ -550,10 +612,11 @@ bool XMLController::handleText(XMLNode node, View * parent_ob, View ** ob)
 
 bool XMLController::handleShape(XMLNode node, View * parent_ob, View ** ob)
 {
+    if (!parent_ob)
+        return false;
     auto v = AdoptRef(new Shape);
     saveNode(v.get(), node);
-    if (parent_ob)
-        ((View *)parent_ob)->attachChildToBack(v.get());
+    parent_ob->attachChildToBack(v.get());
     if (ob)
         *ob = v.get();
 
@@ -563,10 +626,11 @@ bool XMLController::handleShape(XMLNode node, View * parent_ob, View ** ob)
 
 bool XMLController::handleImage(XMLNode node, View * parent_ob, View ** ob)
 {
+    if (!parent_ob)
+        return false;
     auto v = AdoptRef(new Image);
     saveNode(v.get(), node);
-    if (parent_ob)
-        ((View *)parent_ob)->attachChildToBack(v.get());
+    parent_ob->attachChildToBack(v.get());
     if (ob)
         *ob = v.get();
     return v != nullptr;
@@ -574,10 +638,11 @@ bool XMLController::handleImage(XMLNode node, View * parent_ob, View ** ob)
 
 bool XMLController::handleArea(XMLNode node, View * parent_ob, View ** ob)
 {
+    if (!parent_ob)
+        return false;
     auto v = AdoptRef(new Area);
     saveNode(v.get(), node);
-    if (parent_ob)
-        ((View *)parent_ob)->attachChildToBack(v.get());
+    parent_ob->attachChildToBack(v.get());
     if (ob)
         *ob = v.get();
     return v != nullptr;
@@ -585,10 +650,11 @@ bool XMLController::handleArea(XMLNode node, View * parent_ob, View ** ob)
 
 bool XMLController::handleRichEdit(XMLNode node, View * parent_ob, View ** ob)
 {
+    if (!parent_ob)
+        return false;
     auto v = AdoptRef(new RichEdit);
     saveNode(v.get(), node);
-    if (parent_ob)
-        ((View *)parent_ob)->attachChildToBack(v.get());
+    parent_ob->attachChildToBack(v.get());
 
     if (ob)
         *ob = v.get();
@@ -654,9 +720,8 @@ void XMLController::saveNode(View * v, XMLNode node)
     RefPtr<View> rv;
     rv.reset(v);
     auto & attrs = ob2node_[rv];
-    if (!node)
-        attrs.clear();
-    else
+    attrs.clear();
+    if (node)
     {
         auto attr = node.firstAttribute();
         while (attr)

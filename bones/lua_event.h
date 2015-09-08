@@ -4,6 +4,7 @@
 #include "bones_internal.h"
 #include "script_parser.h"
 #include "core/event.h"
+#include "lua_context.h"
 
 namespace bones
 {
@@ -113,6 +114,8 @@ public:
 class LuaMouseEvent : public LuaUIEvent<BonesMouseEvent, MouseEvent>
 {
 public:
+    static void GetMetaTable(lua_State * l);
+
     LuaMouseEvent(MouseEvent & e);
 
     virtual Type type() const override;
@@ -132,6 +135,8 @@ public:
 class LuaKeyEvent : public LuaUIEvent<BonesKeyEvent, KeyEvent>
 {
 public:
+    static void GetMetaTable(lua_State * l);
+
     LuaKeyEvent(KeyEvent & e);
 
     Type type() const override;
@@ -144,6 +149,8 @@ public:
 class LuaFocusEvent : public LuaEvent<BonesFocusEvent, FocusEvent>
 {
 public:
+    static void GetMetaTable(lua_State * l);
+
     LuaFocusEvent(FocusEvent & e);
 
     Type type() const override;
@@ -154,6 +161,8 @@ public:
 class LuaWheelEvent : public LuaUIEvent<BonesWheelEvent, WheelEvent>
 {
 public:
+    static void GetMetaTable(lua_State * l);
+
     LuaWheelEvent(WheelEvent & e);
 
     int dx() const override;

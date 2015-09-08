@@ -8,18 +8,14 @@
 namespace bones
 {
 
-class Picture : public BonesPixmap, public Ref
+class Picture : public BonesPixmap
 {
 public:
     Picture();
 
-    ~Picture();
+    virtual ~Picture();
 
     Pixmap & getPixmap();
-
-    void retain() override;
-
-    void release() override;
 
     bool alloc(int width, int height) override;
 

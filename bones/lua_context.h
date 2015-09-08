@@ -21,15 +21,17 @@ public:
 
     static void GetCO2LOTable(lua_State * l);
 
-    static void ClearLOFromCO(lua_State * l, BonesObject * co);
+    static void ClearLOFromCO(lua_State * l, void * co);
 
     static void * GetEventCache(lua_State * l, int count);
 
     static int SafeLOPCall(lua_State * l, int nargs, int nresults);
 
-    static void GetLOFromCO(lua_State * l, BonesObject * co);
+    static void GetLOFromCO(lua_State * l, void * co);
 
-    static void GetLOFromCO(lua_State * l, BonesAnimation * ani);
+    static void SetGetCObject(lua_State * l, void * co);
+
+    static void * CallGetCObject(lua_State *l);
 };
 
 }

@@ -54,8 +54,8 @@ local function applyTextCSS(self, css)
     return self.text_:applyCSS(css)
 end
 
-function mod.onPrepare(self)
-print("Prepare")
+function mod.onCreate(self)
+print("onCreate")
 print(self)
 --public method
 self.isEnable = isEnable

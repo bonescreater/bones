@@ -17,6 +17,10 @@ public:
 
     NotifyListener * getNotify() const override;
 
+    void notifyCreate() override;
+
+    void notifyDestroy() override;
+
     void addEvent(const char * name,
         const char * phase,
         const char * module,

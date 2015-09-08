@@ -16,7 +16,7 @@ public:
 
     ~BSPanel();
 
-    bool create(const BSPanel * parent);
+    bool create(const BSPanel * parent, bool layered);
 
     bool destroy();
 
@@ -38,7 +38,9 @@ public:
 
     void loadRichEdit(const char * id);
 
-    void onPrepare(BonesRoot * sender, bool & stop);
+    void onCreate(BonesRoot * sender, bool & stop) override;
+
+    void onDestroy(BonesRoot * sender, bool & stop) override;
 
     void requestFocus(BonesRoot * sender, bool & stop) override;
 
@@ -56,7 +58,9 @@ public:
 
     void onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool & stop) override;
 
-    void onPrepare(BonesRichEdit * sender, bool & stop);
+    void onCreate(BonesRichEdit * sender, bool & stop) override;
+
+    void onDestroy(BonesRichEdit * sender, bool & stop) override;
 
     HRESULT txNotify(BonesRichEdit * sender, DWORD iNotify, void  *pv, bool & stop) override;
 

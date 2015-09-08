@@ -78,6 +78,8 @@ public:
     bool parse(char * str);
 
     XMLNode root() const;
+
+    operator bool()  const;
 private:
     rapidxml::xml_document<char> * document_;
 };

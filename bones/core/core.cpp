@@ -74,13 +74,6 @@ void Core::ShutDown()
     SkGraphics::Term();
 }
 
-void Core::Clean()
-{
-    //停止所有动画 清空css
-    animations->removeAll(false);
-    css->clean();
-}
-
 void Core::Update()
 {
     static uint64_t current = 0;

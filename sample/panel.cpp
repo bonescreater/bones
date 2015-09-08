@@ -74,12 +74,18 @@ BSPanel::~BSPanel()
     ;
 }
 
-bool BSPanel::create(const BSPanel * parent)
+bool BSPanel::create(const BSPanel * parent, bool layered)
 {
-    DWORD ex_style = 0;
+    DWORD ex_style = WS_EX_APPWINDOW;
+    DWORD win_style = WS_THICKFRAME | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU;
+    if (layered)
+    {
+        ex_style |= WS_EX_LAYERED;
+        win_style = WS_POPUP;
+    }
+        
 
-    auto hwnd = ::CreateWindowEx(WS_EX_APPWINDOW, kClassName, L"",
-        (WS_THICKFRAME | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU),
+    auto hwnd = ::CreateWindowEx(ex_style, kClassName, L"mmm", win_style,
         0, 0, 0, 0, NULL, 0, 0, this);
     return !!hwnd;
 }
@@ -152,7 +158,6 @@ void BSPanel::layeredDraw()
         return;
     if (!root_->isDirty())
         return;
-
     root_->draw();
 
     RECT win_rect;
@@ -163,7 +168,8 @@ void BSPanel::layeredDraw()
     POINT src_pos = { 0, 0 };
     BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
     auto old = ::SelectObject(dc_, root_->getBackBuffer());
-    ::UpdateLayeredWindow(hwnd(), NULL, &pos, &size, dc_, &src_pos, 0, &bf, ULW_ALPHA);
+    ::SetGraphicsMode(dc_, GM_ADVANCED);
+    auto l = ::UpdateLayeredWindow(hwnd(), NULL, &pos, &size, dc_, &src_pos, 0, &bf, ULW_ALPHA);
     ::SelectObject(dc_, old);
 }
 
@@ -348,7 +354,12 @@ LRESULT BSPanel::defProcessEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
     return ::DefWindowProc(hwnd_, uMsg, wParam, lParam);
 }
 
-void BSPanel::onPrepare(BonesRoot * sender, bool & stop)
+void BSPanel::onCreate(BonesRoot * sender, bool & stop)
+{
+    ;
+}
+
+void BSPanel::onDestroy(BonesRoot * sender, bool & stop)
 {
     ;
 }
@@ -405,7 +416,12 @@ void BSPanel::onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool
     ;
 }
 
-void BSPanel::onPrepare(BonesRichEdit * sender, bool & stop)
+void BSPanel::onCreate(BonesRichEdit * sender, bool & stop)
+{
+    ;
+}
+
+void BSPanel::onDestroy(BonesRichEdit * sender, bool & stop)
 {
     ;
 }

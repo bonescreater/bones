@@ -13,7 +13,9 @@ extern ScriptParser * GetCoreInstance();
 extern const char * kNotifyOrder;
 extern const char * kEventOrder;
 
-extern const char * kMethodOnPrepare;
+extern const char * kMethodOnCreate;
+extern const char * kMethodOnDestroy;
+
 extern const char * kMethodAnimateRun;
 extern const char * kMethodAnimateStart;
 extern const char * kMethodAnimateStop;
@@ -40,6 +42,21 @@ extern const char * kMethodOnSizeChanged;
 extern const char * kMethodOnPositionChanged;
 extern const char * kMethodOnHitTest;
 
+extern const char * kMethodIndex;
+extern const char * kMethodGC;
+extern const char * kMethodGetOpacity;
+extern const char * kMethodGetCObject;
+extern const char * kMethodAnimate;
+extern const char * kMethodStop;
+extern const char * kMethodPause;
+extern const char * kMethodResume;
+extern const char * kMethodStopAll;
+extern const char * kMethodContains;
+extern const char * kMethodApplyCSS;
+extern const char * kMethodApplyClass;
+extern const char * kMethodGetChildAt;
+extern const char * kMethodGetSize;
+extern const char * kMethodGetLoc;
 //LuaAnimation跟LuaObject不同 要么从C++中创建要么从LUA中创建
 //从C++中创建的 是没有lua回调
 //从LUA中创建的 是没有C++回调
@@ -48,6 +65,7 @@ enum AnimationType
     kANI_NATIVE,
     kANI_SCRIPT,
 };
+
 
 }
 

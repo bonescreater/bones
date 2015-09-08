@@ -17,6 +17,10 @@ public:
 
     NotifyListener * getNotify() const override;
 
+    void notifyCreate() override;
+
+    void notifyDestroy() override;
+
     void setListener(NotifyListener * listener) override;
 
     BOOL screenToClient(RichEdit * sender, LPPOINT lppt) override;

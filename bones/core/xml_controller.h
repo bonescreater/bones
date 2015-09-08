@@ -24,13 +24,18 @@ public:
     class Delegate
     { 
     public:
+        virtual void onCreating(View * v) = 0;
+
+        virtual void onDestroying(View * v) = 0;
         //XML刚载入时触发 返回false 自动clean
         virtual bool onLoad() = 0;
 
         virtual void onUnload() = 0;
         //节点初始化完毕触发 此时禁止clean
-        virtual void onPrepare(View * v) = 0;
+        virtual void onCreate(View * v) = 0;
 
+        virtual void onDestroy(View * v) = 0;
+        //xml解析过程中调用
         virtual bool preprocessHead(XMLNode node, const char * label, const char * full_path) = 0;
 
         virtual void postprocessHead(XMLNode node, const char * label, const char * full_path) = 0;
@@ -102,7 +107,9 @@ protected:
     //返回指定节点树 根节点的对象
     bool createViewFromNode(XMLNode node, const char * label, View * parent_ob, View ** ob);
 private:
-    void clean(bool notify);
+    void recursiveClear(View * v);
+
+    void clear();
 
     bool loadMainModule(Module & mod);
 
@@ -122,9 +129,13 @@ private:
 
     XMLNode getHead(const XMLDocument & doc);
 
-    void notifyPrepare();
+    void notifyCreate();
 
-    void notifyPrepare(View * ob);
+    void notifyCreate(View * ob);
+
+    void notifyDestroy();
+
+    void notifyDestroy(View * ob);
 
     void applyClass();
 

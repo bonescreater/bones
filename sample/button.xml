@@ -5,7 +5,7 @@
 </head>
 <body>
 	                <area>
-                    <notify name ="onPrepare" module ="button" func ="onPrepare"></notify>
+                    <notify name ="onCreate" module ="button" func ="onCreate"></notify>
                     <notify name ="onSizeChanged" module ="button" func ="onSizeChanged"></notify>
                     
                     <event name ="onMouseDown" phase ="target" module ="button" func ="onMouseDown"></event>

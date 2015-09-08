@@ -81,7 +81,7 @@ int main()
 
     //创建窗口
     test_window = new BSPanel;
-    auto bret = test_window->create(nullptr);
+    auto bret = test_window->create(nullptr, false);
     if (!bret)
         return 1;
 
@@ -92,11 +92,11 @@ int main()
 
     std::vector<char> pic;
     ReadFile("..\\..\\sample\\lena.bmp", pic);
-    auto pm_pic = BonesGetCore()->create();
-    auto sub_pm_lt = BonesGetCore()->create();
-    auto sub_pm_rt = BonesGetCore()->create();
-    auto sub_pm_lb = BonesGetCore()->create();
-    auto sub_pm_rb = BonesGetCore()->create();
+    auto pm_pic = BonesGetCore()->createPixmap();
+    auto sub_pm_lt = BonesGetCore()->createPixmap();
+    auto sub_pm_rt = BonesGetCore()->createPixmap();
+    auto sub_pm_lb = BonesGetCore()->createPixmap();
+    auto sub_pm_rb = BonesGetCore()->createPixmap();
     pm_pic->decode(&pic[0], pic.size());
 
     BonesRect rlt = { 0, 0, 128, 128 };
@@ -108,10 +108,10 @@ int main()
     pm_pic->extractSubset(*sub_pm_lb, rlb);
     pm_pic->extractSubset(*sub_pm_rb, rrb);
     //content:key
-    BonesGetCore()->getResManager()->add("pic_lt", *sub_pm_lt);
-    BonesGetCore()->getResManager()->add("pic_rt", *sub_pm_rt);
-    BonesGetCore()->getResManager()->add("pic_lb", *sub_pm_lb);
-    BonesGetCore()->getResManager()->add("pic_rb", *sub_pm_rb);
+    BonesGetCore()->getResManager()->clonePixmap("pic_lt", *sub_pm_lt);
+    BonesGetCore()->getResManager()->clonePixmap("pic_rt", *sub_pm_rt);
+    BonesGetCore()->getResManager()->clonePixmap("pic_lb", *sub_pm_lb);
+    BonesGetCore()->getResManager()->clonePixmap("pic_rb", *sub_pm_rb);
 
     std::vector<char> xml;
     ReadFile("..\\..\\sample\\test.xml", xml);
@@ -125,7 +125,7 @@ int main()
     test_window->setSize(size);
 
     ::ShowWindow(test_window->hwnd(), SW_NORMAL);
-    ::UpdateWindow(test_window->hwnd());
+    //::UpdateWindow(test_window->hwnd());
         
     //消息循环
     MSG msg;
@@ -147,17 +147,18 @@ int main()
         else
         {
             BonesUpdate();
+            test_window->layeredDraw();
             ::SleepEx(5, true);
         }
 
     }
     BonesGetCore()->cleanXML();
     BonesGetCore()->getResManager()->clean();
-    pm_pic->release();
-    sub_pm_lt->release();
-    sub_pm_rt->release();
-    sub_pm_lb->release();
-    sub_pm_rb->release();
+    BonesGetCore()->destroyPixmap(pm_pic);
+    BonesGetCore()->destroyPixmap(sub_pm_lt);
+    BonesGetCore()->destroyPixmap(sub_pm_rt);
+    BonesGetCore()->destroyPixmap(sub_pm_lb);
+    BonesGetCore()->destroyPixmap(sub_pm_rb);
 
     BonesShutDown();
     delete test_window;

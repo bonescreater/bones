@@ -20,7 +20,6 @@
 #include "lua_text.h"
 #include "lua_rich_edit.h"
 #include "lua_area.h"
-#include "lua_meta_table.h"
 #include "lua_animation.h"
 
 
@@ -58,6 +57,9 @@ static int ScriptCB(lua_State * l)
     {
         switch (lua_type(l, i))
         {
+        case LUA_TNIL:
+            args[j].type = BonesScriptArg::kNill;
+            break;
         case LUA_TBOOLEAN:
             args[j].boolean = !!lua_toboolean(l, i);
             args[j].type = BonesScriptArg::kBoolean;
@@ -83,7 +85,7 @@ static int ScriptCB(lua_State * l)
     //获取sender
     lua_pushnil(l);
     lua_copy(l, 1, -1);
-    auto * sender = static_cast<BonesObject *>(LuaMetaTable::CallGetCObject(l));
+    auto * sender = static_cast<BonesObject *>(LuaContext::CallGetCObject(l));
 
     assert(sender);
     BonesScriptListener * lis = (BonesScriptListener *)lua_touserdata(l, lua_upvalueindex(1));
@@ -103,10 +105,6 @@ ScriptParser::ScriptParser()
 
 bool ScriptParser::loadXMLString(const char * data, BonesXMLListener * listener)
 {
-    Core::GetAnimationManager()->removeAll(false);
-    LuaContext::Reset();
-    v2bo_.clear();
-
     last_listener_ = listener_;
     listener_ = listener;
     return xml_.loadString(data);
@@ -149,6 +147,14 @@ BonesObject * ScriptParser::getObject(BonesObject * ob, const char * id)
     return nullptr;
 }
 
+BonesRoot * ScriptParser::createRoot(const char * id,
+                                       const char * group_id,
+                                       const char * class_name)
+{
+    return static_cast<BonesRoot *>(getObject(
+        xml_.createView(nullptr, kStrRoot, id, group_id, class_name)));
+}
+
 BonesObject * ScriptParser::createObject(BonesObject * parent,
                                          const char * label,
                                          const char * id,
@@ -159,16 +165,11 @@ BonesObject * ScriptParser::createObject(BonesObject * parent,
         xml_.createView(getObject(parent), label, id, group_id, class_name));
 }
 
-void ScriptParser::cleanObject(BonesObject * bo, bool recursive)
+void ScriptParser::cleanObject(BonesObject * bo)
 {
     if (!bo)
         return;
-
-    auto v = getObject(bo);
-    Core::GetAnimationManager()->remove(v, false);
-    LuaContext::ClearLOFromCO(LuaContext::State(), bo);
-    v2bo_.erase(v);
-    xml_.clean(v);
+    xml_.clean(getObject(bo));
 }
 
 BonesResManager * ScriptParser::getResManager()
@@ -176,14 +177,26 @@ BonesResManager * ScriptParser::getResManager()
     return this;
 }
 //res manager
-void ScriptParser::add(const char * key, BonesPixmap & pm)
+
+void ScriptParser::clonePixmap(const char * key, BonesPixmap & pm)
 {
     Core::GetResManager()->add(key, static_cast<Picture *>(&pm)->getPixmap());
 }
 
-void ScriptParser::add(const char * key, BonesCursor cursor)
+void ScriptParser::cloneCursor(const char * key, BonesCursor cursor)
 {
     Core::GetResManager()->add(key, cursor);
+}
+
+void ScriptParser::getPixmap(const char * key, BonesPixmap & pm)
+{
+    static_cast<Picture *>(&pm)->getPixmap() = 
+        Core::GetResManager()->getPixmap(key);
+}
+
+void ScriptParser::getCursor(const char * key, BonesCursor & cursor)
+{
+    cursor = Core::GetResManager()->getCursor(key);
 }
 
 void ScriptParser::clean()
@@ -191,9 +204,14 @@ void ScriptParser::clean()
     Core::GetResManager()->clean();
 }
 
-BonesPixmap * ScriptParser::create()
+BonesPixmap * ScriptParser::createPixmap()
 { 
     return new Picture();
+}
+
+void ScriptParser::destroyPixmap(BonesPixmap * bp)
+{
+    delete bp;
 }
 
 bool ScriptParser::onLoad()
@@ -206,24 +224,64 @@ void ScriptParser::onUnload()
     last_listener_ ? last_listener_->onUnload(this) : 0;
 }
 
-void ScriptParser::onPrepare(View * v)
+void ScriptParser::onCreate(View * v)
 {
     if (!v)
         return;
     auto ob = getObject(v);
     if (ob->getClassName() == kClassRoot)
-        static_cast<LuaRoot *>(ob)->notifyPrepare();
+        static_cast<LuaRoot *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassShape)
-        static_cast<LuaShape *>(ob)->notifyPrepare();
+        static_cast<LuaShape *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassImage)
-        static_cast<LuaImage *>(ob)->notifyPrepare();
+        static_cast<LuaImage *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassText)
-        static_cast<LuaText *>(ob)->notifyPrepare();
+        static_cast<LuaText *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassRichEdit)
-        static_cast<LuaRichEdit *>(ob)->notifyPrepare();
+        static_cast<LuaRichEdit *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassArea)
-        static_cast<LuaArea *>(ob)->notifyPrepare();
+        static_cast<LuaArea *>(ob)->notifyCreate();
+}
 
+void ScriptParser::onDestroy(View * v)
+{
+    if (!v)
+        return;
+    auto ob = getObject(v);
+    if (ob->getClassName() == kClassRoot)
+        static_cast<LuaRoot *>(ob)->notifyDestroy();
+    else if (ob->getClassName() == kClassShape)
+        static_cast<LuaShape *>(ob)->notifyDestroy();
+    else if (ob->getClassName() == kClassImage)
+        static_cast<LuaImage *>(ob)->notifyDestroy();
+    else if (ob->getClassName() == kClassText)
+        static_cast<LuaText *>(ob)->notifyDestroy();
+    else if (ob->getClassName() == kClassRichEdit)
+        static_cast<LuaRichEdit *>(ob)->notifyDestroy();
+    else if (ob->getClassName() == kClassArea)
+        static_cast<LuaArea *>(ob)->notifyDestroy();
+}
+
+void ScriptParser::onCreating(View * v)
+{
+    if (v->getClassName() == kClassRoot)
+        handleRoot(static_cast<Root *>(v));
+    else if (v->getClassName() == kClassShape)
+        handleShape(static_cast<Shape *>(v));
+    else if (v->getClassName() == kClassImage)
+        handleImage(static_cast<Image *>(v));
+    else if (v->getClassName() == kClassText)
+        handleText(static_cast<Text *>(v));
+    else if (v->getClassName() == kClassRichEdit)
+        handleRichEdit(static_cast<RichEdit *>(v));
+    else if (v->getClassName() == kClassArea)
+        handleArea(static_cast<Area *>(v));
+}
+
+void ScriptParser::onDestroying(View * v)
+{
+    LuaContext::ClearLOFromCO(LuaContext::State(), v);
+    v2bo_.erase(v);
 }
 
 bool ScriptParser::preprocessHead(XMLNode node, const char * label, const char * full_path)
@@ -321,20 +379,7 @@ bool ScriptParser::preprocessBody(XMLNode node, const char * label, View * paren
 
 void ScriptParser::postprocessBody(XMLNode node, const char * label, View * parent_ob, View * ob)
 {
-    if (!ob)
-        return;
-    if (ob->getClassName() == kClassRoot)
-        handleRoot(static_cast<Root *>(ob));
-    else if (ob->getClassName() == kClassShape)
-        handleShape(static_cast<Shape *>(ob));
-    else if (ob->getClassName() == kClassImage)
-        handleImage(static_cast<Image *>(ob));
-    else if (ob->getClassName() == kClassText)
-        handleText(static_cast<Text *>(ob));
-    else if (ob->getClassName() == kClassRichEdit)
-        handleRichEdit(static_cast<RichEdit *>(ob));
-    else if (ob->getClassName() == kClassArea)
-        handleArea(static_cast<Area *>(ob));
+    ;
 }
 
 BonesObject * ScriptParser::getObject(View * v)
@@ -403,39 +448,39 @@ void ScriptParser::push(BonesScriptArg * arg)
     }
 }
 
-BonesAnimation * ScriptParser::createAnimate(
+BonesObject::Animation ScriptParser::createAnimate(
     BonesObject * target,
     uint64_t interval, uint64_t due,
-    BonesAnimation::RunListener * run,
-    BonesAnimation::ActionListener * stop,
-    BonesAnimation::ActionListener * start,
-    BonesAnimation::ActionListener * pause,
-    BonesAnimation::ActionListener * resume, 
+    BonesObject::AnimationRunListener * run,
+    BonesObject::AnimationActionListener * stop,
+    BonesObject::AnimationActionListener * start,
+    BonesObject::AnimationActionListener * pause,
+    BonesObject::AnimationActionListener * resume,
     AnimationType type)
 {
     return new LuaAnimation(getObject(target), interval, due,
         run, stop, start, pause, resume, type);
 }
 
-void ScriptParser::startAnimate(BonesAnimation * ani)
+void ScriptParser::startAnimate(BonesObject::Animation ani)
 {
     Core::GetAnimationManager()->add(
         static_cast<LuaAnimation *>(ani)->ani());
 }
 
-void ScriptParser::stopAnimate(BonesAnimation * ani, bool toend)
+void ScriptParser::stopAnimate(BonesObject::Animation ani, bool toend)
 {
     Core::GetAnimationManager()->remove(
         static_cast<LuaAnimation *>(ani)->ani(), toend);
 }
 
-void ScriptParser::pauseAnimate(BonesAnimation * ani)
+void ScriptParser::pauseAnimate(BonesObject::Animation ani)
 {
     Core::GetAnimationManager()->pause(
         static_cast<LuaAnimation *>(ani)->ani());
 }
 
-void ScriptParser::resumeAnimate(BonesAnimation * ani)
+void ScriptParser::resumeAnimate(BonesObject::Animation ani)
 {
     Core::GetAnimationManager()->resume(
         static_cast<LuaAnimation *>(ani)->ani());

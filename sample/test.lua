@@ -24,8 +24,8 @@ local function testFadeOut(btn)
     fade:animate(90, 1800, animate.fadeOut, test.fadeStop, test.fadeStart);
 end
 
-function mod.onPrepare(self)
-print("test prepare")
+function mod.onCreate(self)
+print("test create")
 local btn1 = bones.getObject("fadein")
 btn1:applyTextClass("fadein")
 btn1["onClick"] = testFadeIn;

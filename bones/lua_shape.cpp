@@ -1,7 +1,6 @@
 ﻿#include "lua_shape.h"
 #include "lua_context.h"
 #include "lua_check.h"
-#include "lua_meta_table.h"
 #include "core/shape.h"
 #include "core/logging.h"
 

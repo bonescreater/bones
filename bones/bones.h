@@ -1,4 +1,4 @@
-#ifndef BONES_BONES_H_
+Ôªø#ifndef BONES_BONES_H_
 #define BONES_BONES_H_
 
 #include <Windows.h>
@@ -82,6 +82,7 @@ struct BonesScriptArg
 {
     enum Type
     {
+        kNill,
         kString,
         kNumber,
         kBoolean,
@@ -241,46 +242,37 @@ public:
     virtual int dy() const = 0;
 };
 
-class BonesBase
+class BonesObject
 {
 public:
-    virtual void retain() = 0;
-
-    virtual void release() = 0;
-};
-
-class BonesAnimation : public BonesBase
-{
-public:
-    enum Action
+    typedef void * Animation;
+    enum AnimationAction
     {
         kStart,
         kStop,
         kPause,
         kResume,
     };
-    class RunListener
+    class AnimationRunListener
     {
     public:
-        virtual void onEvent(BonesAnimation * ani, BonesObject * ob, float progress) = 0;
+        virtual void onEvent(Animation ani, BonesObject * ob, float progress) = 0;
     };
 
-    class ActionListener
+    class AnimationActionListener
     {
     public:
-        virtual void onEvent(BonesAnimation * ani, BonesObject * ob, Action action) = 0;
+        virtual void onEvent(Animation ani, BonesObject * ob, AnimationAction action) = 0;
     };
-};
 
-class BonesObject : public BonesBase
-{
-public:
-    //√ø∏ˆObject∂º÷ß≥÷onPrepare ¬º˛
+    //ÊØè‰∏™ObjectÈÉΩÊîØÊåÅonCreate‰∫ã‰ª∂
     template<class T>
     class NotifyBase
     {
     public:
-        virtual void onPrepare(T * sender, bool & stop) = 0;
+        virtual void onCreate(T * sender, bool & stop) = 0;
+
+        virtual void onDestroy(T * sender, bool & stop) = 0;
     };
 public:
     virtual const char * getClassName() = 0;
@@ -309,19 +301,19 @@ public:
 
     virtual void applyClass(const char * name) = 0;
 
-    virtual BonesAnimation * animate(
+    virtual Animation animate(
         uint64_t interval, uint64_t due, 
-        BonesAnimation::RunListener * run,
-        BonesAnimation::ActionListener * stop,
-        BonesAnimation::ActionListener * start,
-        BonesAnimation::ActionListener * pause,
-        BonesAnimation::ActionListener * resume) = 0;
+        AnimationRunListener * run,
+        AnimationActionListener * stop,
+        AnimationActionListener * start,
+        AnimationActionListener * pause,
+        AnimationActionListener * resume) = 0;
 
-    virtual void stopAnimate(BonesAnimation * ani, bool toend) = 0;
+    virtual void stopAnimate(Animation ani, bool toend) = 0;
 
-    virtual void pauseAnimate(BonesAnimation * ani) = 0;
+    virtual void pauseAnimate(Animation ani) = 0;
 
-    virtual void resumeAnimate(BonesAnimation * ani) = 0;
+    virtual void resumeAnimate(Animation ani) = 0;
 
     virtual void stopAllAnimate(bool toend) = 0;
 };
@@ -497,7 +489,7 @@ public:
     virtual void setListener(NotifyListener * notify) = 0;
 };
 
-class BonesPixmap : public BonesBase
+class BonesPixmap
 {
 public:
     struct LockRec
@@ -527,9 +519,13 @@ public:
 class BonesResManager
 {
 public:
-    virtual void add(const char * key, BonesPixmap & pm) = 0;
+    virtual void clonePixmap(const char * key, BonesPixmap & pm) = 0;
 
-    virtual void add(const char * key, BonesCursor cursor) = 0;
+    virtual void cloneCursor(const char * key, BonesCursor cursor) = 0;
+
+    virtual void getPixmap(const char * key, BonesPixmap & pm) = 0;
+
+    virtual void getCursor(const char * key, BonesCursor & cursor) = 0;
 
     virtual void clean() = 0;
 };
@@ -537,17 +533,23 @@ public:
 class BonesCore
 {
 public:
+    virtual BonesResManager * getResManager() = 0;
+
+    virtual BonesPixmap * createPixmap() = 0;
+
+    virtual void destroyPixmap(BonesPixmap *) = 0;
+
     virtual bool loadXMLString(const char * data, BonesXMLListener * listener) = 0;
 
     virtual void cleanXML() = 0;
 
-    virtual BonesPixmap * create() = 0;
-
-    virtual BonesResManager * getResManager() = 0;
-
     virtual BonesObject * getObject(const char * id) = 0;
 
     virtual BonesObject * getObject(BonesObject * ob, const char * id) = 0;
+
+    virtual BonesRoot * createRoot(const char * id,
+                                     const char * group_id,
+                                     const char * class_name) = 0;
 
     virtual BonesObject * createObject(BonesObject * parent,
                                        const char * label,
@@ -555,7 +557,7 @@ public:
                                        const char * group_id,
                                        const char * class_name) = 0;
 
-    virtual void cleanObject(BonesObject * bo, bool recursive) = 0;
+    virtual void cleanObject(BonesObject * bo) = 0;
 };
 
 

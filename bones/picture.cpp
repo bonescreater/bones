@@ -21,16 +21,6 @@ Pixmap & Picture::getPixmap()
     return pixmap_;
 }
 
-void Picture::retain()
-{
-    Ref::retain();
-}
-
-void Picture::release()
-{
-    Ref::release();
-}
-
 bool Picture::alloc(int width, int height)
 {
     return pixmap_.allocate(width, height);

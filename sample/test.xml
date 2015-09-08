@@ -79,6 +79,7 @@
           top:60px;
           width:200px;
           height:50px;
+          font: 20px  "system" underline;
           content:"背景透明richedit";
           background-style:transparent;
           }
@@ -153,7 +154,7 @@
                 <richedit id ="rich" class ="rich"></richedit>
               </shape>
               
-              <notify name ="onPrepare" module ="test" func ="onPrepare"></notify>
+              <notify name ="onCreate" module ="test" func ="onCreate"></notify>
               <notify name ="onSizeChanged" module ="test" func ="onSizeChanged"></notify>
 			      </root>
         </body>  
