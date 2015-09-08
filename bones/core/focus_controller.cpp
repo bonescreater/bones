@@ -70,6 +70,8 @@ void FocusController::shift(View * n)
             break;
         tmp = tmp->parent();
     }
+    if (tmp == root_)
+        tmp = nullptr;
     setFocusWithReason(tmp, kDirectChange);
 }
 

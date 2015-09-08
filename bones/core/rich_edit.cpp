@@ -313,7 +313,9 @@ void RichEdit::onMouseUp(MouseEvent & e)
 
 void RichEdit::onFocus(FocusEvent & e)
 {
-    //services_->OnTxInPlaceActivate(NULL);
+    //tab切焦点到richedit时出于PlaceActivate
+    if (e.isTabTraversal())
+        services_->OnTxInPlaceActivate(NULL);
     services_->OnTxUIActivate();
     services_->TxSendMessage(WM_SETFOCUS, 0, 0, nullptr);
     traversal_ = e.isTabTraversal();

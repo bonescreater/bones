@@ -28,6 +28,7 @@ public:
     int onEvent(BonesObject * ob, BonesScriptArg * arg, size_t arg_count)
     {
         test_window->destroy();
+        BonesGetCore()->cleanXML();
         return 0;
     }
 };
@@ -152,7 +153,7 @@ int main()
         }
 
     }
-    BonesGetCore()->cleanXML();
+    
     BonesGetCore()->getResManager()->clean();
     BonesGetCore()->destroyPixmap(pm_pic);
     BonesGetCore()->destroyPixmap(sub_pm_lt);

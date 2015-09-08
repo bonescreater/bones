@@ -183,19 +183,19 @@ void XMLController::clean(View * v)
 
     RefPtr<View> rv;
     rv.reset(v);
+    recursiveClear(v);
     if (kClassRoot == rv->getClassName())
-    {     
+    {
         for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
         {
             if ((*iter).get() != v)
                 continue;
-            NativeEvent n = { WM_MOUSELEAVE, 0, 0, 0 };
-            (*iter)->handleMouse(n);
+            //NativeEvent n = { WM_MOUSELEAVE, 0, 0, 0 };
+            //(*iter)->handleMouse(n);
             roots_.erase(iter);
             break;
         }
     }
-    recursiveClear(v);
     //删除xml中的节点
     //rapidxml并不会释放node的内存所以 删除xml节点没意义了
 }
@@ -449,9 +449,10 @@ void XMLController::clear()
         recursiveClear(iter->get());
 
         //(*iter)->recursiveDetachChildren();
-        NativeEvent n = { WM_MOUSELEAVE, 0, 0, 0 };
-        (*iter)->handleMouse(n);
+        //NativeEvent n = { WM_MOUSELEAVE, 0, 0, 0 };
+        //(*iter)->handleMouse(n);
     }
+    assert(ob2node_.empty());
     ob2node_.clear();
     roots_.clear();
 

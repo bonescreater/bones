@@ -65,11 +65,13 @@ void MouseController::handleEvent(MouseEvent & e)
     View * target = e.target();
     if (target == root_)
         target = getTargetByPos(e.getLoc());
-    if (!target)
-        return;
+    //注意处理target == null的情况
     last_mouse_point_ = e.getLoc();
 
-    MouseEvent me(e.type(), e.button(), target, target->mapToLocal(e.getLoc()), e.getLoc(), e.getFlags());
+    MouseEvent me(e.type(), e.button(), target, 
+                  target ? target->mapToLocal(e.getLoc()) : e.getLoc(), 
+                  e.getLoc(), e.getFlags());
+
     me.setUserData(e.getUserData());
     if (kET_MOUSE_DOWN == me.type() )
     {
@@ -80,7 +82,8 @@ void MouseController::handleEvent(MouseEvent & e)
             shiftCapture(target);
     }
     shiftOver(target);
-    EventDispatcher::Push(me);
+    if (target)
+        EventDispatcher::Push(me);
     if (kET_MOUSE_UP == me.type() && me.isLeftMouse())
     {//左键弹起 取消capture
         shiftCapture(nullptr);
@@ -123,7 +126,9 @@ View * MouseController::getTargetByPos(const Point & pt)
     View * target = capture_.get();
     if (!target)
         target = root_->hitTest(pt);
-
+    //mouse target 不能为root
+    if (target == root_)
+        target = nullptr;
     return target;
 }
 
