@@ -13,7 +13,7 @@ class Browser;
 class WebView : public View 
 {
 public:
-    static bool StartUp();
+    static bool StartUp(const char * locate);
 
     static void ShutDown();
 

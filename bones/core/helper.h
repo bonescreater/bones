@@ -47,7 +47,11 @@ public:
 
     static HBITMAP ToHBITMAP(const Surface & sf);
 
-    static HMODULE GetModuleFromAddress(void * address);
+    static HMODULE GetModule();
+
+    static std::string JoinPath(const char ** path, int count);
+
+    static std::string GetPathFromFullName(const char * fullname);
 
     static uint64_t GetTickCount();
 

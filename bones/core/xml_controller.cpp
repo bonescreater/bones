@@ -769,7 +769,7 @@ std::string XMLController::GetRealPath(const char * file_value, const char * mod
     {
         auto dir = GetPathFromFullName(module_path);
         const char * parts[] = { dir.data(), file_value };
-        return JoinPath(parts, sizeof(parts) / sizeof(parts[0]));
+        return Helper::JoinPath(parts, sizeof(parts) / sizeof(parts[0]));
     }
 }
 
@@ -786,37 +786,7 @@ std::string XMLController::GetPathFromFullName(const char * fullname)
         //return Encoding::ToUTF8(wpath.data());
         return ".";
     }
-    std::string path;
-    auto last_backslash = std::strrchr(fullname, '\\');
-    auto last_slash = std::strrchr(fullname, '/');
-    auto slash = last_backslash > last_slash ? last_backslash : last_slash;
-    if (!slash)
-        return path;
-    return path.assign(fullname, slash - fullname);
-}
-
-std::string XMLController::JoinPath(const char ** path, int count)
-{
-    if (!path || !count)
-        return "";
-    std::string paths;
-    for (auto i = 0; i < count; ++i)
-    {
-        if (nullptr == path[i])
-            break;
-
-        if (0 == i)
-        {
-            paths = path[0];
-            continue;
-        }
-        //如果path 末尾不是斜杆 那么加1个斜杆
-        char last_char = paths[paths.length() - 1];
-        if ('\\' != last_char || '/' != last_char)
-            paths.append("\\");
-        paths.append(path[i]);
-    }
-    return paths;
+    return Helper::GetPathFromFullName(fullname);
 }
 
 bool XMLController::IsAbsolutePath(const char * path)

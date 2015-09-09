@@ -126,6 +126,51 @@ HBITMAP Helper::ToHBITMAP(const Surface & sf)
     return NULL;
 }
 
+HMODULE Helper::GetModule()
+{
+
+    DWORD flags = GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT |
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS;
+    HMODULE module = 0;
+    GetModuleHandleEx(flags, (LPCWSTR)_ReturnAddress(), &module);
+    return module;
+}
+
+std::string Helper::JoinPath(const char ** path, int count)
+{
+    if (!path || !count)
+        return "";
+    std::string paths;
+    for (auto i = 0; i < count; ++i)
+    {
+        if (nullptr == path[i])
+            break;
+
+        if (0 == i)
+        {
+            paths = path[0];
+            continue;
+        }
+        //如果path 末尾不是斜杆 那么加1个斜杆
+        char last_char = paths[paths.length() - 1];
+        if ('\\' != last_char || '/' != last_char)
+            paths.append("\\");
+        paths.append(path[i]);
+    }
+    return paths;
+}
+
+std::string Helper::GetPathFromFullName(const char * fullname)
+{
+    std::string path;
+    auto last_backslash = std::strrchr(fullname, '\\');
+    auto last_slash = std::strrchr(fullname, '/');
+    auto slash = last_backslash > last_slash ? last_backslash : last_slash;
+    if (!slash)
+        return path;
+    return path.assign(fullname, slash - fullname);
+}
+
 uint64_t Helper::GetTickCount()
 {
     typedef ULONGLONG(WINAPI *TGetTickCount64)();

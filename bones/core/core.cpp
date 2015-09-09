@@ -54,7 +54,7 @@ bool Core::StartUp(const Config & config)
     if (bret)
     {
         enable_cef = config.enable_cef; 
-        bret = WebView::StartUp();
+        bret = WebView::StartUp(config.cef_locate);
     }
     if (bret)
         bret = !!(xml = new XMLController);

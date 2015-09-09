@@ -58,6 +58,7 @@ struct BonesConfig
     const wchar_t * log_file;
     BonesLogLevel log_level;
     bool enable_cef;
+    const char * cef_locate;//"zh-CN"
 };
 
 class BonesCore;

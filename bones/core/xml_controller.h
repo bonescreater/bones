@@ -145,8 +145,6 @@ private:
 private:
     static std::string GetPathFromFullName(const char * fullname);
 
-    static std::string JoinPath(const char ** path, int count);
-
     static bool IsAbsolutePath(const char * path);
 
     static bool ReadFile(const wchar_t * file_path, FileStream & file);

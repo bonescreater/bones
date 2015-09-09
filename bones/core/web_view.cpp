@@ -2,6 +2,7 @@
 #include "SkCanvas.h"
 #include "SkPaint.h"
 #include "helper.h"
+#include "encoding.h"
 
 #include "include/cef_app.h"
 #include "include/cef_client.h"
@@ -149,7 +150,7 @@ private:
     friend class WebView;
 };
 
-bool WebView::StartUp()
+bool WebView::StartUp(const char * locate)
 {
     //不启用cef的话直接返回
     if (!Core::EnableCEF())
@@ -162,9 +163,19 @@ bool WebView::StartUp()
     // Enable dev tools
     //settings.remote_debugging_port = 8088;
     // Use cefclient.exe to run render process and other sub processes.
-    CefString(&settings.browser_subprocess_path) = "cefclient.exe";
+    auto mod = Helper::GetModule();
+    wchar_t mod_name[MAX_PATH];
+    if (!::GetModuleFileName(mod, mod_name, MAX_PATH))
+        return false;
+    auto path = Helper::GetPathFromFullName(Encoding::ToUTF8(mod_name).data());
+    const char * parts[] = { path.data(), "cefclient.exe" };
+    auto clientpath = Helper::JoinPath(parts, sizeof(parts) / sizeof(parts[0]));
+
+    CefString(&settings.browser_subprocess_path) = Encoding::FromUTF8(clientpath.data());
     // Load locales/zh-CN.pak
-    CefString(&settings.locale) = "zh-CN";
+    if (!locate)
+        locate = "zh-CN";
+    CefString(&settings.locale) = locate;
 
     return CefInitialize(args, settings, nullptr, nullptr);
 }

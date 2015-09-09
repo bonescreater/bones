@@ -61,6 +61,7 @@ public:
         const wchar_t * log_file;
         LogLevel log_level;
         bool enable_cef;
+        const char * cef_locate;//"zh-CN"
     };
 public:
     static bool StartUp(const Config & config);
