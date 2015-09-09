@@ -154,7 +154,7 @@ bool XMLDocument::parse(char * str)
     catch (rapidxml::parse_error &)
     {
         assert(0);
-        LOG_ERROR << "xml parse fail";
+        BLG_ERROR << "xml parse fail";
         return false;
     }
 

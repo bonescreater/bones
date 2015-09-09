@@ -9,13 +9,13 @@ Animation::Animation(View * target, uint64_t interval, uint64_t due, void * ud)
 :stopped_(true), paused_(true), start_(false), user_data_(ud),
 interval_(interval), due_(due), last_run_(0), running_count_(0)
 {
-    LOG_VERBOSE << "create:" << "Animation" << this;
+    BLG_VERBOSE << "create:" << "Animation" << this;
     target_.reset(target);
 }
 
 Animation::~Animation()
 {
-    LOG_VERBOSE << "destroy:" << "Animation" << this;
+    BLG_VERBOSE << "destroy:" << "Animation" << this;
 }
 
 void Animation::bind(Action action, const CFRoutine & routine)

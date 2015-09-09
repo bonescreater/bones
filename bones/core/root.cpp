@@ -9,6 +9,7 @@
 #include "device.h"
 #include "SkDevice.h"
 #include "logging.h"
+#include <windowsx.h>
 
 namespace bones
 {
@@ -41,7 +42,7 @@ void Root::handleMouse(NativeEvent & e)
     Helper::ToEMForMouse(e.msg, et, mb);
     if (kET_COUNT == et)
     {
-        LOG_VERBOSE << "Temporarily not supported: " << e.msg;
+        BLG_VERBOSE << "Temporarily not supported: " << e.msg;
         return;
     }
     auto & lparam = e.lparam;

@@ -185,7 +185,7 @@ void CSSManager::parse(const char * css, CSSEntries & entries)
     }
     return;
 error:
-    LOG_VERBOSE << "css parse error: " << token;
+    BLG_VERBOSE << "css parse error: " << token;
 }
 
 CSSManager::CSSManager()
@@ -302,7 +302,7 @@ void CSSManager::append(const char * str)
     }
     return;
 error:
-    LOG_VERBOSE << "css parse error: " << token;
+    BLG_VERBOSE << "css parse error: " << token;
 }
 
 void CSSManager::applyEntries(Ref * ob, const CSSEntries & entries)
@@ -401,7 +401,7 @@ Token ReadToken(const char * str, size_t & begin, size_t & end)
             end++;
         }
         //错误
-        LOG_VERBOSE << "read token fail: " << str << "\n";
+        BLG_VERBOSE << "read token fail: " << str << "\n";
         return kTOKEN_END;
     }
     //parser string

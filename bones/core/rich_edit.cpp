@@ -9,6 +9,7 @@
 #include "animation.h"
 #include "animation_manager.h"
 #include "css_utils.h"
+#include <windowsx.h>
 
 namespace bones
 {
@@ -548,7 +549,7 @@ void RichEdit::lazyInitialize()
         assert(rich);
         if (!rich)
         {
-            LOG_ERROR << "rich edit Msftedit.dll not found";
+            BLG_ERROR << "rich edit Msftedit.dll not found";
             return;
         }
 
@@ -561,7 +562,7 @@ void RichEdit::lazyInitialize()
         auto hr = TCreateTextServices(NULL, this, &pun);
         if (FAILED(hr))
         {
-            LOG_ERROR << "rich edit CreateTextServices fail";
+            BLG_ERROR << "rich edit CreateTextServices fail";
             return;
         }
 
@@ -569,7 +570,7 @@ void RichEdit::lazyInitialize()
         pun->Release();
         if (FAILED(hr))
         {
-            LOG_ERROR << "rich edit QueryInterface IID_ITextServices fail";
+            BLG_ERROR << "rich edit QueryInterface IID_ITextServices fail";
             return;
         }
         assert(services_);

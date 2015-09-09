@@ -21,12 +21,12 @@ public:
     {
         object_.reset(v);
         createLuaTable(meta);
-        LOG_VERBOSE << "create:" << object_->getClassName() << object_.get();
+        BLG_VERBOSE << "create:" << object_->getClassName() << object_.get();
     }
 
     virtual ~LuaObject()
     {
-        LOG_VERBOSE << "destroy:" << object_->getClassName() << object_.get();
+        BLG_VERBOSE << "destroy:" << object_->getClassName() << object_.get();
     }
 
     virtual void notifyCreate()
@@ -207,17 +207,17 @@ public:
         return ani;
     }
 
-    void stopAnimate(Animation ani, bool toend) override
+    void stopAnimate(BonesObject::Animation ani, bool toend) override
     {
         GetCoreInstance()->stopAnimate(ani, toend);
     }
 
-    void pauseAnimate(Animation ani)  override
+    void pauseAnimate(BonesObject::Animation ani)  override
     {
         GetCoreInstance()->pauseAnimate(ani);
     }
 
-    void resumeAnimate(Animation ani)  override
+    void resumeAnimate(BonesObject::Animation ani)  override
     {
         GetCoreInstance()->resumeAnimate(ani);
     }

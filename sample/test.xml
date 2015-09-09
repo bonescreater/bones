@@ -126,6 +126,11 @@
           overflow:word-wrap;
           color:#8800ff00;
           }
+          .webview
+          {
+          loc:20px 400px;
+          size:200px 150px;
+          }
         </style>
 		  </head>
       
@@ -152,6 +157,7 @@
 
                 <richedit id ="rich_opacity" class ="rich_opacity"></richedit>
                 <richedit id ="rich" class ="rich"></richedit>
+                <webview class ="webview"></webview>
               </shape>
               
               <notify name ="onCreate" module ="test" func ="onCreate"></notify>

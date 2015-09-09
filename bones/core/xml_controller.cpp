@@ -7,6 +7,7 @@
 #include "image.h"
 #include "text.h"
 #include "shape.h"
+#include "web_view.h"
 
 #include "logging.h"
 #include "css_manager.h"
@@ -36,6 +37,7 @@ const char * kStrLink = "link";
 const char * kStrRoot = "root";
 const char * kStrArea = "area";
 const char * kStrRichEdit = "richedit";
+const char * kStrWebView = "webview";
 const char * kStrImage = "image";
 const char * kStrText = "text";
 const char * kStrShape = "shape";
@@ -308,10 +310,10 @@ bool XMLController::handleLink(XMLNode node, const char * full_path)
             if (pm.decode(&fs[0], fs.size()))
                 Core::GetResManager()->add(name, pm);
             else
-                LOG_ERROR << path << " can't decode to pixmap";
+                BLG_ERROR << path << " can't decode to pixmap";
         }
         else
-            LOG_ERROR << path << " read fail";
+            BLG_ERROR << path << " read fail";
     }
     return false;
 }
@@ -469,6 +471,7 @@ void XMLController::recursiveClear(View * v)
     while (auto child = v->getFirstChild())
         recursiveClear(child);
 
+    Core::GetAnimationManager()->remove(v, false);
     delegate_ ? delegate_->onDestroying(v) : 0;
 
     v->detachFromParent();
@@ -521,6 +524,8 @@ bool XMLController::createViewFromNode(XMLNode node, const char * label, View * 
             bret = handleArea(node, parent_ob, &node_ob);
         else if (!strcmp(label, kStrRichEdit))
             bret = handleRichEdit(node, parent_ob, &node_ob);
+        else if (!strcmp(label, kStrWebView))
+            bret = handleWebView(node, parent_ob, &node_ob);
         else if (!strcmp(label, kStrImage))
             bret = handleImage(node, parent_ob, &node_ob);
         else if (!strcmp(label, kStrText))
@@ -567,7 +572,7 @@ bool XMLController::handleExtendLabel(XMLNode node, const char * label, View * p
     auto body = getBody(other_mod.doc);
     if (!body)
     {
-        LOG_VERBOSE << "module: " << label << "empty ????";
+        BLG_VERBOSE << "module: " << label << "empty ????";
         return false;
     }
     View * node_ob = nullptr;
@@ -662,6 +667,23 @@ bool XMLController::handleRichEdit(XMLNode node, View * parent_ob, View ** ob)
     return v != nullptr;
 }
 
+bool XMLController::handleWebView(XMLNode node, View * parent_ob, View ** ob)
+{
+    if (!parent_ob)
+        return false;
+    if (!Core::EnableCEF())
+        return false;
+
+    auto v = AdoptRef(new WebView);
+    saveNode(v.get(), node);
+    parent_ob->attachChildToBack(v.get());
+
+    if (ob)
+        *ob = v.get();
+    return v != nullptr;
+}
+
+
 bool XMLController::ReadString(const char * file_path, FileStream & file)
 {
     using namespace std;
@@ -693,7 +715,7 @@ bool XMLController::ReadFile(const wchar_t * file_path, FileStream & file)
     ifstream stream(file_path, ios::binary);
     if (!stream)
     {
-        LOG_ERROR << file_path << "read fail";
+        BLG_ERROR << file_path << "read fail";
         return false;
     }
         

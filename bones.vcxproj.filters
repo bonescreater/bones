@@ -37,6 +37,9 @@
     <ClCompile Include="bones\lua_animation.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
+    <ClCompile Include="bones\lua_web_view.cpp">
+      <Filter>lua\proxy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
@@ -76,6 +79,9 @@
     <ClInclude Include="bones\bones_internal.h" />
     <ClInclude Include="bones\picture.h" />
     <ClInclude Include="bones\lua_animation.h">
+      <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_web_view.h">
       <Filter>lua\proxy</Filter>
     </ClInclude>
   </ItemGroup>

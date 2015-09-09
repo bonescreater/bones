@@ -8,7 +8,7 @@
 #include <functional>
 
 #include <Windows.h>
-#include <windowsx.h>
+
 
 class SkPathEffect;
 namespace bones
@@ -44,6 +44,7 @@ class AnimationManager;
 class PanelManager;
 class CSSManager;
 class ResManager;
+class XMLController;
 
 enum LogLevel
 {
@@ -59,6 +60,7 @@ public:
     {
         const wchar_t * log_file;
         LogLevel log_level;
+        bool enable_cef;
     };
 public:
     static bool StartUp(const Config & config);
@@ -66,6 +68,8 @@ public:
     static void ShutDown();
 
     static void Update();
+
+    static bool EnableCEF();
 
     static AnimationManager * GetAnimationManager();
 
@@ -76,6 +80,8 @@ public:
     static ResManager * GetResManager();
 
     static SkPathEffect * GetDashEffect();
+
+    static XMLController * GetXMLController();
 };
 
 }

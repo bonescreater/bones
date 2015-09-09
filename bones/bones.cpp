@@ -96,6 +96,7 @@ BONES_API(BonesCore *) BonesStartUp(const BonesConfig & config)
     Core::Config cc;
     cc.log_file = config.log_file;
     cc.log_level = static_cast<bones::LogLevel>(config.log_level);
+    cc.enable_cef = config.enable_cef;
 
     bool bret = Core::StartUp(cc);
     if (bret)

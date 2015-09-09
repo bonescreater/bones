@@ -57,6 +57,7 @@ struct BonesConfig
 {
     const wchar_t * log_file;
     BonesLogLevel log_level;
+    bool enable_cef;
 };
 
 class BonesCore;
@@ -487,6 +488,17 @@ public:
     virtual void setListener(WheelListener * lis) = 0;
 
     virtual void setListener(NotifyListener * notify) = 0;
+};
+
+class BonesWebView : public BonesObject
+{
+public:
+    class NotifyListener : public NotifyBase<BonesWebView>
+    {
+        ;
+    };
+
+    virtual void setListener(NotifyListener * lis) = 0;
 };
 
 class BonesPixmap

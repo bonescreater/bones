@@ -107,7 +107,7 @@ void LuaContext::GetGlobalTable(lua_State * l)
     LUA_STACK_AUTO_CHECK_COUNT(l, 1);
     lua_getglobal(l, kBonesTable);
     if (!lua_istable(l, -1))
-        LOG_ERROR << kBonesTable << "push failed\n";
+        BLG_ERROR << kBonesTable << "push failed\n";
 }
 
 void LuaContext::GetCO2LOTable(lua_State * l)
@@ -117,7 +117,7 @@ void LuaContext::GetCO2LOTable(lua_State * l)
     GetGlobalTable(l);
     lua_getfield(l, -1, kCO2LOTable);
     if (!lua_istable(l, -1))
-        LOG_ERROR << kCO2LOTable << "push failed";
+        BLG_ERROR << kCO2LOTable << "push failed";
     lua_copy(l, -1, -3);
     lua_pop(l, 2);
 }
@@ -139,7 +139,7 @@ void * LuaContext::GetEventCache(lua_State * l, int count)
     GetGlobalTable(l);
     lua_getfield(l, -1, kCacheEvent);
     if (!lua_istable(l, -1))
-        LOG_ERROR << kCacheEvent << "push failed";
+        BLG_ERROR << kCacheEvent << "push failed";
 
     //得到cache table
     lua_pushinteger(l, count);
@@ -168,14 +168,14 @@ int LuaContext::SafeLOPCall(lua_State * l, int nargs, int nresults)
     {
         if (lua_pcall(l, nargs, nresults, 0))
         {
-            LOG_ERROR << lua_tostring(l, -1) << "\n";
+            BLG_ERROR << lua_tostring(l, -1) << "\n";
             lua_pop(l, 1);
         }
     }
     else
     {
         if (!lua_isnil(l, -1 - nargs))
-            LOG_VERBOSE << "LO Function ???\n";
+            BLG_VERBOSE << "LO Function ???\n";
         lua_pop(l, 1 + nargs);
     }
 
@@ -192,7 +192,7 @@ void LuaContext::GetLOFromCO(lua_State * l, void * co)
     lua_copy(l, -1, -3);
     lua_pop(l, 2);
     if (!lua_istable(l, -1))
-        LOG_ERROR << co << "::GetLOFromCO failed\n";
+        BLG_ERROR << co << "::GetLOFromCO failed\n";
 }
 
 static int GetCObject(lua_State * l)

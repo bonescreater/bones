@@ -1,9 +1,8 @@
 ﻿#ifndef BONES_SCRIPT_PARSER_H_
 #define BONES_SCRIPT_PARSER_H_
 
-#include "bones.h"
+#include "bones_internal.h"
 #include "core/xml_controller.h"
-#include "lua_animation.h"
 
 
 namespace bones
@@ -15,6 +14,7 @@ class Image;
 class Text;
 class Area;
 class RichEdit;
+class WebView;
 
 class ScriptParser : public BonesCore, 
                      public BonesResManager,
@@ -22,6 +22,8 @@ class ScriptParser : public BonesCore,
 {
 public:
     ScriptParser();
+
+    ~ScriptParser();
 public:
     bool loadXMLString(const char * data, BonesXMLListener * listener) override;
 
@@ -122,11 +124,12 @@ private:
 
     void handleArea(Area * ob);
 
+    void handleWebView(WebView * ob);
+
     bool handleNotify(XMLNode node, View * parent_ob, View ** ob);
 
     bool handleEvent(XMLNode node, View * parent_ob, View ** ob);
 private:
-    XMLController xml_;
     BonesXMLListener * listener_;
     BonesXMLListener * last_listener_;
     std::map<View *, BonesObject *>v2bo_;

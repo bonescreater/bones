@@ -62,8 +62,9 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>usp10.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalDependencies>usp10.lib;$(OutDir)libcef.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>libcef.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -83,8 +84,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>usp10.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalDependencies>usp10.lib;$(OutDir)libcef.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>libcef.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -119,6 +120,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="bones\lua_web_view.cpp" />
     <ClCompile Include="bones\picture.cpp" />
     <ClCompile Include="bones\script_parser.cpp" />
     <ClCompile Include="bones\main.cpp" />
@@ -126,6 +128,9 @@
   <ItemGroup>
     <ProjectReference Include="bones_core.vcxproj">
       <Project>{6ac0ee58-b2cd-4490-8147-89020b15f518}</Project>
+    </ProjectReference>
+    <ProjectReference Include="libcef_dll_wrapper.vcxproj">
+      <Project>{a9d6dc71-c0dc-4549-aea0-3b15b44e86a9}</Project>
     </ProjectReference>
     <ProjectReference Include="lua.vcxproj">
       <Project>{b94fcb1d-8aec-429b-a379-3d30fc70f073}</Project>
@@ -165,6 +170,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="bones\lua_web_view.h" />
     <ClInclude Include="bones\picture.h" />
     <ClInclude Include="bones\script_parser.h" />
   </ItemGroup>

@@ -110,10 +110,9 @@ void MouseController::shiftOver(View * n)
             dispatcher.run(me, old_path);
         }
         over_ = target;
+        root_->setCursor(::LoadImage(NULL, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_SHARED));
         if (over_)
         {
-            //进入新的view前将光标置为默认光标
-            over_->setCursor(::LoadImage(NULL, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_SHARED));
             Point empty;
             MouseEvent me(kET_MOUSE_ENTER, kMB_NONE, over_.get(), empty, empty, 0);
             dispatcher.run(me, new_path);

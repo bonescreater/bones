@@ -10,6 +10,8 @@
 #include "core/text.h"
 #include "core/shape.h"
 #include "core/rich_edit.h"
+
+
 #include "core/res_manager.h"
 #include "core/animation_manager.h"
 #include "core/animation.h"
@@ -21,6 +23,7 @@
 #include "lua_rich_edit.h"
 #include "lua_area.h"
 #include "lua_animation.h"
+#include "lua_web_view.h"
 
 
 namespace bones
@@ -40,7 +43,7 @@ static int ScriptCB(lua_State * l)
     auto param_count = lua_gettop(l);
     if (param_count <= 0)
     {
-        LOG_VERBOSE << "script callback has no sender Ref???\n";
+        BLG_VERBOSE << "script callback has no sender Ref???\n";
         return 0;
     }
         
@@ -100,14 +103,20 @@ static int ScriptCB(lua_State * l)
 ScriptParser::ScriptParser()
 :listener_(nullptr), last_listener_(nullptr)
 {
-    xml_.setDelegate(this);
+    Core::GetXMLController()->setDelegate(this);
+}
+
+ScriptParser::~ScriptParser()
+{
+    cleanXML();
+    Core::GetXMLController()->setDelegate(nullptr);
 }
 
 bool ScriptParser::loadXMLString(const char * data, BonesXMLListener * listener)
 {
     last_listener_ = listener_;
     listener_ = listener;
-    return xml_.loadString(data);
+    return Core::GetXMLController()->loadString(data);
 }
 
 void ScriptParser::cleanXML()
@@ -119,7 +128,7 @@ BonesObject * ScriptParser::getObject(const char * id)
 {
     if (!id)
         return nullptr;
-    auto v = xml_.getViewByID(id);
+    auto v = Core::GetXMLController()->getViewByID(id);
     if (v)
     {
         auto iter = v2bo_.find(v);
@@ -136,7 +145,7 @@ BonesObject * ScriptParser::getObject(BonesObject * ob, const char * id)
     View * v = getObject(ob);
     if (v)
     {
-        v = xml_.getViewByID(v, id);
+        v = Core::GetXMLController()->getViewByID(v, id);
         if (v)
         {
             auto iter = v2bo_.find(v);
@@ -152,7 +161,7 @@ BonesRoot * ScriptParser::createRoot(const char * id,
                                        const char * class_name)
 {
     return static_cast<BonesRoot *>(getObject(
-        xml_.createView(nullptr, kStrRoot, id, group_id, class_name)));
+        Core::GetXMLController()->createView(nullptr, kStrRoot, id, group_id, class_name)));
 }
 
 BonesObject * ScriptParser::createObject(BonesObject * parent,
@@ -162,14 +171,14 @@ BonesObject * ScriptParser::createObject(BonesObject * parent,
                                          const char * class_name)
 {
     return getObject(
-        xml_.createView(getObject(parent), label, id, group_id, class_name));
+        Core::GetXMLController()->createView(getObject(parent), label, id, group_id, class_name));
 }
 
 void ScriptParser::cleanObject(BonesObject * bo)
 {
     if (!bo)
         return;
-    xml_.clean(getObject(bo));
+    Core::GetXMLController()->clean(getObject(bo));
 }
 
 BonesResManager * ScriptParser::getResManager()
@@ -241,6 +250,8 @@ void ScriptParser::onCreate(View * v)
         static_cast<LuaRichEdit *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassArea)
         static_cast<LuaArea *>(ob)->notifyCreate();
+    else if (ob->getClassName() == kClassWebView)
+        static_cast<LuaWebView *>(ob)->notifyCreate();
 }
 
 void ScriptParser::onDestroy(View * v)
@@ -260,6 +271,8 @@ void ScriptParser::onDestroy(View * v)
         static_cast<LuaRichEdit *>(ob)->notifyDestroy();
     else if (ob->getClassName() == kClassArea)
         static_cast<LuaArea *>(ob)->notifyDestroy();
+    else if (ob->getClassName() == kClassWebView)
+        static_cast<LuaWebView *>(ob)->notifyDestroy();
 }
 
 void ScriptParser::onCreating(View * v)
@@ -276,6 +289,8 @@ void ScriptParser::onCreating(View * v)
         handleRichEdit(static_cast<RichEdit *>(v));
     else if (v->getClassName() == kClassArea)
         handleArea(static_cast<Area *>(v));
+    else if (v->getClassName() == kClassWebView)
+        handleWebView(static_cast<WebView *>(v));
 }
 
 void ScriptParser::onDestroying(View * v)
@@ -324,7 +339,7 @@ bool ScriptParser::preprocessHead(XMLNode node, const char * label, const char *
     XMLController::FileStream  fs;
     if (!XMLController::ReadString(path.data(), fs))
     {
-        LOG_ERROR << path.data() << " read fail";
+        BLG_ERROR << path.data() << " read fail";
         return true;
     }
 
@@ -344,7 +359,7 @@ bool ScriptParser::preprocessHead(XMLNode node, const char * label, const char *
     {
         auto count = LuaContext::SafeLOPCall(l, 0, LUA_MULTRET);
         if (count != 1)
-            LOG_ERROR << "lua module must return a table";
+            BLG_ERROR << "lua module must return a table";
         if (lua_istable(l, -1))
         {
             lua_setglobal(l, name);
@@ -354,7 +369,7 @@ bool ScriptParser::preprocessHead(XMLNode node, const char * label, const char *
     }
     else
     {
-        LOG_ERROR << "lua module " << name << " load fail " << lua_tostring(l, -1);
+        BLG_ERROR << "lua module " << name << " load fail " << lua_tostring(l, -1);
         lua_pop(l, 1);
     }
 
@@ -524,6 +539,12 @@ void ScriptParser::handleRichEdit(RichEdit * ob)
 void ScriptParser::handleArea(Area * ob)
 {
     auto lo = AdoptRef(new LuaArea(ob));
+    v2bo_[ob] = lo.get();
+}
+
+void ScriptParser::handleWebView(WebView * ob)
+{
+    auto lo = AdoptRef(new LuaWebView(ob));
     v2bo_[ob] = lo.get();
 }
 

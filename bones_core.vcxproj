@@ -41,6 +41,7 @@
     <ClCompile Include="bones\core\size.cpp" />
     <ClCompile Include="bones\core\text.cpp" />
     <ClCompile Include="bones\core\view.cpp" />
+    <ClCompile Include="bones\core\web_view.cpp" />
     <ClCompile Include="bones\core\xml.cpp" />
     <ClCompile Include="bones\core\xml_controller.cpp" />
   </ItemGroup>
@@ -78,6 +79,7 @@
     <ClInclude Include="bones\core\size.h" />
     <ClInclude Include="bones\core\text.h" />
     <ClInclude Include="bones\core\view.h" />
+    <ClInclude Include="bones\core\web_view.h" />
     <ClInclude Include="bones\core\xml.h" />
     <ClInclude Include="bones\core\xml_controller.h" />
   </ItemGroup>
@@ -130,7 +132,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)rapidxml;$(ProjectDir)skia\include\core;$(ProjectDir)skia\include\config;$(ProjectDir)skia\include\images;$(ProjectDir)skia\include\effects;$(ProjectDir)skia\include\utils;$(ProjectDir)skia\include\ports;$(ProjectDir)skia\include\utils\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)rapidxml;$(ProjectDir)skia\include\core;$(ProjectDir)skia\include\config;$(ProjectDir)skia\include\images;$(ProjectDir)skia\include\effects;$(ProjectDir)skia\include\utils;$(ProjectDir)skia\include\ports;$(ProjectDir)skia\include\utils\win;$(ProjectDir)cef3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -147,7 +149,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)rapidxml;$(ProjectDir)skia\include\core;$(ProjectDir)skia\include\config;$(ProjectDir)skia\include\images;$(ProjectDir)skia\include\effects;$(ProjectDir)skia\include\utils;$(ProjectDir)skia\include\ports;$(ProjectDir)skia\include\utils\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)rapidxml;$(ProjectDir)skia\include\core;$(ProjectDir)skia\include\config;$(ProjectDir)skia\include\images;$(ProjectDir)skia\include\effects;$(ProjectDir)skia\include\utils;$(ProjectDir)skia\include\ports;$(ProjectDir)skia\include\utils\win;$(ProjectDir)cef3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>

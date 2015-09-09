@@ -72,7 +72,7 @@ void AnimationManager::add(Animation * ani)
         rpa->start();
     }
     else
-        LOG_VERBOSE << "Animation already exits";
+        BLG_VERBOSE << "Animation already exits";
 
 }
 

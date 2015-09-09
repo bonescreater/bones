@@ -3,11 +3,13 @@
 #include "animation_manager.h"
 #include "css_manager.h"
 #include "res_manager.h"
+#include "xml_controller.h"
 
 #include "helper.h"
 
 #include "SkGraphics.h"
 #include "SkDashPathEffect.h"
+#include "web_view.h"
 
 namespace bones
 {
@@ -30,6 +32,10 @@ static ResManager * res = nullptr;
 
 static SkPathEffect * dash = nullptr;
 
+static XMLController * xml = nullptr;
+
+static bool enable_cef = false;
+
 bool Core::StartUp(const Config & config)
 {
     SkGraphics::Init();
@@ -45,14 +51,25 @@ bool Core::StartUp(const Config & config)
         Scalar interval[2] = { 2, 2 };
         bret = !!(dash = SkDashPathEffect::Create(interval, 2, 0));
     }
-        
+    if (bret)
+    {
+        enable_cef = config.enable_cef; 
+        bret = WebView::StartUp();
+    }
+    if (bret)
+        bret = !!(xml = new XMLController);
+
     return bret;
 }
 
 void Core::ShutDown()
 {
-    //关闭所有定时器
-    animations->removeAll(false);
+    if (xml)
+        delete xml;
+
+    WebView::ShutDown();
+
+    xml = nullptr;
 
     if (dash)
         dash->unref();
@@ -88,6 +105,12 @@ void Core::Update()
             animations->run(delta);
         current = frame_count;
     }
+    WebView::Update();
+}
+
+bool Core::EnableCEF()
+{
+    return enable_cef;
 }
 
 AnimationManager * Core::GetAnimationManager()
@@ -108,6 +131,11 @@ ResManager * Core::GetResManager()
 SkPathEffect * Core::GetDashEffect()
 {
     return dash;
+}
+
+XMLController * Core::GetXMLController()
+{
+    return xml;
 }
 
 }

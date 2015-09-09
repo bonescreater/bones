@@ -86,23 +86,25 @@ public:
 
     void clean(View * v);
 protected:
-    virtual bool handleStyle(XMLNode node, const char * full_path);
+    bool handleStyle(XMLNode node, const char * full_path);
 
-    virtual bool handleLink(XMLNode node, const char * full_path);
+    bool handleLink(XMLNode node, const char * full_path);
 
-    virtual bool handleRoot(XMLNode node, View * parent_ob, View ** ob);
+    bool handleRoot(XMLNode node, View * parent_ob, View ** ob);
 
-    virtual bool handleArea(XMLNode node, View * parent_ob, View ** ob);
+    bool handleArea(XMLNode node, View * parent_ob, View ** ob);
 
-    virtual bool handleRichEdit(XMLNode node, View * parent_ob, View ** ob);
+    bool handleRichEdit(XMLNode node, View * parent_ob, View ** ob);
 
-    virtual bool handleImage(XMLNode node, View * parent_ob, View ** ob);
+    bool handleWebView(XMLNode node, View * parent_ob, View ** ob);
 
-    virtual bool handleText(XMLNode node, View * parent_ob, View ** ob);
+    bool handleImage(XMLNode node, View * parent_ob, View ** ob);
 
-    virtual bool handleShape(XMLNode node, View * parent_ob, View ** ob);
+    bool handleText(XMLNode node, View * parent_ob, View ** ob);
 
-    virtual bool handleExtendLabel(XMLNode node, const char * label, View * parent_ob, View ** ob);
+    bool handleShape(XMLNode node, View * parent_ob, View ** ob);
+
+    bool handleExtendLabel(XMLNode node, const char * label, View * parent_ob, View ** ob);
 protected:
     //返回指定节点树 根节点的对象
     bool createViewFromNode(XMLNode node, const char * label, View * parent_ob, View ** ob);
@@ -183,6 +185,7 @@ extern const char * kStrLink;
 extern const char * kStrRoot;
 extern const char * kStrArea;
 extern const char * kStrRichEdit;
+extern const char * kStrWebView;
 extern const char * kStrImage;
 extern const char * kStrText;
 extern const char * kStrShape;

@@ -16,7 +16,7 @@ LuaStackAutoCheck::~LuaStackAutoCheck()
     auto top = lua_gettop(l_);
     if (top - top_ != count_)
     {
-        LOG_ERROR <<"stack error\n";
+        BLG_ERROR << "stack error\n";
         assert(0);
     }
 

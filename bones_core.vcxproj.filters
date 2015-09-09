@@ -124,6 +124,9 @@
     <ClCompile Include="bones\core\font.cpp">
       <Filter>base</Filter>
     </ClCompile>
+    <ClCompile Include="bones\core\web_view.cpp">
+      <Filter>bone\naked</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\core\accelerator.h">
@@ -228,6 +231,9 @@
     </ClInclude>
     <ClInclude Include="bones\core\font.h">
       <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\web_view.h">
+      <Filter>bone\naked</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
