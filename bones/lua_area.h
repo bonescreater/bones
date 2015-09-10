@@ -54,7 +54,7 @@ public:
 
     void onKeyUp(Area * sender, KeyEvent & e) override;
 
-    void onKeyPress(Area * sender, KeyEvent & e) override;
+    void onChar(Area * sender, KeyEvent & e) override;
 
     void onFocusOut(Area * sender, FocusEvent & e) override;
 

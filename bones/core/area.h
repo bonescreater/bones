@@ -31,7 +31,7 @@ public:
 
         virtual void onKeyUp(Area * sender, KeyEvent & e) = 0;
 
-        virtual void onKeyPress(Area * sender, KeyEvent & e) = 0;
+        virtual void onChar(Area * sender, KeyEvent & e) = 0;
 
         virtual void onFocusOut(Area * sender, FocusEvent & e) = 0;
 
@@ -74,7 +74,7 @@ protected:
 
     void onKeyUp(KeyEvent & e) override;
 
-    void onKeyPress(KeyEvent & e) override;
+    void onChar(KeyEvent & e) override;
 
     void onFocusOut(FocusEvent & e) override;
 

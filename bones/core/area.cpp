@@ -65,9 +65,9 @@ void Area::onKeyUp(KeyEvent & e)
     delegate_ ? delegate_->onKeyUp(this, e) : 0;
 }
 
-void Area::onKeyPress(KeyEvent & e)
+void Area::onChar(KeyEvent & e)
 {
-    delegate_ ? delegate_->onKeyPress(this, e) : 0;
+    delegate_ ? delegate_->onChar(this, e) : 0;
 }
 
 void Area::onFocusOut(FocusEvent & e)

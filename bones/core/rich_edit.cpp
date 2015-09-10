@@ -353,6 +353,9 @@ void RichEdit::onKeyDown(KeyEvent & e)
 
 void RichEdit::onKeyUp(KeyEvent & e)
 {
+    //暂时不响应系统按键
+    if (e.system())
+        return;
     switch (e.key())
     {
     case kVKEY_RETURN:
@@ -371,7 +374,7 @@ void RichEdit::onKeyUp(KeyEvent & e)
     }
 }
 
-void RichEdit::onKeyPress(KeyEvent & e)
+void RichEdit::onChar(KeyEvent & e)
 {
     if (e.ch() != '\t' || (want_ & kTab) )
         services_->TxSendMessage(WM_CHAR, e.ch(), Helper::ToKeyStateForKey(e.state()), 0);

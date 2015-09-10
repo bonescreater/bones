@@ -130,29 +130,7 @@ public:
     virtual Phase phase() = 0;
 };
 
-class BonesEventFlag
-{
-public:
-    virtual bool isShiftDown() const = 0;
-
-    virtual bool isControlDown() const = 0;
-
-    virtual bool isCapsLockDown() const = 0;
-
-    virtual bool isAltDown() const = 0;
-
-    virtual bool isAltGrDown() const = 0;
-
-    virtual bool isCommandDown() const = 0;
-
-    virtual bool isLeftMouseDown() const = 0;
-
-    virtual bool isMiddleMouseDown() const = 0;
-
-    virtual bool isRightMouseDown() const = 0;
-};
-
-class BonesMouseEvent : public BonesEvent, public BonesEventFlag
+class BonesMouseEvent : public BonesEvent
 {
 public:
     enum Type
@@ -179,15 +157,31 @@ public:
     virtual BonesPoint getLoc() const = 0;
 
     virtual BonesPoint getRootLoc() const = 0;
+
+    virtual bool isShiftDown() const = 0;
+
+    virtual bool isControlDown() const = 0;
+
+    virtual bool isAltDown() const = 0;
+
+    virtual bool isLeftMouseDown() const = 0;
+
+    virtual bool isMiddleMouseDown() const = 0;
+
+    virtual bool isRightMouseDown() const = 0;
+
+    virtual bool isCapsLockOn() const = 0;
+
+    virtual bool isNumLockOn() const = 0;
 };
 
-class BonesKeyEvent : public BonesEvent, public BonesEventFlag
+class BonesKeyEvent : public BonesEvent
 {
 public:
     enum Type
     {
         kKeyDown,
-        kKeyPress,
+        kChar,
         kKeyUp,
 
         kTypeCount,
@@ -216,6 +210,24 @@ public:
     virtual wchar_t ch() const = 0;
 
     virtual KeyState state() const = 0;
+
+    virtual bool system() const = 0;
+
+    virtual bool isShiftDown() const = 0;
+
+    virtual bool isControlDown() const = 0;
+
+    virtual bool isAltDown() const = 0;
+
+    virtual bool isCapsLockOn() const = 0;
+
+    virtual bool isNumLockOn() const = 0;
+
+    virtual bool isKeyPad() const = 0;
+
+    virtual bool isLeft() const = 0;
+
+    virtual bool isRight() const = 0;
 };
 
 class BonesFocusEvent : public BonesEvent
@@ -236,12 +248,38 @@ public:
     virtual bool isTabTraversal() const = 0;
 };
 
-class BonesWheelEvent : public BonesEvent, public BonesEventFlag
+class BonesWheelEvent : public BonesEvent
 {
 public:
     virtual int dx() const = 0;
 
     virtual int dy() const = 0;
+
+    virtual bool isLeftMouse() const = 0;
+
+    virtual bool isMiddleMouse() const = 0;
+
+    virtual bool isRightMouse() const = 0;
+
+    virtual BonesPoint getLoc() const = 0;
+
+    virtual BonesPoint getRootLoc() const = 0;
+
+    virtual bool isShiftDown() const = 0;
+
+    virtual bool isControlDown() const = 0;
+
+    virtual bool isAltDown() const = 0;
+
+    virtual bool isLeftMouseDown() const = 0;
+
+    virtual bool isMiddleMouseDown() const = 0;
+
+    virtual bool isRightMouseDown() const = 0;
+
+    virtual bool isCapsLockOn() const = 0;
+
+    virtual bool isNumLockOn() const = 0;
 };
 
 class BonesObject

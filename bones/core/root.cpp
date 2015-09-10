@@ -33,7 +33,7 @@ void Root::setDelegate(Delegate * delegate)
 
 void Root::handleMouse(NativeEvent & e)
 {
-    int flags = Helper::ToFlagsForEvent();
+    int flags = Helper::ToFlagsForMouseEvent();
 
     //暂时不管XBUTTON
     EventType et = kET_COUNT;
@@ -56,29 +56,30 @@ void Root::handleMouse(NativeEvent & e)
 void Root::handleKey(NativeEvent & e)
 {
     //处理键盘事件
-    View * focus = focus_.current();
     EventType type = kET_COUNT;
     auto & msg = e.msg;
-    if (WM_CHAR == msg)
-        type = kET_KEY_PRESS;
-    else if (WM_KEYDOWN == msg)
+    if (WM_CHAR == msg || WM_SYSCHAR == msg)
+        type = kET_CHAR;
+    else if (WM_KEYDOWN == msg || WM_SYSKEYDOWN == msg)
         type = kET_KEY_DOWN;
-    else if (WM_KEYUP == msg)
+    else if (WM_KEYUP == msg || WM_SYSKEYUP == msg)
         type = kET_KEY_UP;
     else
         return;
 
+    bool system = (msg == WM_SYSCHAR) || (msg == WM_SYSKEYDOWN) || (msg == WM_SYSKEYUP);
+    auto flags = Helper::ToFlagsForKeyEvent(e.wparam, e.lparam);
     bool handle = false;
-
-    KeyEvent ke(type, focus, (KeyboardCode)e.wparam, *(KeyState *)(&e.lparam), 
-                Helper::ToFlagsForEvent());
-    ke.setUserData(&e);
-    if (kET_KEY_PRESS != type)
+    if (kET_CHAR != type)
     {//非字符
         //焦点管理器会询问是否skip
+        KeyEvent ke(type, focus_.current(), (KeyboardCode)e.wparam, *(KeyState *)(&e.lparam),
+            system, flags);
+        ke.setUserData(&e);
         handle = focus_.handleKeyEvent(ke);
 
         bool skip = false;
+        View * focus = focus_.current();
         if (focus)
             skip = focus->skipDefaultKeyEventProcessing(ke);
         if (!handle && !skip)
@@ -86,8 +87,11 @@ void Root::handleKey(NativeEvent & e)
             handle = accelerators_.process(Accelerator::make(ke));
         }
     }
+    View * focus = focus_.current();
     if (!handle && focus)
     {//都不处理
+        KeyEvent ke(type, focus, (KeyboardCode)e.wparam, *(KeyState *)(&e.lparam),
+            system, flags);
         EventDispatcher::Push(ke);
         handle = true;
     }
@@ -131,7 +135,7 @@ void Root::handleComposition(NativeEvent & e)
 
 void Root::handleWheel(NativeEvent & e)
 {
-    int flags = Helper::ToFlagsForEvent();
+    int flags = Helper::ToFlagsForMouseEvent();
     auto & msg = e.msg;
     if (WM_MOUSEWHEEL == msg || WM_MOUSEHWHEEL == msg)
     {

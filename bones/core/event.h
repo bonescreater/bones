@@ -21,7 +21,7 @@ enum EventType
     kET_MOUSE_WHEEL,
 
     kET_KEY_DOWN,
-    kET_KEY_PRESS,
+    kET_CHAR,
     kET_KEY_UP,
 
     kET_COMPOSITION_START,
@@ -38,11 +38,11 @@ enum EventType
     kET_CUSTOM,
     kET_COUNT,
 };
-
+//like cef
 enum EventFlags
 {
     kEF_NONE = 0,       // Used to denote no flags explicitly
-    kEF_CAPS_LOCK_DOWN = 1 << 0,
+    kEF_CAPS_LOCK_ON = 1 << 0,
     kEF_SHIFT_DOWN = 1 << 1,
     kEF_CONTROL_DOWN = 1 << 2,
     kEF_ALT_DOWN = 1 << 3,
@@ -52,10 +52,10 @@ enum EventFlags
     kEF_COMMAND_DOWN = 1 << 7,  // GUI Key (e.g. Command on OS X keyboards,
     // Search on Chromebook keyboards,
     // Windows on MS-oriented keyboards)
-    kEF_EXTENDED = 1 << 8,  // Windows extended key (see WM_KEYDOWN doc)
-    kEF_IS_SYNTHESIZED = 1 << 9,
-    kEF_ALTGR_DOWN = 1 << 10,
-    kEF_MOD3_DOWN = 1 << 11,
+    kEF_NUM_LOCK_ON = 1 << 8,
+    kEF_IS_KEY_PAD = 1 << 9,
+    kEF_IS_LEFT = 1 << 10,
+    kEF_IS_RIGHT = 1 << 11,
 };
 
 class Event
@@ -104,17 +104,13 @@ protected:
 class UIEvent : public Event
 {
 public:
+    bool isCapsLockOn() const;
+
     bool isShiftDown() const;
 
     bool isControlDown() const;
 
-    bool isCapsLockDown() const;
-
     bool isAltDown() const;
-
-    bool isAltGrDown() const;
-
-    bool isCommandDown() const;
 
     bool isLeftMouseDown() const;
 
@@ -122,11 +118,15 @@ public:
 
     bool isRightMouseDown() const;
 
-    //bool isOnlyLeftMouseDown() const;
+    bool isCommandDown() const;
 
-    //bool isOnlyMiddleMouseDown() const;
+    bool isNumLockOn() const;
 
-    //bool isOnlyRightMouseDown() const;
+    bool isKeyPad() const;
+
+    bool isLeft() const;
+
+    bool isRight() const;
 
     int getFlags() const;
 protected:
@@ -192,13 +192,15 @@ class KeyEvent : public UIEvent
 public:
     static KeyEvent * From(Event & e);
 public:
-    KeyEvent(EventType type, View * target, KeyboardCode value, KeyState state, int flags);
+    KeyEvent(EventType type, View * target, KeyboardCode value, KeyState state, bool system, int flags);
 
     KeyboardCode key() const;
 
     wchar_t ch() const;
 
     KeyState state() const;
+
+    bool system() const;
 private:
     union
     {
@@ -206,6 +208,7 @@ private:
         wchar_t ch_;
     }; 
     KeyState state_;
+    bool system_;
 };
 
 class FocusEvent : public UIEvent

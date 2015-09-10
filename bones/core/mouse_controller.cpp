@@ -68,23 +68,36 @@ void MouseController::handleEvent(MouseEvent & e)
     //注意处理target == null的情况
     last_mouse_point_ = e.getLoc();
 
-    MouseEvent me(e.type(), e.button(), target, 
-                  target ? target->mapToLocal(e.getLoc()) : e.getLoc(), 
-                  e.getLoc(), e.getFlags());
 
-    me.setUserData(e.getUserData());
-    if (kET_MOUSE_DOWN == me.type() )
+    if (kET_MOUSE_DOWN == e.type())
     {
         //鼠标按下则发生焦点切换事件
         root_->focus_.shift(target);
         //如果是左键按下 自动capture
-        if (me.isLeftMouse())
+        if (e.isLeftMouse())
             shiftCapture(target);
     }
     shiftOver(target);
     if (target)
-        EventDispatcher::Push(me);
-    if (kET_MOUSE_UP == me.type() && me.isLeftMouse())
+    {
+        WheelEvent * we = WheelEvent::From(e);
+        if (we)
+        {          
+            WheelEvent we(we->type(), target, we->dx(), we->dy(),
+                target->mapToLocal(e.getLoc()), we->getLoc(),
+                e.getFlags());
+            EventDispatcher::Push(we);
+        }
+        else
+        {
+            MouseEvent me(e.type(), e.button(), target, target->mapToLocal(e.getLoc()),
+                e.getLoc(), e.getFlags());
+            me.setUserData(e.getUserData());
+            EventDispatcher::Push(me);
+        }
+    }
+        
+    if (kET_MOUSE_UP == e.type() && e.isLeftMouse())
     {//左键弹起 取消capture
         shiftCapture(nullptr);
         //由于capture的原因 弹起时鼠标已经进入其它控件 其它控件需要有个明确的mouse move消息

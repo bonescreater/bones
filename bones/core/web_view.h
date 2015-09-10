@@ -23,6 +23,10 @@ public:
 
     ~WebView();
 
+    bool open();
+
+    void close();
+
     const char * getClassName() const override;
 protected:
     void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
@@ -39,6 +43,8 @@ protected:
 
     void onMouseUp(MouseEvent & e) override;
 
+    void onWheel(WheelEvent & e) override;
+
     void onFocus(FocusEvent & e) override;
 
     void onBlur(FocusEvent & e) override;
@@ -47,7 +53,7 @@ protected:
 
     void onKeyUp(KeyEvent & e) override;
 
-    void onKeyPress(KeyEvent & e) override;
+    void onChar(KeyEvent & e) override;
 private:
     void adjustPixmap();
 private:

@@ -56,83 +56,81 @@ protected:
     Object * event_;
 };
 
-template<class Base, class Object>
-class LuaUIEvent : public LuaEvent<Base, Object>
-{
-public:
-    LuaUIEvent(Object & e)
-        :LuaEvent(e)
-    {
-
-    }
-    bool isShiftDown() const override
-    {
-        return event_->isShiftDown();
-    }
-
-    bool isControlDown() const override
-    {
-        return event_->isControlDown();
-    }
-
-    bool isCapsLockDown() const override
-    {
-        return event_->isCapsLockDown();
-    }
-
-    bool isAltDown() const override
-    {
-        return event_->isAltDown();
-    }
-
-    bool isAltGrDown() const override
-    {
-        return event_->isAltGrDown();
-    }
-
-    bool isCommandDown() const override
-    {
-        return event_->isCommandDown();
-    }
-
-    bool isLeftMouseDown() const override
-    {
-        return event_->isLeftMouseDown();
-    }
-
-    bool isMiddleMouseDown() const override
-    {
-        return event_->isMiddleMouseDown();
-    }
-
-    bool isRightMouseDown() const override
-    {
-        return event_->isRightMouseDown();
-    }
-};
-
-class LuaMouseEvent : public LuaUIEvent<BonesMouseEvent, MouseEvent>
+class LuaMouseEvent : public LuaEvent<BonesMouseEvent, MouseEvent>
 {
 public:
     static void GetMetaTable(lua_State * l);
 
     LuaMouseEvent(MouseEvent & e);
 
-    virtual Type type() const override;
+    Type type() const override;
 
-    virtual bool isLeftMouse() const override;
+    bool isLeftMouse() const override;
 
-    virtual bool isMiddleMouse() const override;
+    bool isMiddleMouse() const override;
 
-    virtual bool isRightMouse() const override;
+    bool isRightMouse() const override;
 
-    virtual BonesPoint getLoc() const override;
+    BonesPoint getLoc() const override;
 
-    virtual BonesPoint getRootLoc() const override;
+    BonesPoint getRootLoc() const override;
 
+    bool isShiftDown() const override;
+
+    bool isControlDown() const override;
+
+    bool isAltDown() const override;
+
+    bool isLeftMouseDown() const override;
+
+    bool isMiddleMouseDown() const override;
+
+    bool isRightMouseDown() const override;
+
+    bool isCapsLockOn() const override;
+
+    bool isNumLockOn() const override;
 };
 
-class LuaKeyEvent : public LuaUIEvent<BonesKeyEvent, KeyEvent>
+class LuaWheelEvent : public LuaEvent<BonesWheelEvent, WheelEvent>
+{
+public:
+    static void GetMetaTable(lua_State * l);
+
+    LuaWheelEvent(WheelEvent & e);
+
+    int dx() const override;
+
+    int dy() const override;
+
+    bool isLeftMouse() const override;
+
+    bool isMiddleMouse() const override;
+
+    bool isRightMouse() const override;
+
+    BonesPoint getLoc() const override;
+
+    BonesPoint getRootLoc() const override;
+
+    bool isShiftDown() const override;
+
+    bool isControlDown() const override;
+
+    bool isAltDown() const override;
+
+    bool isLeftMouseDown() const override;
+
+    bool isMiddleMouseDown() const override;
+
+    bool isRightMouseDown() const override;
+
+    bool isCapsLockOn() const override;
+
+    bool isNumLockOn() const override;
+};
+
+class LuaKeyEvent : public LuaEvent<BonesKeyEvent, KeyEvent>
 {
 public:
     static void GetMetaTable(lua_State * l);
@@ -144,6 +142,24 @@ public:
     wchar_t ch() const override;
 
     KeyState state() const override;
+
+    bool system() const override;
+
+    bool isShiftDown() const override;
+
+    bool isControlDown() const override;
+
+    bool isAltDown() const override;
+
+    bool isCapsLockOn() const override;
+
+    bool isNumLockOn() const override;
+
+    bool isKeyPad() const override;
+
+    bool isLeft() const override;
+
+    bool isRight() const override;
 };
 
 class LuaFocusEvent : public LuaEvent<BonesFocusEvent, FocusEvent>
@@ -158,17 +174,7 @@ public:
     bool isTabTraversal() const override;
 };
 
-class LuaWheelEvent : public LuaUIEvent<BonesWheelEvent, WheelEvent>
-{
-public:
-    static void GetMetaTable(lua_State * l);
 
-    LuaWheelEvent(WheelEvent & e);
-
-    int dx() const override;
-
-    int dy() const override;
-};
 
 }
 #endif

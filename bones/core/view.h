@@ -202,7 +202,7 @@ protected:
 
     virtual void onKeyUp(KeyEvent & e);
 
-    virtual void onKeyPress(KeyEvent & e);
+    virtual void onChar(KeyEvent & e);
 
     virtual void onCompositionStart(CompositionEvent & e);
 

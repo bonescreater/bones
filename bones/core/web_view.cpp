@@ -16,16 +16,39 @@ class Browser : public CefClient,
                 public CefLifeSpanHandler,
                 public CefRenderHandler
 {
+#define CHECK_CEF_BROWSER_HOST \
+    if (!browser_)\
+        return; \
+    auto host = browser_->GetHost(); \
+    if (!host)\
+        return \
+
 public:
-    Browser()
-        :web_view_(nullptr)
+    Browser(WebView * wv)
+        :web_view_(wv)
     {
-        ;
+
     }
 
-    void setHost(WebView * wv)
+    bool open()
     {
-        web_view_ = wv;
+        CefWindowInfo info;
+        info.SetAsWindowless(NULL, true);
+
+        info.x = 0;
+        info.y = 0;
+        info.width = 0;
+        info.height = 0;
+        browser_ = CefBrowserHost::CreateBrowserSync(info, this,
+            "http://www.baidu.com", CefBrowserSettings(), nullptr);
+        return !!browser_;
+    }
+
+    void close()
+    {
+        if (browser_)
+            browser_->GetHost()->CloseBrowser(true);
+        browser_ = nullptr;
     }
 
     void wasResized()
@@ -38,30 +61,97 @@ public:
     {
         return pixmap_;
     }
-
-    bool Create()
+    //对mouse事件的转换
+    uint32_t ToCefModifiers(UIEvent & e)
     {
-        CefWindowInfo info;
-        info.SetAsWindowless(NULL, true);
-
-        info.x = 0;
-        info.y = 0;
-        info.width = 0;
-        info.height = 0;
-        return !!(browser_ = CefBrowserHost::CreateBrowserSync(info, this,
-            "http://www.baidu.com", CefBrowserSettings(), nullptr));
+        uint32_t modifiers = EVENTFLAG_NONE;
+        if (e.isCapsLockOn())
+            modifiers |= EVENTFLAG_CAPS_LOCK_ON;
+        if (e.isShiftDown())
+            modifiers |= EVENTFLAG_SHIFT_DOWN;
+        if (e.isControlDown())
+            modifiers |= EVENTFLAG_CONTROL_DOWN;
+        if (e.isAltDown())
+            modifiers |= EVENTFLAG_ALT_DOWN;
+        if (e.isLeftMouseDown())
+            modifiers |= EVENTFLAG_LEFT_MOUSE_BUTTON;
+        if (e.isMiddleMouseDown())
+            modifiers |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
+        if (e.isRightMouseDown())
+            modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
+        if (e.isCommandDown())
+            modifiers |= EVENTFLAG_COMMAND_DOWN;
+        if (e.isNumLockOn())
+            modifiers |= EVENTFLAG_NUM_LOCK_ON;
+        if (e.isKeyPad())
+            modifiers |= EVENTFLAG_IS_KEY_PAD;
+        if (e.isLeft())
+            modifiers |= EVENTFLAG_IS_LEFT;
+        if (e.isRight())
+            modifiers |= EVENTFLAG_IS_RIGHT;
+        return modifiers;
     }
 
-    void Destroy()
+    CefMouseEvent ToCefMouseEvent(MouseEvent & e)
     {
-        if (browser_)
-            browser_->GetHost()->CloseBrowser(true);
-        browser_ = nullptr;
+        CefMouseEvent ce;
+        ce.x = static_cast<int> (e.getLoc().x());
+        ce.y = static_cast<int> (e.getLoc().y());
+        ce.modifiers = ToCefModifiers(e);
+        return ce;
     }
 
-    CefBrowser * cef()
+    CefKeyEvent ToCefKeyEvent(KeyEvent & e)
     {
-        return browser_;
+        CefKeyEvent ce;
+        ce.windows_key_code = e.key();
+        ce.native_key_code = *(int *)(&e.state());
+        ce.is_system_key = e.system();
+        if (kET_KEY_DOWN == e.type())
+            ce.type = KEYEVENT_RAWKEYDOWN;
+        else if (kET_KEY_UP == e.type())
+            ce.type = KEYEVENT_KEYUP;
+        else
+            ce.type = KEYEVENT_CHAR;
+
+        ce.modifiers = ToCefModifiers(e);
+        return ce;
+    }
+
+    void sendMouseMoveEvent(MouseEvent & e, bool leave)
+    {
+        CHECK_CEF_BROWSER_HOST;
+        host->SendMouseMoveEvent(ToCefMouseEvent(e), leave);
+    }
+
+    void sendMouseClickEvent(MouseEvent & e)
+    {
+        CHECK_CEF_BROWSER_HOST;
+        CefBrowserHost::MouseButtonType mt = MBT_LEFT;
+        if (e.isMiddleMouse())
+            mt = MBT_MIDDLE;
+        else if (e.isRightMouse())
+            mt = MBT_RIGHT;
+        host->SendMouseClickEvent(ToCefMouseEvent(e), mt,
+            e.type() == kET_MOUSE_UP, 0);
+    }
+
+    void sendFocusEvent(bool focus)
+    {
+        CHECK_CEF_BROWSER_HOST;
+        host->SendFocusEvent(focus);
+    }
+
+    void sendMouseWheelEvent(WheelEvent & e)
+    {
+        CHECK_CEF_BROWSER_HOST;
+        host->SendMouseWheelEvent(ToCefMouseEvent(e), e.dx(), e.dy());
+    }
+
+    void sendKeyEvent(KeyEvent & e)
+    {
+        CHECK_CEF_BROWSER_HOST;
+        host->SendKeyEvent(ToCefKeyEvent(e));
     }
 public:
     //CefLifeSpanHandler
@@ -160,6 +250,7 @@ bool WebView::StartUp(const char * locate)
     CefSettings settings;
     settings.no_sandbox = true;
     settings.multi_threaded_message_loop = false;
+    //settings.windowless_rendering_enabled = true;
     // Enable dev tools
     //settings.remote_debugging_port = 8088;
     // Use cefclient.exe to run render process and other sub processes.
@@ -196,28 +287,27 @@ void WebView::Update()
 
 WebView::WebView()
 {
-    // Browser initialization.
-    browser_ = new Browser;
-    //browser 居然new的时候没有引用计数+1
+    browser_ = new Browser(this);
     browser_->AddRef();
+    //browser 居然new的时候没有引用计数+1
     assert(browser_->HasOneRef());
-    if (browser_)
-    {
-        browser_->setHost(this);
-        browser_->Create();
-    }
-        
-        
+    open();
 }
 
 WebView::~WebView()
 {
-    if (browser_)
-    {
-        browser_->Destroy();
-        browser_->setHost(nullptr);        
-        browser_->Release();
-    }
+    close();
+    browser_->Release();
+}
+
+bool WebView::open()
+{
+    return browser_->open();
+}
+
+void WebView::close()
+{
+    browser_->close();
 }
 
 const char * WebView::getClassName() const
@@ -249,55 +339,53 @@ void WebView::onMouseEnter(MouseEvent & e)
 
 void WebView::onMouseLeave(MouseEvent & e)
 {
-    CefMouseEvent ce;
-    ce.x = e.getLoc().x();
-    ce.y = e.getLoc().y();
-    ce.modifiers = 0;
-    browser_->cef()->GetHost()->SendMouseMoveEvent(ce, true);
+    browser_->sendMouseMoveEvent(e, true);
 }
 
 void WebView::onMouseMove(MouseEvent & e)
 {
-    CefMouseEvent ce;
-    ce.x = e.getLoc().x();
-    ce.y = e.getLoc().y();
-    ce.modifiers = 0;
-    browser_->cef()->GetHost()->SendMouseMoveEvent(ce, false);
+    browser_->sendMouseMoveEvent(e, false);
 }
 
 void WebView::onMouseDown(MouseEvent & e)
 {
-
+    browser_->sendMouseClickEvent(e);
 }
 
 void WebView::onMouseUp(MouseEvent & e)
 {
-
+    browser_->sendMouseClickEvent(e);
 }
 
-void WebView::onFocus(FocusEvent & e)
+void WebView::onWheel(WheelEvent & e)
 {
+    browser_->sendMouseWheelEvent(e);
+}
 
+void WebView::onFocus(FocusEvent & )
+{
+    browser_->sendFocusEvent(true);
 }
 
 void WebView::onBlur(FocusEvent & e)
 {
-
+    browser_->sendFocusEvent(false);
 }
 
 void WebView::onKeyDown(KeyEvent & e)
 {
-
+    browser_->sendKeyEvent(e);
 }
 
 void WebView::onKeyUp(KeyEvent & e)
 {
-
+    browser_->sendKeyEvent(e);
 }
 
-void WebView::onKeyPress(KeyEvent & e)
+void WebView::onChar(KeyEvent & e)
 {
-
+    if (e.ch() != '\t')
+        browser_->sendKeyEvent(e);
 }
 
 

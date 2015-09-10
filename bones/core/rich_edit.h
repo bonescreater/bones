@@ -232,7 +232,7 @@ protected:
 
     void onKeyUp(KeyEvent & e) override;
 
-    void onKeyPress(KeyEvent & e) override;
+    void onChar(KeyEvent & e) override;
 
     void onCompositionStart(CompositionEvent & e) override;
 

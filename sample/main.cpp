@@ -115,7 +115,11 @@ int main()
     BonesGetCore()->getResManager()->clonePixmap("pic_rt", *sub_pm_rt);
     BonesGetCore()->getResManager()->clonePixmap("pic_lb", *sub_pm_lb);
     BonesGetCore()->getResManager()->clonePixmap("pic_rb", *sub_pm_rb);
-
+    BonesGetCore()->destroyPixmap(pm_pic);
+    BonesGetCore()->destroyPixmap(sub_pm_lt);
+    BonesGetCore()->destroyPixmap(sub_pm_rt);
+    BonesGetCore()->destroyPixmap(sub_pm_lb);
+    BonesGetCore()->destroyPixmap(sub_pm_rb);
     std::vector<char> xml;
     ReadFile("..\\..\\sample\\test.xml", xml);
     xml.push_back(0);//0结尾
@@ -129,39 +133,27 @@ int main()
 
     ::ShowWindow(test_window->hwnd(), SW_NORMAL);
     //::UpdateWindow(test_window->hwnd());
-        
-    //消息循环
+    DWORD ret;
     MSG msg;
     while (1)
     {
-        if (::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+        ret = ::MsgWaitForMultipleObjectsEx(0, nullptr, 10, 
+            QS_ALLINPUT, MWMO_INPUTAVAILABLE | MWMO_ALERTABLE);
+
+        if (WAIT_OBJECT_0 == ret || WAIT_IO_COMPLETION == ret)
         {
-            if (msg.message != WM_QUIT)
+            if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
             {
+                if (WM_QUIT == msg.message)
+                    break;
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             }
-            else
-            {
-                
-                break;
-            }                
         }
-        else
-        {
-            BonesUpdate();
-            test_window->layeredDraw();
-            ::SleepEx(5, true);
-        }
-
+        BonesUpdate();
     }
     
     BonesGetCore()->getResManager()->clean();
-    BonesGetCore()->destroyPixmap(pm_pic);
-    BonesGetCore()->destroyPixmap(sub_pm_lt);
-    BonesGetCore()->destroyPixmap(sub_pm_rt);
-    BonesGetCore()->destroyPixmap(sub_pm_lb);
-    BonesGetCore()->destroyPixmap(sub_pm_rb);
 
     BonesShutDown();
     delete test_window;

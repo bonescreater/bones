@@ -399,8 +399,8 @@ void View::dispatch(Event & e)
     case kET_KEY_DOWN:
         onKeyDown(*KeyEvent::From(e));
         break;
-    case kET_KEY_PRESS:
-        onKeyPress(*KeyEvent::From(e));
+    case kET_CHAR:
+        onChar(*KeyEvent::From(e));
         break;
     case kET_KEY_UP:
         onKeyUp(*KeyEvent::From(e));
@@ -694,7 +694,7 @@ void View::onKeyUp(KeyEvent & e)
     ;
 }
 
-void View::onKeyPress(KeyEvent & e)
+void View::onChar(KeyEvent & e)
 {
     ;
 }

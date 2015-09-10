@@ -65,19 +65,14 @@ bool UIEvent::isControlDown() const
     return !!(flags_ & kEF_CONTROL_DOWN);
 }
 
-bool UIEvent::isCapsLockDown() const
+bool UIEvent::isCapsLockOn() const
 { 
-    return !!(flags_ & kEF_CAPS_LOCK_DOWN);
+    return !!(flags_ & kEF_CAPS_LOCK_ON);
 }
 
 bool UIEvent::isAltDown() const
 { 
     return !!(flags_ & kEF_ALT_DOWN);
-}
-
-bool UIEvent::isAltGrDown() const
-{ 
-    return !!(flags_ & kEF_ALTGR_DOWN);
 }
 
 bool UIEvent::isCommandDown() const
@@ -100,23 +95,25 @@ bool UIEvent::isRightMouseDown() const
     return !!(flags_ & kEF_RIGHT_MOUSE_DOWN);
 }
 
-//bool UIEvent::isOnlyLeftMouseDown() const
-//{
-//    return (flags() & kEF_LEFT_MOUSE_DOWN) &&
-//        !(flags() & (kEF_MIDDLE_MOUSE_DOWN | kEF_RIGHT_MOUSE_DOWN));
-//}
-//
-//bool UIEvent::isOnlyMiddleMouseDown() const
-//{
-//    return (flags() & kEF_MIDDLE_MOUSE_DOWN) &&
-//        !(flags() & (kEF_LEFT_MOUSE_DOWN | kEF_RIGHT_MOUSE_DOWN));
-//}
-//
-//bool UIEvent::isOnlyRightMouseDown() const
-//{
-//    return (flags() & kEF_RIGHT_MOUSE_DOWN) &&
-//        !(flags() & (kEF_LEFT_MOUSE_DOWN | kEF_MIDDLE_MOUSE_DOWN));
-//}
+bool UIEvent::isNumLockOn() const
+{
+    return !!(flags_ & kEF_NUM_LOCK_ON);
+}
+
+bool UIEvent::isKeyPad() const
+{
+    return !!(flags_ & kEF_IS_KEY_PAD);
+}
+
+bool UIEvent::isLeft() const
+{
+    return !!(flags_ && kEF_IS_LEFT);
+}
+
+bool UIEvent::isRight() const
+{
+    return !!(flags_ && kEF_IS_RIGHT);
+}
 
 int UIEvent::getFlags() const
 {
@@ -182,13 +179,16 @@ KeyEvent * KeyEvent::From(Event & e)
     return nullptr;
 }
 
-KeyEvent::KeyEvent(EventType type, View * target, KeyboardCode value, KeyState state, int flags)
+KeyEvent::KeyEvent(EventType type, View * target, 
+    KeyboardCode value, KeyState state, 
+    bool system, int flags)
 {
     type_ = type;
     target_.reset(target);
     key_code_ = (KeyboardCode)value;
     state_ = state;
     flags_ = flags;
+    system_ = system;
 }
 
 KeyboardCode KeyEvent::key() const
@@ -204,6 +204,11 @@ wchar_t KeyEvent::ch() const
 KeyState KeyEvent::state() const
 {
     return state_;
+}
+
+bool KeyEvent::system() const
+{
+    return system_;
 }
 
 FocusEvent * FocusEvent::From(Event & e)

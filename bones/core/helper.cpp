@@ -247,8 +247,8 @@ LPARAM Helper::ToKeyStateForKey(const KeyState & state)
 {
     return (LPARAM)state.state;
 }
-
-int Helper::ToFlagsForEvent()
+//from cef client osr widget win
+int Helper::ToFlagsForKeyEvent(WPARAM wparam, LPARAM lparam)
 {
     int flags = kEF_NONE;
     if (::GetKeyState(VK_SHIFT) < 0)
@@ -257,17 +257,99 @@ int Helper::ToFlagsForEvent()
         flags |= kEF_CONTROL_DOWN;
     if (::GetKeyState(VK_MENU) < 0)
         flags |= kEF_ALT_DOWN;
-    if (::GetKeyState(VK_CAPITAL) < 0)
-        flags |= kEF_CAPS_LOCK_DOWN;
+    // Low bit set from GetKeyState indicates "toggled".
+    if (::GetKeyState(VK_NUMLOCK) & 1)
+        flags |= kEF_NUM_LOCK_ON;
+    if (::GetKeyState(VK_CAPITAL) & 1)
+        flags |= kEF_CAPS_LOCK_ON;
+
+    switch (wparam) {
+    case VK_RETURN:
+        if ((lparam >> 16) & KF_EXTENDED)
+            flags |= kEF_IS_KEY_PAD;
+        break;
+    case VK_INSERT:
+    case VK_DELETE:
+    case VK_HOME:
+    case VK_END:
+    case VK_PRIOR:
+    case VK_NEXT:
+    case VK_UP:
+    case VK_DOWN:
+    case VK_LEFT:
+    case VK_RIGHT:
+        if (!((lparam >> 16) & KF_EXTENDED))
+            flags |= kEF_IS_KEY_PAD;
+        break;
+    case VK_NUMLOCK:
+    case VK_NUMPAD0:
+    case VK_NUMPAD1:
+    case VK_NUMPAD2:
+    case VK_NUMPAD3:
+    case VK_NUMPAD4:
+    case VK_NUMPAD5:
+    case VK_NUMPAD6:
+    case VK_NUMPAD7:
+    case VK_NUMPAD8:
+    case VK_NUMPAD9:
+    case VK_DIVIDE:
+    case VK_MULTIPLY:
+    case VK_SUBTRACT:
+    case VK_ADD:
+    case VK_DECIMAL:
+    case VK_CLEAR:
+        flags |= kEF_IS_KEY_PAD;
+        break;
+    case VK_SHIFT:
+        if (::GetKeyState(VK_LSHIFT))
+            flags |= kEF_IS_LEFT;
+        else if (::GetKeyState(VK_RSHIFT))
+            flags |= kEF_IS_RIGHT;
+        break;
+    case VK_CONTROL:
+        if (::GetKeyState(VK_LCONTROL))
+            flags |= kEF_IS_LEFT;
+        else if (::GetKeyState(VK_RCONTROL))
+            flags |= kEF_IS_RIGHT;
+        break;
+    case VK_MENU:
+        if (::GetKeyState(VK_LMENU))
+            flags |= kEF_IS_LEFT;
+        else if (::GetKeyState(VK_RMENU))
+            flags |= kEF_IS_RIGHT;
+        break;
+    case VK_LWIN:
+        flags |= kEF_IS_LEFT;
+        break;
+    case VK_RWIN:
+        flags |= kEF_IS_RIGHT;
+        break;
+    }
+    return flags;
+}
+
+int Helper::ToFlagsForMouseEvent()
+{
+    int flags = kEF_NONE;
+    if (::GetKeyState(VK_SHIFT) < 0)
+        flags |= kEF_SHIFT_DOWN;
+    if (::GetKeyState(VK_CONTROL) < 0)
+        flags |= kEF_CONTROL_DOWN;
+    if (::GetKeyState(VK_MENU) < 0)
+        flags |= kEF_ALT_DOWN;
+
     if (::GetKeyState(VK_LBUTTON) < 0)
         flags |= kEF_LEFT_MOUSE_DOWN;
     if (::GetKeyState(VK_RBUTTON) < 0)
         flags |= kEF_RIGHT_MOUSE_DOWN;
     if (::GetKeyState(VK_MBUTTON) < 0)
         flags |= kEF_MIDDLE_MOUSE_DOWN;
-    if (::GetKeyState(kVKEY_COMMAND) < 0 || ::GetKeyState(kVKEY_RWIN) < 0)
-        flags |= kEF_COMMAND_DOWN;
 
+    // Low bit set from GetKeyState indicates "toggled".
+    if (::GetKeyState(VK_NUMLOCK) & 1)
+        flags |= kEF_NUM_LOCK_ON;
+    if (::GetKeyState(VK_CAPITAL) & 1)
+        flags |= kEF_CAPS_LOCK_ON;
     return flags;
 }
 

@@ -19,13 +19,15 @@ static const char * kMethodPhase = "phase";
 
 static const char * kMethodIsShiftDown = "isShiftDown";
 static const char * kMethodIsControlDown = "isControlDown";
-static const char * kMethodIsCapsLockDown = "isCapsLockDown";
 static const char * kMethodIsAltDown = "isAltDown";
-static const char * kMethodIsAltGrDown = "isAltGrDown";
-static const char * kMethodIsCommandDown = "isCommandDown";
 static const char * kMethodIsLeftMouseDown = "isLeftMouseDown";
 static const char * kMethodIsMiddleMouseDown = "isMiddleMouseDown";
 static const char * kMethodIsRightMouseDown = "isRightMouseDown";
+static const char * kMethodIsCapsLockOn = "isCapsLockOn";
+static const char * kMethodIsNumLockOn = "isNumLockOn";
+static const char * kMethodIsKeyPad = "isKeyPad";
+static const char * kMethodIsLeft = "isLeft";
+static const char * kMethodIsRight = "isRight";
 
 static const char * kMethodLoc = "getLoc";
 static const char * kMethodRootLoc = "getRootLoc";
@@ -96,11 +98,12 @@ static int Phase(lua_State * l)
     return 1;
 }
 
-static void GetEvent(lua_State * l, const char * class_name)
+static bool GetEvent(lua_State * l, const char * class_name)
 {
     assert(l && class_name);
     luaL_getmetatable(l, class_name);
-    if (!lua_istable(l, -1))
+    bool exist = lua_istable(l, -1);
+    if (!exist)
     {
         lua_pop(l, 1);
         luaL_newmetatable(l, class_name);
@@ -119,137 +122,61 @@ static void GetEvent(lua_State * l, const char * class_name)
         lua_pushcfunction(l, &Phase);
         lua_setfield(l, -2, kMethodPhase);
     }
+    return exist;
 }
 
-static int IsShiftDown(lua_State * l)
-{
-    lua_settop(l, 1);
-    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
-    lua_pushnil(l);
-    if (e)
-        lua_pushboolean(l, e->isShiftDown());
+//static int IsMouseShiftDown(lua_State * l)
+//{
+//    lua_settop(l, 1);
+//    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
+//    lua_pushnil(l);
+//    if (e)
+//        lua_pushboolean(l, e->isShiftDown());
+//
+//    return 1;
+//}
+//
+//static int IsControlDown(lua_State * l)
+//{
+//    lua_settop(l, 1);
+//    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
+//    lua_pushnil(l);
+//    if (e)
+//        lua_pushboolean(l, e->isControlDown());
+//
+//    return 1;
+//}
 
-    return 1;
-}
-
-static int IsControlDown(lua_State * l)
-{
-    lua_settop(l, 1);
-    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
-    lua_pushnil(l);
-    if (e)
-        lua_pushboolean(l, e->isControlDown());
-
-    return 1;
-}
-
-static int IsCapsLockDown(lua_State * l)
-{
-    lua_settop(l, 1);
-    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
-    lua_pushnil(l);
-    if (e)
-        lua_pushboolean(l, e->isCapsLockDown());
-
-    return 1;
-}
-
-static int IsAltDown(lua_State * l)
-{
-    lua_settop(l, 1);
-    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
-    lua_pushnil(l);
-    if (e)
-        lua_pushboolean(l, e->isAltDown());
-
-    return 1;
-}
-
-static int IsAltGrDown(lua_State * l)
-{
-    lua_settop(l, 1);
-    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
-    lua_pushnil(l);
-    if (e)
-        lua_pushboolean(l, e->isAltGrDown());
-
-    return 1;
-}
-
-static int IsCommandDown(lua_State * l)
-{
-    lua_settop(l, 1);
-    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
-    lua_pushnil(l);
-    if (e)
-        lua_pushboolean(l, e->isCommandDown());
-
-    return 1;
-}
-
-static int IsLeftMouseDown(lua_State * l)
-{
-    lua_settop(l, 1);
-    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
-    lua_pushnil(l);
-    if (e)
-        lua_pushboolean(l, e->isLeftMouseDown());
-
-    return 1;
-}
-
-static int IsMiddleMouseDown(lua_State * l)
-{
-    lua_settop(l, 1);
-    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
-    lua_pushnil(l);
-    if (e)
-        lua_pushboolean(l, e->isMiddleMouseDown());
-
-    return 1;
-}
-
-static int IsRightMouseDown(lua_State * l)
-{
-    lua_settop(l, 1);
-    auto e = *(BonesEventFlag **)lua_touserdata(l, 1);
-    lua_pushnil(l);
-    if (e)
-        lua_pushboolean(l, e->isRightMouseDown());
-
-    return 1;
-}
-
-static void GetUIEvent(lua_State * l, const char * class_name)
-{
-    GetEvent(l, class_name);
-    lua_pushcfunction(l, &IsShiftDown);
-    lua_setfield(l, -2, kMethodIsShiftDown);
-    lua_pushcfunction(l, &IsControlDown);
-    lua_setfield(l, -2, kMethodIsControlDown);
-    lua_pushcfunction(l, &IsCapsLockDown);
-    lua_setfield(l, -2, kMethodIsCapsLockDown);
-    lua_pushcfunction(l, &IsAltDown);
-    lua_setfield(l, -2, kMethodIsAltDown);
-    lua_pushcfunction(l, &IsAltGrDown);
-    lua_setfield(l, -2, kMethodIsAltGrDown);
-    lua_pushcfunction(l, &IsCommandDown);
-    lua_setfield(l, -2, kMethodIsCommandDown);
-    lua_pushcfunction(l, &IsLeftMouseDown);
-    lua_setfield(l, -2, kMethodIsLeftMouseDown);
-    lua_pushcfunction(l, &IsMiddleMouseDown);
-    lua_setfield(l, -2, kMethodIsMiddleMouseDown);
-    lua_pushcfunction(l, &IsRightMouseDown);
-    lua_setfield(l, -2, kMethodIsRightMouseDown);
-}
+//static void GetUIEvent(lua_State * l, const char * class_name)
+//{
+//    GetEvent(l, class_name);
+//    lua_pushcfunction(l, &IsShiftDown);
+//    lua_setfield(l, -2, kMethodIsShiftDown);
+//    lua_pushcfunction(l, &IsControlDown);
+//    lua_setfield(l, -2, kMethodIsControlDown);
+//    lua_pushcfunction(l, &IsCapsLockOn);
+//    lua_setfield(l, -2, kMethodIsCapsLockOn);
+//    lua_pushcfunction(l, &IsAltDown);
+//    lua_setfield(l, -2, kMethodIsAltDown);
+//    lua_pushcfunction(l, &IsAltGrDown);
+//    lua_setfield(l, -2, kMethodIsAltGrDown);
+//    lua_pushcfunction(l, &IsCommandDown);
+//    lua_setfield(l, -2, kMethodIsCommandDown);
+//    lua_pushcfunction(l, &IsLeftMouseDown);
+//    lua_setfield(l, -2, kMethodIsLeftMouseDown);
+//    lua_pushcfunction(l, &IsMiddleMouseDown);
+//    lua_setfield(l, -2, kMethodIsMiddleMouseDown);
+//    lua_pushcfunction(l, &IsRightMouseDown);
+//    lua_setfield(l, -2, kMethodIsRightMouseDown);
+//}
 
 /*............................................................
 mouse event
 */
-static int Loc(lua_State * l)
+static int MouseLoc(lua_State * l)
 {
     lua_settop(l, 1);
-    auto e = *(BonesMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    auto e = *(LuaMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
     lua_pushnil(l);
     lua_pushnil(l);
     if (e)
@@ -260,11 +187,11 @@ static int Loc(lua_State * l)
     }
     return 2;
 }
-
-static int RootLoc(lua_State *l)
+    
+static int MouseRootLoc(lua_State *l)
 {
     lua_settop(l, 1);
-    auto e = *(BonesMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    auto e = *(LuaMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
     lua_pushnil(l);
     lua_pushnil(l);
     if (e)
@@ -275,67 +202,175 @@ static int RootLoc(lua_State *l)
     }
     return 2;
 }
-
-static int IsLeftMouse(lua_State * l)
+    
+static int MouseIsLeftMouse(lua_State * l)
 {
     lua_settop(l, 1);
-    auto e = *(BonesMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    auto e = *(LuaMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
     lua_pushnil(l);
     if (e)
         lua_pushboolean(l, e->isLeftMouse());
     return 1;
 }
 
-static int IsMiddleMouse(lua_State * l)
+static int MouseIsMiddleMouse(lua_State * l)
 {
     lua_settop(l, 1);
-    auto e = *(BonesMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    auto e = *(LuaMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
     lua_pushnil(l);
     if (e)
         lua_pushboolean(l, e->isMiddleMouse());
     return 1;
 }
 
-static int IsRightMouse(lua_State * l)
+static int MouseIsRightMouse(lua_State * l)
 {
     lua_settop(l, 1);
-    auto e = *(BonesMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    auto e = *(LuaMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
     lua_pushnil(l);
     if (e)
         lua_pushboolean(l, e->isRightMouse());
-
+        
     return 1;
 }
 
 static int MouseType(lua_State * l)
 {
     lua_settop(l, 1);
-    auto e = *(BonesMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    auto e = *(LuaMouseEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent); 
     lua_pushnil(l);
     if (e)
         lua_pushinteger(l, e->type());
     return 1;
 }
 
+static int MouseIsShiftDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaMouseEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isShiftDown());
+
+    return 1;
+}
+
+static int MouseIsControlDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaMouseEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isControlDown());
+
+    return 1;
+}
+
+static int MouseIsAltDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaMouseEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isAltDown());
+
+    return 1;
+}
+
+static int MouseIsLeftMouseDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaMouseEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isLeftMouseDown());
+
+    return 1;
+}
+
+static int MouseIsMiddleMouseDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaMouseEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isMiddleMouseDown());
+
+    return 1;
+}
+
+static int MouseIsRightMouseDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaMouseEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isRightMouseDown());
+
+    return 1;
+}
+
+static int MouseIsCapsLockOn(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaMouseEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isCapsLockOn());
+
+    return 1;
+}
+
+static int MouseIsNumLockOn(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaMouseEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isNumLockOn());
+
+    return 1;
+}
+
+
 void LuaMouseEvent::GetMetaTable(lua_State * l)
 {
-    GetUIEvent(l, kMetaTableMouseEvent);
-    lua_pushcfunction(l, &Loc);
-    lua_setfield(l, -2, kMethodLoc);
-    lua_pushcfunction(l, &RootLoc);
-    lua_setfield(l, -2, kMethodRootLoc);
-    lua_pushcfunction(l, &IsLeftMouse);
-    lua_setfield(l, -2, kMethodIsLeftMouse);
-    lua_pushcfunction(l, &IsMiddleMouse);
-    lua_setfield(l, -2, kMethodIsMiddleMouse);
-    lua_pushcfunction(l, &IsRightMouse);
-    lua_setfield(l, -2, kMethodIsRightMouse);
-    lua_pushcfunction(l, &MouseType);
-    lua_setfield(l, -2, kMethodType);
+    if (!GetEvent(l, kMetaTableMouseEvent))
+    {
+        lua_pushcfunction(l, &MouseLoc);
+        lua_setfield(l, -2, kMethodLoc);
+        lua_pushcfunction(l, &MouseRootLoc);
+        lua_setfield(l, -2, kMethodRootLoc);
+        lua_pushcfunction(l, &MouseIsLeftMouse);
+        lua_setfield(l, -2, kMethodIsLeftMouse);
+        lua_pushcfunction(l, &MouseIsMiddleMouse);
+        lua_setfield(l, -2, kMethodIsMiddleMouse);
+        lua_pushcfunction(l, &MouseIsRightMouse);
+        lua_setfield(l, -2, kMethodIsRightMouse);
+        lua_pushcfunction(l, &MouseType);
+        lua_setfield(l, -2, kMethodType);
+
+        lua_pushcfunction(l, &MouseIsShiftDown);
+        lua_setfield(l, -2, kMethodIsShiftDown);
+        lua_pushcfunction(l, &MouseIsControlDown);
+        lua_setfield(l, -2, kMethodIsControlDown);
+        lua_pushcfunction(l, &MouseIsAltDown);
+        lua_setfield(l, -2, kMethodIsAltDown);
+        lua_pushcfunction(l, &MouseIsLeftMouseDown);
+        lua_setfield(l, -2, kMethodIsLeftMouseDown);
+        lua_pushcfunction(l, &MouseIsMiddleMouseDown);
+        lua_setfield(l, -2, kMethodIsMiddleMouseDown);
+        lua_pushcfunction(l, &MouseIsRightMouseDown);
+        lua_setfield(l, -2, kMethodIsRightMouseDown);
+        lua_pushcfunction(l, &MouseIsCapsLockOn);
+        lua_setfield(l, -2, kMethodIsCapsLockOn);
+        lua_pushcfunction(l, &MouseIsNumLockOn);
+        lua_setfield(l, -2, kMethodIsNumLockOn);
+    }
 }
 
 LuaMouseEvent::LuaMouseEvent(MouseEvent & e)
-:LuaUIEvent(e)
+:LuaEvent(e)
 {
 
 }
@@ -360,36 +395,304 @@ LuaMouseEvent::Type LuaMouseEvent::type() const
     return kTypeCount;
 }
 
-bool LuaMouseEvent::isLeftMouse() const
+/*............................................................
+WHEEL event
+*/
+static int DX(lua_State * l)
 {
-    return event_->isLeftMouse();
+    lua_settop(l, 1);
+    auto e = *(BonesWheelEvent **)luaL_checkudata(l, 1, kMetaTableWheelEvent);
+    lua_pushnil(l);
+    if (e)
+        lua_pushinteger(l, e->dx());
+    return 1;
 }
 
-bool LuaMouseEvent::isMiddleMouse() const
+static int DY(lua_State * l)
 {
-    return event_->isMiddleMouse();
+    lua_settop(l, 1);
+    auto e = *(BonesWheelEvent **)luaL_checkudata(l, 1, kMetaTableWheelEvent);
+    lua_pushnil(l);
+    if (e)
+        lua_pushinteger(l, e->dy());
+    return 1;
 }
 
-bool LuaMouseEvent::isRightMouse() const
+static int WheelLoc(lua_State * l)
 {
-    return event_->isRightMouse();
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_pushnil(l);
+    lua_pushnil(l);
+    if (e)
+    {
+        auto bp = e->getLoc();
+        lua_pushnumber(l, bp.x);
+        lua_pushnumber(l, bp.y);
+    }
+    return 2;
 }
 
-BonesPoint LuaMouseEvent::getLoc() const
+static int WheelRootLoc(lua_State *l)
 {
-    auto & loc = event_->getLoc();
-
-    BonesPoint bp = { loc.x(), loc.y() };
-    return bp;
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_pushnil(l);
+    lua_pushnil(l);
+    if (e)
+    {
+        auto bp = e->getRootLoc();
+        lua_pushnumber(l, bp.x);
+        lua_pushnumber(l, bp.y);
+    }
+    return 2;
 }
 
-BonesPoint LuaMouseEvent::getRootLoc() const
+static int WheelIsLeftMouse(lua_State * l)
 {
-    auto & loc = event_->getRootLoc();
-
-    BonesPoint bp = { loc.x(), loc.y() };
-    return bp;
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isLeftMouse());
+    return 1;
 }
+
+static int WheelIsMiddleMouse(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isMiddleMouse());
+    return 1;
+}
+
+static int WheelIsRightMouse(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)luaL_checkudata(l, 1, kMetaTableMouseEvent);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isRightMouse());
+
+    return 1;
+}
+
+static int WheelIsShiftDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isShiftDown());
+
+    return 1;
+}
+
+static int WheelIsControlDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isControlDown());
+
+    return 1;
+}
+
+static int WheelIsAltDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isAltDown());
+
+    return 1;
+}
+
+static int WheelIsLeftMouseDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isLeftMouseDown());
+
+    return 1;
+}
+
+static int WheelIsMiddleMouseDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isMiddleMouseDown());
+
+    return 1;
+}
+
+static int WheelIsRightMouseDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isRightMouseDown());
+
+    return 1;
+}
+
+static int WheelIsCapsLockOn(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isCapsLockOn());
+
+    return 1;
+}
+
+static int WheelIsNumLockOn(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaWheelEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isNumLockOn());
+
+    return 1;
+}
+
+void LuaWheelEvent::GetMetaTable(lua_State * l)
+{
+    GetEvent(l, kMetaTableWheelEvent);
+    lua_pushcfunction(l, &DX);
+    lua_setfield(l, -2, kMethodDX);
+    lua_pushcfunction(l, &DY);
+    lua_setfield(l, -2, kMethodDY);
+
+    lua_pushcfunction(l, &WheelLoc);
+    lua_setfield(l, -2, kMethodLoc);
+    lua_pushcfunction(l, &WheelRootLoc);
+    lua_setfield(l, -2, kMethodRootLoc);
+    lua_pushcfunction(l, &WheelIsLeftMouse);
+    lua_setfield(l, -2, kMethodIsLeftMouse);
+    lua_pushcfunction(l, &WheelIsMiddleMouse);
+    lua_setfield(l, -2, kMethodIsMiddleMouse);
+    lua_pushcfunction(l, &WheelIsRightMouse);
+    lua_setfield(l, -2, kMethodIsRightMouse);
+
+    lua_pushcfunction(l, &WheelIsShiftDown);
+    lua_setfield(l, -2, kMethodIsShiftDown);
+    lua_pushcfunction(l, &WheelIsControlDown);
+    lua_setfield(l, -2, kMethodIsControlDown);
+    lua_pushcfunction(l, &WheelIsAltDown);
+    lua_setfield(l, -2, kMethodIsAltDown);
+    lua_pushcfunction(l, &WheelIsLeftMouseDown);
+    lua_setfield(l, -2, kMethodIsLeftMouseDown);
+    lua_pushcfunction(l, &WheelIsMiddleMouseDown);
+    lua_setfield(l, -2, kMethodIsMiddleMouseDown);
+    lua_pushcfunction(l, &WheelIsRightMouseDown);
+    lua_setfield(l, -2, kMethodIsRightMouseDown);
+    lua_pushcfunction(l, &WheelIsCapsLockOn);
+    lua_setfield(l, -2, kMethodIsCapsLockOn);
+    lua_pushcfunction(l, &WheelIsNumLockOn);
+    lua_setfield(l, -2, kMethodIsNumLockOn);
+}
+
+LuaWheelEvent::LuaWheelEvent(WheelEvent & e)
+:LuaEvent(e)
+{
+
+}
+
+int LuaWheelEvent::dx() const
+{
+    return event_->dx();
+}
+
+int LuaWheelEvent::dy() const
+{
+    return event_->dy();
+}
+
+#define LUA_MOUSE_DEFINE(T)\
+    bool T##::isLeftMouse() const\
+{\
+    return event_->isLeftMouse(); \
+}\
+    \
+    bool T##::isMiddleMouse() const\
+{\
+    return event_->isMiddleMouse(); \
+}\
+    \
+    bool T##::isRightMouse() const\
+{\
+    return event_->isRightMouse(); \
+}\
+    \
+    BonesPoint T##::getLoc() const\
+{\
+    auto & p = event_->getLoc(); \
+    BonesPoint bp = { p.x(), p.y() }; \
+    return bp; \
+}\
+    \
+    BonesPoint T##::getRootLoc() const\
+{\
+    auto & p = event_->getRootLoc(); \
+    BonesPoint bp = { p.x(), p.y() }; \
+    return bp; \
+}\
+    \
+    bool T##::isShiftDown() const\
+{\
+    return event_->isShiftDown(); \
+}\
+    \
+    bool T##::isControlDown() const\
+{\
+    return event_->isControlDown(); \
+}\
+    \
+    bool T##::isAltDown() const\
+{\
+    return event_->isAltDown(); \
+}\
+    \
+    bool T##::isLeftMouseDown() const\
+{\
+    return event_->isLeftMouseDown(); \
+}\
+    \
+    bool T##::isMiddleMouseDown() const\
+{\
+    return event_->isMiddleMouseDown(); \
+}\
+    \
+    bool T##::isRightMouseDown() const\
+{\
+    return event_->isRightMouseDown(); \
+}\
+    \
+    bool T##::isCapsLockOn() const\
+{\
+    return event_->isCapsLockOn(); \
+}\
+    \
+    bool T##::isNumLockOn() const\
+{\
+    return event_->isNumLockOn(); \
+}\
+
+LUA_MOUSE_DEFINE(LuaMouseEvent)
+LUA_MOUSE_DEFINE(LuaWheelEvent)
+
 
 /*............................................................
 key event
@@ -424,19 +727,126 @@ static int KeyType(lua_State * l)
     return 1;
 }
 
+static int KeyIsShiftDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaKeyEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isShiftDown());
+    
+    return 1;
+}
+
+static int KeyIsControlDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaKeyEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isControlDown());
+
+    return 1;
+}
+
+static int KeyIsAltDown(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaKeyEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isAltDown());
+
+    return 1;
+}
+
+static int KeyIsCapsLockOn(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaKeyEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isCapsLockOn());
+
+    return 1;
+}
+
+static int KeyIsNumLockOn(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaKeyEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isNumLockOn());
+
+    return 1;
+}
+
+static int KeyIsKeyPad(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaKeyEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isKeyPad());
+
+    return 1;
+}
+
+static int KeyIsLeft(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaKeyEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isLeft());
+
+    return 1;
+}
+
+static int KeyIsRight(lua_State * l)
+{
+    lua_settop(l, 1);
+    auto e = *(LuaKeyEvent **)lua_touserdata(l, 1);
+    lua_pushnil(l);
+    if (e)
+        lua_pushboolean(l, e->isRight());
+
+    return 1;
+}
+
 void LuaKeyEvent::GetMetaTable(lua_State * l)
 {
-    GetUIEvent(l, kMetaTableKeyEvent);
-    lua_pushcfunction(l, &Ch);
-    lua_setfield(l, -2, kMethodCH);
-    lua_pushcfunction(l, &State);
-    lua_setfield(l, -2, kMethodState);
-    lua_pushcfunction(l, &KeyType);
-    lua_setfield(l, -2, kMethodType);
+    if (!GetEvent(l, kMetaTableKeyEvent))
+    {
+        lua_pushcfunction(l, &Ch);
+        lua_setfield(l, -2, kMethodCH);
+        lua_pushcfunction(l, &State);
+        lua_setfield(l, -2, kMethodState);
+        lua_pushcfunction(l, &KeyType);
+        lua_setfield(l, -2, kMethodType);
+
+        lua_pushcfunction(l, &KeyIsShiftDown);
+        lua_setfield(l, -2, kMethodIsShiftDown);
+        lua_pushcfunction(l, &KeyIsControlDown);
+        lua_setfield(l, -2, kMethodIsControlDown);
+        lua_pushcfunction(l, &KeyIsAltDown);
+        lua_setfield(l, -2, kMethodIsAltDown);
+        lua_pushcfunction(l, &KeyIsCapsLockOn);
+        lua_setfield(l, -2, kMethodIsCapsLockOn);
+        lua_pushcfunction(l, &KeyIsNumLockOn);
+        lua_setfield(l, -2, kMethodIsNumLockOn);
+        lua_pushcfunction(l, &KeyIsKeyPad);
+        lua_setfield(l, -2, kMethodIsKeyPad);
+        lua_pushcfunction(l, &KeyIsLeft);
+        lua_setfield(l, -2, kMethodIsLeft);
+        lua_pushcfunction(l, &KeyIsRight);
+        lua_setfield(l, -2, kMethodIsRight);
+    }
 }
 
 LuaKeyEvent::LuaKeyEvent(KeyEvent & e)
-:LuaUIEvent(e)
+:LuaEvent(e)
 {
 
 }
@@ -447,8 +857,8 @@ LuaKeyEvent::Type LuaKeyEvent::type() const
 
     if (kET_KEY_DOWN == type)
         return kKeyDown;
-    if (kET_KEY_PRESS == type)
-        return kKeyPress;
+    if (kET_CHAR == type)
+        return kChar;
     if (kET_KEY_UP == type)
         return kKeyUp;
 
@@ -465,6 +875,50 @@ LuaKeyEvent::KeyState LuaKeyEvent::state() const
     return *(KeyState *)(&event_->state());
 }
 
+bool LuaKeyEvent::system() const
+{
+    return event_->system();
+}
+
+bool LuaKeyEvent::isShiftDown() const
+{
+    return event_->isShiftDown();
+}
+
+bool LuaKeyEvent::isControlDown() const
+{
+    return event_->isControlDown();
+}
+
+bool LuaKeyEvent::isAltDown() const
+{
+    return event_->isAltDown();
+}
+
+bool LuaKeyEvent::isCapsLockOn() const
+{
+    return event_->isCapsLockOn();
+}
+
+bool LuaKeyEvent::isNumLockOn() const
+{
+    return event_->isNumLockOn();
+}
+
+bool LuaKeyEvent::isKeyPad() const
+{
+    return event_->isKeyPad();
+}
+
+bool LuaKeyEvent::isLeft() const
+{
+    return event_->isLeft();
+}
+
+bool LuaKeyEvent::isRight() const
+{
+    return event_->isRight();
+}
 /*............................................................
 focus event
 */
@@ -490,11 +944,13 @@ static int FocusType(lua_State * l)
 
 void LuaFocusEvent::GetMetaTable(lua_State * l)
 {
-    GetUIEvent(l, kMetaTableFocusEvent);
-    lua_pushcfunction(l, &IsTabTraversal);
-    lua_setfield(l, -2, kMethodIsTabTraversal);
-    lua_pushcfunction(l, &FocusType);
-    lua_setfield(l, -2, kMethodType);
+    if (!GetEvent(l, kMetaTableFocusEvent))
+    {
+        lua_pushcfunction(l, &IsTabTraversal);
+        lua_setfield(l, -2, kMethodIsTabTraversal);
+        lua_pushcfunction(l, &FocusType);
+        lua_setfield(l, -2, kMethodType);
+    }
 }
 
 LuaFocusEvent::LuaFocusEvent(FocusEvent & e)
@@ -524,53 +980,6 @@ bool LuaFocusEvent::isTabTraversal() const
     return event_->isTabTraversal();
 }
 
-/*............................................................
-WHEEL event
-*/
-static int DX(lua_State * l)
-{
-    lua_settop(l, 1);
-    auto e = *(BonesWheelEvent **)luaL_checkudata(l, 1, kMetaTableWheelEvent);
-    lua_pushnil(l);
-    if (e)
-        lua_pushinteger(l, e->dx());
-    return 1;
-}
-
-static int DY(lua_State * l)
-{
-    lua_settop(l, 1);
-    auto e = *(BonesWheelEvent **)luaL_checkudata(l, 1, kMetaTableWheelEvent);
-    lua_pushnil(l);
-    if (e)
-        lua_pushinteger(l, e->dy());
-    return 1;
-}
-
-void LuaWheelEvent::GetMetaTable(lua_State * l)
-{
-    GetEvent(l, kMetaTableWheelEvent);
-    lua_pushcfunction(l, &DX);
-    lua_setfield(l, -2, kMethodDX);
-    lua_pushcfunction(l, &DY);
-    lua_setfield(l, -2, kMethodDY);
-}
-
-LuaWheelEvent::LuaWheelEvent(WheelEvent & e)
-:LuaUIEvent(e)
-{
-
-}
-
-int LuaWheelEvent::dx() const 
-{
-    return event_->dx();
-}
-
-int LuaWheelEvent::dy() const
-{
-    return event_->dy();
-}
 
 
 }

@@ -30,7 +30,7 @@ extern const char * kMethodOnMouseEnter;
 extern const char * kMethodOnMouseClick;
 extern const char * kMethodOnMouseDClick;
 extern const char * kMethodOnKeyDown;
-extern const char * kMethodOnKeyPress;
+extern const char * kMethodOnChar;
 extern const char * kMethodOnKeyUp;
 extern const char * kMethodOnFocusIn;
 extern const char * kMethodOnFocusOut;

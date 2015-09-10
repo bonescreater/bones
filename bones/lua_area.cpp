@@ -259,14 +259,14 @@ void LuaArea::onKeyUp(Area * sender, KeyEvent & e)
     PostToScript(this, le, kMethodOnKeyUp);
 }
 
-void LuaArea::onKeyPress(Area * sender, KeyEvent & e)
+void LuaArea::onChar(Area * sender, KeyEvent & e)
 {
     bool stop = false;
     LuaKeyEvent le(e);
     key_ ? key_->onKeyPress(this, le, stop) : 0;
     if (stop)
         return;
-    PostToScript(this, le, kMethodOnKeyPress);
+    PostToScript(this, le, kMethodOnChar);
 }
 
 void LuaArea::onFocusOut(Area * sender, FocusEvent & e)
