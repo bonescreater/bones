@@ -66,7 +66,7 @@ ES_AUTOHSCROLL | ES_DISABLENOSCROLL),
 txt_bits_(TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_WORDWRAP),
 services_(nullptr), delegate_(nullptr),
 bg_opaque_(true), bg_color_(0xff000088), bg_set_color_(true),
-traversal_(false), want_(kNone), old_obj_(NULL), dc_(NULL)
+traversal_(false), old_obj_(NULL), dc_(NULL)
 {
     lazyInitialize();
 }
@@ -98,11 +98,6 @@ void RichEdit::setText(const wchar_t * text)
 {
     services_->TxSetText(text);
     inval();
-}
-
-void RichEdit::setWant(uint64_t want)
-{
-    want_ = want;
 }
 
 void RichEdit::setRichText(bool rich)
@@ -335,8 +330,8 @@ void RichEdit::onKeyDown(KeyEvent & e)
     {
     case kVKEY_RETURN:
     {
-        if ((want_ & kReturn) && !(txt_bits_ & TXTBIT_MULTILINE))
-        {//单行模式下 而且需要return
+        if (!(txt_bits_ & TXTBIT_MULTILINE))
+        {//单行模式下
             delegate_ ? delegate_->onReturn(this) : 0;
             break;
         }
@@ -353,14 +348,11 @@ void RichEdit::onKeyDown(KeyEvent & e)
 
 void RichEdit::onKeyUp(KeyEvent & e)
 {
-    //暂时不响应系统按键
-    if (e.system())
-        return;
     switch (e.key())
     {
     case kVKEY_RETURN:
     {
-        if ((want_ & kReturn) && !(txt_bits_ & TXTBIT_MULTILINE))
+        if (!(txt_bits_ & TXTBIT_MULTILINE))
         {//单行模式下 而且需要return
             break;
         }
@@ -376,7 +368,7 @@ void RichEdit::onKeyUp(KeyEvent & e)
 
 void RichEdit::onChar(KeyEvent & e)
 {
-    if (e.ch() != '\t' || (want_ & kTab) )
+    if (e.ch() != '\t' )
         services_->TxSendMessage(WM_CHAR, e.ch(), Helper::ToKeyStateForKey(e.state()), 0);
 }
 
@@ -408,10 +400,6 @@ void RichEdit::onAddHierarchy(View * start)
 
 bool RichEdit::skipDefaultKeyEventProcessing(const KeyEvent & ke)
 {
-    //如果want tab 只能打断tab默认处理流程
-    if (want_ & kTab)
-        return true;
-
     return false;
 }
 

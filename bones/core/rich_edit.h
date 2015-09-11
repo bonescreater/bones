@@ -32,21 +32,12 @@ public:
 
         virtual void onReturn(RichEdit * sender) = 0;
     };
-
-    enum Want
-    {
-        kNone = 0,
-        kTab = 1 << 0,
-        kReturn = 1 << 1,//单行模式下按enter 有return通知
-    };
 public:
     RichEdit();
 
     ~RichEdit();
 
     void setDelegate(Delegate * delegate);
-
-    void setWant(uint64_t want);
     
     void setText(const wchar_t * text);
 

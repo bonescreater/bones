@@ -28,13 +28,13 @@ public:
         const char * module,
         const char * func);
 
-    void setListener(MouseListener * lis) override;
+    void setListener(BonesEvent::Phase phase, MouseListener * lis) override;
 
-    void setListener(KeyListener * lis) override;
+    void setListener(BonesEvent::Phase phase, KeyListener * lis) override;
 
-    void setListener(FocusListener * lis) override;
+    void setListener(BonesEvent::Phase phase, FocusListener * lis) override;
 
-    void setListener(WheelListener * lis) override;
+    void setListener(BonesEvent::Phase phase, WheelListener * lis) override;
 
     void setListener(NotifyListener * notify) override;
 
@@ -74,10 +74,10 @@ public:
 
     bool onHitTest(Area * sender, const Point & loc) override;
 private:
-    MouseListener * mouse_;
-    KeyListener * key_;
-    FocusListener * focus_;
-    WheelListener * wheel_;
+    MouseListener * mouse_[BonesEvent::kPhaseCount];
+    KeyListener * key_[BonesEvent::kPhaseCount];
+    FocusListener * focus_[BonesEvent::kPhaseCount];
+    WheelListener * wheel_[BonesEvent::kPhaseCount];
     NotifyListener * notify_;
 };
 

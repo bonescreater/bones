@@ -37,8 +37,8 @@ public:
 
         info.x = 0;
         info.y = 0;
-        info.width = 0;
-        info.height = 0;
+        info.width = static_cast<int>(web_view_->getWidth());
+        info.height = static_cast<int>(web_view_->getHeight());
         browser_ = CefBrowserHost::CreateBrowserSync(info, this,
             "", CefBrowserSettings(), nullptr);
         return !!browser_;

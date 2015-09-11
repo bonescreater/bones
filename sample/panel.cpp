@@ -305,6 +305,9 @@ LRESULT BSPanel::processEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_KEYDOWN:
         case WM_KEYUP:
         case WM_CHAR:
+        case WM_SYSKEYDOWN:
+        case WM_SYSKEYUP:
+        case WM_SYSCHAR:
             return handleKey(uMsg, wParam, lParam);
         case WM_IME_STARTCOMPOSITION:
         case WM_IME_COMPOSITION:

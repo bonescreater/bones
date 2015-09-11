@@ -487,7 +487,7 @@ public:
 
         virtual void onKeyUp(BonesObject * sender, BonesKeyEvent & e, bool & stop) = 0;
 
-        virtual void onKeyPress(BonesObject * sender, BonesKeyEvent & e, bool & stop) = 0;
+        virtual void onChar(BonesObject * sender, BonesKeyEvent & e, bool & stop) = 0;
     };
 
     class FocusListener
@@ -518,13 +518,13 @@ public:
         virtual bool onHitTest(BonesArea * sender, const BonesPoint & loc, bool & stop) = 0;
     };
 
-    virtual void setListener(MouseListener * lis) = 0;
+    virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
 
-    virtual void setListener(KeyListener * lis) = 0;
+    virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
 
-    virtual void setListener(FocusListener * lis) = 0;
+    virtual void setListener(BonesEvent::Phase phase, FocusListener * lis) = 0;
 
-    virtual void setListener(WheelListener * lis) = 0;
+    virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
 
     virtual void setListener(NotifyListener * notify) = 0;
 };

@@ -25,10 +25,12 @@ static const char * ToEventPhaseStr(BonesEvent::Phase phase)
 }
 
 LuaArea::LuaArea(Area * ob)
-:LuaObject(ob), mouse_(nullptr),
-key_(nullptr), focus_(nullptr), wheel_(nullptr),
-notify_(nullptr)
+:LuaObject(ob), notify_(nullptr)
 {
+    memset(mouse_, 0, sizeof(mouse_));
+    memset(key_, 0, sizeof(key_));
+    memset(focus_, 0, sizeof(focus_));
+    memset(wheel_, 0, sizeof(wheel_));
     createLuaTable();
 }
 
@@ -110,24 +112,32 @@ void LuaArea::createMetaTable(lua_State * l)
     LuaObject::createMetaTable(l, kMetaTableArea);
 }
 
-void LuaArea::setListener(MouseListener * lis)
+void LuaArea::setListener(BonesEvent::Phase phase, MouseListener * lis)
 {
-    mouse_ = lis;
+    if (phase >= BonesEvent::kPhaseCount || phase < BonesEvent::kCapture)
+        return;
+    mouse_[phase] = lis;
 }
 
-void LuaArea::setListener(KeyListener * lis)
+void LuaArea::setListener(BonesEvent::Phase phase, KeyListener * lis)
 {
-    key_ = lis;
+    if (phase >= BonesEvent::kPhaseCount || phase < BonesEvent::kCapture)
+        return;
+    key_[phase] = lis;
 }
 
-void LuaArea::setListener(FocusListener * lis)
+void LuaArea::setListener(BonesEvent::Phase phase, FocusListener * lis)
 {
-    focus_ = lis;
+    if (phase >= BonesEvent::kPhaseCount || phase < BonesEvent::kCapture)
+        return;
+    focus_[phase] = lis;
 }
 
-void LuaArea::setListener(WheelListener * lis)
+void LuaArea::setListener(BonesEvent::Phase phase, WheelListener * lis)
 {
-    wheel_ = lis;
+    if (phase >= BonesEvent::kPhaseCount || phase < BonesEvent::kCapture)
+        return;
+    wheel_[phase] = lis;
 }
 
 void LuaArea::setListener(NotifyListener * notify)
@@ -178,7 +188,7 @@ void LuaArea::onMouseEnter(Area * sender, MouseEvent & e)
 {
     bool stop = false;
     LuaMouseEvent le(e);
-    mouse_ ? mouse_->onMouseEnter(this, le, stop) : 0;
+    mouse_[le.phase()] ? mouse_[le.phase()]->onMouseEnter(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnMouseEnter);
@@ -188,7 +198,7 @@ void LuaArea::onMouseMove(Area * sender, MouseEvent & e)
 {
     bool stop = false;
     LuaMouseEvent le(e);
-    mouse_ ? mouse_->onMouseMove(this, le, stop) : 0;
+    mouse_[le.phase()] ? mouse_[le.phase()]->onMouseMove(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnMouseMove);
@@ -198,7 +208,7 @@ void LuaArea::onMouseDown(Area * sender, MouseEvent & e)
 {
     bool stop = false;
     LuaMouseEvent le(e);
-    mouse_ ? mouse_->onMouseDown(this, le, stop) : 0;
+    mouse_[le.phase()] ? mouse_[le.phase()]->onMouseDown(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnMouseDown);
@@ -208,7 +218,7 @@ void LuaArea::onMouseUp(Area * sender, MouseEvent & e)
 {
     bool stop = false;
     LuaMouseEvent le(e);
-    mouse_ ? mouse_->onMouseUp(this, le, stop) : 0;
+    mouse_[le.phase()] ? mouse_[le.phase()]->onMouseUp(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnMouseUp);
@@ -218,7 +228,7 @@ void LuaArea::onMouseClick(Area * sender, MouseEvent & e)
 {
     bool stop = false;
     LuaMouseEvent le(e);
-    mouse_ ? mouse_->onMouseClick(this, le, stop) : 0;
+    mouse_[le.phase()] ? mouse_[le.phase()]->onMouseClick(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnMouseClick);
@@ -228,7 +238,7 @@ void LuaArea::onMouseDClick(Area * sender, MouseEvent & e)
 {
     bool stop = false;
     LuaMouseEvent le(e);
-    mouse_ ? mouse_->onMouseDClick(this, le, stop) : 0;
+    mouse_[le.phase()] ? mouse_[le.phase()]->onMouseDClick(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnMouseDClick);
@@ -238,7 +248,7 @@ void LuaArea::onMouseLeave(Area * sender, MouseEvent & e)
 {
     bool stop = false;
     LuaMouseEvent le(e);
-    mouse_ ? mouse_->onMouseLeave(this, le, stop) : 0;
+    mouse_[le.phase()] ? mouse_[le.phase()]->onMouseLeave(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnMouseLeave);
@@ -248,7 +258,7 @@ void LuaArea::onKeyDown(Area * sender, KeyEvent & e)
 {
     bool stop = false;
     LuaKeyEvent le(e);
-    key_ ? key_->onKeyDown(this, le, stop) : 0;
+    key_[le.phase()] ? key_[le.phase()]->onKeyDown(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnKeyDown);
@@ -258,7 +268,7 @@ void LuaArea::onKeyUp(Area * sender, KeyEvent & e)
 {
     bool stop = false;
     LuaKeyEvent le(e);
-    key_ ? key_->onKeyUp(this, le, stop) : 0;
+    key_[le.phase()] ? key_[le.phase()]->onKeyUp(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnKeyUp);
@@ -268,7 +278,7 @@ void LuaArea::onChar(Area * sender, KeyEvent & e)
 {
     bool stop = false;
     LuaKeyEvent le(e);
-    key_ ? key_->onKeyPress(this, le, stop) : 0;
+    key_[le.phase()] ? key_[le.phase()]->onChar(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnChar);
@@ -278,7 +288,7 @@ void LuaArea::onFocusOut(Area * sender, FocusEvent & e)
 {
     bool stop = false;
     LuaFocusEvent le(e);
-    focus_ ? focus_->onFocusOut(this, le, stop) : 0;
+    focus_[le.phase()] ? focus_[le.phase()]->onFocusOut(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnFocusOut);
@@ -288,7 +298,7 @@ void LuaArea::onFocusIn(Area * sender, FocusEvent & e)
 {
     bool stop = false;
     LuaFocusEvent le(e);
-    focus_ ? focus_->onFocusOut(this, le, stop) : 0;
+    focus_[le.phase()] ? focus_[le.phase()]->onFocusOut(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnFocusIn);
@@ -298,7 +308,7 @@ void LuaArea::onBlur(Area * sender, FocusEvent & e)
 {
     bool stop = false;
     LuaFocusEvent le(e);
-    focus_ ? focus_->onFocusOut(this, le, stop) : 0;
+    focus_[le.phase()] ? focus_[le.phase()]->onFocusOut(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnBlur);
@@ -308,7 +318,7 @@ void LuaArea::onFocus(Area * sender, FocusEvent & e)
 {
     bool stop = false;
     LuaFocusEvent le(e);
-    focus_ ? focus_->onFocusOut(this, le, stop) : 0;
+    focus_[le.phase()] ? focus_[le.phase()]->onFocusOut(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnFocus);
@@ -318,7 +328,7 @@ void LuaArea::onWheel(Area * sender, WheelEvent & e)
 {
     bool stop = false;
     LuaWheelEvent le(e);
-    wheel_ ? wheel_->onWheel(this, le, stop) : 0;
+    wheel_[le.phase()] ? wheel_[le.phase()]->onWheel(this, le, stop) : 0;
     if (stop)
         return;
     PostToScript(this, le, kMethodOnWheel);
