@@ -248,7 +248,7 @@ public:
         web_view_->setCursor(cursor);
     }
 protected:
-    CefFrame * mainFrame()
+    CefRefPtr<CefFrame> mainFrame()
     {
         if (!browser_)
             return nullptr;
