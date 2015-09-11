@@ -543,6 +543,10 @@ public:
 
     virtual void loadURL(const wchar_t * url) = 0;
 
+    virtual void executeJS(const wchar_t * code, 
+                            const wchar_t * url, 
+                            int start_line) = 0;
+
     virtual void setListener(NotifyListener * lis) = 0;
 };
 

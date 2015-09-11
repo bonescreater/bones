@@ -44,6 +44,23 @@ static int LoadURL(lua_State * l)
     return 0;
 }
 
+static int ExecuteJS(lua_State * l)
+{
+    lua_settop(l, 4);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaWebView * bob = static_cast<LuaWebView *>(
+        LuaContext::CallGetCObject(l));
+    if (bob)
+    {
+        bob->executeJS(Encoding::FromUTF8(lua_tostring(l, 2)).data(),
+                       Encoding::FromUTF8(lua_tostring(l, 3)).data(),
+                       static_cast<int>(lua_tointeger(l, 4)));
+    }
+        
+    return 0;
+}
+
 static const char * kMethodOpen = "open";
 static const char * kMethodClose = "close";
 static const char * kMethodLoadURL = "loadURL";
@@ -107,6 +124,13 @@ void LuaWebView::close()
 void LuaWebView::loadURL(const wchar_t * url)
 {
     object_->loadURL(url);
+}
+
+void LuaWebView::executeJS(const wchar_t * code,
+                           const wchar_t * url,
+                           int start_line)
+{
+    object_->executeJS(code, url, start_line);
 }
 
 }

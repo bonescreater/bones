@@ -27,7 +27,7 @@ public:
     Browser(WebView * wv)
         :web_view_(wv)
     {
-
+        assert(web_view_);
     }
 
     bool open()
@@ -55,14 +55,22 @@ public:
     {
         if (!url)
             return;
-        if (!browser_)
-            return;
-        auto frame = browser_->GetMainFrame();
+        auto frame = mainFrame();
         if (!frame)
             return;
         frame->LoadURL(url);
     }
 
+    void executeJS(const wchar_t * code, const wchar_t * url, int start_line)
+    {
+        if (!code)
+            return;
+        auto frame = mainFrame();
+        if (!frame)
+            return;
+        frame->ExecuteJavaScript(code, url, start_line);
+    }
+    
     void wasResized()
     {
         if (browser_)
@@ -202,13 +210,9 @@ public:
     // CefRenderHandler methods
     bool GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
     {
-        if (web_view_)
-        {
-            rect.x = rect.y = 0;
-            rect.width = static_cast<int>(web_view_->getWidth());
-            rect.height = static_cast<int>(web_view_->getHeight());
-            return true;
-        }
+        rect.x = rect.y = 0;
+        rect.width = static_cast<int>(web_view_->getWidth());
+        rect.height = static_cast<int>(web_view_->getHeight());
         return true;
     }
 
@@ -233,7 +237,7 @@ public:
             }
             pixmap_.unlock();
         }
-        web_view_ ? web_view_->inval() : 0;
+        web_view_->inval();
     }
 
     void OnCursorChange(CefRefPtr<CefBrowser> browser,
@@ -241,7 +245,14 @@ public:
         CursorType type,
         const CefCursorInfo & custom_cursor_info) override
     {
-        web_view_ ? web_view_->setCursor(cursor) : 0;
+        web_view_->setCursor(cursor);
+    }
+protected:
+    CefFrame * mainFrame()
+    {
+        if (!browser_)
+            return nullptr;
+        return browser_->GetMainFrame();
     }
 private:
     void adjustPixmap(int width, int height)
@@ -336,6 +347,11 @@ void WebView::close()
 void WebView::loadURL(const wchar_t * url)
 {
     browser_->loadURL(url);
+}
+
+void WebView::executeJS(const wchar_t * code, const wchar_t * url, int start_line)
+{
+    browser_->executeJS(code, url, start_line);
 }
 
 const char * WebView::getClassName() const

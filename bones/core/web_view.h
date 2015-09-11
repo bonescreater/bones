@@ -29,6 +29,8 @@ public:
 
     void loadURL(const wchar_t * url);
 
+    void executeJS(const wchar_t * code, const wchar_t * url, int start_line);
+
     const char * getClassName() const override;
 protected:
     void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;

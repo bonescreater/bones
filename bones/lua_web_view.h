@@ -29,6 +29,10 @@ public:
     void close() override;
 
     void loadURL(const wchar_t * url) override;
+
+    void executeJS(const wchar_t * code,
+        const wchar_t * url,
+        int start_line) override;
 private:
     NotifyListener * listener_;
 };
