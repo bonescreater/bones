@@ -126,23 +126,14 @@
           overflow:word-wrap;
           color:#8800ff00;
           }
-          .webview
-          {
-          loc:20px 400px;
-          size:200px 150px;
-          }
         </style>
 		  </head>
       
         <body>  
             <root id ='main'>
-              <shape id ="bg" class ="bg"></shape>
-              
-              <button id ="fadein" class ="b11   b12 "></button>
-              <button id ="fadeout" class ="b11   b13 "></button>
-              <button id ="close" class = "   b11     b12  b15 "></button>
-              
+              <shape id ="bg" class ="bg"></shape>           
               <shape id ="opacity" class ="opacity">
+                <webview id ="webview"></webview>
                 <text class ="text"></text>
                 <text class ="text_ellipsis"></text>
                 <text class ="text_word_wrap"></text>
@@ -156,11 +147,14 @@
                 <image id ="pic_rb" class ="pic pic_rb"></image>
 
                 <richedit id ="rich_opacity" class ="rich_opacity"></richedit>
-                <richedit id ="rich" class ="rich"></richedit>
-                <webview class ="webview"></webview>
+                <richedit id ="rich" class ="rich"></richedit>             
               </shape>
+              <button id ="fadein" class ="b11   b12 "></button>
+              <button id ="fadeout" class ="b11   b13 "></button>
+              <button id ="close" class = "   b11     b12  b15 "></button>
               
               <notify name ="onCreate" module ="test" func ="onCreate"></notify>
+              <notify name ="onDestroy" module ="test" func ="onDestroy"></notify>
               <notify name ="onSizeChanged" module ="test" func ="onSizeChanged"></notify>
 			      </root>
         </body>  

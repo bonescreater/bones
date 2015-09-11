@@ -18,9 +18,9 @@ static const char * kMethodtxNotify = "txNotify";
 static const char * kMethodonReturn = "onReturn";
 
 LuaRichEdit::LuaRichEdit(RichEdit * ob)
-:LuaObject(ob, kMetaTableRichEdit), listener_(nullptr)
+:LuaObject(ob), listener_(nullptr)
 {
-    ;
+    createLuaTable();
 }
 
 LuaRichEdit::~LuaRichEdit()
@@ -43,6 +43,11 @@ void LuaRichEdit::notifyDestroy()
 {
     LuaObject::notifyDestroy();
     object_->setDelegate(nullptr);
+}
+
+void LuaRichEdit::createMetaTable(lua_State * l)
+{
+    LuaObject::createMetaTable(l, kMetaTableRichEdit);
 }
 
 void LuaRichEdit::setListener(NotifyListener * listener)

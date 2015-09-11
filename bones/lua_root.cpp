@@ -18,9 +18,9 @@ static const char * kMethodchangeCaretPos = "changeCaretPos";
 
 
 LuaRoot::LuaRoot(Root * ob)
-:LuaObject(ob, kMetaTableRoot), listener_(nullptr)
+:LuaObject(ob), listener_(nullptr)
 {
-    ;
+    createLuaTable();
 }
 
 LuaRoot::~LuaRoot()
@@ -43,6 +43,11 @@ void LuaRoot::notifyDestroy()
 {
     LuaObject::notifyDestroy();
     object_->setDelegate(nullptr);
+}
+
+void LuaRoot::createMetaTable(lua_State * l)
+{
+    LuaObject::createMetaTable(l, kMetaTableRoot);
 }
 
 void LuaRoot::setListener(NotifyListener * listener)

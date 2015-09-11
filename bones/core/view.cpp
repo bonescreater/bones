@@ -521,17 +521,17 @@ bool View::notifyUnregAccelerator(View * n, const Accelerator & accelerator)
     return true;
 }
 
-bool View::notifyChangeCursor(Cursor cursor)
+bool View::notifyChangeCursor(View * n, Cursor cursor)
 {
     if (parent_)
-        return parent_->notifyChangeCursor(cursor);
+        return parent_->notifyChangeCursor(n, cursor);
     return true;
 }
 
-bool View::notifyShowCaret(bool show)
+bool View::notifyShowCaret(View * n, bool show)
 {
     if (parent_)
-        return parent_->notifyShowCaret(show);
+        return parent_->notifyShowCaret(n, show);
     return true;
 }
 
@@ -832,12 +832,12 @@ void View::requestFocus()
 
 void View::setCursor(Cursor cursor)
 {
-    notifyChangeCursor(cursor);
+    notifyChangeCursor(this, cursor);
 }
 
 void View::showCaret(bool show)
 {
-    notifyShowCaret(show);
+    notifyShowCaret(this, show);
 }
 
 void View::setCaretPos(const Point & pt)

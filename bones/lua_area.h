@@ -21,6 +21,8 @@ public:
 
     void notifyDestroy() override;
 
+    void createMetaTable(lua_State * l) override;
+
     void addEvent(const char * name,
         const char * phase,
         const char * module,

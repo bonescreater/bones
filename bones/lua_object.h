@@ -17,10 +17,9 @@ template<class Base, class Listener, class T>
 class LuaObject : public Base, public Ref
 {
 public:
-    LuaObject(T * v, const char * meta)
+    LuaObject(T * v)
     {
         object_.reset(v);
-        createLuaTable(meta);
         BLG_VERBOSE << "create:" << object_->getClassName() << object_.get();
     }
 
@@ -111,16 +110,6 @@ public:
     }
 
     virtual Listener * getNotify() const = 0;
-
-    //void retain() override
-    //{
-    //    Ref::retain();
-    //}
-
-    //void release() override
-    //{
-    //    Ref::release();
-    //}
 
     const char * getClassName() override
     {
@@ -227,7 +216,7 @@ public:
         GetCoreInstance()->stopAllAnimate(this, toend);
     }
     // lua 封装模版
-    void createLuaTable(const char * meta)
+    void createLuaTable()
     {
         //将自己添加到LuaTable中去
         auto l = LuaContext::State();
@@ -235,9 +224,23 @@ public:
         LuaContext::GetCO2LOTable(l);
         lua_pushlightuserdata(l, this);
         lua_newtable(l);//1
+        createMetaTable(l);
+        lua_setmetatable(l, -2);
+        //lua table增加引用计数
+        this->retain();
+        LuaContext::SetGetCObject(l, this);
+        lua_settable(l, -3);
+        lua_pop(l, 1);
+    }
 
+    virtual void createMetaTable(lua_State * l) = 0;
+
+    bool createMetaTable(lua_State * l, const char * meta)
+    {
+        LUA_STACK_AUTO_CHECK_COUNT(l, 1);
         luaL_getmetatable(l, meta);
-        if (!lua_istable(l, -1))
+        bool exist = lua_istable(l, -1);
+        if (!exist)
         {
             lua_pop(l, 1);
             luaL_newmetatable(l, meta);
@@ -278,14 +281,8 @@ public:
             lua_setfield(l, -2, kMethodResume);
             lua_pushcfunction(l, &StopAllAnimate);
             lua_setfield(l, -2, kMethodStopAll);
-        }
-        lua_setmetatable(l, -2);
-        //lua table增加引用计数
-        this->retain();
-        LuaContext::SetGetCObject(l, this);
-
-        lua_settable(l, -3);
-        lua_pop(l, 1);
+        }    
+        return exist;
     }
 
     static int GC(lua_State * l)

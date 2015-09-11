@@ -31,7 +31,7 @@ void MouseController::shiftIfNecessary()
     if (capture_ && !capture_->isVisible())
         shiftCapture(nullptr);
 
-    auto target = getTargetByPos(last_mouse_point_);
+    auto target = getTargetByPos(last_mouse_point_, false);
     if ((target != over_.get()))
     {
         shiftOver(target);
@@ -64,10 +64,9 @@ void MouseController::handleEvent(MouseEvent & e)
 
     View * target = e.target();
     if (target == root_)
-        target = getTargetByPos(e.getLoc());
+        target = getTargetByPos(e.getLoc(), false);
     //注意处理target == null的情况
     last_mouse_point_ = e.getLoc();
-
 
     if (kET_MOUSE_DOWN == e.type())
     {
@@ -80,21 +79,10 @@ void MouseController::handleEvent(MouseEvent & e)
     shiftOver(target);
     if (target)
     {
-        WheelEvent * we = WheelEvent::From(e);
-        if (we)
-        {          
-            WheelEvent we(we->type(), target, we->dx(), we->dy(),
-                target->mapToLocal(e.getLoc()), we->getLoc(),
-                e.getFlags());
-            EventDispatcher::Push(we);
-        }
-        else
-        {
-            MouseEvent me(e.type(), e.button(), target, target->mapToLocal(e.getLoc()),
-                e.getLoc(), e.getFlags());
-            me.setUserData(e.getUserData());
-            EventDispatcher::Push(me);
-        }
+        MouseEvent me(e.type(), e.button(), target, target->mapToLocal(e.getLoc()),
+            e.getLoc(), e.getFlags());
+        me.setUserData(e.getUserData());
+        EventDispatcher::Push(me);
     }
         
     if (kET_MOUSE_UP == e.type() && e.isLeftMouse())
@@ -103,6 +91,20 @@ void MouseController::handleEvent(MouseEvent & e)
         //由于capture的原因 弹起时鼠标已经进入其它控件 其它控件需要有个明确的mouse move消息
         shiftIfNecessary();
     }
+}
+
+void MouseController::handleWheel(WheelEvent & e)
+{//滚动是忽略capture
+    View * target = e.target();
+    if (target == root_)
+        target = getTargetByPos(e.getLoc(), true);
+    if (!target)
+        return;
+
+    WheelEvent we(e.type(), target, e.dx(), e.dy(),
+        target->mapToLocal(e.getLoc()), e.getLoc(),
+        e.getFlags());
+    EventDispatcher::Push(we);
 }
 
 void MouseController::shiftOver(View * n)
@@ -133,10 +135,10 @@ void MouseController::shiftOver(View * n)
     }
 }
 
-View * MouseController::getTargetByPos(const Point & pt)
+View * MouseController::getTargetByPos(const Point & pt, bool ignore_capture)
 {
     View * target = capture_.get();
-    if (!target)
+    if (!target || ignore_capture)
         target = root_->hitTest(pt);
     //mouse target 不能为root
     if (target == root_)

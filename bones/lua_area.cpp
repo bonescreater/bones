@@ -25,11 +25,11 @@ static const char * ToEventPhaseStr(BonesEvent::Phase phase)
 }
 
 LuaArea::LuaArea(Area * ob)
-:LuaObject(ob, kMetaTableArea), mouse_(nullptr),
+:LuaObject(ob), mouse_(nullptr),
 key_(nullptr), focus_(nullptr), wheel_(nullptr),
 notify_(nullptr)
 {
-    ;
+    createLuaTable();
 }
 
 void LuaArea::addEvent(const char * name,
@@ -103,6 +103,11 @@ void LuaArea::notifyDestroy()
 {
     LuaObject::notifyDestroy();
     object_->setDelegate(nullptr);
+}
+
+void LuaArea::createMetaTable(lua_State * l)
+{
+    LuaObject::createMetaTable(l, kMetaTableArea);
 }
 
 void LuaArea::setListener(MouseListener * lis)

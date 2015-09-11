@@ -95,9 +95,9 @@ protected:
 
     virtual bool notifySetFocus(View * n) override;
 
-    virtual bool notifyChangeCursor(Cursor cursor) override;
+    virtual bool notifyChangeCursor(View * n, Cursor cursor) override;
 
-    virtual bool notifyShowCaret(bool show) override;   
+    virtual bool notifyShowCaret(View * n, bool show) override;
 
     virtual bool notifyChangeCaretPos(const Point & pt) override;
 

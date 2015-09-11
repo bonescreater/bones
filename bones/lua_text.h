@@ -13,6 +13,8 @@ public:
 
     NotifyListener * getNotify() const override;
 
+    void createMetaTable(lua_State * l) override;
+
     void setListener(NotifyListener * lis) override;
 private:
     NotifyListener * notify_;

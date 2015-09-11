@@ -7,14 +7,14 @@
 #include "include/cef_app.h"
 #include "include/cef_client.h"
 #include "include/cef_version.h"
-#include "include/capi/cef_app_capi.h"
 
 namespace bones
 {
 
 class Browser : public CefClient,
                 public CefLifeSpanHandler,
-                public CefRenderHandler
+                public CefRenderHandler,
+                public CefFocusHandler
 {
 #define CHECK_CEF_BROWSER_HOST \
     if (!browser_)\
@@ -40,7 +40,7 @@ public:
         info.width = 0;
         info.height = 0;
         browser_ = CefBrowserHost::CreateBrowserSync(info, this,
-            "http://www.baidu.com", CefBrowserSettings(), nullptr);
+            "", CefBrowserSettings(), nullptr);
         return !!browser_;
     }
 
@@ -49,6 +49,18 @@ public:
         if (browser_)
             browser_->GetHost()->CloseBrowser(true);
         browser_ = nullptr;
+    }
+
+    void loadURL(const wchar_t * url)
+    {
+        if (!url)
+            return;
+        if (!browser_)
+            return;
+        auto frame = browser_->GetMainFrame();
+        if (!frame)
+            return;
+        frame->LoadURL(url);
     }
 
     void wasResized()
@@ -154,6 +166,12 @@ public:
         host->SendKeyEvent(ToCefKeyEvent(e));
     }
 public:
+    bool OnSetFocus(CefRefPtr<CefBrowser> browser,
+        FocusSource source) 
+    {
+        web_view_->requestFocus();
+        return true;
+    }
     //CefLifeSpanHandler
     CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override
     {
@@ -161,6 +179,11 @@ public:
     }
 
     CefRefPtr<CefRenderHandler> GetRenderHandler()
+    {
+        return this;
+    }
+
+    CefRefPtr<CefFocusHandler> GetFocusHandler() 
     {
         return this;
     }
@@ -286,12 +309,12 @@ void WebView::Update()
 }
 
 WebView::WebView()
+:hack_focus_travel_(false)
 {
     browser_ = new Browser(this);
     browser_->AddRef();
     //browser 居然new的时候没有引用计数+1
     assert(browser_->HasOneRef());
-    open();
 }
 
 WebView::~WebView()
@@ -308,6 +331,11 @@ bool WebView::open()
 void WebView::close()
 {
     browser_->close();
+}
+
+void WebView::loadURL(const wchar_t * url)
+{
+    browser_->loadURL(url);
 }
 
 const char * WebView::getClassName() const
@@ -364,6 +392,7 @@ void WebView::onWheel(WheelEvent & e)
 
 void WebView::onFocus(FocusEvent & )
 {
+    hack_focus_travel_ = true;
     browser_->sendFocusEvent(true);
 }
 
@@ -383,9 +412,14 @@ void WebView::onKeyUp(KeyEvent & e)
 }
 
 void WebView::onChar(KeyEvent & e)
-{
+{//webview 输入框不接受tab字符
     if (e.ch() != '\t')
         browser_->sendKeyEvent(e);
+}
+
+bool WebView::skipDefaultKeyEventProcessing(const KeyEvent & e)
+{//调用到这个函数时 必然当前焦点是webview
+    return false;
 }
 
 

@@ -34,7 +34,14 @@ btn2:applyTextClass("fadeout")
 btn2["onClick"] = testFadeOut;
 local btn3 = bones.getObject("close")
 btn3:applyTextClass("close")
+local webview = bones.getObject("webview")
+webview:open()
+webview:loadURL("http://www.sina.com")
+end
 
+function mod.onDestroy(self)
+local webview = bones.getObject("webview")
+webview:close()
 end
 
 function mod.onSizeChanged(self, w, h)
@@ -43,6 +50,8 @@ local bg = bones.getObject("bg")
 bg:applyCSS(css)
 local alpha = bones.getObject("opacity")
 alpha:applyCSS(css)
+local webview = bones.getObject("webview")
+webview:applyCSS(css)
 end
 
 

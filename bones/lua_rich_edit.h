@@ -21,6 +21,8 @@ public:
 
     void notifyDestroy() override;
 
+    void createMetaTable(lua_State * l) override;
+
     void setListener(NotifyListener * listener) override;
 
     BOOL screenToClient(RichEdit * sender, LPPOINT lppt) override;

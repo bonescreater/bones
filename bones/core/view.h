@@ -234,9 +234,9 @@ protected:
 
     virtual bool notifyUnregAccelerator(View * n, const Accelerator & accelerator);
 
-    virtual bool notifyChangeCursor(Cursor cursor);
+    virtual bool notifyChangeCursor(View * n, Cursor cursor);
 
-    virtual bool notifyShowCaret(bool show);
+    virtual bool notifyShowCaret(View * n, bool show);
 
     virtual bool notifyChangeCaretPos(const Point & pt);
 

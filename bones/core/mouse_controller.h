@@ -18,6 +18,8 @@ public:
 
     void handleEvent(MouseEvent & e);
 
+    void handleWheel(WheelEvent & e);
+
     View * capture() const;
 
     View * over() const;
@@ -26,7 +28,7 @@ public:
 
     void shiftIfNecessary();
 private:
-    View * getTargetByPos(const Point & pt);
+    View * getTargetByPos(const Point & pt, bool ignore_capture);
 
     void shiftCapture(View * n);
 

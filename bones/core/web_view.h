@@ -27,6 +27,8 @@ public:
 
     void close();
 
+    void loadURL(const wchar_t * url);
+
     const char * getClassName() const override;
 protected:
     void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
@@ -54,10 +56,13 @@ protected:
     void onKeyUp(KeyEvent & e) override;
 
     void onChar(KeyEvent & e) override;
+
+    bool skipDefaultKeyEventProcessing(const KeyEvent & ke) override;
 private:
     void adjustPixmap();
 private:
     Browser * browser_;
+    bool hack_focus_travel_;
 };
 
 }

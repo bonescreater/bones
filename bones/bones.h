@@ -537,6 +537,12 @@ public:
         ;
     };
 
+    virtual bool open() = 0;
+
+    virtual void close() = 0;
+
+    virtual void loadURL(const wchar_t * url) = 0;
+
     virtual void setListener(NotifyListener * lis) = 0;
 };
 

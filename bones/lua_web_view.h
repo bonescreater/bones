@@ -20,7 +20,15 @@ public:
 
     void notifyDestroy() override;
 
+    void createMetaTable(lua_State * l) override;
+
     void setListener(NotifyListener * listener) override;
+
+    bool open() override;
+
+    void close() override;
+
+    void loadURL(const wchar_t * url) override;
 private:
     NotifyListener * listener_;
 };

@@ -70,24 +70,26 @@ void Root::handleKey(NativeEvent & e)
     bool system = (msg == WM_SYSCHAR) || (msg == WM_SYSKEYDOWN) || (msg == WM_SYSKEYUP);
     auto flags = Helper::ToFlagsForKeyEvent(e.wparam, e.lparam);
     bool handle = false;
+
+    View * focus = focus_.current();
+    KeyEvent ke(type, focus, (KeyboardCode)e.wparam, *(KeyState *)(&e.lparam),
+                system, flags);
+    ke.setUserData(&e);
     if (kET_CHAR != type)
     {//非字符
-        //焦点管理器会询问是否skip
-        KeyEvent ke(type, focus_.current(), (KeyboardCode)e.wparam, *(KeyState *)(&e.lparam),
-            system, flags);
-        ke.setUserData(&e);
-        handle = focus_.handleKeyEvent(ke);
 
-        bool skip = false;
-        View * focus = focus_.current();
+        bool skip = false;        
         if (focus)
             skip = focus->skipDefaultKeyEventProcessing(ke);
-        if (!handle && !skip)
-        {//焦点管理器不处理 看快捷键管理器是否处理
-            handle = accelerators_.process(Accelerator::make(ke));
+        //焦点管理器会询问是否skip
+        if (!skip)
+        {//skip == false;
+            //焦点管理器
+            handle = focus_.handleKeyEvent(ke);
+            if (!handle)//焦点管理器不处理 看快捷键管理器是否处理
+                handle = accelerators_.process(Accelerator::make(ke));
         }
     }
-    View * focus = focus_.current();
     if (!handle && focus)
     {//都不处理
         KeyEvent ke(type, focus, (KeyboardCode)e.wparam, *(KeyState *)(&e.lparam),
@@ -149,7 +151,7 @@ void Root::handleWheel(NativeEvent & e)
 
         //wheelEvent和mouseEvent分发逻辑一致
         we.setUserData(&e);
-        mouse_.handleEvent(we);
+        mouse_.handleWheel(we);
     }
 }
 
@@ -270,14 +272,16 @@ bool Root::notifySetFocus(View * n)
     return true;
 }
 
-bool Root::notifyChangeCursor(Cursor cursor)
-{
-    delegate_ ? delegate_->changeCursor(this, cursor) : 0;
+bool Root::notifyChangeCursor(View * n, Cursor cursor)
+{//只有root和当前over可以改鼠标
+    if (n == mouse_.over() || n == this)
+        delegate_ ? delegate_->changeCursor(this, cursor) : 0;
     return true;
 }
 
-bool Root::notifyShowCaret(bool show)
-{
+bool Root::notifyShowCaret(View * n, bool show)
+{//应该是只有root 和focus才能显示光标 但是show 在windows 是要一一对应的
+    //所以只能由view自己来负责显示以及隐藏
     delegate_ ? delegate_->showCaret(this, show) : true;
     return true;
 }
