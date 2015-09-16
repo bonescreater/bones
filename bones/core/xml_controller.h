@@ -104,6 +104,8 @@ protected:
 
     bool handleShape(XMLNode node, View * parent_ob, View ** ob);
 
+    bool handleScroller(XMLNode node, View * parent_ob, View ** ob);
+
     bool handleExtendLabel(XMLNode node, const char * label, View * parent_ob, View ** ob);
 protected:
     //返回指定节点树 根节点的对象
@@ -187,6 +189,7 @@ extern const char * kStrWebView;
 extern const char * kStrImage;
 extern const char * kStrText;
 extern const char * kStrShape;
+extern const char * kStrScroller;
 }
 
 #endif

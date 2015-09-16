@@ -7,6 +7,9 @@
     <Filter Include="animate">
       <UniqueIdentifier>{80e1074e-e66d-404d-ad9e-9535138deb43}</UniqueIdentifier>
     </Filter>
+    <Filter Include="scroll">
+      <UniqueIdentifier>{26feb3d4-2b2c-4a6b-afd9-61ce934f2a96}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="sample\test.css" />
@@ -20,11 +23,23 @@
     <None Include="sample\animate.lua">
       <Filter>animate</Filter>
     </None>
+    <None Include="sample\scrollbar.lua">
+      <Filter>scroll</Filter>
+    </None>
+    <None Include="sample\scrollimg.lua">
+      <Filter>scroll</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="sample\test.xml" />
     <Xml Include="sample\button.xml">
       <Filter>button</Filter>
+    </Xml>
+    <Xml Include="sample\scrollbar.xml">
+      <Filter>scroll</Filter>
+    </Xml>
+    <Xml Include="sample\scrollimg.xml">
+      <Filter>scroll</Filter>
     </Xml>
   </ItemGroup>
   <ItemGroup>

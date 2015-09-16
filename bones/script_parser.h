@@ -15,6 +15,7 @@ class Text;
 class Area;
 class RichEdit;
 class WebView;
+class Scroller;
 
 class ScriptParser : public BonesCore, 
                      public BonesResManager,
@@ -125,6 +126,8 @@ private:
     void handleArea(Area * ob);
 
     void handleWebView(WebView * ob);
+
+    void handleScroller(Scroller * ob);
 
     bool handleNotify(XMLNode node, View * parent_ob, View ** ob);
 

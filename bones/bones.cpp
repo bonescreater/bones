@@ -86,6 +86,7 @@ const char * kMethodContains = "contains";
 const char * kMethodApplyCSS = "applyCSS";
 const char * kMethodApplyClass = "applyClass";
 const char * kMethodGetChildAt = "getChildAt";
+const char * kMethodGetParent = "getParent";
 const char * kMethodGetSize = "getSize";
 const char * kMethodGetLoc = "getLoc";
 }

@@ -87,7 +87,7 @@ void LuaArea::addEvent(const char * name,
 
 LuaArea::~LuaArea()
 {
-    object_->setDelegate(nullptr);
+    ;
 }
 
 BonesArea::NotifyListener * LuaArea::getNotify() const

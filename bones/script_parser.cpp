@@ -10,7 +10,7 @@
 #include "core/text.h"
 #include "core/shape.h"
 #include "core/rich_edit.h"
-
+#include "core/scroller.h"
 
 #include "core/res_manager.h"
 #include "core/animation_manager.h"
@@ -24,7 +24,7 @@
 #include "lua_area.h"
 #include "lua_animation.h"
 #include "lua_web_view.h"
-
+#include "lua_scroller.h"
 
 namespace bones
 {
@@ -238,6 +238,8 @@ void ScriptParser::onCreate(View * v)
     if (!v)
         return;
     auto ob = getObject(v);
+    if (!ob)
+        return;
     if (ob->getClassName() == kClassRoot)
         static_cast<LuaRoot *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassShape)
@@ -252,6 +254,8 @@ void ScriptParser::onCreate(View * v)
         static_cast<LuaArea *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassWebView)
         static_cast<LuaWebView *>(ob)->notifyCreate();
+    else if (ob->getClassName() == kClassScroller)
+        static_cast<LuaScroller *>(ob)->notifyCreate();
 }
 
 void ScriptParser::onDestroy(View * v)
@@ -259,6 +263,8 @@ void ScriptParser::onDestroy(View * v)
     if (!v)
         return;
     auto ob = getObject(v);
+    if (!ob)
+        return;
     if (ob->getClassName() == kClassRoot)
         static_cast<LuaRoot *>(ob)->notifyDestroy();
     else if (ob->getClassName() == kClassShape)
@@ -273,6 +279,8 @@ void ScriptParser::onDestroy(View * v)
         static_cast<LuaArea *>(ob)->notifyDestroy();
     else if (ob->getClassName() == kClassWebView)
         static_cast<LuaWebView *>(ob)->notifyDestroy();
+    else if (ob->getClassName() == kClassScroller)
+        static_cast<LuaScroller *>(ob)->notifyDestroy();
 }
 
 void ScriptParser::onCreating(View * v)
@@ -291,6 +299,8 @@ void ScriptParser::onCreating(View * v)
         handleArea(static_cast<Area *>(v));
     else if (v->getClassName() == kClassWebView)
         handleWebView(static_cast<WebView *>(v));
+    else if (v->getClassName() == kClassScroller)
+        handleScroller(static_cast<Scroller *>(v));
 }
 
 void ScriptParser::onDestroying(View * v)
@@ -545,6 +555,12 @@ void ScriptParser::handleArea(Area * ob)
 void ScriptParser::handleWebView(WebView * ob)
 {
     auto lo = AdoptRef(new LuaWebView(ob));
+    v2bo_[ob] = lo.get();
+}
+
+void ScriptParser::handleScroller(Scroller * ob)
+{
+    auto lo = AdoptRef(new LuaScroller(ob));
     v2bo_[ob] = lo.get();
 }
 

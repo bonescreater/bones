@@ -105,6 +105,10 @@ void MouseController::handleWheel(WheelEvent & e)
         target->mapToLocal(e.getLoc()), e.getLoc(),
         e.getFlags());
     EventDispatcher::Push(we);
+    if (!capture_)
+    {//如果没有capture 可能滚动到新的view里 需要shiftOver
+        shiftIfNecessary();
+    }
 }
 
 void MouseController::shiftOver(View * n)

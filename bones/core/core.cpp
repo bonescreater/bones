@@ -22,7 +22,7 @@ const char * kClassShape = "Shape";
 const char * kClassText = "Text";
 const char * kClassRichEdit = "RichEdit";
 const char * kClassWebView = "WebView";
-
+const char * kClassScroller = "Scroller";
 
 static AnimationManager * animations = nullptr;
 

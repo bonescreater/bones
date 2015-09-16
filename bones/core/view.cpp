@@ -63,11 +63,13 @@ void View::setLoc(const Point & pt)
 void View::setSize(const Size & size)
 {
     if (size_ != size)
-    {
+    {//w , h 必须>=0
         Size changing = size;
         inval();
         onSizeChanging(changing);
-        size_ = size;
+        auto w = size.width() > 0 ? size.width() : 0;
+        auto h = size.height() > 0 ? size.height() : 0;
+        size_.set(w, h);
         onSizeChanged();
         inval();
     }

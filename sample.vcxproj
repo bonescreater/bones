@@ -91,11 +91,15 @@
     <None Include="sample\animate.lua" />
     <None Include="sample\button.css" />
     <None Include="sample\button.lua" />
+    <None Include="sample\scrollbar.lua" />
+    <None Include="sample\scrollimg.lua" />
     <None Include="sample\test.css" />
     <None Include="sample\test.lua" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="sample\button.xml" />
+    <Xml Include="sample\scrollbar.xml" />
+    <Xml Include="sample\scrollimg.xml" />
     <Xml Include="sample\test.xml">
       <SubType>Designer</SubType>
     </Xml>

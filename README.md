@@ -1,11 +1,12 @@
 # bones
 
 
-bug
 1.暂不推荐在layered window中使用 richedit
 
-	a. layered window 不能显示 richedit 光标 
-       可以自绘光标但考虑到richedit的效率暂时不解决	
+	a. layered window 不能显示caret
+	   试过直接创建layeredwindow setfocus中显示caret
+	   但并没有显示caret，推测layeredwindow 本身不支持caret
+       因此使用richedit 无法显示caret
 
 	b. richedit 所在窗口的颜色是半透明的情况下 如果richedit也设置了背景透明
 	   部分有抗锯齿处理的字体会有周边阴影，

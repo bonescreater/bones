@@ -55,6 +55,7 @@ extern const char * kMethodContains;
 extern const char * kMethodApplyCSS;
 extern const char * kMethodApplyClass;
 extern const char * kMethodGetChildAt;
+extern const char * kMethodGetParent;
 extern const char * kMethodGetSize;
 extern const char * kMethodGetLoc;
 //LuaAnimation跟LuaObject不同 要么从C++中创建要么从LUA中创建

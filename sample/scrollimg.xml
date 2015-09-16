@@ -1,0 +1,20 @@
+﻿<!--1个可滚动显示图片的控件-->
+<bones>
+  <head>
+    <link type ='xml' module ='scrollbar' file ='scrollbar.xml'></link>
+    <link type ='script' module ='scrollimg' file ='scrollimg.lua'></link>
+  </head>
+  <body>
+    <area>
+      <scroller>
+        <image></image>
+        <notify name ="onScrollRange" module ="scrollimg" func ="onScrollRange"></notify>
+        <notify name ="onScrollPos" module ="scrollimg" func ="onScrollPos"></notify>
+      </scroller>
+      <scrollbar></scrollbar>
+      <notify name ="onCreate" module ="scrollimg" func ="onCreate"></notify>
+      <!--scroller视口跟area一样大-->
+      <notify name ="onSizeChanged" module ="scrollimg" func ="onSizeChanged"></notify>
+    </area>
+  </body>
+</bones>

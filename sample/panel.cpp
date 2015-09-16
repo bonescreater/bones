@@ -49,7 +49,7 @@ bool BSPanel::Initialize()
     wndcls.cbWndExtra = 0;
     wndcls.hInstance = module;
     wndcls.hIcon = 0;
-    wndcls.hCursor = ::LoadCursor(NULL, IDC_ARROW);
+    wndcls.hCursor = ::LoadCursor(NULL, IDC_HELP);
     wndcls.hbrBackground = 0;
     wndcls.lpszMenuName = 0;
     wndcls.lpszClassName = kClassName;
@@ -382,7 +382,11 @@ void BSPanel::invalidRect(BonesRoot * sender, const BonesRect & rect, bool & sto
 
 void BSPanel::changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop)
 {
-    cursor_ = cursor;
+    if (cursor_ != cursor)
+    {
+        cursor_ = cursor;
+        PostMessage(hwnd(), WM_SETCURSOR, 0, HTCLIENT);
+    } 
     stop = true;
 }
 

@@ -127,6 +127,9 @@
     <ClCompile Include="bones\core\web_view.cpp">
       <Filter>bone\naked</Filter>
     </ClCompile>
+    <ClCompile Include="bones\core\scroller.cpp">
+      <Filter>bone\naked</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\core\accelerator.h">
@@ -233,6 +236,9 @@
       <Filter>base</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\web_view.h">
+      <Filter>bone\naked</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\scroller.h">
       <Filter>bone\naked</Filter>
     </ClInclude>
   </ItemGroup>

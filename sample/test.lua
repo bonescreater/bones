@@ -37,6 +37,7 @@ btn3:applyTextClass("close")
 local webview = bones.getObject("webview")
 webview:open()
 webview:loadURL("http://www.baidu.com")
+--webview:loadURL("C:\\Users\\dc\\Desktop\\1.html")
 end
 
 function mod.onDestroy(self)

@@ -35,6 +35,7 @@
     <ClCompile Include="bones\core\res_manager.cpp" />
     <ClCompile Include="bones\core\rich_edit.cpp" />
     <ClCompile Include="bones\core\root.cpp" />
+    <ClCompile Include="bones\core\scroller.cpp" />
     <ClCompile Include="bones\core\shader.cpp" />
     <ClCompile Include="bones\core\shape.cpp" />
     <ClCompile Include="bones\core\css_manager.cpp" />
@@ -73,6 +74,7 @@
     <ClInclude Include="bones\core\res_manager.h" />
     <ClInclude Include="bones\core\rich_edit.h" />
     <ClInclude Include="bones\core\root.h" />
+    <ClInclude Include="bones\core\scroller.h" />
     <ClInclude Include="bones\core\shader.h" />
     <ClInclude Include="bones\core\shape.h" />
     <ClInclude Include="bones\core\css_manager.h" />

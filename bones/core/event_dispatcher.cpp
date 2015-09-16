@@ -30,6 +30,7 @@ void EventDispatcher::GetPath(View * v, Path & path)
 
 void EventDispatcher::run(Event & e, Path & path)
 {
+    e.attach(&path);
     View * target = e.target();
     if (!target)
         return;

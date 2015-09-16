@@ -124,6 +124,7 @@
     <ClCompile Include="bones\picture.cpp" />
     <ClCompile Include="bones\script_parser.cpp" />
     <ClCompile Include="bones\main.cpp" />
+    <ClCompile Include="bones\lua_scroller.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="bones_core.vcxproj">
@@ -173,6 +174,7 @@
     <ClInclude Include="bones\lua_web_view.h" />
     <ClInclude Include="bones\picture.h" />
     <ClInclude Include="bones\script_parser.h" />
+    <ClInclude Include="bones\lua_scroller.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

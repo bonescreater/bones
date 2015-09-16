@@ -1,0 +1,11 @@
+﻿<!--1个简单的滚动条-->
+<bones>
+  <head>
+    <!--<link type ='script' module ='scrollbar' file ='scrollbar.lua'></link>-->
+  </head>
+  <body>
+    <area>
+      <shape></shape>
+    </area>
+  </body>
+</bones>

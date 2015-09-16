@@ -171,6 +171,14 @@ public:
         return nullptr;
     }
 
+    BonesObject * getParent() override
+    {
+        auto parent = object_->parent();
+        if (parent)
+            return GetCoreInstance()->getObject(parent);
+        return nullptr;
+    }
+
     void applyCSS(const char * css) override
     {
         Core::GetCSSManager()->applyCSS(object_.get(), css);
@@ -264,6 +272,9 @@ public:
 
             lua_pushcfunction(l, &GetChildAt);
             lua_setfield(l, -2, kMethodGetChildAt);
+
+            lua_pushcfunction(l, &GetParent);
+            lua_setfield(l, -2, kMethodGetParent);
 
             //css method
             lua_pushcfunction(l, &ApplyCSS);
@@ -390,6 +401,25 @@ public:
             }
 
         }
+        return 1;
+    }
+
+    static int GetParent(lua_State * l)
+    {
+        lua_settop(l, 1);
+        lua_pushnil(l);
+
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        LuaObject * bob = static_cast<LuaObject *>(
+            LuaContext::CallGetCObject(l));
+        if (bob)
+        {
+            auto parent = bob->getParent();
+            if (parent)
+                LuaContext::GetLOFromCO(l, parent);
+        }
+
         return 1;
     }
     //(self, css)

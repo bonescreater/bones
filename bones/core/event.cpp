@@ -5,7 +5,7 @@ namespace bones
 {
 
 Event::Event() 
-:type_(kET_COUNT), phase_(kCapture),
+:type_(kET_COUNT), phase_(kCapture), path_(nullptr),
 bubbles_(true), cancelable_(true), canceled_(false), propagation_(true), user_data_(nullptr)
 {
 
@@ -53,6 +53,16 @@ void Event::setUserData(void * ud)
 void * Event::getUserData() const
 {
     return user_data_;
+}
+
+void Event::attach(const EventDispatcher::Path * path)
+{
+    path_ = path;
+}
+
+const EventDispatcher::Path * Event::getPath() const
+{
+    return path_;
 }
 
 bool UIEvent::isShiftDown() const 

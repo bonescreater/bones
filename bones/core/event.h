@@ -4,6 +4,7 @@
 #include "ref.h"
 #include "keyboard_codes.h"
 #include "point.h"
+#include "event_dispatcher.h"
 
 namespace bones
 {
@@ -88,6 +89,10 @@ public:
     void setUserData(void * ud);
 
     void * getUserData() const;
+
+    void attach(const EventDispatcher::Path * path);
+
+    const EventDispatcher::Path * getPath() const;
 protected:
     Event();
 protected:
@@ -99,6 +104,7 @@ protected:
     bool canceled_;
     bool propagation_;
     void * user_data_;
+    const EventDispatcher::Path * path_;
 };
 
 class UIEvent : public Event

@@ -8,6 +8,7 @@
 #include "text.h"
 #include "shape.h"
 #include "web_view.h"
+#include "scroller.h"
 
 #include "logging.h"
 #include "css_manager.h"
@@ -41,6 +42,7 @@ const char * kStrWebView = "webview";
 const char * kStrImage = "image";
 const char * kStrText = "text";
 const char * kStrShape = "shape";
+const char * kStrScroller = "scroller";
 /*
 Delegate事件顺序
 
@@ -52,6 +54,17 @@ onUnload
 onDestroying：顺序从下到上
 
 */
+
+void attachToParentBack(View * parent, View * child)
+{
+    if (!parent || !child)
+        return;
+    if (kClassScroller == parent->getClassName())
+        parent = static_cast<Scroller *>(parent)->getContainer();
+
+    parent->attachChildToBack(child);
+}
+
 XMLController::XMLController()
 :delegate_(nullptr)
 {
@@ -127,21 +140,19 @@ View * XMLController::getViewByID(View * ob, const char * id)
         auto iter = ob2node_.find(pa);
 
         if (iter != ob2node_.end())
-        {
+        {//scroller 内部包含的view 对外隐藏 不再ob2node中
             auto attr = acquire(iter->second, kStrID);
             if (attr && !strcmp(attr, id))
                 return iter->first.get();
-            else
-            {//找子
-                auto child = pa->getFirstChild();
-                while (child)
-                {
-                    auto target = getViewByID(child, id);
-                    if (target)
-                        return target;
-                    child = child->getNextSibling();
-                }
-            }
+        }
+        //找子
+        auto child = pa->getFirstChild();
+        while (child)
+        {
+            auto target = getViewByID(child, id);
+            if (target)
+                return target;
+            child = child->getNextSibling();
         }
     }
     return nullptr;
@@ -532,6 +543,8 @@ bool XMLController::createViewFromNode(XMLNode node, const char * label, View * 
             bret = handleText(node, parent_ob, &node_ob);
         else if (!strcmp(label, kStrShape))
             bret = handleShape(node, parent_ob, &node_ob);
+        else if (!strcmp(label, kStrScroller))
+            bret = handleScroller(node, parent_ob, &node_ob);            
         else
         {
             extend = true;
@@ -609,8 +622,7 @@ bool XMLController::handleText(XMLNode node, View * parent_ob, View ** ob)
     assert(parent_ob);
     auto v = AdoptRef(new Text);
     saveNode(v.get(), node);
-
-    parent_ob->attachChildToBack(v.get());
+    attachToParentBack(parent_ob, v.get());
     if (ob)
         *ob = v.get();
     return v != nullptr;
@@ -622,7 +634,20 @@ bool XMLController::handleShape(XMLNode node, View * parent_ob, View ** ob)
         return false;
     auto v = AdoptRef(new Shape);
     saveNode(v.get(), node);
-    parent_ob->attachChildToBack(v.get());
+    attachToParentBack(parent_ob, v.get());
+    if (ob)
+        *ob = v.get();
+
+    return v != nullptr;
+}
+
+bool XMLController::handleScroller(XMLNode node, View * parent_ob, View ** ob)
+{
+    if (!parent_ob)
+        return false;
+    auto v = AdoptRef(new Scroller);
+    saveNode(v.get(), node);
+    attachToParentBack(parent_ob, v.get());
     if (ob)
         *ob = v.get();
 
@@ -636,7 +661,7 @@ bool XMLController::handleImage(XMLNode node, View * parent_ob, View ** ob)
         return false;
     auto v = AdoptRef(new Image);
     saveNode(v.get(), node);
-    parent_ob->attachChildToBack(v.get());
+    attachToParentBack(parent_ob, v.get());
     if (ob)
         *ob = v.get();
     return v != nullptr;
@@ -648,7 +673,7 @@ bool XMLController::handleArea(XMLNode node, View * parent_ob, View ** ob)
         return false;
     auto v = AdoptRef(new Area);
     saveNode(v.get(), node);
-    parent_ob->attachChildToBack(v.get());
+    attachToParentBack(parent_ob, v.get());
     if (ob)
         *ob = v.get();
     return v != nullptr;
@@ -660,7 +685,7 @@ bool XMLController::handleRichEdit(XMLNode node, View * parent_ob, View ** ob)
         return false;
     auto v = AdoptRef(new RichEdit);
     saveNode(v.get(), node);
-    parent_ob->attachChildToBack(v.get());
+    attachToParentBack(parent_ob, v.get());
 
     if (ob)
         *ob = v.get();
@@ -676,7 +701,7 @@ bool XMLController::handleWebView(XMLNode node, View * parent_ob, View ** ob)
 
     auto v = AdoptRef(new WebView);
     saveNode(v.get(), node);
-    parent_ob->attachChildToBack(v.get());
+    attachToParentBack(parent_ob, v.get());
 
     if (ob)
         *ob = v.get();

@@ -337,6 +337,8 @@ public:
 
     virtual BonesObject * getChildAt(size_t index) = 0;
 
+    virtual BonesObject * getParent() = 0;
+
     virtual void applyCSS(const char * css) = 0;
 
     virtual void applyClass(const char * name) = 0;
@@ -546,6 +548,30 @@ public:
     virtual void executeJS(const wchar_t * code, 
                             const wchar_t * url, 
                             int start_line) = 0;
+
+    virtual void setListener(NotifyListener * lis) = 0;
+};
+
+class BonesScroller : public BonesObject
+{
+public:
+    class NotifyListener : public NotifyBase<BonesScroller>
+    {
+    public:
+        virtual void onScrollRange(BonesScroller * sender,
+                                   BonesScalar min_pos,
+                                   BonesScalar max_pos,
+                                   BonesScalar view_port,
+                                   bool horizontal) = 0;
+
+        virtual void onScrollPos(BonesScroller * sender,
+                                 BonesScalar cur_pos,
+                                 bool horizontal) = 0;
+    };
+
+    virtual void setScrollInfo(BonesScalar total, bool horizontal) = 0;
+
+    virtual void setScrollPos(BonesScalar cur, bool horizontal) = 0;
 
     virtual void setListener(NotifyListener * lis) = 0;
 };
