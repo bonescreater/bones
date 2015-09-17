@@ -277,7 +277,7 @@ private:
 bool WebView::StartUp(const char * locate)
 {
     //不启用cef的话直接返回
-    if (!Core::EnableCEF())
+    if (!Core::CEFEnable())
         return true;
 
     CefMainArgs args;
@@ -307,14 +307,14 @@ bool WebView::StartUp(const char * locate)
 
 void WebView::ShutDown()
 {
-    if (!Core::EnableCEF())
+    if (!Core::CEFEnable())
         return;
     CefShutdown();
 }
 
 void WebView::Update()
 {
-    if (!Core::EnableCEF())
+    if (!Core::CEFEnable())
         return;
     CefDoMessageLoopWork();
 }

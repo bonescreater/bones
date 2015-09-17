@@ -15,6 +15,7 @@ static const char * kCO2LOTable = "__co2lo";
 static const char * kCacheEvent = "__event__cache";
 
 static const char * kMethodGetObject = "getObject";
+static const char * kMethodGetPixmapSize = "getPixmapSize";
 
 static lua_State * state = nullptr;
 
@@ -44,6 +45,22 @@ static int BonesGetObject(lua_State * l)
     return 1;
 }
 
+//资源接口 获取指定资源的宽高
+static int BonesGetPixmapSize(lua_State * l)
+{//(key)
+    lua_settop(l, 1);
+    lua_pushnil(l);
+    lua_pushnil(l);
+
+    auto key = lua_tostring(l, 1);
+    auto pm = GetCoreInstance()->createPixmap();
+    GetCoreInstance()->getPixmap(key, *pm);
+    lua_pushinteger(l, pm->getWidth());
+    lua_pushinteger(l, pm->getHeight());
+    GetCoreInstance()->destroyPixmap(pm);
+    return 2;
+}
+
 bool LuaContext::StartUp()
 {
     state = luaL_newstate();
@@ -61,14 +78,9 @@ bool LuaContext::StartUp()
         lua_pushcfunction(state, &BonesGetObject);
         lua_setfield(state, -2, kMethodGetObject);
 
-        //lua_pushcfunction(state, &BonesDecodePixmap);
-        //lua_setfield(state, -2, kMethodDecodePixmap);
+        lua_pushcfunction(state, &BonesGetPixmapSize);
+        lua_setfield(state, -2, kMethodGetPixmapSize);
 
-        //lua_pushcfunction(state, &BonesFreePixmap);
-        //lua_setfield(state, -2, kMethodFreePixmap);
-
-        //lua_pushcfunction(state, &BonesLoadImage);
-        //lua_setfield(state, -2, kMethodLoadImage);
         lua_setglobal(state, kBonesTable);
     }
 

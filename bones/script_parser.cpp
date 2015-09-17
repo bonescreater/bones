@@ -584,6 +584,8 @@ bool ScriptParser::handleNotify(XMLNode node, View * parent_ob, View ** ob)
         (static_cast<LuaRoot *>(bo))->addNotify(name, module, func);
     else if (kClassArea == bo->getClassName())
         (static_cast<LuaArea *>(bo))->addNotify(name, module, func);
+    else if (kClassScroller = bo->getClassName())
+        (static_cast<LuaScroller *>(bo))->addNotify(name, module, func);
     else
         handle = false;
 

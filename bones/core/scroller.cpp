@@ -12,7 +12,6 @@ Scroller::Scroller()
     attachChildToBack(container_);
     memset(&v_info_, 0, sizeof(v_info_));
     memset(&h_info_, 0, sizeof(h_info_));
-    setScrollInfo(128, false);
 }
 
 Scroller::~Scroller()
@@ -149,9 +148,9 @@ void Scroller::onWheel(WheelEvent & e)
         }
     }
     if (e.dx() != 0)
-        setScrollPos(h_info_.cur_pos - e.dx() / WHEEL_DELTA, true);
+        setScrollPos(h_info_.cur_pos - e.dx() / BONES_WHEEL_SPEED, true);
     if (e.dy() != 0)
-        setScrollPos(v_info_.cur_pos - e.dy() / WHEEL_DELTA, false);
+        setScrollPos(v_info_.cur_pos - e.dy() / BONES_WHEEL_SPEED, false);
 }
 
 }

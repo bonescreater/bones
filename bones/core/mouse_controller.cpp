@@ -105,10 +105,14 @@ void MouseController::handleWheel(WheelEvent & e)
         target->mapToLocal(e.getLoc()), e.getLoc(),
         e.getFlags());
     EventDispatcher::Push(we);
-    if (!capture_)
-    {//如果没有capture 可能滚动到新的view里 需要shiftOver
-        shiftIfNecessary();
-    }
+
+    //暂时先这么处理 因为滚动的时候可能离开控件所以 需要改变鼠标样式之类
+    MouseEvent me(kET_MOUSE_MOVE, kMB_NONE, root_, root_->mapToLocal(last_mouse_point_), last_mouse_point_, 0);
+    handleEvent(me);
+    //if (!capture_)
+    //{//如果没有capture 可能滚动到新的view里 需要shiftOver
+    //    shiftIfNecessary();
+    //}
 }
 
 void MouseController::shiftOver(View * n)

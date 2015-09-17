@@ -34,7 +34,7 @@ static SkPathEffect * dash = nullptr;
 
 static XMLController * xml = nullptr;
 
-static bool enable_cef = false;
+static bool cef_enable = false;
 
 bool Core::StartUp(const Config & config)
 {
@@ -53,7 +53,7 @@ bool Core::StartUp(const Config & config)
     }
     if (bret)
     {
-        enable_cef = config.enable_cef; 
+        cef_enable = config.cef_enable;
         bret = WebView::StartUp(config.cef_locate);
     }
     if (bret)
@@ -108,9 +108,9 @@ void Core::Update()
     WebView::Update();
 }
 
-bool Core::EnableCEF()
+bool Core::CEFEnable()
 {
-    return enable_cef;
+    return cef_enable;
 }
 
 AnimationManager * Core::GetAnimationManager()

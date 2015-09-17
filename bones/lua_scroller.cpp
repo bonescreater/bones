@@ -6,6 +6,38 @@ namespace bones
 static const char * kMetaTableScroller = "__mt_scroller";
 static const char * kMethodonScrollRange = "onScrollRange";
 static const char * kMethodonScrollPos = "onScrollPos";
+static const char * kMethodsetScrollInfo = "setScrollInfo";
+static const char * kMethodsetScrollPos = "setScrollPos";
+
+//(self, range, bool)
+static int SetScrollInfo(lua_State * l)
+{
+    lua_settop(l, 3);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+
+    LuaScroller * bob = static_cast<LuaScroller *>(
+        LuaContext::CallGetCObject(l));
+    if (bob)
+        bob->setScrollInfo(static_cast<BonesScalar>(lua_tonumber(l, 2)), 
+                           !!lua_toboolean(l, 3));
+
+    return 0;
+}
+
+//(self, pos, bool)
+static int SetScrollPos(lua_State * l)
+{
+    lua_settop(l, 3);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaScroller * bob = static_cast<LuaScroller *>(
+        LuaContext::CallGetCObject(l));
+    if (bob)
+        bob->setScrollPos(static_cast<BonesScalar>(lua_tonumber(l, 2)),
+                          !!lua_toboolean(l, 3));
+    return 0;
+}
 
 LuaScroller::LuaScroller(Scroller * ob)
 :LuaObject(ob), listener_(nullptr)
@@ -39,7 +71,10 @@ void LuaScroller::createMetaTable(lua_State * l)
 {
     if (!LuaObject::createMetaTable(l, kMetaTableScroller))
     {
-        ;
+        lua_pushcfunction(l, &SetScrollInfo);
+        lua_setfield(l, -2, kMethodsetScrollInfo);
+        lua_pushcfunction(l, &SetScrollPos);
+        lua_setfield(l, -2, kMethodsetScrollPos);
     }
 }
 

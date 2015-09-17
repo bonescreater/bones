@@ -696,7 +696,7 @@ bool XMLController::handleWebView(XMLNode node, View * parent_ob, View ** ob)
 {
     if (!parent_ob)
         return false;
-    if (!Core::EnableCEF())
+    if (!Core::CEFEnable())
         return false;
 
     auto v = AdoptRef(new WebView);

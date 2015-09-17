@@ -1,11 +1,29 @@
 ﻿<!--1个简单的滚动条-->
 <bones>
   <head>
-    <!--<link type ='script' module ='scrollbar' file ='scrollbar.lua'></link>-->
+    <link type ='script' module ='scrollbar' file ='scrollbar.lua'></link>
+    <style>
+      .slider_normal
+      {
+      color:#ff00ff00;
+      rect: 0px 0px;
+      }
+      .scrollbar_bg
+      {
+      color:#ffff0000;
+      rect: 0px 0px;
+      }
+    </style>
   </head>
   <body>
     <area>
-      <shape></shape>
+      <!--底色-->
+      <shape class='scrollbar_bg'></shape>
+      <!--滑块-->
+      <shape class ='slider_normal'></shape>
+      <notify name ="onCreate" module ="scrollbar" func ="onCreate"></notify>
+      <!--底色跟area一样大-->
+      <notify name ="onSizeChanged" module ="scrollbar" func ="onSizeChanged"></notify>
     </area>
   </body>
 </bones>

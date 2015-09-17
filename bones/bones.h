@@ -57,7 +57,7 @@ struct BonesConfig
 {
     const wchar_t * log_file;
     BonesLogLevel log_level;
-    bool enable_cef;
+    bool cef_enable;
     const char * cef_locate;//"zh-CN"
 };
 
@@ -338,6 +338,10 @@ public:
     virtual BonesObject * getChildAt(size_t index) = 0;
 
     virtual BonesObject * getParent() = 0;
+    
+    virtual BonesObject * getScroller() = 0;
+
+    virtual BonesObject * getContentAt(size_t index) = 0;
 
     virtual void applyCSS(const char * css) = 0;
 

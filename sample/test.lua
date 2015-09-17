@@ -53,6 +53,9 @@ local alpha = bones.getObject("opacity")
 alpha:applyCSS(css)
 local webview = bones.getObject("webview")
 webview:applyCSS(css)
+local scrollimg = bones.getObject("scrollimg")
+scrollimg:setContent("lena")
+
 end
 
 

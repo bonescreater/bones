@@ -47,6 +47,8 @@ class CSSManager;
 class ResManager;
 class XMLController;
 
+#define BONES_WHEEL_SPEED (WHEEL_DELTA / 4.0f)
+
 enum LogLevel
 {
     kLOG_LEVEL_NONE = 0,
@@ -61,7 +63,7 @@ public:
     {
         const wchar_t * log_file;
         LogLevel log_level;
-        bool enable_cef;
+        bool cef_enable;
         const char * cef_locate;//"zh-CN"
     };
 public:
@@ -71,7 +73,7 @@ public:
 
     static void Update();
 
-    static bool EnableCEF();
+    static bool CEFEnable();
 
     static AnimationManager * GetAnimationManager();
 

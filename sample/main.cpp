@@ -89,7 +89,7 @@ int main()
     BonesConfig config;
     config.log_file = L"./test.log";
     config.log_level = kBONES_LOG_LEVEL_VERBOSE;
-    config.enable_cef = true;
+    config.cef_enable = true;
     config.cef_locate = "zh-CN";
     BonesStartUp(config);
 

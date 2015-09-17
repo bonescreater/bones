@@ -6,6 +6,7 @@
       <link type ='script' module ='animate' file ='../../sample\animate.lua'></link>
       <link type ='xml' module ='button' file ='../../sample/button.xml'></link>
       <link type ='xml' module ='scrollimg' file ='../../sample/scrollimg.xml'></link>
+      <link type ='pixmap' name ='lena' file='../../sample/lena.bmp'></link>
         <style>
           .fadein
           {
@@ -126,9 +127,10 @@
           overflow:word-wrap;
           color:#8800ff00;
           }
-          .scroller
+          .scrollimg
           {
-          size:128px 50px;
+          size:268px 128px;
+          loc:600px 200px;
           }
         </style>
 		  </head>
@@ -145,18 +147,14 @@
                 <shape class ="dash"></shape>
                 <shape class ="dash circle"></shape>
                 <shape class ="dash circle_fill"></shape>
-                <scroller class =" scroller pic_lt">
-                  <image id ="pic_lt" class ="pic">
-                    <button class ="b11   b12 "></button>
-                  </image>
-                </scroller>
+                <image id ="pic_lt" class ="pic pic_lt"></image>
                 <image id ="pic_rt" class ="pic pic_rt"></image>
                 <image id ="pic_lb" class ="pic pic_lb"></image>
                 <image id ="pic_rb" class ="pic pic_rb"></image>
 
                 <richedit id ="rich_opacity" class ="rich_opacity"></richedit>
                 <richedit id ="rich" class ="rich"></richedit>
-                <scrollimg></scrollimg>
+                <scrollimg id ="scrollimg" class ="scrollimg"></scrollimg>
               </shape>
               <button id ="fadein" class ="b11   b12 "></button>
               <button id ="fadeout" class ="b11   b13 "></button>
