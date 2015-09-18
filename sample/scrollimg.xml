@@ -12,6 +12,7 @@
         <notify name ="onScrollPos" module ="scrollimg" func ="onScrollPos"></notify>
       </scroller>
       <scrollbar></scrollbar>
+      <scrollbar></scrollbar>
       <notify name ="onCreate" module ="scrollimg" func ="onCreate"></notify>
       <!--scroller视口跟area一样大-->
       <notify name ="onSizeChanged" module ="scrollimg" func ="onSizeChanged"></notify>

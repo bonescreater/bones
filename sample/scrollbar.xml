@@ -21,6 +21,13 @@
       <shape class='scrollbar_bg'></shape>
       <!--滑块-->
       <shape class ='slider_normal'></shape>
+      <!--滑块响应区域与滑块的区域一致-->
+      <area>
+        <event name ="onMouseDown" phase ="target" module ="scrollbar" func ="onSliderMouseDown"></event>
+        <event name ="onMouseUp" phase ="target" module ="scrollbar" func ="onSliderMouseUp"></event>
+        <event name ="onMouseMove" phase ="target" module ="scrollbar" func ="onSliderMouseMove"></event>
+        <event name ="onMouseLeave" phase ="target" module ="scrollbar" func ="onSliderMouseLeave"></event>
+      </area>
       <notify name ="onCreate" module ="scrollbar" func ="onCreate"></notify>
       <!--底色跟area一样大-->
       <notify name ="onSizeChanged" module ="scrollbar" func ="onSizeChanged"></notify>

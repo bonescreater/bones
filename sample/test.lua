@@ -35,14 +35,18 @@ btn2["onClick"] = testFadeOut;
 local btn3 = bones.getObject("close")
 btn3:applyTextClass("close")
 local webview = bones.getObject("webview")
-webview:open()
-webview:loadURL("http://www.baidu.com")
+if webview then
+    webview:open()
+    webview:loadURL("http://www.baidu.com")
 --webview:loadURL("C:\\Users\\dc\\Desktop\\1.html")
+end
 end
 
 function mod.onDestroy(self)
 local webview = bones.getObject("webview")
-webview:close()
+if webview then
+    webview:close()
+end
 end
 
 function mod.onSizeChanged(self, w, h)
@@ -52,7 +56,9 @@ bg:applyCSS(css)
 local alpha = bones.getObject("opacity")
 alpha:applyCSS(css)
 local webview = bones.getObject("webview")
-webview:applyCSS(css)
+if webview then
+    webview:applyCSS(css)
+end
 local scrollimg = bones.getObject("scrollimg")
 scrollimg:setContent("lena")
 

@@ -375,7 +375,9 @@ void BSPanel::requestFocus(BonesRoot * sender, bool & stop)
 
 void BSPanel::invalidRect(BonesRoot * sender, const BonesRect & rect, bool & stop)
 {
-    RECT r = { (LONG)rect.left, (LONG)rect.top, (LONG)rect.right, (LONG)rect.bottom };
+    RECT r = { (LONG)rect.left, (LONG)rect.top, 
+               (LONG)(rect.right + 1), 
+               (LONG)(rect.bottom + 1)};
     ::InvalidateRect(hwnd_, &r, TRUE);
     stop = true;
 }

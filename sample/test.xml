@@ -129,7 +129,7 @@
           }
           .scrollimg
           {
-          size:268px 128px;
+          size:128px 128px;
           loc:600px 200px;
           }
         </style>

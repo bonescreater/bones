@@ -19,31 +19,53 @@ end
 function mod.onCreate(self)
     self.setContent = setContent
     self.scroller_ = self:getChildAt(0)
-    self.bar_ = self:getChildAt(1)
+    self.vbar_ = self:getChildAt(1)
+    self.vbar_:setSlave(self.scroller_)
+    self.vbar_:setStyle(false)
+    self.hbar_ = self:getChildAt(2)
+    self.hbar_:setSlave(self.scroller_)
+    self.hbar_:setStyle(true)
 end
 
 function mod.onSizeChanged(self, w, h)
-    local css = string.format("{width:%dpx; height:%dpx;}", w - 12, h)
+    local cw, ch = w - 12, h - 12
+    local css = string.format("{width:%dpx; height:%dpx;}", cw, ch)
     self.scroller_:applyCSS(css)
-    css = string.format("{width:%dpx; height:%dpx;}", 12, h)
-    self.bar_:applyCSS(css)
-    css = string.format("{left:%dpx; top:%dpx;}", w - 12, 0)
-    self.bar_:applyCSS(css)
+
+    css = string.format("{width:%dpx; height:%dpx;}", 12, ch)
+    self.vbar_:applyCSS(css)
+    css = string.format("{left:%dpx; top:%dpx;}", cw, 0)
+    self.vbar_:applyCSS(css)
+
+    css = string.format("{width:%dpx; height:%dpx;}", cw, 12)
+    self.hbar_:applyCSS(css)
+    css = string.format("{left:%dpx; top:%dpx;}", 0, ch)
+    self.hbar_:applyCSS(css)
 end
 
 --通知scrollbar
 --self是 scroller标签 所以要通过父来找到scrollerbar
 function mod.onScrollPos(self, cur, horiz)
     local parent = self:getParent()
-    local bar = parent.bar_
-    bar:setScrollPos(cur)
+    local vbar = parent.vbar_
+    local hbar = parent.hbar_
+    if horiz then
+        hbar:setScrollPos(cur)
+    else
+        vbar:setScrollPos(cur)
+    end
 end
 
 function mod.onScrollRange(self, min, max, view, horiz)
     local parent = self:getParent()
-    local bar = parent.bar_
+    local vbar = parent.vbar_
+    local hbar = parent.hbar_
     --调用scrollbar的setScrollRange
-    bar:setScrollRange(min, max, view)
+    if horiz then
+        hbar:setScrollRange(min, max, view)
+    else
+        vbar:setScrollRange(min, max, view)
+    end
 end
 
 
