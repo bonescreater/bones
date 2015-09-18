@@ -24,10 +24,14 @@ class Browser : public CefClient,
         return \
 
 public:
-    Browser(WebView * wv)
-        :web_view_(wv)
+    Browser()
     {
-        assert(web_view_);
+        ;
+    }
+
+    void setHost(WebView * wv)
+    {
+        web_view_ = wv;
     }
 
     bool open()
@@ -37,8 +41,8 @@ public:
 
         info.x = 0;
         info.y = 0;
-        info.width = static_cast<int>(web_view_->getWidth());
-        info.height = static_cast<int>(web_view_->getHeight());
+        info.width = static_cast<int>(web_view_ ? web_view_->getWidth() : 0);
+        info.height = static_cast<int>(web_view_ ? web_view_->getHeight(): 0);
         browser_ = CefBrowserHost::CreateBrowserSync(info, this,
             "", CefBrowserSettings(), nullptr);
         return !!browser_;
@@ -177,7 +181,7 @@ public:
     bool OnSetFocus(CefRefPtr<CefBrowser> browser,
         FocusSource source) 
     {
-        web_view_->requestFocus();
+        web_view_ ? web_view_->requestFocus() : 0;
         return true;
     }
     //CefLifeSpanHandler
@@ -211,8 +215,8 @@ public:
     bool GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
     {
         rect.x = rect.y = 0;
-        rect.width = static_cast<int>(web_view_->getWidth());
-        rect.height = static_cast<int>(web_view_->getHeight());
+        rect.width = static_cast<int>(web_view_ ? web_view_->getWidth() : 0);
+        rect.height = static_cast<int>(web_view_ ? web_view_->getHeight():0);
         return true;
     }
 
@@ -237,7 +241,7 @@ public:
             }
             pixmap_.unlock();
         }
-        web_view_->inval();
+        web_view_ ? web_view_->inval() : 0;
     }
 
     void OnCursorChange(CefRefPtr<CefBrowser> browser,
@@ -245,7 +249,7 @@ public:
         CursorType type,
         const CefCursorInfo & custom_cursor_info) override
     {
-        web_view_->setCursor(cursor);
+        web_view_ ? web_view_->setCursor(cursor) : 0;
     }
 protected:
     CefRefPtr<CefFrame> mainFrame()
@@ -322,7 +326,8 @@ void WebView::Update()
 WebView::WebView()
 :hack_focus_travel_(false)
 {
-    browser_ = new Browser(this);
+    browser_ = new Browser();
+    browser_->setHost(this);
     browser_->AddRef();
     //browser 居然new的时候没有引用计数+1
     assert(browser_->HasOneRef());
@@ -331,6 +336,7 @@ WebView::WebView()
 WebView::~WebView()
 {
     close();
+    browser_->setHost(nullptr);
     browser_->Release();
 }
 
@@ -383,52 +389,72 @@ void WebView::onMouseEnter(MouseEvent & e)
 
 void WebView::onMouseLeave(MouseEvent & e)
 {
+    if (Event::kTarget != e.phase())
+        return;
     browser_->sendMouseMoveEvent(e, true);
 }
 
 void WebView::onMouseMove(MouseEvent & e)
 {
+    if (Event::kTarget != e.phase())
+        return;
     browser_->sendMouseMoveEvent(e, false);
 }
 
 void WebView::onMouseDown(MouseEvent & e)
 {
+    if (Event::kTarget != e.phase())
+        return;
     browser_->sendMouseClickEvent(e);
 }
 
 void WebView::onMouseUp(MouseEvent & e)
 {
+    if (Event::kTarget != e.phase())
+        return;
     browser_->sendMouseClickEvent(e);
 }
 
 void WebView::onWheel(WheelEvent & e)
 {
+    if (Event::kTarget != e.phase())
+        return;
     browser_->sendMouseWheelEvent(e);
 }
 
-void WebView::onFocus(FocusEvent & )
+void WebView::onFocus(FocusEvent & e)
 {
+    if (Event::kTarget != e.phase())
+        return;
     hack_focus_travel_ = true;
     browser_->sendFocusEvent(true);
 }
 
 void WebView::onBlur(FocusEvent & e)
 {
+    if (Event::kTarget != e.phase())
+        return;
     browser_->sendFocusEvent(false);
 }
 
 void WebView::onKeyDown(KeyEvent & e)
 {
+    if (Event::kTarget != e.phase())
+        return;
     browser_->sendKeyEvent(e);
 }
 
 void WebView::onKeyUp(KeyEvent & e)
 {
+    if (Event::kTarget != e.phase())
+        return;
     browser_->sendKeyEvent(e);
 }
 
 void WebView::onChar(KeyEvent & e)
 {//webview 输入框不接受tab字符
+    if (Event::kTarget != e.phase())
+        return;
     if (e.ch() != '\t')
         browser_->sendKeyEvent(e);
 }

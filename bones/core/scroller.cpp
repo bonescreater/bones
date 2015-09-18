@@ -133,18 +133,23 @@ void Scroller::onSizeChanged()
 }
 
 void Scroller::onWheel(WheelEvent & e)
-{
+{//只处理冒泡阶段的
+    if (Event::kBubbling != e.phase() )
+        return;
+
     auto path = e.getPath();
     if (!path)
         return;
     for (auto iter = path->begin(); iter != path->end(); ++iter)
     {//为了防止scroller嵌套 如果滚动在scroller子孙中的一个scroller发生则不管
-        if (kClassScroller == (*iter)->getClassName())
+        if (this == (*iter).get())
+            break;
+        //scroller richedit webview本身就是可以滚动的 所以如果事件经过这些就不处理
+        if (kClassScroller == (*iter)->getClassName() ||
+            kClassRichEdit == (*iter)->getClassName() ||
+            kClassWebView == (*iter)->getClassName())
         {
-            if (this != (*iter).get())
-                return;
-            else
-                break;
+            return;
         }
     }
     if (e.dx() != 0)
