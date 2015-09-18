@@ -338,10 +338,6 @@ public:
     virtual BonesObject * getChildAt(size_t index) = 0;
 
     virtual BonesObject * getParent() = 0;
-    
-    virtual BonesObject * getScroller() = 0;
-
-    virtual BonesObject * getContentAt(size_t index) = 0;
 
     virtual void applyCSS(const char * css) = 0;
 

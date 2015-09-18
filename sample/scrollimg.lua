@@ -3,7 +3,7 @@
 
 local function setContent(self, content)
 
-    local img = self.scroller_:getContentAt(0)    
+    local img = self.scroller_:getChildAt(0)    
     --设置img的宽高为指定图片宽高
     local css = string.format("{content:%s;}", content)
     img:applyCSS(css)

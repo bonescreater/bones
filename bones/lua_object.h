@@ -165,36 +165,20 @@ public:
 
     BonesObject * getChildAt(size_t index) override
     {
-        return GetCoreInstance()->getObject(object_->getChildAt(index));
+        if (kClassScroller == object_->getClassName())
+            return GetCoreInstance()->getObject(
+                object_->getChildAt(0)->getChildAt(index));
+        else
+            return GetCoreInstance()->getObject(object_->getChildAt(index));
     }
 
     BonesObject * getParent() override
     {
-        return GetCoreInstance()->getObject(object_->parent());
-    }
-
-    BonesObject * getScroller() override
-    {
         auto parent = object_->parent();
-        while (parent)
-        {
-            if (kClassScroller == parent->getClassName())
-                return GetCoreInstance()->getObject(parent);
-            parent = parent->parent();
-        }
-        return nullptr;
-    }
-
-    BonesObject * getContentAt(size_t index)override
-    {     
-        if (kClassScroller == object_->getClassName())
-        {
-            auto child = object_->getChildAt(0);
-            auto content = child->getChildAt(index);
-            return GetCoreInstance()->getObject(content);
-        }
-        else
-            return getChildAt(index);
+        auto pparent = parent->parent();
+        if (pparent && kClassScroller == pparent->getClassName())
+            parent = pparent;
+        return GetCoreInstance()->getObject(parent);
     }
 
     void applyCSS(const char * css) override
@@ -293,12 +277,6 @@ public:
 
             lua_pushcfunction(l, &GetParent);
             lua_setfield(l, -2, kMethodGetParent);
-
-            lua_pushcfunction(l, &GetContentAt);
-            lua_setfield(l, -2, kMethodGetContentAt);
-
-            lua_pushcfunction(l, &GetScroller);
-            lua_setfield(l, -2, kMethodGetScroller);
 
             //css method
             lua_pushcfunction(l, &ApplyCSS);
@@ -419,7 +397,7 @@ public:
                 LuaContext::CallGetCObject(l));
             if (bob)
             {
-                auto child = bob->getChildAt(index);
+                auto child = bob->getChildAt(index);             
                 if (child)
                     LuaContext::GetLOFromCO(l, child);
             }
@@ -440,46 +418,6 @@ public:
         if (bob)
         {
             auto parent = bob->getParent();
-            if (parent)
-                LuaContext::GetLOFromCO(l, parent);
-        }
-
-        return 1;
-    }
-    static int GetContentAt(lua_State * l)
-    {
-        int count = lua_gettop(l);
-        lua_pushnil(l);
-        if (count == 2)
-        {
-            size_t index = static_cast<size_t>(lua_tonumber(l, 2));
-            lua_pushnil(l);
-            lua_copy(l, 1, -1);
-            LuaObject * bob = static_cast<LuaObject *>(
-                LuaContext::CallGetCObject(l));
-            if (bob)
-            {
-                auto child = bob->getContentAt(index);
-                if (child)
-                    LuaContext::GetLOFromCO(l, child);
-            }
-
-        }
-        return 1;
-    }
-
-    static int GetScroller(lua_State * l)
-    {
-        lua_settop(l, 1);
-        lua_pushnil(l);
-
-        lua_pushnil(l);
-        lua_copy(l, 1, -1);
-        LuaObject * bob = static_cast<LuaObject *>(
-            LuaContext::CallGetCObject(l));
-        if (bob)
-        {
-            auto parent = bob->getScroller();
             if (parent)
                 LuaContext::GetLOFromCO(l, parent);
         }

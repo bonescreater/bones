@@ -87,8 +87,6 @@ const char * kMethodApplyCSS = "applyCSS";
 const char * kMethodApplyClass = "applyClass";
 const char * kMethodGetChildAt = "getChildAt";
 const char * kMethodGetParent = "getParent";
-const char * kMethodGetContentAt = "getContentAt";
-const char * kMethodGetScroller = "getScroller";
 
 const char * kMethodGetSize = "getSize";
 const char * kMethodGetLoc = "getLoc";
