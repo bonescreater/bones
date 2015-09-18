@@ -55,7 +55,6 @@ enum BonesLogLevel
 
 struct BonesConfig
 {
-    const wchar_t * log_file;
     BonesLogLevel log_level;
     bool cef_enable;
     const char * cef_locate;//"zh-CN"

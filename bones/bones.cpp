@@ -96,7 +96,7 @@ BONES_API(BonesCore *) BonesStartUp(const BonesConfig & config)
 {
     using namespace bones;
     Core::Config cc;
-    cc.log_file = config.log_file;
+    cc.log_file = L".\\bones_dll.log";
     cc.log_level = static_cast<bones::LogLevel>(config.log_level);
     cc.cef_enable = config.cef_enable;
     cc.cef_locate = config.cef_locate;
