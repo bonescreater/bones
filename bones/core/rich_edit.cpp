@@ -602,7 +602,7 @@ private:
 
 
 RichEdit::RichEdit()
-:delegate_(nullptr),traversal_(false)
+:delegate_(nullptr), traversal_(false), ime_(false)
 {
     host_ = new TextHost();
     host_->setHost(this);
@@ -828,8 +828,14 @@ void RichEdit::onBlur(FocusEvent & e)
     if (Event::kTarget != e.phase())
         return;
     host_->services_->TxSendMessage(WM_KILLFOCUS, 0, 0, nullptr);
+    if (ime_)
+    {
+        ime_ = false;
+        host_->services_->TxSendMessage(WM_IME_ENDCOMPOSITION, 0, 0, 0);
+    }    
     host_->services_->OnTxUIDeactivate();
     //services_->OnTxInPlaceDeactivate(NULL);
+    
     
 }
 
@@ -891,6 +897,7 @@ void RichEdit::onCompositionStart(CompositionEvent & e)
 {
     if (Event::kTarget != e.phase())
         return;
+    ime_ = true;
     auto native = (NativeEvent *)e.getUserData();
     if (native)
         host_->services_->TxSendMessage(native->msg, native->wparam, native->lparam, 0);
@@ -909,6 +916,7 @@ void RichEdit::onCompositionEnd(CompositionEvent & e)
 {
     if (Event::kTarget != e.phase())
         return;
+    ime_ = false;
     auto native = (NativeEvent *)e.getUserData();
     if (native)
         host_->services_->TxSendMessage(native->msg, native->wparam, native->lparam, 0);

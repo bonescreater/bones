@@ -35,14 +35,6 @@ const char * kStrHead = "head";
 const char * kStrBody = "body";
 const char * kStrStyle = "style";
 const char * kStrLink = "link";
-const char * kStrRoot = "root";
-const char * kStrArea = "area";
-const char * kStrRichEdit = "richedit";
-const char * kStrWebView = "webview";
-const char * kStrImage = "image";
-const char * kStrText = "text";
-const char * kStrShape = "shape";
-const char * kStrScroller = "scroller";
 /*
 Delegate事件顺序
 
@@ -211,6 +203,21 @@ void XMLController::clean(View * v)
     }
     //删除xml中的节点
     //rapidxml并不会释放node的内存所以 删除xml节点没意义了
+}
+
+const char * XMLController::getID(View * v)
+{
+    RefPtr<View> rv;
+    rv.reset(v);
+    auto iter = ob2node_.find(rv);
+    if (iter != ob2node_.end())
+    {
+        auto & attrs = iter->second;
+        auto id = attrs.find(kStrID);
+        if (id != attrs.end())
+            return id->second.data();
+    }
+    return "";
 }
 
 void XMLController::parseModuleHead(Module & mod)
@@ -529,21 +536,21 @@ bool XMLController::createViewFromNode(XMLNode node, const char * label, View * 
     {//没有被预处理
         bool extend = false;
 
-        if (!strcmp(label, kStrRoot))
+        if (!strcmp(label, kClassRoot))
             bret = handleRoot(node, parent_ob, &node_ob);
-        else if (!strcmp(label, kStrArea))
+        else if (!strcmp(label, kClassArea))
             bret = handleArea(node, parent_ob, &node_ob);
-        else if (!strcmp(label, kStrRichEdit))
+        else if (!strcmp(label, kClassRichEdit))
             bret = handleRichEdit(node, parent_ob, &node_ob);
-        else if (!strcmp(label, kStrWebView))
+        else if (!strcmp(label, kClassWebView))
             bret = handleWebView(node, parent_ob, &node_ob);
-        else if (!strcmp(label, kStrImage))
+        else if (!strcmp(label, kClassImage))
             bret = handleImage(node, parent_ob, &node_ob);
-        else if (!strcmp(label, kStrText))
+        else if (!strcmp(label, kClassText))
             bret = handleText(node, parent_ob, &node_ob);
-        else if (!strcmp(label, kStrShape))
+        else if (!strcmp(label, kClassShape))
             bret = handleShape(node, parent_ob, &node_ob);
-        else if (!strcmp(label, kStrScroller))
+        else if (!strcmp(label, kClassScroller))
             bret = handleScroller(node, parent_ob, &node_ob);            
         else
         {

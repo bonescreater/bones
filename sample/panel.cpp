@@ -138,16 +138,11 @@ bool BSPanel::isLayered() const
     return !!(ex_style_ & WS_EX_LAYERED);
 }
 
-void BSPanel::loadRoot(const char * id)
+void BSPanel::loadRoot(BonesRoot * root)
 {
-    root_ = (BonesRoot *)BonesGetCore()->getObject(id);
+    root_ = root;
     if (root_)
         root_->setListener(this);
-}
-
-void BSPanel::loadRichEdit(const char * id)
-{
-    ((BonesRichEdit *)BonesGetCore()->getObject(id))->setListener(this);
 }
 
 void BSPanel::layeredDraw()

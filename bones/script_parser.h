@@ -112,6 +112,8 @@ public:
     void resumeAnimate(BonesObject::Animation ani);
 
     void stopAllAnimate(BonesObject * ani, bool toend);
+
+    const char * getID(BonesObject * bob);
 private:
     void handleRoot(Root * ob);
 
@@ -134,7 +136,6 @@ private:
     bool handleEvent(XMLNode node, View * parent_ob, View ** ob);
 private:
     BonesXMLListener * listener_;
-    BonesXMLListener * last_listener_;
     std::map<View *, BonesObject *>v2bo_;
 };
 

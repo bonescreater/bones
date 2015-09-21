@@ -112,7 +112,7 @@ private:
     TextHost * host_;
     bool traversal_;
     std::map<UINT, Animation*> animations_;
-
+    bool ime_;
     friend class TextHost;
 };
 

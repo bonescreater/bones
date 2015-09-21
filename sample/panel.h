@@ -34,9 +34,7 @@ public:
 
     bool isLayered() const;
 
-    void loadRoot(const char * id);
-
-    void loadRichEdit(const char * id);
+    void loadRoot(BonesRoot * root);
 
     void onCreate(BonesRoot * sender, bool & stop) override;
 

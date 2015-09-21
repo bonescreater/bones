@@ -13,16 +13,16 @@
 
 namespace bones
 {
-const char * kClassRef = "Ref";
-const char * kClassRoot = "Root";
-const char * kClassView = "View";
-const char * kClassArea = "Area";
-const char * kClassImage = "Image";
-const char * kClassShape = "Shape";
-const char * kClassText = "Text";
-const char * kClassRichEdit = "RichEdit";
-const char * kClassWebView = "WebView";
-const char * kClassScroller = "Scroller";
+//跟xml标签一样为了方便
+const char * kClassRoot = "root";
+const char * kClassView = "view";
+const char * kClassArea = "area";
+const char * kClassImage = "image";
+const char * kClassShape = "shape";
+const char * kClassText = "text";
+const char * kClassRichEdit = "richedit";
+const char * kClassWebView = "webview";
+const char * kClassScroller = "scroller";
 
 static AnimationManager * animations = nullptr;
 

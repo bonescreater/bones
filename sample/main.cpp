@@ -40,39 +40,75 @@ class LoadListener : public BonesXMLListener
 public:
     bool onLoad(BonesCore *) override
     {
-        test_window->loadRoot("main");
-        test_window->loadRichEdit("rich");
-        test_window->loadRichEdit("rich_opacity");
-        //往关闭按钮注册回调
-        //测试程序的按钮 会调用"onClick"
-        ((BonesArea *)BonesGetCore()->getObject("close"))->listen("onClick", &close);
-        BSStr s;
-        s.reset();
-        s << "{";
-        s << "content:pic_lt;";
-        s << "}";
-        ((BonesImage *)BonesGetCore()->getObject("pic_lt"))->applyCSS(s.str().data());
-        s.reset();
-        s << "{";
-        s << "content:pic_rt;";
-        s << "}";
-        ((BonesImage *)BonesGetCore()->getObject("pic_rt"))->applyCSS(s.str().data());
-        s.reset();
-        s << "{";
-        s << "content:pic_lb;";
-        s << "}";
-        ((BonesImage *)BonesGetCore()->getObject("pic_lb"))->applyCSS(s.str().data());
-        s.reset();
-        s << "{";
-        s << "content:pic_rb;";
-        s << "}";
-        ((BonesImage *)BonesGetCore()->getObject("pic_rb"))->applyCSS(s.str().data());
         return true;
     }
 
     void onUnload(BonesCore *) override
     {
         ;
+    }
+
+    void onPreCreate(BonesCore *, BonesObject * ob) override
+    {//设置各种标签C++回调
+        if (!strcmp("root", ob->getClassName()))
+        {//root
+            test_window->loadRoot(static_cast<BonesRoot *>(ob));
+        }
+        else if (!strcmp("richedit", ob->getClassName()))
+        {
+            static_cast<BonesRichEdit *>(ob)->setListener(test_window);
+        }
+
+        
+        //往关闭按钮注册回调
+        //测试程序的按钮 会调用"onClick"
+        if (!strcmp("close", ob->getID()))
+            ((BonesArea *)ob)->listen("onClick", &close);
+        BSStr s;
+        if (!strcmp("pic_lt", ob->getID()))
+        {
+            s.reset();
+            s << "{";
+            s << "content:pic_lt;";
+            s << "}";
+            ((BonesImage *)ob)->applyCSS(s.str().data());
+        }
+        else if (!strcmp("pic_rt", ob->getID()))
+        {
+            s.reset();
+            s << "{";
+            s << "content:pic_rt;";
+            s << "}";
+            ((BonesImage *)ob)->applyCSS(s.str().data());
+        }
+        else if (!strcmp("pic_lb", ob->getID()))
+        {
+            s.reset();
+            s << "{";
+            s << "content:pic_lb;";
+            s << "}";
+            ((BonesImage *)ob)->applyCSS(s.str().data());
+        }
+        else if (!strcmp("pic_rb", ob->getID()))
+        {
+            s.reset();
+            s << "{";
+            s << "content:pic_rb;";
+            s << "}";
+            ((BonesImage *)ob)->applyCSS(s.str().data());
+        }
+    }
+
+    void onPostDestroy(BonesCore *, BonesObject * ob)  override
+    {//清理各种回调
+        if (!strcmp("root", ob->getClassName()))
+        {//root
+            test_window->loadRoot(nullptr);
+        }
+        else if (!strcmp("richedit", ob->getClassName()))
+        {
+            static_cast<BonesRichEdit *>(ob)->setListener(nullptr);
+        }
     }
 };
 
@@ -88,7 +124,7 @@ int main()
 
     BonesConfig config;
     config.log_level = kBONES_LOG_LEVEL_VERBOSE;
-    config.cef_enable = false;
+    config.cef_enable = true;
     config.cef_locate = "zh-CN";
     BonesStartUp(config);
 

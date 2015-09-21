@@ -85,6 +85,8 @@ public:
                       const char * class_name);
 
     void clean(View * v);
+
+    const char * getID(View * v);
 protected:
     bool handleStyle(XMLNode node, const char * full_path);
 
@@ -182,14 +184,6 @@ extern const char * kStrHead;
 extern const char * kStrBody;
 extern const char * kStrStyle;
 extern const char * kStrLink;
-extern const char * kStrRoot;
-extern const char * kStrArea;
-extern const char * kStrRichEdit;
-extern const char * kStrWebView;
-extern const char * kStrImage;
-extern const char * kStrText;
-extern const char * kStrShape;
-extern const char * kStrScroller;
 }
 
 #endif

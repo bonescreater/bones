@@ -76,6 +76,10 @@ public:
     virtual bool onLoad(BonesCore *) = 0;
 
     virtual void onUnload(BonesCore *) = 0;
+
+    virtual void onPreCreate(BonesCore *, BonesObject *) = 0;
+
+    virtual void onPostDestroy(BonesCore *, BonesObject *) = 0;
 };
 
 
@@ -317,6 +321,10 @@ public:
     virtual const char * getClassName() = 0;
 
     virtual void * cast() = 0;
+
+    virtual const char * getID() = 0;
+
+    virtual BonesObject * getRoot() = 0;
 
     virtual void listen(const char * name, BonesScriptListener * listener) = 0;
 

@@ -101,7 +101,7 @@ static int ScriptCB(lua_State * l)
 }
 
 ScriptParser::ScriptParser()
-:listener_(nullptr), last_listener_(nullptr)
+:listener_(nullptr)
 {
     Core::GetXMLController()->setDelegate(this);
 }
@@ -114,14 +114,14 @@ ScriptParser::~ScriptParser()
 
 bool ScriptParser::loadXMLString(const char * data, BonesXMLListener * listener)
 {
-    last_listener_ = listener_;
+    assert(listener_ == nullptr);
     listener_ = listener;
     return Core::GetXMLController()->loadString(data);
 }
 
 void ScriptParser::cleanXML()
 {
-    loadXMLString(nullptr, nullptr);
+    Core::GetXMLController()->loadString(nullptr);
 }
 
 BonesObject * ScriptParser::getObject(const char * id)
@@ -161,7 +161,7 @@ BonesRoot * ScriptParser::createRoot(const char * id,
                                        const char * class_name)
 {
     return static_cast<BonesRoot *>(getObject(
-        Core::GetXMLController()->createView(nullptr, kStrRoot, id, group_id, class_name)));
+        Core::GetXMLController()->createView(nullptr, kClassRoot, id, group_id, class_name)));
 }
 
 BonesObject * ScriptParser::createObject(BonesObject * parent,
@@ -230,7 +230,8 @@ bool ScriptParser::onLoad()
 
 void ScriptParser::onUnload()
 {
-    last_listener_ ? last_listener_->onUnload(this) : 0;
+    listener_ ? listener_->onUnload(this) : 0;
+    listener_ = nullptr;
 }
 
 void ScriptParser::onCreate(View * v)
@@ -240,6 +241,8 @@ void ScriptParser::onCreate(View * v)
     auto ob = getObject(v);
     if (!ob)
         return;
+    listener_ ? listener_->onPreCreate(this, ob) : 0;
+
     if (ob->getClassName() == kClassRoot)
         static_cast<LuaRoot *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassShape)
@@ -281,6 +284,8 @@ void ScriptParser::onDestroy(View * v)
         static_cast<LuaWebView *>(ob)->notifyDestroy();
     else if (ob->getClassName() == kClassScroller)
         static_cast<LuaScroller *>(ob)->notifyDestroy();
+
+    listener_ ? listener_->onPostDestroy(this, ob) : 0;
 }
 
 void ScriptParser::onCreating(View * v)
@@ -516,6 +521,11 @@ void ScriptParser::stopAllAnimate(BonesObject * bo, bool toend)
     Core::GetAnimationManager()->remove(getObject(bo), toend);
 }
 
+const char * ScriptParser::getID(BonesObject * bob)
+{
+    return Core::GetXMLController()->getID(getObject(bob));
+}
+
 void ScriptParser::handleRoot(Root * ob)
 {
     auto lo = AdoptRef(new LuaRoot(ob));
@@ -620,24 +630,6 @@ bool ScriptParser::handleEvent(XMLNode node, View * parent_ob, View ** ob)
 
     return handle;
 }
-
-//void ScriptParser::handleNodeOnPrepare(XMLNode node, View * ob)
-//{
-//    if (!node || !ob)
-//        return;
-//    auto l = LuaContext::State();
-//    LUA_STACK_AUTO_CHECK(l);
-//    LuaContext::GetLOFromCO(l, ob);
-//    if (lua_istable(l, -1))
-//    {
-//        lua_getfield(l, -1, "onPrepare");
-//        assert(lua_isfunction(l, -1) || lua_isnil(l, -1));
-//        lua_pushnil(l);
-//        lua_copy(l, -3, -1);
-//        LuaContext::SafeLOPCall(l, 1, 0);
-//    }
-//    lua_pop(l, 1);
-//}
 
 
 

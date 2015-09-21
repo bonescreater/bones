@@ -3,6 +3,7 @@
 
 #include "bones_internal.h"
 #include "core/view.h"
+#include "core/root.h"
 #include "core/logging.h"
 #include "core/css_manager.h"
 #include "script_parser.h"
@@ -119,6 +120,17 @@ public:
     void * cast() override
     {
         return static_cast<Base *>(this);
+    }
+
+    const char * getID()
+    {
+        return GetCoreInstance()->getID(this);
+    }
+
+    BonesObject * getRoot()
+    {
+        return GetCoreInstance()->getObject(
+            static_cast<View *>(object_->getRoot()));
     }
 
     void listen(const char * name, BonesScriptListener * listener) override
