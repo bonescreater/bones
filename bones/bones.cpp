@@ -74,6 +74,8 @@ const char * kMethodOnHitTest = "onHitTest";
 
 const char * kMethodIndex = "__index";
 const char * kMethodGC = "__gc";
+const char * kMethodGetID = "getID";
+const char * kMethodGetRoot = "getRoot";
 const char * kMethodGetOpacity = "getOpacity";
 const char * kMethodGetCObject = "getCObject";
 const char * kMethodAnimate = "animate";

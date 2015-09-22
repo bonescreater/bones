@@ -272,6 +272,12 @@ public:
             lua_pushcfunction(l, &GC);
             lua_setfield(l, -2, kMethodGC);
 
+            lua_pushcfunction(l, &GetID);
+            lua_setfield(l, -2, kMethodGetID);
+
+            lua_pushcfunction(l, &GetRoot);
+            lua_setfield(l, -2, kMethodGetRoot);
+
             lua_pushcfunction(l, &GetOpacity);
             lua_setfield(l, -2, kMethodGetOpacity);
 
@@ -324,6 +330,43 @@ public:
         }
         return 0;
     }
+
+    static int GetID(lua_State * l)
+    {
+        lua_settop(l, 1);
+        lua_pushnil(l);
+
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        LuaObject * bob = static_cast<LuaObject *>(
+            LuaContext::CallGetCObject(l));
+        if (bob)
+        {
+            auto id = bob->getID();
+            if (id)
+                lua_pushstring(l, id);
+        }
+        return 1;
+    }
+
+    static int GetRoot(lua_State * l)
+    {
+        lua_settop(l, 1);
+        lua_pushnil(l);
+
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        LuaObject * bob = static_cast<LuaObject *>(
+            LuaContext::CallGetCObject(l));
+        if (bob)
+        {
+            auto root = bob->getRoot();
+            if (root)
+                LuaContext::GetLOFromCO(l, root);
+        }
+        return 1;
+    }
+
     static int GetOpacity(lua_State * l)
     {
         lua_settop(l, 1);

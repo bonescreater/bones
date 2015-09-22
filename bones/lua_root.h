@@ -35,15 +35,15 @@ public:
 
     void getBackBuffer(const void * & data, size_t & pitch) const;
 
-    void handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    bool handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
-    void handleKey(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    bool handleKey(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
-    void handleFocus(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    bool handleFocus(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
-    void handleComposition(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    bool handleComposition(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
-    void handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    bool handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     void requestFocus(Root * sender) override;
 

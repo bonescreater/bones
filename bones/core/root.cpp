@@ -31,7 +31,7 @@ void Root::setDelegate(Delegate * delegate)
     delegate_ = delegate;
 }
 
-void Root::handleMouse(NativeEvent & e)
+bool Root::handleMouse(NativeEvent & e)
 {
     int flags = Helper::ToFlagsForMouseEvent();
 
@@ -43,7 +43,7 @@ void Root::handleMouse(NativeEvent & e)
     if (kET_COUNT == et)
     {
         BLG_VERBOSE << "Temporarily not supported: " << e.msg;
-        return;
+        return true;
     }
     auto & lparam = e.lparam;
     Point p(static_cast<Scalar>(GET_X_LPARAM(lparam)),
@@ -51,9 +51,10 @@ void Root::handleMouse(NativeEvent & e)
     MouseEvent me(et, mb, this, p, p, flags);
     me.setUserData(&e);
     mouse_.handleEvent(me);
+    return true;
 }
 
-void Root::handleKey(NativeEvent & e)
+bool Root::handleKey(NativeEvent & e)
 {
     //处理键盘事件
     EventType type = kET_COUNT;
@@ -65,7 +66,7 @@ void Root::handleKey(NativeEvent & e)
     else if (WM_KEYUP == msg || WM_SYSKEYUP == msg)
         type = kET_KEY_UP;
     else
-        return;
+        return true;
 
     bool system = (msg == WM_SYSCHAR) || (msg == WM_SYSKEYDOWN) || (msg == WM_SYSKEYUP);
     auto flags = Helper::ToFlagsForKeyEvent(e.wparam, e.lparam);
@@ -97,9 +98,10 @@ void Root::handleKey(NativeEvent & e)
         EventDispatcher::Push(ke);
         handle = true;
     }
+    return true;
 }
 
-void Root::handleFocus(NativeEvent & e)
+bool Root::handleFocus(NativeEvent & e)
 {
     auto & msg = e.msg;
     if (msg == WM_SETFOCUS)
@@ -112,13 +114,14 @@ void Root::handleFocus(NativeEvent & e)
         //失去焦点 将内部焦点移除
         focus_.shift(nullptr);
     }
+    return true;
 }
 
-void Root::handleComposition(NativeEvent & e)
+bool Root::handleComposition(NativeEvent & e)
 {
     View * focus = focus_.current();
     if (!focus)
-        return;
+        return true;
     auto & msg = e.msg;
     EventType type = kET_COUNT;
     if (WM_IME_STARTCOMPOSITION == msg)
@@ -128,14 +131,16 @@ void Root::handleComposition(NativeEvent & e)
     else if (WM_IME_ENDCOMPOSITION == msg)
         type = kET_COMPOSITION_END;
     else
-        return;
+        return true;
 
     CompositionEvent ce(type, focus);
     ce.setUserData(&e);
     EventDispatcher::Push(ce);
+
+    return kClassWebView != focus->getClassName() || msg != WM_IME_COMPOSITION;
 }
 
-void Root::handleWheel(NativeEvent & e)
+bool Root::handleWheel(NativeEvent & e)
 {
     int flags = Helper::ToFlagsForMouseEvent();
     auto & msg = e.msg;
@@ -153,6 +158,7 @@ void Root::handleWheel(NativeEvent & e)
         we.setUserData(&e);
         mouse_.handleWheel(we);
     }
+    return true;
 }
 
 bool Root::isVisible() const

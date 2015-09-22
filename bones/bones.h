@@ -402,15 +402,15 @@ public:
 
     virtual void getBackBuffer(const void * & data, size_t & pitch) const = 0;
 
-    virtual void handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    virtual bool handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
 
-    virtual void handleKey(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    virtual bool handleKey(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
 
-    virtual void handleFocus(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    virtual bool handleFocus(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
 
-    virtual void handleComposition(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    virtual bool handleComposition(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
 
-    virtual void handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    virtual bool handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
 };
 
 class BonesShape : public BonesObject

@@ -81,34 +81,34 @@ void LuaRoot::getBackBuffer(const void * & data, size_t & pitch) const
     object_->getBackBuffer(data, pitch);
 }
 
-void LuaRoot::handleMouse(UINT msg, WPARAM wparam, LPARAM lparam)
+bool LuaRoot::handleMouse(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     NativeEvent e = { msg, wparam, lparam, 0 };
-    object_->handleMouse(e);
+    return object_->handleMouse(e);
 }
 
-void LuaRoot::handleKey(UINT msg, WPARAM wparam, LPARAM lparam)
+bool LuaRoot::handleKey(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     NativeEvent e = { msg, wparam, lparam, 0 };
-    object_->handleKey(e);
+    return object_->handleKey(e);
 }
 
-void LuaRoot::handleFocus(UINT msg, WPARAM wparam, LPARAM lparam)
+bool LuaRoot::handleFocus(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     NativeEvent e = { msg, wparam, lparam, 0 };
-    object_->handleFocus(e);
+    return object_->handleFocus(e);
 }
 
-void LuaRoot::handleComposition(UINT msg, WPARAM wparam, LPARAM lparam)
+bool LuaRoot::handleComposition(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     NativeEvent e = { msg, wparam, lparam, 0 };
-    object_->handleComposition(e);
+    return object_->handleComposition(e);
 }
 
-void LuaRoot::handleWheel(UINT msg, WPARAM wparam, LPARAM lparam)
+bool LuaRoot::handleWheel(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     NativeEvent e = { msg, wparam, lparam, 0 };
-    object_->handleWheel(e);
+    return object_->handleWheel(e);
 }
 
 void LuaRoot::requestFocus(Root * sender)

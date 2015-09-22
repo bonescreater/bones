@@ -205,7 +205,9 @@ LRESULT BSPanel::handleKey(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT BSPanel::handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    root_->handleComposition(uMsg, wParam, lParam);
+    //cef osr 目前不支持ime 临时通过返回值来处理
+    if (!root_->handleComposition(uMsg, wParam, lParam))
+        return defProcessEvent(uMsg, wParam, lParam);
     return 0;
 }
 

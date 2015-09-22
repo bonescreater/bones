@@ -61,15 +61,15 @@ public:
 
     void getBackBuffer(const void * & bits, size_t & pitch) const;
 
-    void handleMouse(NativeEvent & e);
+    bool handleMouse(NativeEvent & e);
 
-    void handleKey(NativeEvent & e);
+    bool handleKey(NativeEvent & e);
 
-    void handleFocus(NativeEvent & e);
+    bool handleFocus(NativeEvent & e);
 
-    void handleComposition(NativeEvent & e);
+    bool handleComposition(NativeEvent & e);
 
-    void handleWheel(NativeEvent & e);
+    bool handleWheel(NativeEvent & e);
 
     bool isVisible() const override;
 

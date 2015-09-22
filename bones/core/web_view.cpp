@@ -293,7 +293,7 @@ bool WebView::StartUp(const char * locate)
     //settings.remote_debugging_port = 8088;
     // Use cefclient.exe to run render process and other sub processes.
     auto mod = Helper::GetModule();
-    wchar_t mod_name[MAX_PATH];
+    wchar_t mod_name[MAX_PATH] = { 0 };
     if (!::GetModuleFileName(mod, mod_name, MAX_PATH))
         return false;
     auto path = Helper::GetPathFromFullName(Encoding::ToUTF8(mod_name).data());

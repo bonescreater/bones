@@ -44,6 +44,8 @@ extern const char * kMethodOnHitTest;
 
 extern const char * kMethodIndex;
 extern const char * kMethodGC;
+extern const char * kMethodGetID;
+extern const char * kMethodGetRoot;
 extern const char * kMethodGetOpacity;
 extern const char * kMethodGetCObject;
 extern const char * kMethodAnimate;
