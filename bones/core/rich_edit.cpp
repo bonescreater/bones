@@ -105,6 +105,12 @@ public:
         return rich_ ? rich_->delegate_ : nullptr ;
     }
 
+    Widget widget()
+    {
+        auto root = rich_ ? rich_->getRoot() : nullptr;
+        return root ? root->getWidget() : NULL;
+    }
+
     void lazyInitialize()
     {
         typedef HRESULT(STDAPICALLTYPE * T_CreateTextServices)(
@@ -336,29 +342,15 @@ public:
     //@cmember Create a timer with the specified timeout
     virtual BOOL TxSetTimer(UINT idTimer, UINT uTimeout) override
     {
-        TxKillTimer(idTimer);
-        if (!rich_)
-            return TRUE;;
-        auto ani = new Animation(rich_, uTimeout, -1, (void *)idTimer);
-        ani->bind(BONES_CLASS_CALLBACK_3(&TextHost::onAnimationRun, this));
-        rich_->animations_[idTimer] = ani;
-        Core::GetAnimationManager()->add(ani);
-
-        return TRUE;
+        auto wg = widget();
+        return wg ? ::SetTimer(wg, idTimer, uTimeout, NULL) : FALSE;
     }
 
     //@cmember Destroy a timer
     virtual void TxKillTimer(UINT idTimer) override
     {
-        if (!rich_)
-            return;
-        auto iter = rich_->animations_.find(idTimer);
-        if (iter != rich_->animations_.end())
-        {
-            Core::GetAnimationManager()->remove(iter->second, false);
-            iter->second->release();
-            rich_->animations_.erase(iter);
-        }
+        auto wg = widget();
+        wg ? ::KillTimer(wg, idTimer) : NULL;
     }
 
     //@cmember Scroll the content of the specified window's client area
@@ -401,7 +393,8 @@ public:
             return TRUE;
 
         POINT screen = Helper::ToPoint(rich_->mapToLocal(Helper::ToPoint(*lppt)));
-        auto ret = delegate() ? delegate()->screenToClient(rich_, &screen) : 0;
+        auto wg = widget();
+        auto ret = wg ? ::ScreenToClient(wg, &screen) : FALSE;
         if (ret)
             *lppt = screen;
         return ret;
@@ -415,7 +408,8 @@ public:
         if (!rich_)
             return TRUE;
         POINT client = Helper::ToPoint(rich_->mapToGlobal(Helper::ToPoint(*lppt)));
-        auto ret = delegate() ? delegate()->clientToScreen(rich_, &client) : 0;
+        auto wg = widget();
+        auto ret = wg ? ::ClientToScreen(wg, &client) : 0;
         if (ret)
             *lppt = client;
         return ret;
@@ -560,12 +554,14 @@ public:
     //#ifdef WIN95_IME
     virtual HIMC TxImmGetContext() override
     {
-        return delegate() ? delegate()->immGetContext(rich_) : 0;
+        auto wg = widget();
+        return wg ? ::ImmGetContext(wg) : NULL;
     }
 
     virtual void TxImmReleaseContext(HIMC himc) override
     {
-        delegate() ? delegate()->immReleaseContext(rich_, himc) : 0;
+        auto wg = widget();
+        wg ? ::ImmReleaseContext(wg, himc) : 0;
     }
     //#endif
 
@@ -610,12 +606,6 @@ RichEdit::RichEdit()
 
 RichEdit::~RichEdit()
 {
-    //移除当前所有的定时器
-    for (auto iter = animations_.begin(); iter != animations_.end(); ++iter)
-    {
-        Core::GetAnimationManager()->remove(iter->second, false);
-        iter->second->release();
-    }
     host_->setHost(nullptr);
     host_->release();
 }
@@ -846,13 +836,6 @@ void RichEdit::onKeyDown(KeyEvent & e)
     switch (e.key())
     {
     case kVKEY_RETURN:
-    {
-        if (!(host_->txt_bits_ & TXTBIT_MULTILINE))
-        {//单行模式下
-            delegate_ ? delegate_->onReturn(this) : 0;
-            break;
-        }
-    }      
     case kVKEY_BACK:   
     case kVKEY_UP:
     case kVKEY_DOWN:
@@ -870,12 +853,6 @@ void RichEdit::onKeyUp(KeyEvent & e)
     switch (e.key())
     {
     case kVKEY_RETURN:
-    {
-        if (!(host_->txt_bits_ & TXTBIT_MULTILINE))
-        {//单行模式下 而且需要return
-            break;
-        }
-    }
     case kVKEY_BACK:
     case kVKEY_UP:
     case kVKEY_DOWN:

@@ -392,6 +392,8 @@ public:
 
     virtual void setListener(NotifyListener * listener) = 0;
 
+    virtual void attachTo(HWND hwnd) = 0;
+
     virtual bool isDirty() const = 0;
 
     virtual BonesRect getDirtyRect() const = 0;
@@ -452,17 +454,7 @@ public:
     class NotifyListener : public NotifyBase<BonesRichEdit>
     {
     public:
-        virtual BOOL screenToClient(BonesRichEdit * sender, LPPOINT lppt, bool & stop) = 0;
-
-        virtual BOOL clientToScreen(BonesRichEdit * sender, LPPOINT lppt, bool & stop) = 0;
-
-        virtual HIMC immGetContext(BonesRichEdit * sender, bool & stop) = 0;
-
-        virtual void immReleaseContext(BonesRichEdit * sender, HIMC himc, bool & stop) = 0;
-
         virtual HRESULT txNotify(BonesRichEdit * sender, DWORD iNotify, void  *pv, bool & stop) = 0;
-
-        virtual void onReturn(BonesRichEdit * sender, bool & stop) = 0;
     };
 
     virtual void setListener(NotifyListener * listener) = 0;

@@ -19,17 +19,7 @@ public:
     class Delegate
     {
     public:
-        virtual BOOL screenToClient(RichEdit * sender, LPPOINT lppt) = 0;
-
-        virtual BOOL clientToScreen(RichEdit * sender, LPPOINT lppt) = 0;
-
-        virtual HIMC immGetContext(RichEdit * sender) = 0;
-
-        virtual void immReleaseContext(RichEdit * sender, HIMC himc) = 0;
-
         virtual HRESULT txNotify(RichEdit * sender, DWORD iNotify, void  *pv) = 0;
-
-        virtual void onReturn(RichEdit * sender) = 0;
     };
 public:
     RichEdit();
@@ -111,7 +101,6 @@ private:
     Delegate * delegate_;
     TextHost * host_;
     bool traversal_;
-    std::map<UINT, Animation*> animations_;
     bool ime_;
     friend class TextHost;
 };

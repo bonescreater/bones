@@ -25,6 +25,8 @@ public:
 
     void setListener(NotifyListener * listener) override;
 
+    void attachTo(HWND hwnd) override;
+
     bool isDirty() const override;
 
     BonesRect getDirtyRect() const override;

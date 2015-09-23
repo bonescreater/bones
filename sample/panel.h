@@ -4,8 +4,7 @@
 #include "bones/bones.h"
 #include <Windows.h>
 
-class BSPanel : public BonesRoot::NotifyListener, 
-                public BonesRichEdit::NotifyListener
+class BSPanel : public BonesRoot::NotifyListener
 {
 public:
     static bool Initialize();
@@ -55,22 +54,6 @@ public:
     void onSizeChanged(BonesRoot * sender, const BonesSize & size, bool & stop) override;
 
     void onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool & stop) override;
-
-    void onCreate(BonesRichEdit * sender, bool & stop) override;
-
-    void onDestroy(BonesRichEdit * sender, bool & stop) override;
-
-    HRESULT txNotify(BonesRichEdit * sender, DWORD iNotify, void  *pv, bool & stop) override;
-
-    void onReturn(BonesRichEdit * sender, bool & stop) override;
-
-    BOOL screenToClient(BonesRichEdit * sender, LPPOINT lppt, bool & stop) override;
-
-    BOOL clientToScreen(BonesRichEdit * sender, LPPOINT lppt, bool & stop) override;
-
-    HIMC immGetContext(BonesRichEdit * sender, bool & stop) override;
-
-    void immReleaseContext(BonesRichEdit * sender, HIMC himc, bool & stop);
 protected:
     void onPaint(HDC hdc, const RECT & rect);
 

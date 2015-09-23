@@ -55,6 +55,11 @@ void LuaRoot::setListener(NotifyListener * listener)
     listener_ = listener;
 }
 
+void LuaRoot::attachTo(HWND hwnd)
+{
+    object_->attachTo(hwnd);
+}
+
 bool LuaRoot::isDirty() const
 {
     return object_->isDirty();

@@ -25,17 +25,7 @@ public:
 
     void setListener(NotifyListener * listener) override;
 
-    BOOL screenToClient(RichEdit * sender, LPPOINT lppt) override;
-
-    BOOL clientToScreen(RichEdit * sender, LPPOINT lppt) override;
-
-    HIMC immGetContext(RichEdit * sender) override;
-
-    void immReleaseContext(RichEdit * sender, HIMC himc) override;
-
     HRESULT txNotify(RichEdit * sender, DWORD iNotify, void  *pv) override;
-
-    void onReturn(RichEdit * sender) override;
 private:
     NotifyListener * listener_;
 };

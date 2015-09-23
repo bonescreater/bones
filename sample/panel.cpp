@@ -142,7 +142,11 @@ void BSPanel::loadRoot(BonesRoot * root)
 {
     root_ = root;
     if (root_)
+    {
         root_->setListener(this);
+        root_->attachTo(hwnd());
+    }
+        
 }
 
 void BSPanel::layeredDraw()
@@ -384,7 +388,7 @@ void BSPanel::changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop)
     if (cursor_ != cursor)
     {
         cursor_ = cursor;
-        PostMessage(hwnd(), WM_SETCURSOR, 0, HTCLIENT);
+        //PostMessage(hwnd(), WM_SETCURSOR, 0, HTCLIENT);
     } 
     stop = true;
 }
@@ -422,48 +426,4 @@ void BSPanel::onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool
     ;
 }
 
-void BSPanel::onCreate(BonesRichEdit * sender, bool & stop)
-{
-    ;
-}
-
-void BSPanel::onDestroy(BonesRichEdit * sender, bool & stop)
-{
-    ;
-}
-
-HRESULT BSPanel::txNotify(BonesRichEdit * sender, DWORD iNotify, void  *pv, bool & stop)
-{
-    stop = true;
-    return S_OK;
-}
-
-void BSPanel::onReturn(BonesRichEdit * sender, bool & stop)
-{
-    stop = true;
-}
-
-BOOL BSPanel::screenToClient(BonesRichEdit * sender, LPPOINT lppt, bool & stop)
-{
-    stop = true;
-    return ::ScreenToClient(hwnd_, lppt);
-}
-
-BOOL BSPanel::clientToScreen(BonesRichEdit * sender, LPPOINT lppt, bool & stop)
-{
-    stop = true;
-    return ::ClientToScreen(hwnd_, lppt);
-}
-
-HIMC BSPanel::immGetContext(BonesRichEdit * sender, bool & stop)
-{
-    stop = true;
-    return ::ImmGetContext(hwnd_);
-}
-
-void BSPanel::immReleaseContext(BonesRichEdit * sender, HIMC himc, bool & stop)
-{
-    stop = true;
-    ::ImmReleaseContext(hwnd_, himc);
-}
 

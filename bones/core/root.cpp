@@ -15,7 +15,8 @@ namespace bones
 {
 
 Root::Root()
-:mouse_(this), focus_(this), device_(nullptr), delegate_(nullptr)
+:mouse_(this), focus_(this), device_(nullptr), delegate_(nullptr),
+widget_(NULL)
 {
     ;
 }
@@ -29,6 +30,11 @@ Root::~Root()
 void Root::setDelegate(Delegate * delegate)
 {
     delegate_ = delegate;
+}
+
+void Root::attachTo(Widget widget)
+{
+    widget_ = widget;
 }
 
 bool Root::handleMouse(NativeEvent & e)
@@ -159,6 +165,11 @@ bool Root::handleWheel(NativeEvent & e)
         mouse_.handleWheel(we);
     }
     return true;
+}
+
+Widget Root::getWidget()
+{
+    return widget_;
 }
 
 bool Root::isVisible() const

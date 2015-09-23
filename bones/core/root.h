@@ -51,6 +51,8 @@ public:
 
     void setDelegate(Delegate * delegate);
 
+    void attachTo(Widget widget);
+
     void draw();
 
     const Rect & getDirtyRect() const;
@@ -70,6 +72,8 @@ public:
     bool handleComposition(NativeEvent & e);
 
     bool handleWheel(NativeEvent & e);
+
+    Widget getWidget();
 
     bool isVisible() const override;
 
@@ -106,7 +110,7 @@ private:
     void adjustPixmap();
 private:
     Delegate * delegate_;
-
+    Widget widget_;
     FocusController focus_;
     MouseController mouse_;
     AcceleratorManager accelerators_;
