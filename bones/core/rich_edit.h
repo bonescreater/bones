@@ -1,7 +1,7 @@
 ﻿#ifndef BONES_CORE_RICH_EDIT_H_
 #define BONES_CORE_RICH_EDIT_H_
 
-#include "view.h"
+#include "area.h"
 #include "pixmap.h"
 #include "rect.h"
 
@@ -13,10 +13,10 @@ class Font;
 class Animation;
 class TextHost;
 
-class RichEdit : public View
+class RichEdit : public Area<RichEdit>
 {
 public:
-    class Delegate
+    class Delegate : public DelegateBase
     {
     public:
         virtual HRESULT txNotify(RichEdit * sender, DWORD iNotify, void  *pv) = 0;
@@ -52,6 +52,8 @@ public:
 
     const char * getClassName() const override;
 protected:
+    DelegateBase * delegate() override;
+
     void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 
     void onPositionChanged() override;

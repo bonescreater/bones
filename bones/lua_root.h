@@ -7,7 +7,7 @@
 namespace bones
 {
 
-class LuaRoot : public LuaObject<BonesRoot, BonesRoot::NotifyListener, Root>,
+class LuaRoot : public LuaObject<BonesRoot, Root>,
                 public Root::Delegate
 {
 public:
@@ -15,17 +15,17 @@ public:
 
     ~LuaRoot();
 
-    NotifyListener * getNotify() const override;
+    void notifyCreate();
 
-    void notifyCreate() override;
-
-    void notifyDestroy() override;
+    void notifyDestroy();
 
     void createMetaTable(lua_State * l) override;
 
     void setListener(NotifyListener * listener) override;
 
-    void attachTo(HWND hwnd) override;
+    void setColor(BonesColor color) override;
+
+    void attachTo(BonesWidget hwnd) override;
 
     bool isDirty() const override;
 

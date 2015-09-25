@@ -15,7 +15,6 @@ namespace bones
 {
 extern const char * kClassRoot;
 extern const char * kClassView;
-extern const char * kClassArea;
 extern const char * kClassImage;
 extern const char * kClassShape;
 extern const char * kClassText;
@@ -29,7 +28,6 @@ typedef HBITMAP Caret;
 typedef HWND Widget;
 
 class AnimationManager;
-class PanelManager;
 class CSSManager;
 class ResManager;
 class XMLController;
@@ -63,8 +61,6 @@ public:
     static bool CEFEnable();
 
     static AnimationManager * GetAnimationManager();
-
-    static PanelManager * GetPanelManager();
 
     static CSSManager * GetCSSManager();
 

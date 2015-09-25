@@ -1,15 +1,15 @@
 ﻿#ifndef BONES_CORE_SCROLLER_H_
 #define BONES_CORE_SCROLLER_H_
 
-#include "view.h"
+#include "area.h"
 
 namespace bones
 {
 
-class Scroller : public View
+class Scroller : public Area<Scroller>
 {//scroller自己的宽高是 ViewPort
 public:
-    class Delegate
+    class Delegate : public DelegateBase
     {
     public:
         virtual void onScrollRange(Scroller * sender, 
@@ -45,6 +45,8 @@ public:
 
     const char * getClassName() const override;
 protected:
+    DelegateBase * delegate() override;
+
     void onSizeChanged() override;
     //支持滚动
     void onWheel(WheelEvent & e) override;

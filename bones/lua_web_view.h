@@ -1,28 +1,19 @@
 ﻿#ifndef BONES_LUA_WEB_VIEW_H_
 #define BONES_LUA_WEB_VIEW_H_
 
-#include "lua_object.h"
+#include "lua_handler.h"
 #include "core/web_view.h"
 
 namespace bones
 {
 
-class LuaWebView : public LuaObject<BonesWebView, BonesWebView::NotifyListener, WebView>
+class LuaWebView : public LuaObject<BonesWebView, WebView>,
+                   public WebView::Delegate
 {
 public:
     LuaWebView(WebView * ob);
 
-    ~LuaWebView();
-
-    NotifyListener * getNotify() const override;
-
-    void notifyCreate() override;
-
-    void notifyDestroy() override;
-
     void createMetaTable(lua_State * l) override;
-
-    void setListener(NotifyListener * listener) override;
 
     bool open() override;
 
@@ -31,10 +22,10 @@ public:
     void loadURL(const wchar_t * url) override;
 
     void executeJS(const wchar_t * code,
-        const wchar_t * url,
-        int start_line) override;
-private:
-    NotifyListener * listener_;
+                   const wchar_t * url,
+                   int start_line) override;
+
+    LUA_HANDLER(WebView);
 };
 }
 

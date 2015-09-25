@@ -51,6 +51,8 @@ public:
 
     void setDelegate(Delegate * delegate);
 
+    void setColor(Color color);
+
     void attachTo(Widget widget);
 
     void draw();
@@ -120,6 +122,7 @@ private:
     bool has_focus_;
     void * bits_;
     size_t pitch_;
+    Color color_;
     friend class MouseController;
 };
 

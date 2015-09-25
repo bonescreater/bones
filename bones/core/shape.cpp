@@ -12,12 +12,11 @@ namespace bones
 Shape::Shape()
 :category_(kNone), style_(kFill), color_(0xff000000), stroke_width_(1),
 border_width_(0), border_effect_(kSolid), border_color_(0xff000000), border_rx_(0), border_ry_(0),
-colour_type_(kColor), effect_(nullptr)
+colour_type_(kColor), effect_(nullptr), delegate_(nullptr)
 {
     rect_param_.rx = 0;
     rect_param_.ry = 0;
     circle_param_.radius = 0;
-    setFocusable(false);
 }
 
 Shape::~Shape()
@@ -106,6 +105,16 @@ void Shape::setBorder(Scalar width, Effect effect, Color color, Scalar rx, Scala
     inval();
 }
 
+void Shape::setDelegate(Delegate * delegate)
+{
+    delegate_ = delegate;
+}
+
+Shape::DelegateBase * Shape::delegate()
+{
+    return delegate_;
+}
+
 const char * Shape::getClassName() const
 {
     return kClassShape;
@@ -117,11 +126,6 @@ void Shape::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
         return;
     drawBackground(canvas, opacity);
     drawBorder(canvas, opacity);
-}
-
-bool Shape::onHitTest(const Point & pt)
-{
-    return false;
 }
 
 void Shape::drawBackground(SkCanvas & canvas, float opacity)

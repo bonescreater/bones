@@ -82,9 +82,6 @@
     <ClCompile Include="bones\core\shape.cpp">
       <Filter>bone\facade</Filter>
     </ClCompile>
-    <ClCompile Include="bones\core\area.cpp">
-      <Filter>bone\naked</Filter>
-    </ClCompile>
     <ClCompile Include="bones\core\animation_manager.cpp">
       <Filter>base</Filter>
     </ClCompile>
@@ -190,9 +187,6 @@
     <ClInclude Include="bones\core\shape.h">
       <Filter>bone\facade</Filter>
     </ClInclude>
-    <ClInclude Include="bones\core\area.h">
-      <Filter>bone\naked</Filter>
-    </ClInclude>
     <ClInclude Include="bones\core\animation_manager.h">
       <Filter>base</Filter>
     </ClInclude>
@@ -240,6 +234,9 @@
     </ClInclude>
     <ClInclude Include="bones\core\scroller.h">
       <Filter>bone\naked</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\area.h">
+      <Filter>base</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

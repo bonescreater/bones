@@ -700,6 +700,11 @@ const char * RichEdit::getClassName() const
     return kClassRichEdit;
 }
 
+RichEdit::DelegateBase * RichEdit::delegate()
+{
+    return delegate_;
+}
+
 void RichEdit::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 {
     host_->adjustSurface();
@@ -743,15 +748,20 @@ void RichEdit::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 void RichEdit::onPositionChanged()
 {
     host_->services_->OnTxPropertyBitsChange(TXTBIT_CLIENTRECTCHANGE, TRUE);
+    Area::onPositionChanged();
 }
 
 void RichEdit::onSizeChanged()
 {
     host_->services_->OnTxPropertyBitsChange(TXTBIT_CLIENTRECTCHANGE, TRUE);
+    Area::onSizeChanged();
 }
 
 void RichEdit::onMouseEnter(MouseEvent & e)
 {
+    Area::onMouseEnter(e);
+    if (e.canceled())
+        return;
     host_->services_->OnTxInPlaceActivate(NULL);
 }
 
@@ -762,6 +772,10 @@ void RichEdit::onMouseLeave(MouseEvent & e)
 
 void RichEdit::onMouseMove(MouseEvent & e)
 {
+    Area::onMouseMove(e);
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     LRESULT lr = 1;
@@ -784,6 +798,10 @@ void RichEdit::onMouseMove(MouseEvent & e)
 
 void RichEdit::onMouseDown(MouseEvent & e)
 {
+    Area::onMouseDown(e);
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     host_->services_->TxSendMessage(
@@ -794,6 +812,10 @@ void RichEdit::onMouseDown(MouseEvent & e)
 
 void RichEdit::onMouseUp(MouseEvent & e)
 {
+    Area::onMouseUp(e);
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     host_->services_->TxSendMessage(
@@ -804,6 +826,9 @@ void RichEdit::onMouseUp(MouseEvent & e)
 
 void RichEdit::onFocus(FocusEvent & e)
 {
+    Area::onFocus(e);
+    if (e.canceled())
+        return;
     //焦点到richedit时处于PlaceActivate
     if (Event::kTarget != e.phase())
         return;
@@ -815,6 +840,10 @@ void RichEdit::onFocus(FocusEvent & e)
 
 void RichEdit::onBlur(FocusEvent & e)
 {
+    Area::onBlur(e);
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     host_->services_->TxSendMessage(WM_KILLFOCUS, 0, 0, nullptr);
@@ -831,6 +860,10 @@ void RichEdit::onBlur(FocusEvent & e)
 
 void RichEdit::onKeyDown(KeyEvent & e)
 {
+    Area::onKeyDown(e);
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     switch (e.key())
@@ -848,6 +881,10 @@ void RichEdit::onKeyDown(KeyEvent & e)
 
 void RichEdit::onKeyUp(KeyEvent & e)
 {
+    Area::onKeyUp(e);
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     switch (e.key())
@@ -864,6 +901,10 @@ void RichEdit::onKeyUp(KeyEvent & e)
 
 void RichEdit::onChar(KeyEvent & e)
 {
+    Area::onChar(e);
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     if (e.ch() != '\t' )
@@ -871,7 +912,10 @@ void RichEdit::onChar(KeyEvent & e)
 }
 
 void RichEdit::onCompositionStart(CompositionEvent & e)
-{
+{//IME消息不传递出去
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     ime_ = true;
@@ -882,6 +926,9 @@ void RichEdit::onCompositionStart(CompositionEvent & e)
 
 void RichEdit::onCompositionUpdate(CompositionEvent & e)
 {
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     auto native = (NativeEvent *)e.getUserData();
@@ -891,6 +938,9 @@ void RichEdit::onCompositionUpdate(CompositionEvent & e)
 
 void RichEdit::onCompositionEnd(CompositionEvent & e)
 {
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     ime_ = false;

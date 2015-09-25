@@ -25,20 +25,24 @@ void ResManager::clean()
 
 Pixmap ResManager::getPixmap(const char * key)
 {
-    auto iter = key2pm_.find(key);
-    if (iter != key2pm_.end())
-        return iter->second;
-    else
-        return Pixmap();
+    if (key)
+    {
+        auto iter = key2pm_.find(key);
+        if (iter != key2pm_.end())
+            return iter->second;
+    }
+    return Pixmap();
 }
 
 Cursor ResManager::getCursor(const char * key)
 {
-    auto iter = key2cursor_.find(key);
-    if (iter != key2cursor_.end())
-        return iter->second;
-    else
-        return 0;
+    if (key)
+    {
+        auto iter = key2cursor_.find(key);
+        if (iter != key2cursor_.end())
+            return iter->second;
+    }
+    return 0;
 }
 
 }

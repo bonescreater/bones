@@ -16,9 +16,9 @@ namespace bones
 
 Root::Root()
 :mouse_(this), focus_(this), device_(nullptr), delegate_(nullptr),
-widget_(NULL)
+widget_(NULL), color_(0)
 {
-    ;
+    
 }
 
 Root::~Root()
@@ -30,6 +30,11 @@ Root::~Root()
 void Root::setDelegate(Delegate * delegate)
 {
     delegate_ = delegate;
+}
+
+void Root::setColor(Color color)
+{
+    color_ = color;
 }
 
 void Root::attachTo(Widget widget)
@@ -236,7 +241,7 @@ void Root::getBackBuffer(const void * & bits, size_t & pitch) const
 void Root::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 {  
     SkPaint paint;
-    paint.setColor(0);
+    paint.setColor(color_);
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
     canvas.drawPaint(paint);
 }
@@ -290,9 +295,8 @@ bool Root::notifySetFocus(View * n)
 }
 
 bool Root::notifyChangeCursor(View * n, Cursor cursor)
-{//只有root和当前over可以改鼠标
-    if (n == mouse_.over() || n == this)
-        delegate_ ? delegate_->changeCursor(this, cursor) : 0;
+{
+    delegate_ ? delegate_->changeCursor(this, cursor) : 0;
     return true;
 }
 

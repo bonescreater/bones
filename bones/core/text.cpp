@@ -44,14 +44,24 @@ static void AdjustSkPaint(SkPaint & paint, Color color, float opacity, Text::Ali
 
 Text::Text()
 :cache_dirty_(false), of_(kNone), text_color_(0xff000000),
-text_align_(kCenter)
+text_align_(kCenter), delegate_(nullptr)
 {
-    setFocusable(false);
+    ;
+}
+
+void Text::setDelegate(Delegate * delegate)
+{
+    delegate_ = delegate;
 }
 
 const char * Text::getClassName() const
 {
     return kClassText;
+}
+
+Text::DelegateBase * Text::delegate()
+{
+    return delegate_;
 }
 
 void Text::set(const wchar_t * text)
@@ -141,11 +151,6 @@ void Text::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 void Text::onSizeChanged()
 {
     cache_dirty_ = true;
-}
-
-bool Text::onHitTest(const Point & pt)
-{
-    return false;
 }
 
 void Text::adjustCache()

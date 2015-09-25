@@ -60,6 +60,14 @@ extern const char * kMethodGetChildAt;
 extern const char * kMethodGetParent;
 extern const char * kMethodGetSize;
 extern const char * kMethodGetLoc;
+
+extern const char * kMethodSetColor;
+
+extern const char * kStrCapture;
+extern const char * kStrTarget;
+extern const char * kStrBubbling;
+
+
 //LuaAnimation跟LuaObject不同 要么从C++中创建要么从LUA中创建
 //从C++中创建的 是没有lua回调
 //从LUA中创建的 是没有C++回调
@@ -82,6 +90,20 @@ enum AnimationType
 #define BONES_CALLBACK_3(__selector__, ...) std::bind(__selector__, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, ##__VA_ARGS__)
 #define BONES_CALLBACK_4(__selector__, ...) std::bind(__selector__, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, ##__VA_ARGS__)
 
+
+extern const char * ToEventPhaseStr(BonesEvent::Phase phase);
+
+class EventStack
+{
+public:
+    EventStack();
+
+    ~EventStack();
+
+    int getCount() const;
+private:
+    static int event_stack_count;
+};
 
 }
 

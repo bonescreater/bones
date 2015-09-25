@@ -1,23 +1,28 @@
 ﻿#ifndef BONES_CORE_IMAGE_H_
 #define BONES_CORE_IMAGE_H_
 
-#include "view.h"
+#include "area.h"
 #include "color.h"
 #include "pixmap.h"
 #include "rect.h"
 
-class SkShader;
+class SkColorFilter;
 
 namespace bones
 {
 
-class Image : public View
+class Image : public Area<Image>
 {
+public:
+    class Delegate : public DelegateBase
+    {
+
+    };
 private:
     enum Style
     {
-        kNone,//不进行处理
-        kFill,//填满
+        kDirect,//不进行处理
+        kStretch,//填满
         kNine,//九宫格拉伸
     };
 public:
@@ -25,15 +30,25 @@ public:
 
     ~Image();
 
-    void setStyle(Style & style, const Rect * r);
+    void setDirect(const Point * bp);
 
-    void set(Pixmap & pm);
+    void setStretch(const Rect * dst);
+
+    void setNine(const Rect * dst, const Rect * center);
+
+    void set(const Pixmap & pm);
+
+    void set(const char * key);
+
+    void setColorMatrix(const ColorMatrix & cm);
+
+    void setDelegate(Delegate * delegate);
 
     const char * getClassName() const override;
 protected:
-    void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
+    DelegateBase * delegate() override;
 
-    bool onHitTest(const Point & pt) override;
+    void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 protected:
     BONES_CSS_TABLE_DECLARE()
 
@@ -41,15 +56,20 @@ protected:
 
     void set(const CSSParams & params);
 private:
-    void drawNone(SkCanvas & canvas, const Rect & bounds, float opacity);
+    void drawDirect(SkCanvas & canvas, const Rect & bounds, float opacity);
 
-    void drawFill(SkCanvas & canvas, const Rect & bounds, float opacity);
+    void drawStretch(SkCanvas & canvas, const Rect & bounds, float opacity);
 
     void drawNine(SkCanvas & canvas, const Rect & bounds, float opacity);
 private:
+    Delegate * delegate_;
     Style style_;
     Pixmap pixmap_;
-    Rect nine_center_;
+    Rect dst_;
+    Rect nine_;
+    Point start_;
+
+    SkColorFilter * color_filter_;
 };
 
 }

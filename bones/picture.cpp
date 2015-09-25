@@ -14,9 +14,12 @@ Picture::~Picture()
     ;
 }
 
-
-
 Pixmap & Picture::getPixmap()
+{
+    return pixmap_;
+}
+
+const Pixmap & Picture::getPixmap() const
 {
     return pixmap_;
 }

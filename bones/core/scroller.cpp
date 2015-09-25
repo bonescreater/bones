@@ -35,6 +35,11 @@ const char * Scroller::getClassName() const
     return kClassScroller;
 }
 
+Scroller::DelegateBase * Scroller::delegate()
+{
+    return delegate_;
+}
+
 void Scroller::setScrollInfo(Scalar total, bool horizontal)
 {
     if (total < 0 )
@@ -130,10 +135,14 @@ void Scroller::onSizeChanged()
 {
     updateVInfo();
     updateHInfo();
+    Area::onSizeChanged();
 }
 
 void Scroller::onWheel(WheelEvent & e)
 {//只处理冒泡阶段的
+    Area::onWheel(e);
+    if (e.canceled())
+        return;
     if (Event::kBubbling != e.phase() )
         return;
 

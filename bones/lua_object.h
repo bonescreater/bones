@@ -14,7 +14,7 @@ namespace bones
 {
 
 
-template<class Base, class Listener, class T>
+template<class Base, class T>
 class LuaObject : public Base, public Ref
 {
 public:
@@ -27,48 +27,6 @@ public:
     virtual ~LuaObject()
     {
         BLG_VERBOSE << "destroy:" << object_->getClassName() << object_.get();
-    }
-
-    virtual void notifyCreate()
-    {
-        bool stop = false;
-        getNotify() ? getNotify()->onCreate(this, stop) : 0;
-        if (stop)
-            return;
-        auto l = LuaContext::State();
-        LUA_STACK_AUTO_CHECK(l);
-        LuaContext::GetLOFromCO(l, this);
-        lua_getfield(l, -1, kNotifyOrder);
-        if (lua_istable(l, -1))
-        {
-            lua_getfield(l, -1, kMethodOnCreate);
-            lua_pushnil(l);
-            lua_copy(l, -4, -1);
-            auto count = LuaContext::SafeLOPCall(l, 1, 0);
-            lua_pop(l, count);
-        }
-        lua_pop(l, 2);
-    }
-
-    virtual void notifyDestroy()
-    {
-        bool stop = false;
-        getNotify() ? getNotify()->onDestroy(this, stop) : 0;
-        if (stop)
-            return;
-        auto l = LuaContext::State();
-        LUA_STACK_AUTO_CHECK(l);
-        LuaContext::GetLOFromCO(l, this);
-        lua_getfield(l, -1, kNotifyOrder);
-        if (lua_istable(l, -1))
-        {
-            lua_getfield(l, -1, kMethodOnDestroy);
-            lua_pushnil(l);
-            lua_copy(l, -4, -1);
-            auto count = LuaContext::SafeLOPCall(l, 1, 0);
-            lua_pop(l, count);
-        }
-        lua_pop(l, 2);
     }
 
     void addNotify(const char * notify_name,
@@ -110,7 +68,57 @@ public:
         lua_pop(l, 2);
     }
 
-    virtual Listener * getNotify() const = 0;
+    void addEvent(
+        const char * name,
+        const char * phase,
+        const char * mod,
+        const char * func)
+    {
+        if (!name || !phase || !func)
+            return;
+        auto l = LuaContext::State();
+        LUA_STACK_AUTO_CHECK(l);
+        LuaContext::GetLOFromCO(l, this);
+        assert(lua_istable(l, -1));
+        lua_getfield(l, -1, kEventOrder);
+        if (!lua_istable(l, -1))
+        {
+            lua_pop(l, 1);
+            lua_newtable(l);
+            assert(lua_istable(l, -2));
+            lua_setfield(l, -2, kEventOrder);
+            lua_getfield(l, -1, kEventOrder);
+        }
+        lua_getfield(l, -1, phase);
+        if (!lua_istable(l, -1))
+        {
+            lua_pop(l, 1);
+            lua_newtable(l);
+            assert(lua_istable(l, -2));
+            lua_setfield(l, -2, phase);
+            lua_getfield(l, -1, phase);
+        }
+
+        lua_pushnil(l);
+        if (mod)
+        {
+            lua_getglobal(l, mod);
+            assert(lua_istable(l, -1));
+            lua_getfield(l, -1, func);
+            lua_copy(l, -1, -3);
+            lua_pop(l, 2);
+        }
+        else
+        {
+            lua_getglobal(l, func);
+            lua_copy(l, -1, -2);
+            lua_pop(l, 1);
+        }
+        assert(lua_isfunction(l, -1));
+        lua_setfield(l, -2, name);
+
+        lua_pop(l, 3);
+    }
 
     const char * getClassName() override
     {
@@ -597,6 +605,7 @@ public:
 protected:
     RefPtr<T> object_;
 };
+
 
 }
 #endif

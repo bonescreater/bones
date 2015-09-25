@@ -66,31 +66,10 @@ static const char * kMethodClose = "close";
 static const char * kMethodLoadURL = "loadURL";
 
 LuaWebView::LuaWebView(WebView * ob)
-:LuaObject(ob), listener_(nullptr)
+:LuaObject(ob)
 {
+    LUA_HANDLER_INIT();
     createLuaTable();
-}
-
-LuaWebView::~LuaWebView()
-{
-
-}
-
-LuaWebView::NotifyListener * LuaWebView::getNotify() const
-{
-    return listener_;
-}
-
-void LuaWebView::notifyCreate()
-{
-    //object_->setDelegate(this);
-    LuaObject::notifyCreate();
-}
-
-void LuaWebView::notifyDestroy()
-{
-    LuaObject::notifyDestroy();
-    //object_->setDelegate(nullptr);
 }
 
 void LuaWebView::createMetaTable(lua_State * l)
@@ -104,11 +83,6 @@ void LuaWebView::createMetaTable(lua_State * l)
         lua_pushcfunction(l, &LoadURL);
         lua_setfield(l, -2, kMethodLoadURL);
     }
-}
-
-void LuaWebView::setListener(NotifyListener * listener)
-{
-    listener_ = listener;
 }
 
 bool LuaWebView::open()

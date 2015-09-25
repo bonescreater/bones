@@ -1,7 +1,7 @@
 ﻿#ifndef BONES_CORE_WEB_VIEW_H_
 #define BONES_CORE_WEB_VIEW_H_
 
-#include "view.h"
+#include "area.h"
 #include "pixmap.h"
 
 
@@ -10,8 +10,13 @@ namespace bones
 
 class Browser;
 
-class WebView : public View 
+class WebView : public Area<WebView> 
 {
+public:
+    class Delegate : public DelegateBase
+    {
+
+    };
 public:
     static bool StartUp(const char * locate);
 
@@ -23,6 +28,8 @@ public:
 
     ~WebView();
 
+    void setDelegate(Delegate * delegate);
+
     bool open();
 
     void close();
@@ -33,11 +40,11 @@ public:
 
     const char * getClassName() const override;
 protected:
+    DelegateBase * delegate() override;
+
     void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 
     void onSizeChanged() override;
-
-    void onMouseEnter(MouseEvent & e) override;
 
     void onMouseLeave(MouseEvent & e) override;
 
@@ -63,6 +70,7 @@ protected:
 private:
     void adjustPixmap();
 private:
+    Delegate * delegate_;
     Browser * browser_;
     bool hack_focus_travel_;
 };

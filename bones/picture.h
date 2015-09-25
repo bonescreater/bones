@@ -17,6 +17,8 @@ public:
 
     Pixmap & getPixmap();
 
+    const Pixmap & getPixmap() const;
+
     bool alloc(int width, int height) override;
 
     bool decode(const void * data, size_t len) override;

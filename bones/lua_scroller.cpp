@@ -40,31 +40,10 @@ static int SetScrollPos(lua_State * l)
 }
 
 LuaScroller::LuaScroller(Scroller * ob)
-:LuaObject(ob), listener_(nullptr)
+:LuaObject(ob)
 {
+    LUA_HANDLER_INIT();
     createLuaTable();
-}
-
-LuaScroller::~LuaScroller()
-{
-    ;
-}
-
-LuaScroller::NotifyListener * LuaScroller::getNotify() const
-{
-    return listener_;
-}
-
-void LuaScroller::notifyCreate()
-{
-    object_->setDelegate(this);
-    LuaObject::notifyCreate();
-}
-
-void LuaScroller::notifyDestroy()
-{
-    LuaObject::notifyDestroy();
-    object_->setDelegate(nullptr);
 }
 
 void LuaScroller::createMetaTable(lua_State * l)
@@ -88,11 +67,6 @@ void LuaScroller::setScrollPos(BonesScalar cur, bool horizontal)
     object_->setScrollPos(cur, horizontal);
 }
 
-void LuaScroller::setListener(NotifyListener * listener)
-{
-    listener_ = listener;
-}
-
 void LuaScroller::onScrollRange(Scroller * sender,
                                 Scalar min_pos,
                                 Scalar max_pos,
@@ -100,7 +74,7 @@ void LuaScroller::onScrollRange(Scroller * sender,
                                 bool horizontal)
 {
     bool stop = false;
-    listener_ ? listener_->onScrollRange(
+    notify_ ? notify_->onScrollRange(
         this, min_pos, max_pos, view_port, horizontal) : 0;
     if (stop)
         return;
@@ -127,7 +101,7 @@ void LuaScroller::onScrollPos(Scroller * sender,
                               bool horizontal)
 {
     bool stop = false;
-    listener_ ? listener_->onScrollPos(this, cur_pos, horizontal) : 0;
+    notify_ ? notify_->onScrollPos(this, cur_pos, horizontal) : 0;
     if (stop)
         return;
     auto l = LuaContext::State();

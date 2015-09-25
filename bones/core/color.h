@@ -93,7 +93,10 @@ inline Color ColorFToColor(ColorF cf)
 }
 
 
-
+typedef struct
+{
+    Scalar mat[20];
+}ColorMatrix;
 
 
 }

@@ -10,12 +10,8 @@ static const char * kMetaTableText = "__mt_text";
 LuaText::LuaText(Text * ob)
 :LuaObject(ob), notify_(nullptr)
 {
+    LUA_HANDLER_INIT();
     createLuaTable();
-}
-
-BonesText::NotifyListener * LuaText::getNotify() const
-{
-    return notify_;
 }
 
 void LuaText::createMetaTable(lua_State * l)
@@ -23,9 +19,4 @@ void LuaText::createMetaTable(lua_State * l)
     LuaObject::createMetaTable(l, kMetaTableText);
 }
 
-void LuaText::setListener(NotifyListener * lis)
-{
-    notify_ = lis;
-
-}
 }

@@ -20,10 +20,62 @@
     #define BONES_API(type) BONES_EXTERN_C BONES_DECLSPEC_IMPORT type __cdecl
 #endif
 
+/*!bones初始化参数*/
+struct BonesConfig
+{
+    enum LogLevel
+    {
+        kNone = 0,
+        kError = 1,// only error
+        kVerbose = 2,// everything
+    };
+    LogLevel log_level;
+    bool cef_enable;
+    const char * cef_locate;//"zh-CN"
+};
+
+class BonesCore;
+/*!bones初始化
+  @param[in] config \n
+             config.log_level 输出的日志等级 默认会在当前目录下生成日志文件\n
+                              kNone无日志输出\n
+                              kError只输出错误\n
+                              kVerbose输出所有信息\n
+             config.cef_enable true xml中遇到webview标签则创建浏览器\n
+                               false 忽略webview标签\n
+             config.cef_locate cef_enable为true时有效
+  @return 成功返回BonesCore *, 否则返回0 
+  @warning BonesStartUp BonesShutDown应该成对使用 通常应用程序只需要初始化一次
+  @see BonesCore
+  @code
+  BonesConfig config
+  config.log_level = BonesConfig::kVerbose;
+  config.cef_enable = true;
+  config.cef_locate = "zh-CN";
+  BonesStartUp(config);
+  @endcode
+ */
+BONES_API(BonesCore *) BonesStartUp(const BonesConfig & config);
+/*!bones反初始化
+   @warning BonesStartUp BonesShutDown应该成对使用
+*/
+BONES_API(void) BonesShutDown();
+/*!bones空闲例程 通常在消息循环空闲时调用
+   @warning 不调用BonesUpdate，浏览器和定时器无法正常工作
+*/
+BONES_API(void) BonesUpdate();
+/*!获取当前BonesCore* 
+   @return 成功返回当前BonesCore* 失败返回0
+   @warning 必须在BonesStartUp后才能调用 在BonesShutDown后不应该再调用该函数
+*/
+BONES_API(BonesCore *) BonesGetCore();
+
+//基础类型声明
 typedef float BonesScalar;
 typedef HANDLE BonesCursor;
 typedef HBITMAP BonesCaret;
-
+typedef HWND BonesWidget;
+/*!矩形描述*/
 typedef struct
 {
     BonesScalar left;
@@ -31,57 +83,87 @@ typedef struct
     BonesScalar right;
     BonesScalar bottom;
 }BonesRect;
-
+/*!尺寸描述*/
 typedef struct
 {
     BonesScalar width;
     BonesScalar height;
 }BonesSize;
-
+/*!点描述*/
 typedef struct
 {
     BonesScalar x;
     BonesScalar y;
 }BonesPoint;
-
+/*!颜色矩阵 4X5\n
+    m=[a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t]\n
+      |a, b, c, d, e|       |R|      |aR + bG + cB + dA + e|     |R1|\n
+      |f, g, h, i, j|       |G|      |fR + gG + hB + iA + j|     |G1|\n
+      |-------------|       |B|      |---------------------|     |--|\n
+      |k, l, m, n, o|       |A|      |kR + lG + mB + nA + o|     |B1|\n
+      |p, q, r, s, t|       |1|      |pR + qG + rB + sA + t|     |A1|\n
+*/
+typedef struct
+{
+    BonesScalar mat[20];
+} BonesColorMatrix;
+/*!颜色描述 ARGB格式 A:31-24 R:23-16 G:15-8 B:7-0*/
 typedef uint32_t BonesColor;
 
-enum BonesLogLevel
-{
-    kBONES_LOG_LEVEL_NONE = 0,
-    kBONES_LOG_LEVEL_ERROR = 1,// only error
-    kBONES_LOG_LEVEL_VERBOSE = 2,// everything
-};
-
-struct BonesConfig
-{
-    BonesLogLevel log_level;
-    bool cef_enable;
-    const char * cef_locate;//"zh-CN"
-};
-
-class BonesCore;
-BONES_API(BonesCore *) BonesStartUp(const BonesConfig & config);
-
-BONES_API(void) BonesShutDown();
-
-BONES_API(void) BonesUpdate();
-
-BONES_API(BonesCore *) BonesGetCore();
-
-class BonesObject;
-class BonesXMLListener
+/*!BonesPixmap位图接口该接口可以对位图进行操作 位图存放预乘后的像素
+   @warning BonesPixmap通过BonesCore来创建和销毁
+   @see BonesCore
+   @see
+*/
+class BonesPixmap
 {
 public:
-    virtual bool onLoad(BonesCore *) = 0;
-
-    virtual void onUnload(BonesCore *) = 0;
-
-    virtual void onPreCreate(BonesCore *, BonesObject *) = 0;
-
-    virtual void onPostDestroy(BonesCore *, BonesObject *) = 0;
+    struct LockRec
+    {
+        void * bits;//!<内存首地址
+        size_t pitch;//!<每一行的字节数
+        BonesRect subset;//!<位图在内存中的矩形区域
+    };
+public:
+    /*!分配一块内存位图
+       @param[in] width 位图宽
+       @param[in] height 位图高
+       @return 成功返回true否则返回false
+    */
+    virtual bool alloc(int width, int height) = 0;
+    /*!解码图片
+       @param[in] data 图片内存首地址
+       @param[in] len 图片内存大小
+       @note 内部使用wic解码 支持png bmp等格式
+    */
+    virtual bool decode(const void * data, size_t len) = 0;
+    /*!得到位图宽
+       @return 位图宽
+    */
+    virtual int getWidth() const = 0;
+    /*!得到位图高
+       @return 位图高
+    */
+    virtual int getHeight() const = 0;
+    /*!锁住位图 
+       @param[out] rec 返回位图信息
+       @return 成功返回true 失败返回false
+       @warning 必须和unlock成对使用
+    */
+    virtual bool lock(LockRec & rec) = 0;
+    /*!解锁位图
+    */
+    virtual void unlock() = 0;
+    /*!用指定颜色填充位图
+       @param[in] color 填充位图的颜色
+    */
+    virtual void erase(BonesColor color) = 0;
+    /*!裁剪子位图
+       @param[out] pm 存放裁剪后的子位图
+       @param[in] subset 子位图的矩形区域
+    */
+    virtual void extractSubset(BonesPixmap & pm, const BonesRect & subset) = 0;
 };
-
 
 struct BonesScriptArg
 {
@@ -104,6 +186,7 @@ struct BonesScriptArg
     };
 };
 
+class BonesObject;
 class BonesScriptListener
 {
 public:
@@ -307,16 +390,6 @@ public:
     public:
         virtual void onEvent(Animation ani, BonesObject * ob, AnimationAction action) = 0;
     };
-
-    //每个Object都支持onCreate事件
-    template<class T>
-    class NotifyBase
-    {
-    public:
-        virtual void onCreate(T * sender, bool & stop) = 0;
-
-        virtual void onDestroy(T * sender, bool & stop) = 0;
-    };
 public:
     virtual const char * getClassName() = 0;
 
@@ -370,7 +443,7 @@ public:
 class BonesRoot : public BonesObject
 {
 public:
-    class NotifyListener : public NotifyBase<BonesRoot>
+    class NotifyListener
     {
     public:
         virtual void requestFocus(BonesRoot * sender, bool & stop) = 0;
@@ -388,11 +461,17 @@ public:
         virtual void onSizeChanged(BonesRoot * sender, const BonesSize & size, bool & stop) = 0;
 
         virtual void onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool & stop) = 0;
+
+        virtual void onCreate(BonesRoot * sender, bool & stop) = 0;
+
+        virtual void onDestroy(BonesRoot * sender, bool & stop) = 0;
     };
 
     virtual void setListener(NotifyListener * listener) = 0;
 
-    virtual void attachTo(HWND hwnd) = 0;
+    virtual void setColor(BonesColor color) = 0;
+
+    virtual void attachTo(BonesWidget hwnd) = 0;
 
     virtual bool isDirty() const = 0;
 
@@ -415,109 +494,104 @@ public:
     virtual bool handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
 };
 
-class BonesShape : public BonesObject
+template <class T>
+class BonesHandler : public BonesObject
 {
 public:
-    class NotifyListener : public NotifyBase<BonesShape>
-    {
-        ;
-    };
-
-    virtual void setListener(NotifyListener * lis) = 0;
-};
-
-class BonesImage : public BonesObject
-{
-public:
-    class NotifyListener : public NotifyBase<BonesImage>
-    {
-        ;
-    };
-
-    virtual void setListener(NotifyListener * lis) = 0;
-};
-
-class BonesText : public BonesObject
-{
-public:
-    class NotifyListener : public NotifyBase<BonesText>
-    {
-        ;
-    };
-
-    virtual void setListener(NotifyListener * lis) = 0;
-};
-
-class BonesRichEdit : public BonesObject
-{
-public:
-    class NotifyListener : public NotifyBase<BonesRichEdit>
+    //除root外每一个标签支持的notify
+    class NotifyListener
     {
     public:
-        virtual HRESULT txNotify(BonesRichEdit * sender, DWORD iNotify, void  *pv, bool & stop) = 0;
+        virtual void onCreate(T * sender, bool & stop) = 0;
+
+        virtual void onDestroy(T * sender, bool & stop) = 0;
+
+        virtual void onSizeChanged(T * sender, const BonesSize & size, bool & stop) = 0;
+
+        virtual void onPositionChanged(T * sender, const BonesPoint & loc, bool & stop) = 0;
+
+        virtual bool onHitTest(T * sender, const BonesPoint & loc, bool & stop) = 0;
     };
 
-    virtual void setListener(NotifyListener * listener) = 0;
-};
-
-class BonesArea : public BonesObject
-{
-public:
+    //除root外每一个标签支持的mouse event
     class MouseListener
     {
     public:
-        virtual void onMouseEnter(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseEnter(T * sender, BonesMouseEvent & e, bool & stop) = 0;
 
-        virtual void onMouseMove(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseMove(T * sender, BonesMouseEvent & e, bool & stop) = 0;
 
-        virtual void onMouseDown(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseDown(T * sender, BonesMouseEvent & e, bool & stop) = 0;
 
-        virtual void onMouseUp(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseUp(T * sender, BonesMouseEvent & e, bool & stop) = 0;
 
-        virtual void onMouseClick(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseClick(T * sender, BonesMouseEvent & e, bool & stop) = 0;
 
-        virtual void onMouseDClick(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseDClick(T * sender, BonesMouseEvent & e, bool & stop) = 0;
 
-        virtual void onMouseLeave(BonesObject * sender, BonesMouseEvent & e, bool & stop) = 0;
+        virtual void onMouseLeave(T * sender, BonesMouseEvent & e, bool & stop) = 0;
     };
 
+    //除root外每一个标签支持的key event
     class KeyListener
     {
     public:
-        virtual void onKeyDown(BonesObject * sender, BonesKeyEvent & e, bool & stop) = 0;
+        virtual void onKeyDown(T * sender, BonesKeyEvent & e, bool & stop) = 0;
 
-        virtual void onKeyUp(BonesObject * sender, BonesKeyEvent & e, bool & stop) = 0;
+        virtual void onKeyUp(T * sender, BonesKeyEvent & e, bool & stop) = 0;
 
-        virtual void onChar(BonesObject * sender, BonesKeyEvent & e, bool & stop) = 0;
+        virtual void onChar(T * sender, BonesKeyEvent & e, bool & stop) = 0;
     };
 
+    //除root外每一个标签支持的focus event
     class FocusListener
     {
     public:
-        virtual void onFocusOut(BonesObject * sender, BonesFocusEvent & e, bool & stop) = 0;
+        virtual void onFocusOut(T * sender, BonesFocusEvent & e, bool & stop) = 0;
 
-        virtual void onFocusIn(BonesObject * sender, BonesFocusEvent & e, bool & stop) = 0;
+        virtual void onFocusIn(T * sender, BonesFocusEvent & e, bool & stop) = 0;
 
-        virtual void onBlur(BonesObject * sender, BonesFocusEvent & e, bool & stop) = 0;
+        virtual void onBlur(T * sender, BonesFocusEvent & e, bool & stop) = 0;
 
-        virtual void onFocus(BonesObject * sender, BonesFocusEvent & e, bool & stop) = 0;
+        virtual void onFocus(T * sender, BonesFocusEvent & e, bool & stop) = 0;
     };
 
+    //除root外每一个标签支持的wheel event
     class WheelListener
     {
     public:
-        virtual void onWheel(BonesObject * sender, BonesWheelEvent & e, bool & stop) = 0;
+        virtual void onWheel(T * sender, BonesWheelEvent & e, bool & stop) = 0;
     };
+};
 
-    class NotifyListener : public NotifyBase<BonesArea>
-    {
-    public:
-        virtual void onSizeChanged(BonesArea * sender, const BonesSize & size, bool & stop) = 0;
+class BonesShape : public BonesHandler<BonesShape>
+{
+public:
+    virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
 
-        virtual void onPositionChanged(BonesArea * sender, const BonesPoint & loc, bool & stop) = 0;
+    virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
 
-        virtual bool onHitTest(BonesArea * sender, const BonesPoint & loc, bool & stop) = 0;
-    };
+    virtual void setListener(BonesEvent::Phase phase, FocusListener * lis) = 0;
+
+    virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
+
+    virtual void setListener(NotifyListener * lis) = 0;
+};
+
+class BonesImage : public BonesHandler<BonesImage>
+{
+public:
+    virtual void setDirect(const BonesPoint * bp) = 0;
+
+    virtual void setStretch(const BonesRect * dst) = 0;
+
+    virtual void setNine(const BonesRect * dst, const BonesRect * center) = 0;
+
+    virtual void setContent(const BonesPixmap & pm) = 0;
+
+    virtual void setContent(const char * key) = 0;
+
+    virtual void setColorMatrix(const BonesColorMatrix & cm) = 0;
 
     virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
 
@@ -527,17 +601,45 @@ public:
 
     virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
 
-    virtual void setListener(NotifyListener * notify) = 0;
+    virtual void setListener(NotifyListener * lis) = 0;
 };
 
-class BonesWebView : public BonesObject
+class BonesText : public BonesHandler<BonesText>
 {
 public:
-    class NotifyListener : public NotifyBase<BonesWebView>
-    {
-        ;
-    };
+    virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
 
+    virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
+
+    virtual void setListener(BonesEvent::Phase phase, FocusListener * lis) = 0;
+
+    virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
+
+    virtual void setListener(NotifyListener * lis) = 0;
+};
+
+class BonesRichEdit : public BonesHandler<BonesRichEdit>
+{
+public:
+    class NotifyListener : public BonesHandler::NotifyListener
+    {
+    public:
+        virtual HRESULT txNotify(BonesRichEdit * sender, DWORD iNotify, void  *pv, bool & stop) = 0;
+    };
+    virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
+
+    virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
+
+    virtual void setListener(BonesEvent::Phase phase, FocusListener * lis) = 0;
+
+    virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
+
+    virtual void setListener(NotifyListener * listener) = 0;
+};
+
+class BonesWebView : public BonesHandler<BonesWebView>
+{
+public:
     virtual bool open() = 0;
 
     virtual void close() = 0;
@@ -548,13 +650,21 @@ public:
                             const wchar_t * url, 
                             int start_line) = 0;
 
-    virtual void setListener(NotifyListener * lis) = 0;
+    virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
+
+    virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
+
+    virtual void setListener(BonesEvent::Phase phase, FocusListener * lis) = 0;
+
+    virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
+
+    virtual void setListener(NotifyListener * listener) = 0;
 };
 
-class BonesScroller : public BonesObject
+class BonesScroller : public BonesHandler<BonesScroller>
 {
 public:
-    class NotifyListener : public NotifyBase<BonesScroller>
+    class NotifyListener : public BonesHandler::NotifyListener
     {
     public:
         virtual void onScrollRange(BonesScroller * sender,
@@ -572,35 +682,17 @@ public:
 
     virtual void setScrollPos(BonesScalar cur, bool horizontal) = 0;
 
+    virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
+
+    virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
+
+    virtual void setListener(BonesEvent::Phase phase, FocusListener * lis) = 0;
+
+    virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
+
     virtual void setListener(NotifyListener * lis) = 0;
 };
 
-class BonesPixmap
-{
-public:
-    struct LockRec
-    {
-        void * bits;
-        size_t pitch;
-        BonesRect subset;
-    };
-public:
-    virtual bool alloc(int width, int height) = 0;
-
-    virtual bool decode(const void * data, size_t len) = 0;
-
-    virtual int getWidth() const = 0;
-
-    virtual int getHeight() const = 0;
-
-    virtual bool lock(LockRec & rec) = 0;
-
-    virtual void unlock() = 0;
-
-    virtual void erase(BonesColor color) = 0;
-
-    virtual void extractSubset(BonesPixmap & pm, const BonesRect & subset) = 0;
-};
 
 class BonesResManager
 {
@@ -616,6 +708,20 @@ public:
     virtual void clean() = 0;
 };
 
+class BonesObjectListener
+{
+public:
+    virtual void onPrepare(BonesObject *) = 0;
+};
+
+class BonesXMLListener : public BonesObjectListener
+{
+public:
+    virtual bool onLoad(BonesCore *) = 0;
+
+    virtual void onUnload(BonesCore *) = 0;
+};
+
 class BonesCore
 {
 public:
@@ -625,25 +731,26 @@ public:
 
     virtual void destroyPixmap(BonesPixmap *) = 0;
 
-    virtual bool loadXMLString(const char * data, BonesXMLListener * listener) = 0;
+    virtual void setXMLListener(BonesXMLListener * listener) = 0;
+
+    virtual bool loadXMLString(const char * data) = 0;
+
+    virtual bool loadXMLFile(const wchar_t * file) = 0;
 
     virtual void cleanXML() = 0;
 
     virtual BonesObject * getObject(const char * id) = 0;
 
-    virtual BonesObject * getObject(BonesObject * ob, const char * id) = 0;
-
-    virtual BonesRoot * createRoot(const char * id,
-                                     const char * group_id,
-                                     const char * class_name) = 0;
+    virtual BonesObject * getObject(BonesObject * bob, const char * id) = 0;
 
     virtual BonesObject * createObject(BonesObject * parent,
                                        const char * label,
                                        const char * id,
+                                       const char * class_name,
                                        const char * group_id,
-                                       const char * class_name) = 0;
+                                       BonesObjectListener * listener) = 0;
 
-    virtual void cleanObject(BonesObject * bo) = 0;
+    virtual void cleanObject(BonesObject * bob) = 0;
 };
 
 

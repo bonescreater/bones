@@ -5,7 +5,6 @@
 
 #include "core/root.h"
 #include "core/logging.h"
-#include "core/area.h"
 #include "core/image.h"
 #include "core/text.h"
 #include "core/shape.h"
@@ -21,7 +20,6 @@
 #include "lua_image.h"
 #include "lua_text.h"
 #include "lua_rich_edit.h"
-#include "lua_area.h"
 #include "lua_animation.h"
 #include "lua_web_view.h"
 #include "lua_scroller.h"
@@ -101,7 +99,7 @@ static int ScriptCB(lua_State * l)
 }
 
 ScriptParser::ScriptParser()
-:listener_(nullptr)
+:listener_(nullptr), ob_listener_(nullptr)
 {
     Core::GetXMLController()->setDelegate(this);
 }
@@ -112,16 +110,24 @@ ScriptParser::~ScriptParser()
     Core::GetXMLController()->setDelegate(nullptr);
 }
 
-bool ScriptParser::loadXMLString(const char * data, BonesXMLListener * listener)
+void ScriptParser::setXMLListener(BonesXMLListener * listener)
 {
-    assert(listener_ == nullptr);
     listener_ = listener;
+}
+
+bool ScriptParser::loadXMLString(const char * data)
+{
     return Core::GetXMLController()->loadString(data);
+}
+
+bool ScriptParser::loadXMLFile(const wchar_t * file)
+{
+    return Core::GetXMLController()->loadFile(file);
 }
 
 void ScriptParser::cleanXML()
 {
-    Core::GetXMLController()->loadString(nullptr);
+    Core::GetXMLController()->clean();
 }
 
 BonesObject * ScriptParser::getObject(const char * id)
@@ -156,22 +162,18 @@ BonesObject * ScriptParser::getObject(BonesObject * ob, const char * id)
     return nullptr;
 }
 
-BonesRoot * ScriptParser::createRoot(const char * id,
-                                       const char * group_id,
-                                       const char * class_name)
-{
-    return static_cast<BonesRoot *>(getObject(
-        Core::GetXMLController()->createView(nullptr, kClassRoot, id, group_id, class_name)));
-}
-
 BonesObject * ScriptParser::createObject(BonesObject * parent,
                                          const char * label,
                                          const char * id,
+                                         const char * class_name,
                                          const char * group_id,
-                                         const char * class_name)
+                                         BonesObjectListener * listener)
 {
-    return getObject(
+    ob_listener_ = listener;
+    auto ob =  getObject(
         Core::GetXMLController()->createView(getObject(parent), label, id, group_id, class_name));
+    ob_listener_ = nullptr;
+    return ob;
 }
 
 void ScriptParser::cleanObject(BonesObject * bo)
@@ -231,7 +233,15 @@ bool ScriptParser::onLoad()
 void ScriptParser::onUnload()
 {
     listener_ ? listener_->onUnload(this) : 0;
-    listener_ = nullptr;
+}
+
+void ScriptParser::onPrepare(View * v)
+{
+    auto ob = getObject(v);
+    if (!ob)
+        return;
+    BonesObjectListener * lis = ob_listener_ ? ob_listener_ : listener_;
+    lis ? lis->onPrepare(ob) : 0;
 }
 
 void ScriptParser::onCreate(View * v)
@@ -241,8 +251,6 @@ void ScriptParser::onCreate(View * v)
     auto ob = getObject(v);
     if (!ob)
         return;
-    listener_ ? listener_->onPreCreate(this, ob) : 0;
-
     if (ob->getClassName() == kClassRoot)
         static_cast<LuaRoot *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassShape)
@@ -253,8 +261,6 @@ void ScriptParser::onCreate(View * v)
         static_cast<LuaText *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassRichEdit)
         static_cast<LuaRichEdit *>(ob)->notifyCreate();
-    else if (ob->getClassName() == kClassArea)
-        static_cast<LuaArea *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassWebView)
         static_cast<LuaWebView *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassScroller)
@@ -278,14 +284,10 @@ void ScriptParser::onDestroy(View * v)
         static_cast<LuaText *>(ob)->notifyDestroy();
     else if (ob->getClassName() == kClassRichEdit)
         static_cast<LuaRichEdit *>(ob)->notifyDestroy();
-    else if (ob->getClassName() == kClassArea)
-        static_cast<LuaArea *>(ob)->notifyDestroy();
     else if (ob->getClassName() == kClassWebView)
         static_cast<LuaWebView *>(ob)->notifyDestroy();
     else if (ob->getClassName() == kClassScroller)
         static_cast<LuaScroller *>(ob)->notifyDestroy();
-
-    listener_ ? listener_->onPostDestroy(this, ob) : 0;
 }
 
 void ScriptParser::onCreating(View * v)
@@ -300,8 +302,6 @@ void ScriptParser::onCreating(View * v)
         handleText(static_cast<Text *>(v));
     else if (v->getClassName() == kClassRichEdit)
         handleRichEdit(static_cast<RichEdit *>(v));
-    else if (v->getClassName() == kClassArea)
-        handleArea(static_cast<Area *>(v));
     else if (v->getClassName() == kClassWebView)
         handleWebView(static_cast<WebView *>(v));
     else if (v->getClassName() == kClassScroller)
@@ -556,12 +556,6 @@ void ScriptParser::handleRichEdit(RichEdit * ob)
     v2bo_[ob] = lo.get();
 }
 
-void ScriptParser::handleArea(Area * ob)
-{
-    auto lo = AdoptRef(new LuaArea(ob));
-    v2bo_[ob] = lo.get();
-}
-
 void ScriptParser::handleWebView(WebView * ob)
 {
     auto lo = AdoptRef(new LuaWebView(ob));
@@ -588,18 +582,27 @@ bool ScriptParser::handleNotify(XMLNode node, View * parent_ob, View ** ob)
     auto & module = attrs[1].value;
     auto & func = attrs[2].value;
     BonesObject * bo = getObject(parent_ob);
+    if (!bo)
+        return false;
 
-    bool handle = true;
-    if (kClassRoot == bo->getClassName())
-        (static_cast<LuaRoot *>(bo))->addNotify(name, module, func);
-    else if (kClassArea == bo->getClassName())
-        (static_cast<LuaArea *>(bo))->addNotify(name, module, func);
-    else if (kClassScroller = bo->getClassName())
-        (static_cast<LuaScroller *>(bo))->addNotify(name, module, func);
+    if (bo->getClassName() == kClassRoot)
+        static_cast<LuaRoot *>(bo)->addNotify(name, module, func);
+    else if (bo->getClassName() == kClassShape)
+        static_cast<LuaShape *>(bo)->addNotify(name, module, func);
+    else if (bo->getClassName() == kClassImage)
+        static_cast<LuaImage *>(bo)->addNotify(name, module, func);
+    else if (bo->getClassName() == kClassText)
+        static_cast<LuaText *>(bo)->addNotify(name, module, func);
+    else if (bo->getClassName() == kClassRichEdit)
+        static_cast<LuaRichEdit *>(bo)->addNotify(name, module, func);
+    else if (bo->getClassName() == kClassWebView)
+        static_cast<LuaWebView *>(bo)->addNotify(name, module, func);
+    else if (bo->getClassName() == kClassScroller)
+        static_cast<LuaScroller *>(bo)->addNotify(name, module, func);
     else
-        handle = false;
+        assert(0);
 
-    return handle;
+    return true;
 }
 
 bool ScriptParser::handleEvent(XMLNode node, View * parent_ob, View ** ob)
@@ -621,14 +624,25 @@ bool ScriptParser::handleEvent(XMLNode node, View * parent_ob, View ** ob)
     auto & phase = attrs[3].value;
 
     BonesObject * bo = getObject(parent_ob);
+    if (!bo)
+        return false;
 
-    bool handle = true;
-    if (kClassArea == bo->getClassName())
-        (static_cast<LuaArea *>(bo))->addEvent(name, phase, module, func);
-    else
-        handle = false;
+    if (bo->getClassName() == kClassRoot)
+        static_cast<LuaRoot *>(bo)->addEvent(name, phase, module, func);
+    else if (bo->getClassName() == kClassShape)
+        static_cast<LuaShape *>(bo)->addEvent(name, phase, module, func);
+    else if (bo->getClassName() == kClassImage)
+        static_cast<LuaImage *>(bo)->addEvent(name, phase, module, func);
+    else if (bo->getClassName() == kClassText)
+        static_cast<LuaText *>(bo)->addEvent(name, phase, module, func);
+    else if (bo->getClassName() == kClassRichEdit)
+        static_cast<LuaRichEdit *>(bo)->addEvent(name, phase, module, func);
+    else if (bo->getClassName() == kClassWebView)
+        static_cast<LuaWebView *>(bo)->addEvent(name, phase, module, func);
+    else if (bo->getClassName() == kClassScroller)
+        static_cast<LuaScroller *>(bo)->addEvent(name, phase, module, func);
 
-    return handle;
+    return true;
 }
 
 

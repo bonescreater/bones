@@ -16,6 +16,7 @@ static const char * kCacheEvent = "__event__cache";
 
 static const char * kMethodGetObject = "getObject";
 static const char * kMethodGetPixmapSize = "getPixmapSize";
+static const char * kMethodExsubetPixmap = "extractSubsetPixmap";
 
 static lua_State * state = nullptr;
 
@@ -59,6 +60,27 @@ static int BonesGetPixmapSize(lua_State * l)
     lua_pushinteger(l, pm->getHeight());
     GetCoreInstance()->destroyPixmap(pm);
     return 2;
+}
+
+static int BonesExtractSubsetPixmap(lua_State * l)
+{//(dkey, skey, l, t, r, b)
+    lua_settop(l, 6);
+
+    auto dkey = lua_tostring(l, 1);
+    auto dpm = GetCoreInstance()->createPixmap();
+    auto skey = lua_tostring(l, 2);
+    auto spm = GetCoreInstance()->createPixmap();
+    GetCoreInstance()->getPixmap(skey, *spm);
+    BonesRect sub;
+    sub.left = static_cast<BonesScalar>(lua_tointeger(l, 3));
+    sub.top = static_cast<BonesScalar>(lua_tointeger(l, 4));
+    sub.right = static_cast<BonesScalar>(lua_tointeger(l, 5));
+    sub.bottom = static_cast<BonesScalar>(lua_tointeger(l, 6));
+    spm->extractSubset(*dpm, sub);
+    GetCoreInstance()->clonePixmap(dkey, *dpm);
+    GetCoreInstance()->destroyPixmap(spm);
+    GetCoreInstance()->destroyPixmap(dpm);
+    return 0;
 }
 
 bool LuaContext::StartUp()

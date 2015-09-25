@@ -16,6 +16,18 @@ static const char * kMethodcreateCaret = "createCaret";
 static const char * kMethodshowCaret = "showCaret";
 static const char * kMethodchangeCaretPos = "changeCaretPos";
 
+//(self, color)
+static int SetColor(lua_State * l)
+{
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaRoot * bob = static_cast<LuaRoot *>(
+        LuaContext::CallGetCObject(l));
+    if (bob)
+        bob->setColor(static_cast<BonesColor>(lua_tointeger(l, 2)));
+    return 0;
+}
 
 LuaRoot::LuaRoot(Root * ob)
 :LuaObject(ob), listener_(nullptr)
@@ -28,26 +40,59 @@ LuaRoot::~LuaRoot()
     ;
 }
 
-BonesRoot::NotifyListener * LuaRoot::getNotify() const
-{
-    return listener_;
-}
-
 void LuaRoot::notifyCreate() 
 {
     object_->setDelegate(this);
-    LuaObject::notifyCreate();
+
+    bool stop = false;
+    listener_ ? listener_->onCreate(this, stop) : 0;
+    if (stop)
+        return;
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, this);
+    lua_getfield(l, -1, kNotifyOrder);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, kMethodOnCreate);
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        auto count = LuaContext::SafeLOPCall(l, 1, 0);
+        lua_pop(l, count);
+    }
+    lua_pop(l, 2);
 }
 
 void LuaRoot::notifyDestroy() 
 {
-    LuaObject::notifyDestroy();
+    bool stop = false;
+    listener_ ? listener_->onDestroy(this, stop) : 0;
+    if (stop)
+        return;
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, this);
+    lua_getfield(l, -1, kNotifyOrder);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, kMethodOnDestroy);
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        auto count = LuaContext::SafeLOPCall(l, 1, 0);
+        lua_pop(l, count);
+    }
+    lua_pop(l, 2);
+
     object_->setDelegate(nullptr);
 }
 
 void LuaRoot::createMetaTable(lua_State * l)
 {
-    LuaObject::createMetaTable(l, kMetaTableRoot);
+    if (!LuaObject::createMetaTable(l, kMetaTableRoot))
+    {
+        lua_pushcfunction(l, SetColor);
+        lua_setfield(l, -2, kMethodSetColor);
+    }
 }
 
 void LuaRoot::setListener(NotifyListener * listener)
@@ -55,7 +100,12 @@ void LuaRoot::setListener(NotifyListener * listener)
     listener_ = listener;
 }
 
-void LuaRoot::attachTo(HWND hwnd)
+void LuaRoot::setColor(BonesColor color)
+{
+    object_->setColor(color);
+}
+
+void LuaRoot::attachTo(BonesWidget hwnd)
 {
     object_->attachTo(hwnd);
 }

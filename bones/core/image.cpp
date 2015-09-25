@@ -1,45 +1,91 @@
 ﻿#include "image.h"
 #include "helper.h"
 #include "rect.h"
-#include "SkCanvas.h"
-#include "SkGradientShader.h"
+#include "res_manager.h"
 #include "css_utils.h"
+#include "SkCanvas.h"
+#include "SkColorMatrixFilter.h"
 
 namespace bones
 {
 
-Image::Image() :style_(kNone)
+Image::Image() :style_(kDirect), delegate_(nullptr), color_filter_(nullptr)
 {
-    setFocusable(false);
+    
 }
 
 Image::~Image()
 {
-    ;
+    if (color_filter_)
+        color_filter_->unref();
 }
 
-void Image::setStyle(Style & style, const Rect * r)
+void Image::setDirect(const Point * bp)
 {
-    style_ = style;
-    if (kNine == style_)
-    {
-        if (r)
-            nine_center_ = *r;
-        else
-            nine_center_.setEmpty();
-    }
+    style_ = kDirect;
+    if (bp)
+        start_.set(bp->x(), bp->y());
+    else
+        start_.set(0, 0);
     inval();
 }
 
-void Image::set(Pixmap & pm)
+void Image::setStretch(const Rect * dst)
+{
+    style_ = kStretch;
+    if (dst)
+        dst_ = *dst;
+    else
+        dst_.setEmpty();
+    inval();
+}
+
+void Image::setNine(const Rect * dst, const Rect * center)
+{
+    style_ = kNine;
+    if (dst)
+        dst_ = *dst;
+    else
+        dst_.setEmpty();
+    if (center)
+        nine_ = *center;
+    else
+        nine_.setEmpty();
+    inval();
+}
+
+void Image::set(const Pixmap & pm)
 {
     pixmap_ = pm;
     inval();
 }
 
+void Image::set(const char * key)
+{
+    pixmap_ = Core::GetResManager()->getPixmap(key);
+    inval();
+}
+
+void Image::setColorMatrix(const ColorMatrix & cm)
+{
+    if (color_filter_)
+        color_filter_->unref();
+    color_filter_ = SkColorMatrixFilter::Create(cm.mat);    
+}
+
+void Image::setDelegate(Delegate * delegate)
+{
+    delegate_ = delegate;
+}
+
 const char * Image::getClassName() const
 {
     return kClassImage;
+}
+
+Image::DelegateBase * Image::delegate()
+{
+    return delegate_;
 }
 
 void Image::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
@@ -51,11 +97,11 @@ void Image::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
     getLocalBounds(r);
     switch (style_)
     {
-    case kNone:
-        drawNone(canvas, r, opacity);
+    case kDirect:
+        drawDirect(canvas, r, opacity);
         break;
-    case kFill:
-        drawFill(canvas, r, opacity);
+    case kStretch:
+        drawStretch(canvas, r, opacity);
         break;
     case kNine:
         drawNine(canvas, r, opacity);
@@ -63,30 +109,33 @@ void Image::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
     }
 }
 
-bool Image::onHitTest(const Point & pt)
-{
-    return false;
-}
-
-void Image::drawNone(SkCanvas & canvas, const Rect & bounds, float opacity)
+void Image::drawDirect(SkCanvas & canvas, const Rect & bounds, float opacity)
 {
     SkPaint paint;
     paint.setAlpha(ClampAlpha(opacity));
-    canvas.drawBitmap(Helper::ToSkBitmap(pixmap_), 0, 0, &paint);
+    if (color_filter_)
+        paint.setColorFilter(color_filter_);
+    canvas.drawBitmap(Helper::ToSkBitmap(pixmap_), start_.x(), start_.y(), &paint);
 }
 
-void Image::drawFill(SkCanvas & canvas, const Rect & bounds, float opacity)
+void Image::drawStretch(SkCanvas & canvas, const Rect & bounds, float opacity)
 {
     SkPaint paint;
     paint.setAlpha(ClampAlpha(opacity));
-    canvas.drawBitmapRect(Helper::ToSkBitmap(pixmap_), 0, Helper::ToSkRect(bounds), &paint);
+    if (color_filter_)
+        paint.setColorFilter(color_filter_);
+    canvas.drawBitmapRect(Helper::ToSkBitmap(pixmap_), 0, 
+        dst_.isEmpty() ? Helper::ToSkRect(bounds) : Helper::ToSkRect(dst_),
+        &paint);
 }
 
 void Image::drawNine(SkCanvas & canvas, const Rect & bounds, float opacity)
 {
     SkPaint paint;
     paint.setAlpha(ClampAlpha(opacity));
-    Rect center(nine_center_);
+    if (color_filter_)
+        paint.setColorFilter(color_filter_);
+    Rect center(nine_);
     if (center.isEmpty())
     {
         Scalar sw = static_cast<Scalar>(pixmap_.getWidth()) / 3;
@@ -95,33 +144,14 @@ void Image::drawNine(SkCanvas & canvas, const Rect & bounds, float opacity)
     }
     canvas.drawBitmapNine(Helper::ToSkBitmap(pixmap_),
         Helper::ToSkIRect(center),
-        Helper::ToSkRect(bounds), &paint);
+        dst_.isEmpty() ? Helper::ToSkRect(bounds) : Helper::ToSkRect(dst_), 
+        &paint);
 }
 
 BONES_CSS_TABLE_BEGIN(Image, View)
-BONES_CSS_SET_FUNC("style", &Image::setStyle)
 BONES_CSS_SET_FUNC("content", &Image::set)
 BONES_CSS_TABLE_END()
 
-void Image::setStyle(const CSSParams & params)
-{
-    if (params.empty())
-        return;
-    auto & str_style = params[0];
-    Style style = kNone;
-    if (str_style == "fill")
-        style = kFill;
-    else if (str_style == "nine")
-        style = kNine;
-    Rect * r = nullptr;
-    Rect center;
-    if (params.size() > 5)
-    {
-        center = CSSUtils::CSSStrToPX(params[1], params[2], params[3], params[4]);
-        r = &center;
-    }
-    setStyle(style, r);
-}
 
 void Image::set(const CSSParams & params)
 {

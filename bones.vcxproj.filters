@@ -11,9 +11,6 @@
     <ClCompile Include="bones\lua_context.cpp">
       <Filter>lua</Filter>
     </ClCompile>
-    <ClCompile Include="bones\lua_area.cpp">
-      <Filter>lua\proxy</Filter>
-    </ClCompile>
     <ClCompile Include="bones\lua_event.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
@@ -55,9 +52,6 @@
     <ClInclude Include="bones\lua_context.h">
       <Filter>lua</Filter>
     </ClInclude>
-    <ClInclude Include="bones\lua_area.h">
-      <Filter>lua\proxy</Filter>
-    </ClInclude>
     <ClInclude Include="bones\lua_event.h">
       <Filter>lua\proxy</Filter>
     </ClInclude>
@@ -88,6 +82,9 @@
       <Filter>lua\proxy</Filter>
     </ClInclude>
     <ClInclude Include="bones\lua_scroller.h">
+      <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_handler.h">
       <Filter>lua\proxy</Filter>
     </ClInclude>
   </ItemGroup>

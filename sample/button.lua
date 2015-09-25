@@ -29,13 +29,13 @@ local function stateChanged(self, force)
 	if state ~= self.state_ or force then 
 		self.state_ = state;
 		if self.state_ == common then
-			self.shape_:applyCSS(common_css)
+			self:applyCSS(common_css)
 		elseif self.state_ == highlight then
-			self.shape_:applyCSS(highlight_css)
+			self:applyCSS(highlight_css)
 		elseif self.state_ == press then
-			self.shape_:applyCSS(press_css)
+			self:applyCSS(press_css)
 		elseif self.state_ == disable then
-			self.shape_:applyCSS(disable_css)
+			self:applyCSS(disable_css)
 		end
 	end
 	
@@ -68,9 +68,8 @@ self.down_ = false
 
 self.state_ = disable
 self.shirt_ = self:getChildAt(0);
-self.shape_ = self:getChildAt(1);
-self.text_ = self:getChildAt(2);
-self.border_ = self:getChildAt(3);
+self.text_ = self:getChildAt(1);
+self.border_ = self:getChildAt(2);
 
 end
 
@@ -136,7 +135,6 @@ function mod.onSizeChanged(self)
 	css = string.format("{width:%dpx;height:%dpx;}", width, height);
 	self.shirt_:applyCSS(css);
 	self.text_:applyCSS(css);
-	self.shape_:applyCSS(css);
     self.border_:applyCSS(css);
     stateChanged(self, true);
 end

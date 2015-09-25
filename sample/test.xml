@@ -52,7 +52,6 @@
           .pic
           {
           size: 128px 128px;
-          style: none;
           }
           .pic_lt
           {

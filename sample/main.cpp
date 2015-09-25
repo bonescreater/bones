@@ -44,7 +44,7 @@ public:
 
         //往关闭按钮注册回调
         //测试程序的按钮 会调用"onClick"
-        ((BonesArea *)core->getObject("close"))->listen("onClick", &close);
+        ((BonesShape *)core->getObject("close"))->listen("onClick", &close);
 
         BSStr s;
         s.reset();
@@ -79,13 +79,9 @@ public:
         ;
     }
 
-    void onPreCreate(BonesCore *, BonesObject * ob) override
+    void onPrepare(BonesObject *) override
     {//设置各种标签C++回调
 
-    }
-
-    void onPostDestroy(BonesCore *, BonesObject * ob)  override
-    {//清理各种回调
     }
 };
 
@@ -100,7 +96,7 @@ int main()
         return 1;
 
     BonesConfig config;
-    config.log_level = kBONES_LOG_LEVEL_VERBOSE;
+    config.log_level = BonesConfig::kVerbose;
     config.cef_enable = true;
     config.cef_locate = "zh-CN";
     BonesStartUp(config);
@@ -137,7 +133,8 @@ int main()
     xml.push_back(0);//0结尾
 
     LoadListener load;
-    BonesGetCore()->loadXMLString(&xml[0], &load);
+    BonesGetCore()->setXMLListener(&load);
+    BonesGetCore()->loadXMLString(&xml[0]);
     POINT pt = { 0, 0 };
     SIZE size = { 1024, 768 };
     test_window->setLoc(pt);
@@ -157,7 +154,10 @@ int main()
             if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
             {
                 if (WM_QUIT == msg.message)
+                {
+                    BonesGetCore()->cleanXML();
                     break;
+                }                    
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             }
@@ -166,6 +166,7 @@ int main()
     }
     
     BonesGetCore()->getResManager()->clean();
+    BonesGetCore()->setXMLListener(nullptr);
 
     BonesShutDown();
     delete test_window;

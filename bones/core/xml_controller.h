@@ -31,6 +31,8 @@ public:
         virtual bool onLoad() = 0;
 
         virtual void onUnload() = 0;
+
+        virtual void onPrepare(View * v) = 0;
         //节点初始化完毕触发 此时禁止clean
         virtual void onCreate(View * v) = 0;
 
@@ -74,6 +76,10 @@ public:
     //zero-terminated XML string
     bool loadString(const char * data);
 
+    bool loadFile(const wchar_t * file);
+
+    void clean();
+
     View * getViewByID(const char * id);
 
     View * getViewByID(View * ob, const char * id);
@@ -93,8 +99,6 @@ protected:
     bool handleLink(XMLNode node, const char * full_path);
 
     bool handleRoot(XMLNode node, View * parent_ob, View ** ob);
-
-    bool handleArea(XMLNode node, View * parent_ob, View ** ob);
 
     bool handleRichEdit(XMLNode node, View * parent_ob, View ** ob);
 
@@ -146,6 +150,10 @@ private:
     void applyClass();
 
     void applyClass(View * ob);
+
+    void notifyPrepare();
+
+    void notifyPrepare(View * ob);
 private:
     static std::string GetPathFromFullName(const char * fullname);
 

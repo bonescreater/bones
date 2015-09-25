@@ -16,7 +16,6 @@ namespace bones
 //跟xml标签一样为了方便
 const char * kClassRoot = "root";
 const char * kClassView = "view";
-const char * kClassArea = "area";
 const char * kClassImage = "image";
 const char * kClassShape = "shape";
 const char * kClassText = "text";

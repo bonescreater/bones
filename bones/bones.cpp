@@ -92,6 +92,43 @@ const char * kMethodGetParent = "getParent";
 
 const char * kMethodGetSize = "getSize";
 const char * kMethodGetLoc = "getLoc";
+const char * kMethodSetColor = "setColor";
+
+const char * kStrCapture = "capture";
+const char * kStrTarget = "target";
+const char * kStrBubbling = "bubbling";
+
+const char * ToEventPhaseStr(BonesEvent::Phase phase)
+{
+    if (BonesEvent::kCapture == phase)
+        return kStrCapture;
+    if (BonesEvent::kBubbling == phase)
+        return kStrBubbling;
+    if (BonesEvent::kTarget == phase)
+        return kStrTarget;
+    return "";
+}
+
+int EventStack::event_stack_count = 0;
+
+EventStack::EventStack()
+{ 
+    event_stack_count++; 
+}
+
+EventStack::~EventStack()
+{ 
+    assert(event_stack_count); 
+    event_stack_count--; 
+}
+
+int EventStack::getCount() const
+{ 
+    return event_stack_count; 
+}
+
+    
+
 }
 
 BONES_API(BonesCore *) BonesStartUp(const BonesConfig & config)

@@ -33,8 +33,8 @@ private:
     static std::ofstream log;
 };
 
-#define BLG_ERROR Log (kLOG_LEVEL_ERROR) <<"[LEVEL:ERROR]"<< __FILE__ <<" " <<__LINE__<<" "
-#define BLG_VERBOSE Log (kLOG_LEVEL_VERBOSE) <<"[LEVEL:VERBOSE]"<< __FILE__ <<" " <<__LINE__<< " "
+#define BLG_ERROR Log (kLOG_LEVEL_ERROR) <<"[LEVEL:ERROR]"<< " "
+#define BLG_VERBOSE Log (kLOG_LEVEL_VERBOSE) <<"[LEVEL:VERBOSE]"<< " "
 
 }
 

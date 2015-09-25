@@ -40,11 +40,11 @@ Delegate事件顺序
 
 onCreating: xml解析body生成对象时 每创建一个view 调用一次 顺序从上到下
 onLoad:所有节点创建完 调用onload onload返回false 则直接onDestroying
+onPrepare:onload返回true 顺序从上到下 给C++一个设置节点回调响应onCreate onDestroy
 onCreate:所有节点创建完 onload成功 则 发送onCreate 顺序是从下到上
 onDestroy：顺序从上到下
 onUnload
 onDestroying：顺序从下到上
-
 */
 
 void attachToParentBack(View * parent, View * child)
@@ -75,11 +75,6 @@ void XMLController::setDelegate(Delegate * delegate)
 
 bool XMLController::loadString(const char * data)
 {
-    notifyDestroy();
-    if (main_module_.doc)
-        delegate_ ? delegate_->onUnload() : 0;
-
-    clear();
     size_t len = 0;
     if ( !data || !(len = strlen(data)) )
         return false;
@@ -88,7 +83,39 @@ bool XMLController::loadString(const char * data)
     memcpy(&main_module_.xml_file[0], data, len);
     main_module_.xml_file[len] = 0;
 
-    return loadMainModule(main_module_);
+    if (loadMainModule(main_module_))
+        return true;
+    main_module_.clean();
+    return false;
+}
+
+bool XMLController::loadFile(const wchar_t * file)
+{
+    if (!file)
+        return false;
+
+    main_module_.xml_fullname = Encoding::ToUTF8(file);
+    if (ReadString(main_module_.xml_fullname.data(), main_module_.xml_file))
+    {//读取文件成功
+        //载入主模块
+        if (loadMainModule(main_module_))
+            return true;
+    }
+    main_module_.clean();
+    return false;
+}
+
+void XMLController::clean()
+{
+    if (!main_module_.xml_file.empty())
+    {
+        //发送destroy通知
+        notifyDestroy();
+        delegate_ ? delegate_->onUnload() : 0;
+        clear();
+        //清理文件内容
+        main_module_.clean();
+    }       
 }
 
 bool XMLController::loadMainModule(Module & mod)
@@ -171,6 +198,7 @@ View * XMLController::createView(View * parent,
         attrs[kStrGroup] = group_id ? group_id : "";
         attrs[kStrClass] = class_name ? class_name : "";
         //设置通知
+        notifyPrepare(v);
         notifyCreate(v);
         applyClass(v);
         return v;
@@ -387,7 +415,7 @@ XMLNode XMLController::getHead(const XMLDocument & doc)
 }
 
 void XMLController::notifyCreate()
-{//prepare过程中不要clean
+{//过程中不要clean
     for (auto iter = roots_.rbegin(); iter != roots_.rend(); ++iter)
         notifyCreate(iter->get());
 }
@@ -405,6 +433,27 @@ void XMLController::notifyCreate(View * ob)
         child = child->getNextSibling();
     }
     delegate_ ? delegate_->onCreate(ob) : 0;
+}
+
+void XMLController::notifyPrepare()
+{
+    for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
+        notifyPrepare(iter->get());
+}
+
+void XMLController::notifyPrepare(View * ob)
+{
+    if (!ob)
+        return;
+    delegate_ ? delegate_->onPrepare(ob) : 0;
+    RefPtr<View> pv;
+    auto child = ob->getFirstChild();
+    while (child)
+    {
+        pv.reset(child);
+        notifyCreate(child);
+        child = child->getNextSibling();
+    }  
 }
 
 void XMLController::notifyDestroy()
@@ -518,6 +567,7 @@ void XMLController::parseModuleBody(const Module & mod)
         //create 和class 都是 先子后父
         //create在前 是因为应用class时 可能有事件回调
         //create中可以注册好回调等待处理
+        notifyPrepare();
         notifyCreate();
         applyClass();        
     }
@@ -538,8 +588,6 @@ bool XMLController::createViewFromNode(XMLNode node, const char * label, View * 
 
         if (!strcmp(label, kClassRoot))
             bret = handleRoot(node, parent_ob, &node_ob);
-        else if (!strcmp(label, kClassArea))
-            bret = handleArea(node, parent_ob, &node_ob);
         else if (!strcmp(label, kClassRichEdit))
             bret = handleRichEdit(node, parent_ob, &node_ob);
         else if (!strcmp(label, kClassWebView))
@@ -667,18 +715,6 @@ bool XMLController::handleImage(XMLNode node, View * parent_ob, View ** ob)
     if (!parent_ob)
         return false;
     auto v = AdoptRef(new Image);
-    saveNode(v.get(), node);
-    attachToParentBack(parent_ob, v.get());
-    if (ob)
-        *ob = v.get();
-    return v != nullptr;
-}
-
-bool XMLController::handleArea(XMLNode node, View * parent_ob, View ** ob)
-{
-    if (!parent_ob)
-        return false;
-    auto v = AdoptRef(new Area);
     saveNode(v.get(), node);
     attachToParentBack(parent_ob, v.get());
     if (ob)

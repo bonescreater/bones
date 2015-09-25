@@ -2,17 +2,16 @@
 #define BONES_CORE_SHAPE_H_
 
 
-#include "view.h"
+#include "area.h"
 #include "color.h"
 #include "rect.h"
 #include "shader.h"
-
 
 class SkPathEffect;
 namespace bones
 {
 
-class Shape : public View
+class Shape : public Area<Shape>
 {
 public:
     enum Effect
@@ -53,6 +52,11 @@ private:
         Scalar radius;
     };
 public:
+    class Delegate : public DelegateBase
+    {
+
+    };
+public:
     Shape();
 
     ~Shape();
@@ -73,11 +77,13 @@ public:
 
     void setBorder(Scalar width, Effect effect, Color color, Scalar rx, Scalar ry);
 
+    void setDelegate(Delegate * delegate);
+
     const char * getClassName() const override;
 protected:
-    void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
+    DelegateBase * delegate() override;
 
-    bool onHitTest(const Point & pt) override;
+    void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 
     void drawBackground(SkCanvas & canvas, float opacity);
 
@@ -103,6 +109,7 @@ protected:
 
     void setBorder(const CSSParams & params);
 private:
+    Delegate * delegate_;
     Category category_;
     Style style_;
     Scalar stroke_width_;

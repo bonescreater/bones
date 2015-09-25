@@ -8,11 +8,9 @@
 namespace bones
 {
 
-class Ref;
 class Shape;
 class Image;
 class Text;
-class Area;
 class RichEdit;
 class WebView;
 class Scroller;
@@ -26,7 +24,11 @@ public:
 
     ~ScriptParser();
 public:
-    bool loadXMLString(const char * data, BonesXMLListener * listener) override;
+    void setXMLListener(BonesXMLListener * listener) override;
+
+    bool loadXMLString(const char * data) override;
+
+    bool loadXMLFile(const wchar_t * file) override;
 
     void cleanXML() override;
 
@@ -38,15 +40,12 @@ public:
 
     BonesObject * getObject(BonesObject * ob, const char * id) override;
 
-    BonesRoot * createRoot(const char * id,
-                             const char * group_id,
-                             const char * class_name) override;
-
     BonesObject * createObject(BonesObject * parent,
                                const char * label,
                                const char * id,
+                               const char * class_name,
                                const char * group_id,
-                               const char * class_name) override;
+                               BonesObjectListener * listener) override;
 
     void cleanObject(BonesObject * bo) override;
 
@@ -68,6 +67,8 @@ public:
     bool onLoad() override;
 
     void onUnload() override;
+
+    void onPrepare(View * v) override;
     //节点初始化完毕触发 此时禁止clean
     void onCreate(View * v) override;
 
@@ -125,8 +126,6 @@ private:
 
     void handleRichEdit(RichEdit * ob);
 
-    void handleArea(Area * ob);
-
     void handleWebView(WebView * ob);
 
     void handleScroller(Scroller * ob);
@@ -136,6 +135,7 @@ private:
     bool handleEvent(XMLNode node, View * parent_ob, View ** ob);
 private:
     BonesXMLListener * listener_;
+    BonesObjectListener * ob_listener_;
     std::map<View *, BonesObject *>v2bo_;
 };
 

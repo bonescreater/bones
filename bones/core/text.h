@@ -1,7 +1,7 @@
 ﻿#ifndef BONES_CORE_TEXT_H_
 #define BONES_CORE_TEXT_H_
 
-#include "view.h"
+#include "area.h"
 #include "color.h"
 #include "font.h"
 
@@ -9,7 +9,7 @@ namespace bones
 {
 
 
-class Text : public View
+class Text : public Area<Text>
 {
 public:
     enum Align
@@ -27,10 +27,14 @@ public:
     };
     typedef std::wstring Line;
     typedef std::vector<Line> Lines;
+
+public:
+    class Delegate : public DelegateBase
+    {
+
+    };
 public:
     Text();
-
-    const char * getClassName() const override;
 
     void set(const wchar_t * text);
 
@@ -41,12 +45,16 @@ public:
     void setAlign(Align align);
 
     void setOverflow(Overflow of);
+
+    void setDelegate(Delegate * delegate);
+
+    const char * getClassName() const override;
 protected:
+    DelegateBase * delegate() override;
+
     void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 
     void onSizeChanged() override;
-
-    bool onHitTest(const Point & pt) override;
 private:
     void adjustCache();
 
@@ -68,6 +76,7 @@ private:
 
     void setAlign(const CSSParams & params);
 private:
+    Delegate * delegate_;
     bool cache_dirty_;
     std::wstring content_;
     Lines lines_;

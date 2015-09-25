@@ -7,92 +7,147 @@
 namespace bones
 {
 
+template <class T>
 class Area : public View
 {
 public:
-    class Delegate
+    class DelegateBase
     {
     public:
-        virtual void onMouseEnter(Area * sender, MouseEvent & e) = 0;
+        virtual void onMouseEnter(T * sender, MouseEvent & e) = 0;
 
-        virtual void onMouseMove(Area * sender, MouseEvent & e) = 0;
+        virtual void onMouseMove(T * sender, MouseEvent & e) = 0;
 
-        virtual void onMouseDown(Area * sender, MouseEvent & e) = 0;
+        virtual void onMouseDown(T * sender, MouseEvent & e) = 0;
 
-        virtual void onMouseUp(Area * sender, MouseEvent & e) = 0;
+        virtual void onMouseUp(T * sender, MouseEvent & e) = 0;
 
-        virtual void onMouseClick(Area * sender, MouseEvent & e) = 0;
+        virtual void onMouseClick(T * sender, MouseEvent & e) = 0;
 
-        virtual void onMouseDClick(Area * sender, MouseEvent & e) = 0;
+        virtual void onMouseDClick(T * sender, MouseEvent & e) = 0;
 
-        virtual void onMouseLeave(Area * sender, MouseEvent & e) = 0;
+        virtual void onMouseLeave(T * sender, MouseEvent & e) = 0;
 
-        virtual void onKeyDown(Area * sender, KeyEvent & e) = 0;
+        virtual void onKeyDown(T * sender, KeyEvent & e) = 0;
 
-        virtual void onKeyUp(Area * sender, KeyEvent & e) = 0;
+        virtual void onKeyUp(T * sender, KeyEvent & e) = 0;
 
-        virtual void onChar(Area * sender, KeyEvent & e) = 0;
+        virtual void onChar(T * sender, KeyEvent & e) = 0;
 
-        virtual void onFocusOut(Area * sender, FocusEvent & e) = 0;
+        virtual void onFocusOut(T * sender, FocusEvent & e) = 0;
 
-        virtual void onFocusIn(Area * sender, FocusEvent & e) = 0;
+        virtual void onFocusIn(T * sender, FocusEvent & e) = 0;
 
-        virtual void onBlur(Area * sender, FocusEvent & e) = 0;
+        virtual void onBlur(T * sender, FocusEvent & e) = 0;
 
-        virtual void onFocus(Area * sender, FocusEvent & e) = 0;
+        virtual void onFocus(T * sender, FocusEvent & e) = 0;
 
-        virtual void onWheel(Area * sender, WheelEvent & e) = 0;
+        virtual void onWheel(T * sender, WheelEvent & e) = 0;
 
-        virtual void onSizeChanged(Area * sender, const Size & size) = 0;
+        virtual void onSizeChanged(T * sender, const Size & size) = 0;
 
-        virtual void onPositionChanged(Area * sender, const Point & loc) = 0;
+        virtual void onPositionChanged(T * sender, const Point & loc) = 0;
 
-        virtual bool onHitTest(Area * sender, const Point & loc) = 0;
+        virtual bool onHitTest(T * sender, const Point & loc) = 0;
     };
-
-    Area();
-
-    void setDelegate(Delegate * delegate);
-
-    const char * getClassName() const override;
 protected:
-    void onMouseEnter(MouseEvent & e) override;
+    virtual DelegateBase * delegate() = 0;
 
-    void onMouseMove(MouseEvent & e) override;
+    T * cast()
+    {
+        return static_cast<T *>(this);
+    }
+protected:
+    void onMouseEnter(MouseEvent & e) override
+    {
+        delegate() ? delegate()->onMouseEnter(cast(), e) : 0;
+    }
 
-    void onMouseDown(MouseEvent & e) override;
+    void onMouseMove(MouseEvent & e) override
+    {
+        delegate() ? delegate()->onMouseMove(cast(), e) : 0;
+    }
 
-    void onMouseUp(MouseEvent & e) override;
+    void onMouseDown(MouseEvent & e) override
+    {
+        delegate() ? delegate()->onMouseDown(cast(), e) : 0;
+    }
 
-    void onMouseClick(MouseEvent & e) override;
+    void onMouseUp(MouseEvent & e) override
+    {
+        delegate() ? delegate()->onMouseUp(cast(), e) : 0;
+    }
 
-    void onMouseDClick(MouseEvent & e) override;
+    void onMouseClick(MouseEvent & e) override
+    {
+        delegate() ? delegate()->onMouseClick(cast(), e) : 0;
+    }
 
-    void onMouseLeave(MouseEvent & e) override;
+    void onMouseDClick(MouseEvent & e) override
+    {
+        delegate() ? delegate()->onMouseDClick(cast(), e) : 0;
+    }
 
-    void onKeyDown(KeyEvent & e) override;
+    void onMouseLeave(MouseEvent & e) override
+    {
+        delegate() ? delegate()->onMouseLeave(cast(), e) : 0;
+    }
 
-    void onKeyUp(KeyEvent & e) override;
+    void onKeyDown(KeyEvent & e) override
+    {
+        delegate() ? delegate()->onKeyDown(cast(), e) : 0;
+    }
 
-    void onChar(KeyEvent & e) override;
+    void onKeyUp(KeyEvent & e) override
+    {
+        delegate() ? delegate()->onKeyUp(cast(), e) : 0;
+    }
 
-    void onFocusOut(FocusEvent & e) override;
+    void onChar(KeyEvent & e) override
+    {
+        delegate() ? delegate()->onChar(cast(), e) : 0;
+    }
 
-    void onFocusIn(FocusEvent & e) override;
+    void onFocusOut(FocusEvent & e) override
+    {
+        delegate() ? delegate()->onFocusOut(cast(), e) : 0;
+    }
 
-    void onBlur(FocusEvent & e) override;
+    void onFocusIn(FocusEvent & e) override
+    {
+        delegate() ? delegate()->onFocusIn(cast(), e) : 0;
 
-    void onFocus(FocusEvent & e) override;
+    }
 
-    void onWheel(WheelEvent & e) override;
+    void onBlur(FocusEvent & e) override
+    {
+        delegate() ? delegate()->onBlur(cast(), e) : 0;
+    }
 
-    void onSizeChanged() override;
+    void onFocus(FocusEvent & e) override
+    {
+        delegate() ? delegate()->onFocus(cast(), e) : 0;
+    }
 
-    void onPositionChanged()override;
+    void onWheel(WheelEvent & e) override
+    {
+        delegate() ? delegate()->onWheel(cast(), e) : 0;
+    }
 
-    bool onHitTest(const Point & loc) override;
-private:
-    Delegate * delegate_;
+    void onSizeChanged() override
+    {
+        delegate() ? delegate()->onSizeChanged(cast(), getSize()) : 0;
+    }
+
+    void onPositionChanged() override
+    {
+        delegate() ? delegate()->onPositionChanged(cast(), getLoc()) : 0;
+    }
+
+    bool onHitTest(const Point & loc) override
+    {
+        return delegate() ? delegate()->onHitTest(cast(), loc) : true;
+    }
 };
 
 

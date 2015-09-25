@@ -24,7 +24,7 @@ class Browser : public CefClient,
         return \
 
 public:
-    Browser()
+    Browser() :skip_cursor_(true)
     {
         ;
     }
@@ -143,9 +143,16 @@ public:
     }
 
     void sendMouseMoveEvent(MouseEvent & e, bool leave)
-    {
+    {//cef cursor是异步的 可能在我们鼠标已经离开webview后 webview还会发送鼠标样式
+     //需要忽略掉
+        if (leave)
+            skip_cursor_ = true;
+        else
+            skip_cursor_ = false;
+
         CHECK_CEF_BROWSER_HOST;
         host->SendMouseMoveEvent(ToCefMouseEvent(e), leave);
+
     }
 
     void sendMouseClickEvent(MouseEvent & e)
@@ -249,7 +256,8 @@ public:
         CursorType type,
         const CefCursorInfo & custom_cursor_info) override
     {
-        web_view_ ? web_view_->setCursor(cursor) : 0;
+        if (!skip_cursor_)
+            web_view_ ? web_view_->setCursor(cursor) : 0;
     }
 protected:
     CefRefPtr<CefFrame> mainFrame()
@@ -273,7 +281,7 @@ private:
     CefRefPtr<CefBrowser> browser_;
     WebView * web_view_;
     Pixmap pixmap_;
-
+    bool skip_cursor_;
     IMPLEMENT_REFCOUNTING(Browser);
     friend class WebView;
 };
@@ -324,7 +332,7 @@ void WebView::Update()
 }
 
 WebView::WebView()
-:hack_focus_travel_(false)
+:hack_focus_travel_(false), delegate_(nullptr)
 {
     browser_ = new Browser();
     browser_->setHost(this);
@@ -338,6 +346,11 @@ WebView::~WebView()
     close();
     browser_->setHost(nullptr);
     browser_->Release();
+}
+
+void WebView::setDelegate(Delegate * delegate)
+{
+    delegate_ = delegate;
 }
 
 bool WebView::open()
@@ -365,6 +378,11 @@ const char * WebView::getClassName() const
     return kClassWebView;
 }
 
+WebView::DelegateBase * WebView::delegate()
+{
+    return delegate_;
+}
+
 void WebView::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 {
     if (0 == opacity)
@@ -380,15 +398,14 @@ void WebView::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 void WebView::onSizeChanged()
 {
     browser_->wasResized();
-}
-
-void WebView::onMouseEnter(MouseEvent & e)
-{
-
+    Area::onSizeChanged();
 }
 
 void WebView::onMouseLeave(MouseEvent & e)
 {
+    Area::onMouseLeave(e);
+    if (e.canceled())
+        return;
     if (Event::kTarget != e.phase())
         return;
     browser_->sendMouseMoveEvent(e, true);
@@ -396,6 +413,9 @@ void WebView::onMouseLeave(MouseEvent & e)
 
 void WebView::onMouseMove(MouseEvent & e)
 {
+    Area::onMouseMove(e);
+    if (e.canceled())
+        return;
     if (Event::kTarget != e.phase())
         return;
     browser_->sendMouseMoveEvent(e, false);
@@ -403,6 +423,9 @@ void WebView::onMouseMove(MouseEvent & e)
 
 void WebView::onMouseDown(MouseEvent & e)
 {
+    Area::onMouseDown(e);
+    if (e.canceled())
+        return;
     if (Event::kTarget != e.phase())
         return;
     browser_->sendMouseClickEvent(e);
@@ -410,6 +433,10 @@ void WebView::onMouseDown(MouseEvent & e)
 
 void WebView::onMouseUp(MouseEvent & e)
 {
+    Area::onMouseUp(e);
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     browser_->sendMouseClickEvent(e);
@@ -417,6 +444,10 @@ void WebView::onMouseUp(MouseEvent & e)
 
 void WebView::onWheel(WheelEvent & e)
 {
+    Area::onWheel(e);
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     browser_->sendMouseWheelEvent(e);
@@ -424,6 +455,10 @@ void WebView::onWheel(WheelEvent & e)
 
 void WebView::onFocus(FocusEvent & e)
 {
+    Area::onFocus(e);
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     hack_focus_travel_ = true;
@@ -432,6 +467,9 @@ void WebView::onFocus(FocusEvent & e)
 
 void WebView::onBlur(FocusEvent & e)
 {
+    Area::onBlur(e);
+    if (e.canceled())
+        return;
     if (Event::kTarget != e.phase())
         return;
     browser_->sendFocusEvent(false);
@@ -439,6 +477,9 @@ void WebView::onBlur(FocusEvent & e)
 
 void WebView::onKeyDown(KeyEvent & e)
 {
+    Area::onKeyDown(e);
+    if (e.canceled())
+        return;
     if (Event::kTarget != e.phase())
         return;
     browser_->sendKeyEvent(e);
@@ -446,6 +487,10 @@ void WebView::onKeyDown(KeyEvent & e)
 
 void WebView::onKeyUp(KeyEvent & e)
 {
+    Area::onKeyUp(e);
+    if (e.canceled())
+        return;
+
     if (Event::kTarget != e.phase())
         return;
     browser_->sendKeyEvent(e);
@@ -453,6 +498,9 @@ void WebView::onKeyUp(KeyEvent & e)
 
 void WebView::onChar(KeyEvent & e)
 {//webview 输入框不接受tab字符
+    Area::onChar(e);
+    if (e.canceled())
+        return;
     if (Event::kTarget != e.phase())
         return;
     if (e.ch() != '\t')

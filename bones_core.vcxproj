@@ -27,7 +27,6 @@
     <ClCompile Include="bones\core\helper.cpp" />
     <ClCompile Include="bones\core\logging.cpp" />
     <ClCompile Include="bones\core\mouse_controller.cpp" />
-    <ClCompile Include="bones\core\area.cpp" />
     <ClCompile Include="bones\core\pixmap.cpp" />
     <ClCompile Include="bones\core\point.cpp" />
     <ClCompile Include="bones\core\rect.cpp" />
@@ -51,6 +50,7 @@
     <ClInclude Include="bones\core\accelerator_manager.h" />
     <ClInclude Include="bones\core\animation.h" />
     <ClInclude Include="bones\core\animation_manager.h" />
+    <ClInclude Include="bones\core\area.h" />
     <ClInclude Include="bones\core\css_types.h" />
     <ClInclude Include="bones\core\css_utils.h" />
     <ClInclude Include="bones\core\device.h" />
@@ -66,7 +66,6 @@
     <ClInclude Include="bones\core\keyboard_codes.h" />
     <ClInclude Include="bones\core\logging.h" />
     <ClInclude Include="bones\core\mouse_controller.h" />
-    <ClInclude Include="bones\core\area.h" />
     <ClInclude Include="bones\core\pixmap.h" />
     <ClInclude Include="bones\core\point.h" />
     <ClInclude Include="bones\core\rect.h" />
