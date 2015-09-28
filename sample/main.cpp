@@ -44,32 +44,32 @@ public:
 
         //往关闭按钮注册回调
         //测试程序的按钮 会调用"onClick"
-        ((BonesShape *)core->getObject("close"))->listen("onClick", &close);
+        //((BonesShape *)core->getObject("close"))->listen("onClick", &close);
 
-        BSStr s;
-        s.reset();
-        s << "{";
-        s << "content:pic_lt;";
-        s << "}";
-        ((BonesImage *)core->getObject("pic_lt"))->applyCSS(s.str().data());
+        //BSStr s;
+        //s.reset();
+        //s << "{";
+        //s << "content:pic_lt;";
+        //s << "}";
+        //((BonesImage *)core->getObject("pic_lt"))->applyCSS(s.str().data());
 
-        s.reset();
-        s << "{";
-        s << "content:pic_rt;";
-        s << "}";
-        ((BonesImage *)core->getObject("pic_rt"))->applyCSS(s.str().data());
+        //s.reset();
+        //s << "{";
+        //s << "content:pic_rt;";
+        //s << "}";
+        //((BonesImage *)core->getObject("pic_rt"))->applyCSS(s.str().data());
 
-        s.reset();
-        s << "{";
-        s << "content:pic_lb;";
-        s << "}";
-        ((BonesImage *)core->getObject("pic_lb"))->applyCSS(s.str().data());
+        //s.reset();
+        //s << "{";
+        //s << "content:pic_lb;";
+        //s << "}";
+        //((BonesImage *)core->getObject("pic_lb"))->applyCSS(s.str().data());
 
-        s.reset();
-        s << "{";
-        s << "content:pic_rb;";
-        s << "}";
-        ((BonesImage *)core->getObject("pic_rb"))->applyCSS(s.str().data());
+        //s.reset();
+        //s << "{";
+        //s << "content:pic_rb;";
+        //s << "}";
+        //((BonesImage *)core->getObject("pic_rb"))->applyCSS(s.str().data());
 
         return true;
     }
@@ -134,7 +134,7 @@ int main()
 
     LoadListener load;
     BonesGetCore()->setXMLListener(&load);
-    BonesGetCore()->loadXMLString(&xml[0]);
+    BonesGetCore()->loadXMLFile(L"..\\..\\sample\\test.xml");
     POINT pt = { 0, 0 };
     SIZE size = { 1024, 768 };
     test_window->setLoc(pt);

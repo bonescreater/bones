@@ -2,6 +2,7 @@
 #include "rect.h"
 #include "res_manager.h"
 #include "font.h"
+#include "point.h"
 
 namespace bones
 {
@@ -150,42 +151,6 @@ Color CSSUtils::CSSStrToColor(const CSSString & str)
 
 Cursor CSSUtils::CSSStrToCursor(const CSSString & str)
 {
-    const wchar_t * cursor = nullptr;
-    if (str == "arrow")
-        cursor = IDC_ARROW;
-    else if (str == "ibeam")
-        cursor = IDC_IBEAM;
-    else if (str == "wait")
-        cursor = IDC_WAIT;
-    else if (str == "cross")
-        cursor = IDC_CROSS;
-    else if (str == "up-arrow")
-        cursor = IDC_UPARROW;
-    else if (str == "size")
-        cursor = IDC_SIZE;
-    else if (str == "icon")
-        cursor = IDC_ICON;
-    else if (str == "size-nwse")
-        cursor = IDC_SIZENWSE;
-    else if (str == "size-nesw")
-        cursor = IDC_SIZENESW;
-    else if (str == "size-we")
-        cursor = IDC_SIZEWE;
-    else if (str == "size-ns")
-        cursor = IDC_SIZENS;
-    else if (str == "size-all")
-        cursor = IDC_SIZEALL;
-    else if (str == "no")
-        cursor = IDC_NO;
-    else if (str == "hand")
-        cursor = IDC_HAND;
-    else if (str == "app-starting")
-        cursor = IDC_APPSTARTING;
-    else if (str == "help")
-        cursor = IDC_HELP;
-
-    if (cursor)
-        return ::LoadImage(NULL, cursor, IMAGE_CURSOR, 0, 0, LR_SHARED);
     return Core::GetResManager()->getCursor(std::string(str.begin, str.length).data());
 }
 
@@ -194,101 +159,101 @@ Pixmap CSSUtils::CSSStrToPixmap(const CSSString & str)
     return Core::GetResManager()->getPixmap(std::string(str.begin, str.length).data());
 }
 
-static Shader::TileMode CSSStrToShaderTileMode(const CSSString & str)
-{
-    if (str == "mirror")
-        return Shader::kMirror;
-    else if (str == "repeat")
-        return Shader::kRepeat;
-    else
-        return Shader::kClamp;
-}
-
-Shader CSSUtils::CSSParamsToLinearGradientShader(const CSSParams & params)
-{
-    //线性渐变至少6个参数
-    Shader shader;
-    if (params.size() < 6)
-        return shader;
-
-    Point pt[2] = { { CSSStrToPX(params[0]), CSSStrToPX(params[1]) },
-    { CSSStrToPX(params[2]), CSSStrToPX(params[3]) } };
-    auto m = CSSStrToShaderTileMode(params[4]);
-    std::vector<Color> colors;
-    std::vector<float> pos;
-    if (params.size() == 6)
-    {//处理只有1个颜色
-        colors.push_back(CSSStrToColor(params[5]));
-        pos.push_back(1.f);
-    }
-    else if (params.size() == 7)
-    {//处理只有2个颜色
-        colors.resize(2);
-        pos.resize(2);
-        colors[0] = CSSStrToColor(params[5]);
-        pos[0] = 0.f;
-        colors[1] = CSSStrToColor(params[6]);
-        pos[1] = 1.f;
-    }
-    else
-    {//处理多个颜色
-        int count = (params.size() - 5) / 2;
-        colors.resize(count);
-        pos.resize(count);
-        for (auto i = 0; i < count; i = i++)
-        {
-            int j = 2 * i;
-            colors[i] = CSSStrToColor(params[5 + j]);
-            pos[i] = CSSStrToFloat(params[5 + j + 1]);
-        }
-    }
-    shader.setGradient(pt[0], pt[1], &colors[0], &pos[0], colors.size(), m);
-    return shader;
-}
-
-Shader CSSUtils::CSSParamsToRadialGradientShader(const CSSParams & params)
-{
-    Shader shader;
-    //至少5个参数
-    if (params.size() < 5)
-        return shader;
-
-    Point pt = { CSSStrToPX(params[0]), CSSStrToPX(params[1]) };
-    Scalar radius = CSSStrToScalar(params[2]);
-
-    auto m = CSSStrToShaderTileMode(params[3]);
-
-    std::vector<Color> colors;
-    std::vector<float> pos;
-    if (params.size() == 5)
-    {//处理只有1个颜色
-        colors.push_back(CSSStrToColor(params[5]));
-        pos.push_back(1.f);
-    }
-    else if (params.size() == 6)
-    {//处理只有2个颜色
-        colors.resize(2);
-        pos.resize(2);
-        colors[0] = CSSStrToColor(params[5]);
-        pos[0] = 0.f;
-        colors[1] = CSSStrToColor(params[6]);
-        pos[1] = 1.f;
-    }
-    else
-    {//处理多个颜色
-        int count = (params.size() - 4) / 2;
-        colors.resize(count);
-        pos.resize(count);
-        for (auto i = 0; i < count; i = i++)
-        {
-            int j = 2 * i;
-            colors[i] = CSSStrToColor(params[4 + j]);
-            pos[i] = CSSStrToFloat(params[4 + j + 1]);
-        }
-    }
-    shader.setGradient(pt, radius, &colors[0], &pos[0], colors.size(), m);
-    return shader;
-}
+//static Shader::TileMode CSSStrToShaderTileMode(const CSSString & str)
+//{
+//    if (str == "mirror")
+//        return Shader::kMirror;
+//    else if (str == "repeat")
+//        return Shader::kRepeat;
+//    else
+//        return Shader::kClamp;
+//}
+//
+//Shader CSSUtils::CSSParamsToLinearGradientShader(const CSSParams & params)
+//{
+//    //线性渐变至少6个参数
+//    Shader shader;
+//    if (params.size() < 6)
+//        return shader;
+//
+//    Point pt[2] = { { CSSStrToPX(params[0]), CSSStrToPX(params[1]) },
+//    { CSSStrToPX(params[2]), CSSStrToPX(params[3]) } };
+//    auto m = CSSStrToShaderTileMode(params[4]);
+//    std::vector<Color> colors;
+//    std::vector<float> pos;
+//    if (params.size() == 6)
+//    {//处理只有1个颜色
+//        colors.push_back(CSSStrToColor(params[5]));
+//        pos.push_back(1.f);
+//    }
+//    else if (params.size() == 7)
+//    {//处理只有2个颜色
+//        colors.resize(2);
+//        pos.resize(2);
+//        colors[0] = CSSStrToColor(params[5]);
+//        pos[0] = 0.f;
+//        colors[1] = CSSStrToColor(params[6]);
+//        pos[1] = 1.f;
+//    }
+//    else
+//    {//处理多个颜色
+//        int count = (params.size() - 5) / 2;
+//        colors.resize(count);
+//        pos.resize(count);
+//        for (auto i = 0; i < count; i = i++)
+//        {
+//            int j = 2 * i;
+//            colors[i] = CSSStrToColor(params[5 + j]);
+//            pos[i] = CSSStrToFloat(params[5 + j + 1]);
+//        }
+//    }
+//    shader.setGradient(pt[0], pt[1], &colors[0], &pos[0], colors.size(), m);
+//    return shader;
+//}
+//
+//Shader CSSUtils::CSSParamsToRadialGradientShader(const CSSParams & params)
+//{
+//    Shader shader;
+//    //至少5个参数
+//    if (params.size() < 5)
+//        return shader;
+//
+//    Point pt = { CSSStrToPX(params[0]), CSSStrToPX(params[1]) };
+//    Scalar radius = CSSStrToScalar(params[2]);
+//
+//    auto m = CSSStrToShaderTileMode(params[3]);
+//
+//    std::vector<Color> colors;
+//    std::vector<float> pos;
+//    if (params.size() == 5)
+//    {//处理只有1个颜色
+//        colors.push_back(CSSStrToColor(params[5]));
+//        pos.push_back(1.f);
+//    }
+//    else if (params.size() == 6)
+//    {//处理只有2个颜色
+//        colors.resize(2);
+//        pos.resize(2);
+//        colors[0] = CSSStrToColor(params[5]);
+//        pos[0] = 0.f;
+//        colors[1] = CSSStrToColor(params[6]);
+//        pos[1] = 1.f;
+//    }
+//    else
+//    {//处理多个颜色
+//        int count = (params.size() - 4) / 2;
+//        colors.resize(count);
+//        pos.resize(count);
+//        for (auto i = 0; i < count; i = i++)
+//        {
+//            int j = 2 * i;
+//            colors[i] = CSSStrToColor(params[4 + j]);
+//            pos[i] = CSSStrToFloat(params[4 + j + 1]);
+//        }
+//    }
+//    shader.setGradient(pt, radius, &colors[0], &pos[0], colors.size(), m);
+//    return shader;
+//}
 
 Font CSSUtils::CSSParamsToFont(const CSSParams & params)
 {

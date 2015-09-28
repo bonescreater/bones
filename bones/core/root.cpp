@@ -10,6 +10,7 @@
 #include "SkDevice.h"
 #include "logging.h"
 #include <windowsx.h>
+#include "css_utils.h"
 
 namespace bones
 {
@@ -35,6 +36,7 @@ void Root::setDelegate(Delegate * delegate)
 void Root::setColor(Color color)
 {
     color_ = color;
+    inval();
 }
 
 void Root::attachTo(Widget widget)
@@ -353,5 +355,15 @@ void Root::adjustPixmap()
     }
 }
 
+BONES_CSS_TABLE_BEGIN(Root, View)
+BONES_CSS_SET_FUNC("color", &Root::setColor)
+BONES_CSS_TABLE_END()
+
+void Root::setColor(const CSSParams & params)
+{
+    if (params.empty())
+        return;
+    setColor(CSSUtils::CSSStrToColor(params[0]));
+}
 
 }

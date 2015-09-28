@@ -156,6 +156,16 @@ public:
         return object_->getOpacity();
     }
 
+    void setLoc(const BonesPoint & loc) override
+    {
+        return object_->setLoc(loc.x, loc.y);
+    }
+
+    void setSize(const BonesSize & size) override
+    {
+        return object_->setSize(size.width, size.height);
+    }
+
     BonesPoint getLoc() const override
     {
         BonesPoint bp = { object_->getLeft(), object_->getTop() };
@@ -289,6 +299,12 @@ public:
             lua_pushcfunction(l, &GetOpacity);
             lua_setfield(l, -2, kMethodGetOpacity);
 
+            lua_pushcfunction(l, &SetLoc);
+            lua_setfield(l, -2, kMethodSetLoc);
+
+            lua_pushcfunction(l, &SetSize);
+            lua_setfield(l, -2, kMethodSetSize);
+
             lua_pushcfunction(l, &GetLoc);
             lua_setfield(l, -2, kMethodGetLoc);
 
@@ -388,6 +404,42 @@ public:
             lua_pushnumber(l, bob->getOpacity());
 
         return 1;
+    }
+
+    static int SetLoc(lua_State * l)
+    {
+        lua_settop(l, 3);
+
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        LuaObject * bob = static_cast<LuaObject *>(
+            LuaContext::CallGetCObject(l));
+        if (bob)
+        {
+            BonesPoint bp = { 
+                static_cast<Scalar>(lua_tonumber(l, 2)), 
+                static_cast<Scalar>(lua_tonumber(l, 3)) };
+            bob->setLoc(bp);
+        }
+        return 0;
+    }
+
+    static int SetSize(lua_State * l)
+    {
+        lua_settop(l, 3);
+
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        LuaObject * bob = static_cast<LuaObject *>(
+            LuaContext::CallGetCObject(l));
+        if (bob)
+        {
+            BonesSize size = {
+                static_cast<Scalar>(lua_tonumber(l, 2)),
+                static_cast<Scalar>(lua_tonumber(l, 3)) };
+            bob->setSize(size);
+        }
+        return 0;
     }
 
     static int GetLoc(lua_State * l)

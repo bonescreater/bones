@@ -75,6 +75,8 @@ typedef float BonesScalar;
 typedef HANDLE BonesCursor;
 typedef HBITMAP BonesCaret;
 typedef HWND BonesWidget;
+typedef void * BonesShader;
+
 /*!矩形描述*/
 typedef struct
 {
@@ -403,6 +405,10 @@ public:
 
     virtual void push(BonesScriptArg * arg) = 0;
 
+    virtual void setLoc(const BonesPoint & loc) = 0;
+
+    virtual void setSize(const BonesSize & size) = 0;
+
     virtual float getOpacity() const = 0;
 
     virtual BonesPoint getLoc() const = 0;
@@ -567,6 +573,27 @@ public:
 class BonesShape : public BonesHandler<BonesShape>
 {
 public:
+    virtual void setStroke(bool stroke) = 0;
+
+    virtual void setStrokeEffect(bool dash, size_t count, 
+                                 BonesScalar * interval, 
+                                 BonesScalar offset) = 0;
+
+    virtual void setStrokeWidth(BonesScalar stroke_width) = 0;
+
+    virtual void setColor(BonesColor color) = 0;
+
+    virtual void setColor(BonesShader shader) = 0;
+
+    virtual void setCircle(const BonesPoint & center, BonesScalar radius) = 0;
+
+    virtual void setRect(BonesScalar rx, BonesScalar ry, 
+                         const BonesRect * rect) = 0;
+
+    virtual void setLine(const BonesPoint & start, const BonesPoint & end) = 0;
+
+    virtual void setPoint(const BonesPoint & pt) = 0;
+
     virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
 
     virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
@@ -725,11 +752,32 @@ public:
 class BonesCore
 {
 public:
+    enum TileMode
+    {
+        kClamp = 0,
+        kRepeat,
+        kMirror,
+    };
+
     virtual BonesResManager * getResManager() = 0;
 
     virtual BonesPixmap * createPixmap() = 0;
 
     virtual void destroyPixmap(BonesPixmap *) = 0;
+
+    virtual BonesShader createLinearGradient(
+        const BonesPoint & begin, 
+        const BonesPoint & end,
+        size_t count, BonesColor * color,
+        BonesScalar * pos, TileMode mode) = 0;
+
+    virtual BonesShader createRadialGradient(
+        const BonesPoint & center, 
+        BonesScalar radius,
+        size_t count, BonesColor * color,
+        float * pos, TileMode mode) = 0;
+
+    virtual void destroyShader(BonesShader shader) = 0;
 
     virtual void setXMLListener(BonesXMLListener * listener) = 0;
 

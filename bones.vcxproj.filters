@@ -40,6 +40,102 @@
     <ClCompile Include="bones\lua_scroller.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
+    <ClCompile Include="bones\core\device.cpp">
+      <Filter>core\3rd_ext\skia_ext</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\pixmap.cpp">
+      <Filter>core\3rd_ext\skia_ext</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\xml.cpp">
+      <Filter>core\3rd_ext\xml_ext</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\accelerator.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\accelerator_manager.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\animation.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\animation_manager.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\font.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\encoding.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\event.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\event_dispatcher.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\focus_controller.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\helper.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\logging.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\mouse_controller.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\point.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\rect.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\ref.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\root.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\size.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\view.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\css_utils.cpp">
+      <Filter>core\base\css</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\res_manager.cpp">
+      <Filter>core\base\css</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\css_manager.cpp">
+      <Filter>core\base\css</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\xml_controller.cpp">
+      <Filter>core\base\xml</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\image.cpp">
+      <Filter>core\bone\facade</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\shape.cpp">
+      <Filter>core\bone\facade</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\text.cpp">
+      <Filter>core\bone\facade</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\rich_edit.cpp">
+      <Filter>core\bone\naked</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\scroller.cpp">
+      <Filter>core\bone\naked</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\web_view.cpp">
+      <Filter>core\bone\naked</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\core.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
@@ -87,6 +183,114 @@
     <ClInclude Include="bones\lua_handler.h">
       <Filter>lua\proxy</Filter>
     </ClInclude>
+    <ClInclude Include="bones\core\device.h">
+      <Filter>core\3rd_ext\skia_ext</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\pixmap.h">
+      <Filter>core\3rd_ext\skia_ext</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\xml.h">
+      <Filter>core\3rd_ext\xml_ext</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\accelerator.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\accelerator_manager.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\animation.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\animation_manager.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\area.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\font.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\color.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\encoding.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\event.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\event_dispatcher.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\focus_controller.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\helper.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\keyboard_codes.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\logging.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\mouse_controller.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\point.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\rect.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\ref.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\root.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\size.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\view.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\css_types.h">
+      <Filter>core\base\css</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\css_utils.h">
+      <Filter>core\base\css</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\res_manager.h">
+      <Filter>core\base\css</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\css_manager.h">
+      <Filter>core\base\css</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\xml_controller.h">
+      <Filter>core\base\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\image.h">
+      <Filter>core\bone\facade</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\shape.h">
+      <Filter>core\bone\facade</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\text.h">
+      <Filter>core\bone\facade</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\rich_edit.h">
+      <Filter>core\bone\naked</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\scroller.h">
+      <Filter>core\bone\naked</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\web_view.h">
+      <Filter>core\bone\naked</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\core.h">
+      <Filter>core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="lua">
@@ -94,6 +298,36 @@
     </Filter>
     <Filter Include="lua\proxy">
       <UniqueIdentifier>{7494eebf-848d-422a-9f5e-97b0867e2157}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{979ed158-b0e1-463f-bda1-47ad42fb17ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\3rd_ext">
+      <UniqueIdentifier>{23ad6405-ba5c-4e05-b1b8-59f909974b01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\3rd_ext\skia_ext">
+      <UniqueIdentifier>{e5d16989-e4d7-417b-936c-8b333871e3cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\3rd_ext\xml_ext">
+      <UniqueIdentifier>{e91b5415-22ef-4d25-a5ae-4ce63afd0ec9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\base">
+      <UniqueIdentifier>{6d38dc22-fe6d-4a95-80de-0892d81b3c93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\base\css">
+      <UniqueIdentifier>{a1043d6b-26e6-4c18-ae0a-c09a69825916}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\base\xml">
+      <UniqueIdentifier>{7c1da072-a557-4632-afd9-374a0dd5f922}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\bone">
+      <UniqueIdentifier>{386640ba-9676-4b3c-b643-f1f060017d36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\bone\facade">
+      <UniqueIdentifier>{6671c1b8-2fff-430a-b604-7092e7b41547}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\bone\naked">
+      <UniqueIdentifier>{4d3cd88a-f6da-4371-8ad7-012242853d1d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

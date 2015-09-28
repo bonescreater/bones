@@ -4,6 +4,8 @@
 #include "SkCanvas.h"
 #include "css_utils.h"
 #include "SkDashPathEffect.h"
+#include "SkShader.h"
+
 #include <vector>
 
 namespace bones
@@ -11,19 +13,17 @@ namespace bones
 
 Shape::Shape()
 :category_(kNone), style_(kFill), color_(0xff000000), stroke_width_(1),
-border_width_(0), border_effect_(kSolid), border_color_(0xff000000), border_rx_(0), border_ry_(0),
-colour_type_(kColor), effect_(nullptr), delegate_(nullptr)
+colour_type_(kColor), effect_(nullptr), delegate_(nullptr), shader_(nullptr)
 {
-    rect_param_.rx = 0;
-    rect_param_.ry = 0;
-    circle_param_.radius = 0;
+    //param 未初始化 category= kNone用不到param
 }
 
 Shape::~Shape()
 {
     if (effect_)
         effect_->unref();
-    effect_ = nullptr;
+    if (shader_)
+        shader_->unref();
 }
 
 void Shape::setStyle(Style style)
@@ -44,9 +44,10 @@ void Shape::setStrokeEffect(Effect effect, Scalar * interval, size_t count, Scal
             effect_ = SkDashPathEffect::Create(interval, count, offset);
         else
         {
-            effect_ = Core::GetDashEffect();
-            effect_->ref();
+            Scalar interval[2] = { 2, 2 };
+            effect_ = SkDashPathEffect::Create(interval, 2, 0);
         }
+
     }
     inval();
 }
@@ -64,43 +65,65 @@ void Shape::setColor(Color color)
     inval();
 }
 
-void Shape::setShader(const Shader & shader)
+void Shape::setShader(SkShader * shader)
 {
     colour_type_ = kShader;
+    if (shader_)
+        shader_->unref();
     shader_ = shader;
-    
+    if (shader_)
+        shader_->ref();
     inval();
 }
 
 void Shape::set(Scalar rx, Scalar ry, const Rect * r)
 {   
     category_ = kRect;
-    rect_param_.rx = rx;
-    rect_param_.ry = ry;
+    param_.rect.rx = rx;
+    param_.rect.ry = ry;
     if (r)
-        rect_param_.rect = *r;
+    {
+        param_.rect.left = r->left();
+        param_.rect.top = r->top();
+        param_.rect.right = r->right();
+        param_.rect.bottom = r->bottom();
+    }     
     else
-        rect_param_.rect.setEmpty();
+    {
+        param_.rect.left = 0;
+        param_.rect.top = 0;
+        param_.rect.right = 0;
+        param_.rect.bottom = 0;
+    }
+        
     inval();
 }
 
 void Shape::set(const Point & center, Scalar radius)
 {
     category_ = kCircle;
-    circle_param_.center = center;
-    circle_param_.radius = radius;
+    param_.circle.cx = center.x();
+    param_.circle.cy = center.y();
+    param_.circle.radius = radius;
 
     inval();
 }
 
-void Shape::setBorder(Scalar width, Effect effect, Color color, Scalar rx, Scalar ry)
+void Shape::set(const Point & pt)
 {
-    border_width_ = width;
-    border_color_ = color;
-    border_rx_ = rx;
-    border_ry_ = ry;
-    border_effect_ = effect;
+    category_ = kPoint;
+    param_.point.x = pt.x();
+    param_.point.y = pt.y();
+    inval();
+}
 
+void Shape::set(const Point & start, const Point & end)
+{
+    category_ = kLine;
+    param_.line.xs = start.x();
+    param_.line.ys = start.y();
+    param_.line.xe = end.x();
+    param_.line.ye = end.y();
 
     inval();
 }
@@ -125,7 +148,6 @@ void Shape::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
     if (opacity == 0)
         return;
     drawBackground(canvas, opacity);
-    drawBorder(canvas, opacity);
 }
 
 void Shape::drawBackground(SkCanvas & canvas, float opacity)
@@ -136,7 +158,7 @@ void Shape::drawBackground(SkCanvas & canvas, float opacity)
     SkPaint paint;
     if (kShader == colour_type_)
     {
-        paint.setShader(Helper::ToSkShader(shader_));
+        paint.setShader(shader_);
         paint.setAlpha(ClampAlpha(opacity));
     }  
     else if (kColor == colour_type_)
@@ -148,71 +170,70 @@ void Shape::drawBackground(SkCanvas & canvas, float opacity)
         assert(0);
 
     paint.setStrokeWidth(stroke_width_);
+    if (effect_)
+        paint.setPathEffect(effect_);
+
     if (kFill == style_)
         paint.setStyle(SkPaint::kFill_Style);
     else if (kStroke == style_)
-    {
         paint.setStyle(SkPaint::kStroke_Style);
-        if (effect_)
-            paint.setPathEffect(effect_);
-    }
         
 
     if(kRect == category_)
     {
         SkRect r;
-        if (rect_param_.rect.isEmpty())
+        Rect re = Rect::MakeLTRB(param_.rect.left, 
+                                 param_.rect.top, 
+                                 param_.rect.right, 
+                                 param_.rect.bottom);
+        if (re.isEmpty())
         {
-            Rect bounds;
             if (kStroke == style_)
             {
                 auto offset = stroke_width_ / 2;
-                bounds = Rect::MakeLTRB(offset, offset, getWidth() - offset, getHeight() - offset);
+                re = Rect::MakeLTRB(offset, offset, getWidth() - offset, getHeight() - offset);
             }               
             else
-                bounds = Rect::MakeLTRB(0, 0, getWidth(), getHeight());
+                re = Rect::MakeLTRB(0, 0, getWidth(), getHeight());
 
-            r = Helper::ToSkRect(bounds);
+            r = Helper::ToSkRect(re);
         }
-
         else
-            r = Helper::ToSkRect(rect_param_.rect);
+        {
+            if (kStroke == style_)
+            {
+                auto offset = stroke_width_ / 2;
+                re = Rect::MakeLTRB(re.left() + offset, re.top() + offset, 
+                                    re.right() - offset, re.bottom()- offset);
+            }
+            else
+                r = Helper::ToSkRect(re);
 
-        canvas.drawRoundRect(r, rect_param_.rx, rect_param_.ry, paint);
+        }
+            
+        canvas.drawRoundRect(r, param_.rect.rx, param_.rect.ry, paint);
     }
     else if( kCircle == category_)
     {
-        canvas.drawCircle(circle_param_.center.x(),
-                          circle_param_.center.y(),
-                          circle_param_.radius, paint);
+        canvas.drawCircle(param_.circle.cx,
+                          param_.circle.cy,
+                          param_.circle.radius, paint);
+    }
+    else if (kLine == category_)
+    {
+        canvas.drawLine(param_.line.xs, param_.line.ys, 
+                        param_.line.xe, param_.line.ye, 
+                        paint);
+    }
+    else if (kPoint == category_)
+    {
+        canvas.drawPoint(param_.point.x, param_.point.y, paint);
     }
     
 }
 
-void Shape::drawBorder(SkCanvas & canvas, float opacity)
-{
-    if (0 == border_width_)
-        return;
-
-    SkPaint paint;
-    paint.setColor(border_color_);
-    paint.setAlpha(ClampAlpha(opacity, ColorGetA(border_color_)));
-    paint.setStyle(SkPaint::kStroke_Style);
-    //border_style_暂时用不到
-    auto offset = border_width_ / 2;
-    paint.setStrokeWidth(border_width_);
-    if (kDash == border_effect_)
-        paint.setPathEffect(Core::GetDashEffect());
-    Rect bounds;
-    bounds.setLTRB(offset, offset, getWidth() - offset, getHeight() - offset);
-    canvas.drawRoundRect(Helper::ToSkRect(bounds), border_rx_, border_ry_, paint);
-}
-
 BONES_CSS_TABLE_BEGIN(Shape, View)
-BONES_CSS_SET_FUNC("border", &Shape::setBorder)
 BONES_CSS_SET_FUNC("color", &Shape::setColor)
-BONES_CSS_SET_FUNC("linear-gradient", &Shape::setLinearGradient)
-BONES_CSS_SET_FUNC("radial-gradient", &Shape::setRadialGradient)
 BONES_CSS_SET_FUNC("style", &Shape::setStyle)
 BONES_CSS_SET_FUNC("stroke-effect", &Shape::setStrokeEffect)
 BONES_CSS_SET_FUNC("stroke-width", &Shape::setStrokeWidth)
@@ -237,20 +258,6 @@ void Shape::setColor(const CSSParams & params)
     setColor(CSSUtils::CSSStrToColor(params[0]));
 }
 
-void Shape::setLinearGradient(const CSSParams & params)
-{
-    if (params.empty())
-        return;
-
-    setShader(CSSUtils::CSSParamsToLinearGradientShader(params));
-}
-
-void Shape::setRadialGradient(const CSSParams & params)
-{
-    if (params.empty())
-        return;
-    setShader(CSSUtils::CSSParamsToRadialGradientShader(params));
-}
 //(stroke | fill, solid | dash)
 void Shape::setStyle(const CSSParams & params)
 {
@@ -308,23 +315,6 @@ void Shape::setCircle(const CSSParams & params)
         return;
     set(CSSUtils::CSSStrToPX(params[0], params[1]),
         CSSUtils::CSSStrToPX(params[2]));
-}
-
-void Shape::setBorder(const CSSParams & params)
-{
-    if (params.size() < 3)
-        return;
-    Scalar rx = 0;
-    if (params.size() > 3)
-        rx = CSSUtils::CSSStrToPX(params[3]);
-    Scalar ry = 0;
-    if (params.size() > 4)
-        rx = CSSUtils::CSSStrToPX(params[4]);
-
-    setBorder(CSSUtils::CSSStrToPX(params[0]),
-        CSSStrToEffect(params[1]),
-        CSSUtils::CSSStrToColor(params[2]),
-        rx, ry);
 }
 
 }

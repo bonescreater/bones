@@ -92,6 +92,9 @@ const char * kMethodGetParent = "getParent";
 
 const char * kMethodGetSize = "getSize";
 const char * kMethodGetLoc = "getLoc";
+const char * kMethodSetSize = "setSize";
+const char * kMethodSetLoc = "setLoc";
+
 const char * kMethodSetColor = "setColor";
 
 const char * kStrCapture = "capture";

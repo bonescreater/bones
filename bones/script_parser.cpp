@@ -24,6 +24,8 @@
 #include "lua_web_view.h"
 #include "lua_scroller.h"
 
+#include "SkGradientShader.h"
+
 namespace bones
 {
 static const char * kStrPhase = "phase";
@@ -31,6 +33,16 @@ static const char * kStrFunc = "func";
 static const char * kStrScript = "script";
 static const char * kStrEvent = "event";
 static const char * kStrNotify = "notify";
+
+Core::TileMode ToCoreTileMode(BonesCore::TileMode mode)
+{
+    if (BonesCore::kRepeat == mode)
+        return Core::kRepeat;
+    if (BonesCore::kMirror == mode)
+        return Core::kMirror;
+    return Core::kClamp;
+}
+
 ////(self, arg1, arg2)
 static int ScriptCB(lua_State * l)
 {
@@ -223,6 +235,37 @@ BonesPixmap * ScriptParser::createPixmap()
 void ScriptParser::destroyPixmap(BonesPixmap * bp)
 {
     delete bp;
+}
+
+BonesShader ScriptParser::createLinearGradient(
+    const BonesPoint & begin,
+    const BonesPoint & end,
+    size_t count, BonesColor * color,
+    BonesScalar * pos, TileMode mode)
+{
+    Point bpt, ept;
+    bpt.set(begin.x, begin.y);
+    ept.set(end.x, end.y);
+
+    return Core::createLinearGradient(bpt, ept, count, color, pos,
+        ToCoreTileMode(mode));
+}
+
+BonesShader ScriptParser::createRadialGradient(
+    const BonesPoint & center,
+    BonesScalar radius,
+    size_t count, BonesColor * color,
+    float * pos, TileMode mode)
+{
+    Point pt;
+    pt.set( center.x, center.y);
+    return Core::createRadialGradient(pt, radius, count, color, pos,
+                                          ToCoreTileMode(mode));
+}
+
+void ScriptParser::destroyShader(BonesShader shader)
+{
+    Core::destroyShader(static_cast<SkShader *>(shader));
 }
 
 bool ScriptParser::onLoad()

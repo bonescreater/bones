@@ -6,7 +6,7 @@
 
 #include <vector>
 #include <map>
-#include "shader.h"
+
 
 namespace bones
 {

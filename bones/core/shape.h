@@ -5,9 +5,10 @@
 #include "area.h"
 #include "color.h"
 #include "rect.h"
-#include "shader.h"
 
 class SkPathEffect;
+class SkShader;
+
 namespace bones
 {
 
@@ -31,6 +32,9 @@ private:
         kNone,
         kRect,//绘制矩形
         kCircle,
+        kLine,
+        kPoint,
+        kPath,
     };
 
     enum ColourType
@@ -39,18 +43,40 @@ private:
         kShader,
     };
 
-    struct RectParam
+    typedef union
     {
-        Scalar rx;
-        Scalar ry;
-        Rect rect;
-    };
+        struct Rect
+        {
+            Scalar rx;
+            Scalar ry;
+            Scalar left;
+            Scalar top;
+            Scalar right;
+            Scalar bottom;
+        }rect;
 
-    struct CircleParam
-    {
-        Point center;
-        Scalar radius;
-    };
+        struct Circle
+        {
+            Scalar cx;
+            Scalar cy;
+            Scalar radius;
+        }circle;
+
+        struct Point
+        {
+            Scalar x;
+            Scalar y;
+        } point;
+
+        struct Line
+        {
+            Scalar xs;
+            Scalar ys;
+            Scalar xe;
+            Scalar ye;
+        } line;
+    }Param;
+
 public:
     class Delegate : public DelegateBase
     {
@@ -69,13 +95,15 @@ public:
 
     void setColor(Color color);
 
-    void setShader(const Shader & shader);
+    void setShader(SkShader * shader);
 
     void set(Scalar rx, Scalar ry, const Rect * r = nullptr);
 
     void set(const Point & center, Scalar radius);
 
-    void setBorder(Scalar width, Effect effect, Color color, Scalar rx, Scalar ry);
+    void set(const Point & pt);
+
+    void set(const Point & start, const Point & end);
 
     void setDelegate(Delegate * delegate);
 
@@ -86,8 +114,6 @@ protected:
     void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 
     void drawBackground(SkCanvas & canvas, float opacity);
-
-    void drawBorder(SkCanvas & canvas, float opacity);
 
     BONES_CSS_TABLE_DECLARE()
 
@@ -106,27 +132,17 @@ protected:
     void setRect(const CSSParams & params);
 
     void setCircle(const CSSParams & params);
-
-    void setBorder(const CSSParams & params);
 private:
     Delegate * delegate_;
     Category category_;
     Style style_;
     Scalar stroke_width_;
-    RectParam rect_param_;
-    CircleParam circle_param_;
+    Param param_;
     SkPathEffect * effect_;
 
     ColourType colour_type_;
     Color color_;
-    Shader shader_;
-    
-
-    Scalar border_width_;
-    Color border_color_;
-    Scalar border_rx_;
-    Scalar border_ry_;
-    Effect border_effect_;
+    SkShader * shader_;
 };
 
 

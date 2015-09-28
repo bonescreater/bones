@@ -6,18 +6,6 @@
 namespace bones
 {
 
-typedef uint32_t Color;
-
-typedef uint32_t PMColor;
-
-struct ColorF
-{
-    float a;
-    float r;
-    float g;
-    float b;
-};
-
 inline Color ColorSetARGB(uint8_t a, uint8_t r, uint8_t g, uint8_t b)
 {
     return (a << 24) | (r << 16) | (g << 8) | (b << 0);

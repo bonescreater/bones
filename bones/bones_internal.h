@@ -60,6 +60,8 @@ extern const char * kMethodGetChildAt;
 extern const char * kMethodGetParent;
 extern const char * kMethodGetSize;
 extern const char * kMethodGetLoc;
+extern const char * kMethodSetSize;
+extern const char * kMethodSetLoc;
 
 extern const char * kMethodSetColor;
 

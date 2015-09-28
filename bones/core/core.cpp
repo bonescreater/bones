@@ -4,12 +4,14 @@
 #include "css_manager.h"
 #include "res_manager.h"
 #include "xml_controller.h"
+#include "point.h"
 
 #include "helper.h"
 
 #include "SkGraphics.h"
-#include "SkDashPathEffect.h"
 #include "web_view.h"
+
+#include "SkGradientShader.h"
 
 namespace bones
 {
@@ -23,13 +25,21 @@ const char * kClassRichEdit = "richedit";
 const char * kClassWebView = "webview";
 const char * kClassScroller = "scroller";
 
+static SkShader::TileMode ToSkShaderTileMode(Core::TileMode mode)
+{
+    SkShader::TileMode sm = SkShader::kClamp_TileMode;
+    if (Core::kRepeat == mode)
+        sm = SkShader::kRepeat_TileMode;
+    else if (Core::kMirror == mode)
+        sm = SkShader::kMirror_TileMode;
+    return sm;
+}
+
 static AnimationManager * animations = nullptr;
 
 static CSSManager * css = nullptr;
 
 static ResManager * res = nullptr;
-
-static SkPathEffect * dash = nullptr;
 
 static XMLController * xml = nullptr;
 
@@ -45,11 +55,6 @@ bool Core::StartUp(const Config & config)
         bret = !!(css = new CSSManager);
     if (bret)
         bret = !!(res = new ResManager);
-    if (bret)
-    {
-        Scalar interval[2] = { 2, 2 };
-        bret = !!(dash = SkDashPathEffect::Create(interval, 2, 0));
-    }
     if (bret)
     {
         cef_enable = config.cef_enable;
@@ -69,10 +74,6 @@ void Core::ShutDown()
     WebView::ShutDown();
 
     xml = nullptr;
-
-    if (dash)
-        dash->unref();
-    dash = nullptr;
 
     if (res)
         delete res;
@@ -127,14 +128,42 @@ ResManager * Core::GetResManager()
     return res;
 }
 
-SkPathEffect * Core::GetDashEffect()
-{
-    return dash;
-}
-
 XMLController * Core::GetXMLController()
 {
     return xml;
+}
+
+SkShader * Core::createLinearGradient(
+    const Point & begin,
+    const Point & end,
+    size_t count,
+    Color * color,
+    Scalar * pos,
+    TileMode mode)
+{
+    SkPoint pt[2] = { { begin.x(), begin.y() }, { end.x(), end.y() } };
+    return SkGradientShader::CreateLinear(pt, color, pos, count,
+        ToSkShaderTileMode(mode));
+}
+
+SkShader * Core::createRadialGradient(
+    const Point & center,
+    Scalar radius,
+    size_t count,
+    Color * color,
+    Scalar * pos,
+    TileMode mode)
+{
+    SkPoint pt = { center.x(), center.y() };
+
+    return SkGradientShader::CreateRadial(pt, radius, color, pos, count,
+        ToSkShaderTileMode(mode));
+}
+
+void Core::destroyShader(SkShader * shader)
+{
+    if (shader)
+        shader->unref();
 }
 
 }

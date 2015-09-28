@@ -36,6 +36,20 @@ public:
 
     void destroyPixmap(BonesPixmap *) override;
 
+    BonesShader createLinearGradient(
+        const BonesPoint & begin,
+        const BonesPoint & end,
+        size_t count, BonesColor * color,
+        BonesScalar * pos, TileMode mode) override;
+
+    BonesShader createRadialGradient(
+        const BonesPoint & center,
+        BonesScalar radius,
+        size_t count, BonesColor * color,
+        float * pos, TileMode mode) override;
+
+    void destroyShader(BonesShader shader) override;
+
     BonesObject * getObject(const char * id) override;
 
     BonesObject * getObject(BonesObject * ob, const char * id) override;

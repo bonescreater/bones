@@ -2,7 +2,6 @@
 #include "rect.h"
 #include "point.h"
 #include "pixmap.h"
-#include "shader.h"
 #include "font.h"
 
 #include "SkRect.h"
@@ -65,11 +64,6 @@ SkBitmap Helper::ToSkBitmap(Pixmap & pm)
         bitmap.extractSubset(&subset, ToSkIRect(pm.subset_));
     }
     return subset;
-}
-
-SkShader * Helper::ToSkShader(Shader & shader)
-{
-    return shader.getShader();
 }
 
 void Helper::ToSkPaint(const Font & font, SkPaint & paint)

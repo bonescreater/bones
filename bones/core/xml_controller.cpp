@@ -78,7 +78,10 @@ bool XMLController::loadString(const char * data)
     size_t len = 0;
     if ( !data || !(len = strlen(data)) )
         return false;
-    
+    //bom
+    if (len < 3)
+        return false;
+
     main_module_.xml_file.resize(len + 1);
     memcpy(&main_module_.xml_file[0], data, len);
     main_module_.xml_file[len] = 0;
@@ -98,6 +101,9 @@ bool XMLController::loadFile(const wchar_t * file)
     if (ReadString(main_module_.xml_fullname.data(), main_module_.xml_file))
     {//读取文件成功
         //载入主模块
+        if (main_module_.xml_file.size() < 3)
+            return false;
+
         if (loadMainModule(main_module_))
             return true;
     }
@@ -199,8 +205,8 @@ View * XMLController::createView(View * parent,
         attrs[kStrClass] = class_name ? class_name : "";
         //设置通知
         notifyPrepare(v);
-        notifyCreate(v);
         applyClass(v);
+        notifyCreate(v);
         return v;
     }
     return nullptr;
@@ -565,11 +571,10 @@ void XMLController::parseModuleBody(const Module & mod)
     if (load)
     {
         //create 和class 都是 先子后父
-        //create在前 是因为应用class时 可能有事件回调
-        //create中可以注册好回调等待处理
+        //prepare在前 是因为应用class时 可能有事件回调
         notifyPrepare();
-        notifyCreate();
-        applyClass();        
+        applyClass();
+        notifyCreate();       
     }
     else
         clear();
@@ -854,7 +859,10 @@ std::string XMLController::GetPathFromFullName(const char * fullname)
         //return Encoding::ToUTF8(wpath.data());
         return ".";
     }
-    return Helper::GetPathFromFullName(fullname);
+    auto path = Helper::GetPathFromFullName(fullname);
+    if (path.empty())
+        path = ".";
+    return path;
 }
 
 bool XMLController::IsAbsolutePath(const char * path)

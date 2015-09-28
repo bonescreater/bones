@@ -110,6 +110,10 @@ protected:
     virtual bool notifyCreateCaret(Caret caret, const Size & size) override;
 private:
     void adjustPixmap();
+
+    BONES_CSS_TABLE_DECLARE()
+
+    void setColor(const CSSParams & params);
 private:
     Delegate * delegate_;
     Widget widget_;

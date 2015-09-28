@@ -1,0 +1,167 @@
+﻿    <?xml version='1.0' encoding='utf-8' ?>  
+    <bones>  
+	    <head>
+      <link type ='css' file ='../../sample/test.css'></link>
+      <link type ='script' module ='test' file ='../../sample\test.lua'></link>
+      <link type ='script' module ='animate' file ='../../sample\animate.lua'></link>
+      <link type ='xml' module ='button' file ='../../sample/button.xml'></link>
+      <link type ='xml' module ='scrollimg' file ='../../sample/scrollimg.xml'></link>
+      <link type ='pixmap' name ='lena' file='../../sample/lena.bmp'></link>
+        <style>
+          .fadein
+          {
+          content: 淡入;
+
+          }
+          .fadeout
+          {
+          content: "淡出";
+          }
+          .close
+          {
+          content: 关闭;
+          }
+          .bg
+          {
+          color:#ffffffff;
+          rect: 0px 0px;
+          }
+          .dash
+          {
+          loc:350px 10px;
+          size:150px 150px;
+          color:#88ff0000;
+          rect: 0px 0px;
+          style: stroke;
+          stroke-effect: dash 5px 5px 0px;
+          stroke-width:1px;
+          border:1px solid #8800ff00;
+          }
+          .circle
+          {
+          loc:510px 10px;
+          circle: 75px 75px 75px;
+          }
+          .circle_fill
+          {
+          loc:670px 10px;
+          circle: 75px 75px 75px;
+          style: fill;
+          border:1px dash #8800ff00;
+          }
+          .pic
+          {
+          size: 128px 128px;
+          }
+          .pic_lt
+          {
+          loc: 300px 200px;
+          }
+          .pic_rt
+          {
+          loc: 438px 200px;
+          }
+          .pic_lb
+          {
+          loc: 300px 338px;
+          }
+          .pic_rb
+          {
+          loc: 438px 338px;
+          }
+          .opacity
+          {
+          opacity:1.0;
+          }
+          .rich
+          {
+          left:20px;
+          top:60px;
+          width:200px;
+          height:50px;
+          font: 20px  "system" underline;
+          content:"背景透明richedit";
+          background-style:transparent;
+          }
+          .rich_opacity
+          {
+          left:20px;
+          top:120px;
+          width:200px;
+          height:50px;
+          font: 20px;
+          background-style:opaque #ff880088;
+          }
+          .text
+          {
+          left:20px;
+          top:180px;
+          width:200px;
+          height:50px;
+          font: 20px  "Microsoft YaHei" underline;
+          align:left;
+          content:"a字符串bgh发放打啊非打死";
+          }
+          .text_ellipsis
+          {
+          left:20px;
+          top:240px;
+          width:200px;
+          height:50px;
+          font: 20px  "Microsoft YaHei" bold strike;
+          align:left;
+          content:"a字符串bgh发放打啊非打死";
+          overflow:ellipsis;
+          color:#88ff0000;
+          }
+          .text_word_wrap
+          {
+          left:20px;
+          top:300px;
+          width:200px;
+          height:50px;
+          font: 20px  "Microsoft YaHei" bold strike;
+          align:left;
+          content:"我\n字符串bgh发放打啊非打死";
+          overflow:word-wrap;
+          color:#8800ff00;
+          }
+          .scrollimg
+          {
+          size:128px 128px;
+          loc:600px 200px;
+          }
+        </style>
+		  </head>
+      
+        <body>  
+            <root id ='main'>
+              <shape id ="bg" class ="bg"></shape>           
+              <shape id ="opacity" class ="opacity">
+                <webview id ="webview"></webview>
+                <text class ="text"></text>
+                <text class ="text_ellipsis"></text>
+                <text class ="text_word_wrap"></text>
+                
+                <shape class ="dash"></shape>
+                <shape class ="dash circle"></shape>
+                <shape class ="dash circle_fill"></shape>
+                <image id ="pic_lt" class ="pic pic_lt"></image>
+                <image id ="pic_rt" class ="pic pic_rt"></image>
+                <image id ="pic_lb" class ="pic pic_lb"></image>
+                <image id ="pic_rb" class ="pic pic_rb"></image>
+
+                <richedit id ="rich_opacity" class ="rich_opacity"></richedit>
+                <richedit id ="rich" class ="rich"></richedit>
+                <scrollimg id ="scrollimg" class ="scrollimg"></scrollimg>
+              </shape>
+              <button id ="fadein" class ="b11   b12 "></button>
+              <button id ="fadeout" class ="b11   b13 "></button>
+              <button id ="close" class = "   b11     b12  b15 "></button>
+              
+              <notify name ="onCreate" module ="test" func ="onCreate"></notify>
+              <notify name ="onDestroy" module ="test" func ="onDestroy"></notify>
+              <notify name ="onSizeChanged" module ="test" func ="onSizeChanged"></notify>
+			      </root>
+        </body>  
+    </bones>

@@ -43,9 +43,9 @@ public:
 
     static Scalar CSSStrToScalar(const CSSString & str);
 
-    static Shader CSSParamsToLinearGradientShader(const CSSParams & params);
+    //static Shader CSSParamsToLinearGradientShader(const CSSParams & params);
 
-    static Shader CSSParamsToRadialGradientShader(const CSSParams & params);
+    //static Shader CSSParamsToRadialGradientShader(const CSSParams & params);
 
     static Font CSSParamsToFont(const CSSParams & params);
 };

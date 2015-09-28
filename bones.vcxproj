@@ -56,7 +56,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;BONES_BUILD_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)rapidxml;$(ProjectDir)lua\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lua\src;$(ProjectDir)rapidxml;$(ProjectDir)skia\include\core;$(ProjectDir)skia\include\config;$(ProjectDir)skia\include\images;$(ProjectDir)skia\include\effects;$(ProjectDir)skia\include\utils;$(ProjectDir)skia\include\ports;$(ProjectDir)skia\include\utils\win;$(ProjectDir)cef3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -76,7 +76,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;BONES_BUILD_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)rapidxml;$(ProjectDir)lua\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lua\src;$(ProjectDir)rapidxml;$(ProjectDir)skia\include\core;$(ProjectDir)skia\include\config;$(ProjectDir)skia\include\images;$(ProjectDir)skia\include\effects;$(ProjectDir)skia\include\utils;$(ProjectDir)skia\include\ports;$(ProjectDir)skia\include\utils\win;$(ProjectDir)cef3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -90,6 +90,38 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bones\bones.cpp" />
+    <ClCompile Include="bones\core\accelerator.cpp" />
+    <ClCompile Include="bones\core\accelerator_manager.cpp" />
+    <ClCompile Include="bones\core\animation.cpp" />
+    <ClCompile Include="bones\core\animation_manager.cpp" />
+    <ClCompile Include="bones\core\core.cpp" />
+    <ClCompile Include="bones\core\css_manager.cpp" />
+    <ClCompile Include="bones\core\css_utils.cpp" />
+    <ClCompile Include="bones\core\device.cpp" />
+    <ClCompile Include="bones\core\encoding.cpp" />
+    <ClCompile Include="bones\core\event.cpp" />
+    <ClCompile Include="bones\core\event_dispatcher.cpp" />
+    <ClCompile Include="bones\core\focus_controller.cpp" />
+    <ClCompile Include="bones\core\font.cpp" />
+    <ClCompile Include="bones\core\helper.cpp" />
+    <ClCompile Include="bones\core\image.cpp" />
+    <ClCompile Include="bones\core\logging.cpp" />
+    <ClCompile Include="bones\core\mouse_controller.cpp" />
+    <ClCompile Include="bones\core\pixmap.cpp" />
+    <ClCompile Include="bones\core\point.cpp" />
+    <ClCompile Include="bones\core\rect.cpp" />
+    <ClCompile Include="bones\core\ref.cpp" />
+    <ClCompile Include="bones\core\res_manager.cpp" />
+    <ClCompile Include="bones\core\rich_edit.cpp" />
+    <ClCompile Include="bones\core\root.cpp" />
+    <ClCompile Include="bones\core\scroller.cpp" />
+    <ClCompile Include="bones\core\shape.cpp" />
+    <ClCompile Include="bones\core\size.cpp" />
+    <ClCompile Include="bones\core\text.cpp" />
+    <ClCompile Include="bones\core\view.cpp" />
+    <ClCompile Include="bones\core\web_view.cpp" />
+    <ClCompile Include="bones\core\xml.cpp" />
+    <ClCompile Include="bones\core\xml_controller.cpp" />
     <ClCompile Include="bones\lua_animation.cpp" />
     <ClCompile Include="bones\lua_image.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
@@ -123,19 +155,55 @@
     <ClCompile Include="bones\lua_scroller.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="bones_core.vcxproj">
-      <Project>{6ac0ee58-b2cd-4490-8147-89020b15f518}</Project>
-    </ProjectReference>
     <ProjectReference Include="libcef_dll_wrapper.vcxproj">
       <Project>{a9d6dc71-c0dc-4549-aea0-3b15b44e86a9}</Project>
     </ProjectReference>
     <ProjectReference Include="lua.vcxproj">
       <Project>{b94fcb1d-8aec-429b-a379-3d30fc70f073}</Project>
     </ProjectReference>
+    <ProjectReference Include="skia.vcxproj">
+      <Project>{ec5bd0c9-c2a7-4eaa-a6f8-e74ff9e79b9f}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
     <ClInclude Include="bones\bones_internal.h" />
+    <ClInclude Include="bones\core\accelerator.h" />
+    <ClInclude Include="bones\core\accelerator_manager.h" />
+    <ClInclude Include="bones\core\animation.h" />
+    <ClInclude Include="bones\core\animation_manager.h" />
+    <ClInclude Include="bones\core\area.h" />
+    <ClInclude Include="bones\core\color.h" />
+    <ClInclude Include="bones\core\core.h" />
+    <ClInclude Include="bones\core\css_manager.h" />
+    <ClInclude Include="bones\core\css_types.h" />
+    <ClInclude Include="bones\core\css_utils.h" />
+    <ClInclude Include="bones\core\device.h" />
+    <ClInclude Include="bones\core\encoding.h" />
+    <ClInclude Include="bones\core\event.h" />
+    <ClInclude Include="bones\core\event_dispatcher.h" />
+    <ClInclude Include="bones\core\focus_controller.h" />
+    <ClInclude Include="bones\core\font.h" />
+    <ClInclude Include="bones\core\helper.h" />
+    <ClInclude Include="bones\core\image.h" />
+    <ClInclude Include="bones\core\keyboard_codes.h" />
+    <ClInclude Include="bones\core\logging.h" />
+    <ClInclude Include="bones\core\mouse_controller.h" />
+    <ClInclude Include="bones\core\pixmap.h" />
+    <ClInclude Include="bones\core\point.h" />
+    <ClInclude Include="bones\core\rect.h" />
+    <ClInclude Include="bones\core\ref.h" />
+    <ClInclude Include="bones\core\res_manager.h" />
+    <ClInclude Include="bones\core\rich_edit.h" />
+    <ClInclude Include="bones\core\root.h" />
+    <ClInclude Include="bones\core\scroller.h" />
+    <ClInclude Include="bones\core\shape.h" />
+    <ClInclude Include="bones\core\size.h" />
+    <ClInclude Include="bones\core\text.h" />
+    <ClInclude Include="bones\core\view.h" />
+    <ClInclude Include="bones\core\web_view.h" />
+    <ClInclude Include="bones\core\xml.h" />
+    <ClInclude Include="bones\core\xml_controller.h" />
     <ClInclude Include="bones\lua_animation.h" />
     <ClInclude Include="bones\lua_handler.h" />
     <ClInclude Include="bones\lua_object.h" />
