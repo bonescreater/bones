@@ -25,7 +25,7 @@ public:
 
     void setContent(const char * key) override;
 
-    void setColorMatrix(const BonesColorMatrix & cm) override;
+    void setColorMatrix(const BonesColorMatrix * cm) override;
 
     LUA_HANDLER(Image);
 };

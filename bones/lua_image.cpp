@@ -122,15 +122,22 @@ static int SetContent(lua_State * l)
 //self, a, b, .....
 static int SetColorMatrix(lua_State * l)
 {
-    lua_settop(l, 21);
+    auto count = lua_gettop(l);
+    if (count < 1)
+        return 0;
     lua_pushnil(l);
     lua_copy(l, 1, -1);
     LuaImage * bob = static_cast<LuaImage *>(
         LuaContext::CallGetCObject(l));
     if (bob)
     {
+        BonesColorMatrix * bcm = nullptr;
         BonesColorMatrix cm;
-        if (lua_istable(l, 2))
+        if (1 == count)
+        {
+            ;
+        }
+        else if (count > 1 && lua_istable(l, 2))
         {//一个数组
             lua_pushnil(l);
             lua_copy(l, 2, -1);
@@ -141,13 +148,17 @@ static int SetColorMatrix(lua_State * l)
                 cm.mat[i - 1] = static_cast<BonesScalar>(lua_tointeger(l, -1));
                 lua_pop(l, 1);
             }
+            bcm = &cm;
         }
         else
         {//20个矩阵数字
+            lua_settop(l, 21);
             for (auto i = 2; i <= 21; ++i)
                 cm.mat[i - 2] = static_cast<BonesScalar>(lua_tointeger(l, i));
+
+            bcm = &cm;
         }
-        bob->setColorMatrix(cm);
+        bob->setColorMatrix(bcm);
     }
     return 0;
 }
@@ -229,11 +240,16 @@ void LuaImage::setContent(const char * key)
     object_->set(key);
 }
 
-void LuaImage::setColorMatrix(const BonesColorMatrix & cm)
+void LuaImage::setColorMatrix(const BonesColorMatrix * cm)
 {
+    ColorMatrix * tm = nullptr;
     ColorMatrix m;
-    memcpy(&m, &cm, sizeof(m));
-    object_->setColorMatrix(m);
+    if (cm)
+    {
+        memcpy(&m, cm, sizeof(m));
+        tm = &m;
+    }    
+    object_->setColorMatrix(tm);
 }
 
 }

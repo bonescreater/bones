@@ -457,7 +457,7 @@ void XMLController::notifyPrepare(View * ob)
     while (child)
     {
         pv.reset(child);
-        notifyCreate(child);
+        notifyPrepare(child);
         child = child->getNextSibling();
     }  
 }

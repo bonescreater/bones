@@ -65,7 +65,7 @@ extern const char * kMethodSetLoc;
 
 extern const char * kMethodSetColor;
 
-extern const char * kStrCapture;
+extern const char * kStrCapturing;
 extern const char * kStrTarget;
 extern const char * kStrBubbling;
 

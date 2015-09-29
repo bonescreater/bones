@@ -66,11 +66,13 @@ void Image::set(const char * key)
     inval();
 }
 
-void Image::setColorMatrix(const ColorMatrix & cm)
+void Image::setColorMatrix(const ColorMatrix * cm)
 {
     if (color_filter_)
         color_filter_->unref();
-    color_filter_ = SkColorMatrixFilter::Create(cm.mat);    
+    color_filter_ = nullptr;
+    if (cm)
+        color_filter_ = SkColorMatrixFilter::Create(cm->mat);    
 }
 
 void Image::setDelegate(Delegate * delegate)

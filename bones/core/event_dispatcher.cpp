@@ -36,7 +36,7 @@ void EventDispatcher::run(Event & e, Path & path)
         return;
 
     //capture阶段
-    e.phase_ = Event::kCapture;
+    e.phase_ = Event::kCapturing;
     for (auto item = path.rbegin(); item != path.rend(); ++item)
     {
         View * current = item->get();

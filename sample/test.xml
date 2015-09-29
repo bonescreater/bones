@@ -1,10 +1,34 @@
-﻿<bones>
+﻿
+<bones>
   <head>
-    <link type ="script" module ="color" file ="background.lua"></link>
+    <link type ="pixmap" name ="common" file ="common.png"></link>
+    <link type ="pixmap" name ="highlight" file ="highlight.png"></link>
+    <link type ="pixmap" name ="press" file ="press.png"></link>
+    <link type ="pixmap" name ="disable" file ="disable.png"></link>
+    <link type ="script" module ="test" file="test.lua"></link>
+    <style>
+      .red
+      {
+      color:#ffff0000;
+      }
+      .pic
+      {
+      loc:20px 20px;
+      size:256px 256px;
+      }
+    </style>
   </head>
   <body>
-    <root id ="main">
-      <notify name ="onCreate" module ="color" func ="onCreate"></notify>
+    <root id ="main" class ="red" >
+      <image class ="pic">
+        <notify name ="onCreate" module ="test" func ="onCreate"></notify>
+        <event name ="onMouseDown" phase ="target" module ="test" func ="onMouseDown"></event>
+        <event name ="onMouseUp" phase ="target" module ="test" func ="onMouseUp"></event>
+        <event name ="onMouseMove" phase ="target" module ="test" func ="onMouseMove"></event>
+        <event name ="onMouseLeave" phase ="target" module ="test" func ="onMouseLeave"></event>
+        <event name ="onMouseEnter" phase ="target" module ="test" func ="onMouseEnter"></event>
+          
+      </image>
     </root>
   </body>
 </bones>

@@ -97,14 +97,14 @@ const char * kMethodSetLoc = "setLoc";
 
 const char * kMethodSetColor = "setColor";
 
-const char * kStrCapture = "capture";
+const char * kStrCapturing = "capturing";
 const char * kStrTarget = "target";
 const char * kStrBubbling = "bubbling";
 
 const char * ToEventPhaseStr(BonesEvent::Phase phase)
 {
-    if (BonesEvent::kCapture == phase)
-        return kStrCapture;
+    if (BonesEvent::kCapturing == phase)
+        return kStrCapturing;
     if (BonesEvent::kBubbling == phase)
         return kStrBubbling;
     if (BonesEvent::kTarget == phase)

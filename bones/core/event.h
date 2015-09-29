@@ -67,7 +67,7 @@ public:
 
     enum Phase
     {
-        kCapture,
+        kCapturing,
         kTarget,
         kBubbling,
 

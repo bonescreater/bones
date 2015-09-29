@@ -44,8 +44,8 @@ public:
     BonesEvent::Phase phase() override
     {
         auto phase = event_->phase();
-        if (Event::kCapture == phase)
-            return BonesEvent::kCapture;
+        if (Event::kCapturing == phase)
+            return BonesEvent::kCapturing;
         if (Event::kTarget == phase)
             return BonesEvent::kTarget;
         if (Event::kBubbling == phase)

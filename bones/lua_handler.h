@@ -87,25 +87,25 @@ public:\
     }\
     void setListener(BonesEvent::Phase phase, MouseListener * lis) override\
     {\
-        if (phase >= BonesEvent::kPhaseCount || phase < BonesEvent::kCapture)\
+        if (phase >= BonesEvent::kPhaseCount || phase < BonesEvent::kCapturing)\
             return;\
         mouse_[phase] = lis;\
     }\
     void setListener(BonesEvent::Phase phase, KeyListener * lis) override\
     {\
-        if (phase >= BonesEvent::kPhaseCount || phase < BonesEvent::kCapture)\
+        if (phase >= BonesEvent::kPhaseCount || phase < BonesEvent::kCapturing)\
             return;\
         key_[phase] = lis;\
     }\
     void setListener(BonesEvent::Phase phase, FocusListener * lis) override\
     {\
-        if (phase >= BonesEvent::kPhaseCount || phase < BonesEvent::kCapture)\
+        if (phase >= BonesEvent::kPhaseCount || phase < BonesEvent::kCapturing)\
             return;\
         focus_[phase] = lis;\
     }\
     void setListener(BonesEvent::Phase phase, WheelListener * lis) override\
     {\
-        if (phase >= BonesEvent::kPhaseCount || phase < BonesEvent::kCapture)\
+        if (phase >= BonesEvent::kPhaseCount || phase < BonesEvent::kCapturing)\
             return;\
         wheel_[phase] = lis;\
     }\

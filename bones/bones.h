@@ -113,9 +113,8 @@ typedef struct
 typedef uint32_t BonesColor;
 
 /*!BonesPixmap位图接口该接口可以对位图进行操作 位图存放预乘后的像素
-   @warning BonesPixmap通过BonesCore来创建和销毁
-   @see BonesCore
-   @see
+   @note BonesPixmap通过BonesCore来创建和销毁
+   @see BonesCore::createPixmap
 */
 class BonesPixmap
 {
@@ -200,7 +199,7 @@ class BonesEvent
 public:
     enum Phase
     {
-        kCapture,
+        kCapturing,
         kTarget,
         kBubbling,
 
@@ -618,7 +617,7 @@ public:
 
     virtual void setContent(const char * key) = 0;
 
-    virtual void setColorMatrix(const BonesColorMatrix & cm) = 0;
+    virtual void setColorMatrix(const BonesColorMatrix * cm) = 0;
 
     virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
 

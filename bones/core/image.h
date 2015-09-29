@@ -40,7 +40,7 @@ public:
 
     void set(const char * key);
 
-    void setColorMatrix(const ColorMatrix & cm);
+    void setColorMatrix(const ColorMatrix * cm);
 
     void setDelegate(Delegate * delegate);
 

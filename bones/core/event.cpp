@@ -5,7 +5,7 @@ namespace bones
 {
 
 Event::Event() 
-:type_(kET_COUNT), phase_(kCapture), path_(nullptr),
+:type_(kET_COUNT), phase_(kCapturing), path_(nullptr),
 bubbles_(true), cancelable_(true), canceled_(false), propagation_(true), user_data_(nullptr)
 {
 

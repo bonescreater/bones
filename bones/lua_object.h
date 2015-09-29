@@ -53,9 +53,15 @@ public:
         {
             lua_getglobal(l, mod);
             assert(lua_istable(l, -1));
-            lua_getfield(l, -1, func);
-            lua_copy(l, -1, -3);
-            lua_pop(l, 2);
+            if (lua_istable(l, -1))
+            {
+                lua_getfield(l, -1, func);
+                lua_copy(l, -1, -3);
+                lua_pop(l, 1);
+            }
+            else
+                BLG_ERROR << mod << " :exist????";
+            lua_pop(l, 1);
         }
         else
         {
