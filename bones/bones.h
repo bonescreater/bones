@@ -369,65 +369,126 @@ public:
     virtual bool isNumLockOn() const = 0;
 };
 
+/*!基类 所有标签继承自BonesObject*/
 class BonesObject
 {
 public:
     typedef void * Animation;
     enum AnimationAction
     {
-        kStart,
-        kStop,
-        kPause,
-        kResume,
+        kStart,//!启动
+        kStop,//!<停止
+        kPause,//!<暂停
+        kResume,//!<恢复
     };
+    /*!定时器运行时的回调接口*/
     class AnimationRunListener
     {
     public:
+        /*!定时器运行时的回调函数
+        @param[in] ani 定时器ID
+        @param[in] ob 与定时器关联的标签
+        @param[in] progress 进度0~1.0f 当进度为1.0f之后 定时器会调用kStop的回调
+        */
         virtual void onEvent(Animation ani, BonesObject * ob, float progress) = 0;
     };
-
+    /*!定时器控制接口的回调*/
     class AnimationActionListener
     {
     public:
+        /*!定时器运行时的回调函数
+        @param[in] ani 定时器ID
+        @param[in] ob 与定时器关联的标签
+        @param[in] action 当标签调用pause stop resume会触发对应的回调
+        */
         virtual void onEvent(Animation ani, BonesObject * ob, AnimationAction action) = 0;
     };
 public:
+    /*!标签的具体类型描述
+    @return 标签的类型 与xml 标签一致 如BonesRoot 返回"root" BonesImage 返回"image"
+    */
     virtual const char * getClassName() = 0;
-
+    /*!从基类获得子类标签指针
+    @return 标签的指针
+    */
     virtual void * cast() = 0;
-
+    /*!得到标签ID
+    @return 标签ID
+    */
     virtual const char * getID() = 0;
-
+    /*!得到标签的根节点
+    @return 标签的根节点
+    */
     virtual BonesObject * getRoot() = 0;
 
     virtual void listen(const char * name, BonesScriptListener * listener) = 0;
 
     virtual void push(BonesScriptArg * arg) = 0;
-
+    /*!设置标签位置
+    @param[in] loc 位置 相对于父的左上角 如果是root 则相对于(0, 0)
+    @see BonesPoint
+    */
     virtual void setLoc(const BonesPoint & loc) = 0;
-
+    /*!设置标签尺寸
+    @param[in] size 尺寸
+    @see BonesSize
+    */
     virtual void setSize(const BonesSize & size) = 0;
-
+    /*!得到标签透明度
+    @return 透明度0~1.0f
+    @note 透明度永远不能超过父的透明度 如父的透明度0.5 标签透明度1.0f
+          标签会以0.5的透明度显示出来，透明度为0时并不影响visible属性
+    */
     virtual float getOpacity() const = 0;
-
+    /*!得到标签当前位置
+    @return 标签位置 相对于父的左上角
+    */
     virtual BonesPoint getLoc() const = 0;
-
+    /*!得到标签当前尺寸
+    @return 标签尺寸 
+    */
     virtual BonesSize getSize() const = 0;
-
+    /*!设置标签是否可见
+    @param[in] visible true则可见 false不可见
+    @note 如果不可见则鼠标和绘制都会忽略该标签以及该标签的子，默认可见
+    */
     virtual void setVisible(bool visible) = 0;
-
+    /*!设置标签是否可接收焦点
+    @param[in] focusable true则可接收 false不可接收
+    @note 默认接收焦点
+    */
     virtual void setFocusable(bool focusable) = 0;
-
+    /*!测试点是否在标签内
+    @param[in] x 水平方向坐标 相对于标签左上角
+    @param[in] y 垂直方向坐标 相对于标签左上角
+    @return true则代表在标签内 false代表不在
+    */
     virtual bool contains(BonesScalar x, BonesScalar y) = 0;
-
+    /*!得到指定索引的子标签
+    @param[in] index 子标签的索引
+    @return 找到则返回标签 否则返回空 
+    @note 索引与xml节点顺序相同
+    */
     virtual BonesObject * getChildAt(size_t index) = 0;
-
+    /*!得到父标签
+    @return 父标签
+    */
     virtual BonesObject * getParent() = 0;
 
     virtual void applyCSS(const char * css) = 0;
 
     virtual void applyClass(const char * name) = 0;
-
+    /*!创建并启动定时器
+    @param[in] interval 定时器运行间隔
+    @param[in] due 定时器运行总时长 -1则代表一直运行
+    @param[in] run 定时器正常运行时的回调函数
+    @param[in] stop 调用stopAnimate 和stopAllAnimate时的回调函数 可以为空
+    @param[in] start 定时器启动时回调函数 可以为空
+    @param[in] pause 调用pauseAnimte时的回调函数
+    @param[in] resume 调用resumeAnimate时的回调函数
+    @return 定时器ID
+    @warning 定时器ID在stop以后失效 如果有变量保存了定时器ID 那么最好在stop回调中将变量置空
+    */
     virtual Animation animate(
         uint64_t interval, uint64_t due, 
         AnimationRunListener * run,
@@ -435,67 +496,151 @@ public:
         AnimationActionListener * start,
         AnimationActionListener * pause,
         AnimationActionListener * resume) = 0;
-
+    /*!停止定时器
+    @param[in] ani 定时器ID
+    @param[in] toend true则以1.0f的progress 调用run，确保定时器停止前工作已经完成
+                     false 停止定时器
+    */
     virtual void stopAnimate(Animation ani, bool toend) = 0;
-
+    /*!暂停定时器
+    @param[in] ani 定时器ID
+    */
     virtual void pauseAnimate(Animation ani) = 0;
-
+    /*!恢复运行定时器
+    @param[in] ani 定时器ID
+    */
     virtual void resumeAnimate(Animation ani) = 0;
-
+    /*!停止与标签关联的所有定时器
+    @param[in] toend true则以1.0f的progress 调用run，确保定时器停止前工作已经完成
+                     false 停止定时器
+    */
     virtual void stopAllAnimate(bool toend) = 0;
 };
 
+/*!root 标签提供了与native window 交互的接口*/
 class BonesRoot : public BonesObject
 {
 public:
+    /*!使用root要响应的通知
+    @note root通常是与本地窗口交互
+          由于脚本层没有调用windows api扩展库 大多数的通知没有必要传到脚本层 即stop 返回true
+    */
     class NotifyListener
     {
     public:
+        /*!内部标签需要获取焦点
+        @param[in] sender 标签
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        */
         virtual void requestFocus(BonesRoot * sender, bool & stop) = 0;
-
+        /*!root需要重绘
+        @param[in] sender 标签
+        @param[in] rect 需要重绘的区域
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        */
         virtual void invalidRect(BonesRoot * sender, const BonesRect & rect, bool & stop) = 0;
-
+        /*!root鼠标样式改变
+        @param[in] sender 标签
+        @param[in] cursor 新的鼠标样式
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        */
         virtual void changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop) = 0;
-
+        /*!root需要显示光标
+        @param[in] sender 标签
+        @param[in] fshow true 显示光标 false隐藏光标
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        */
         virtual void showCaret(BonesRoot * sender, bool fshow, bool & stop) = 0;
-
+        /*!root需要创建光标
+        @param[in] sender 标签
+        @param[in] hbmp 光标位图
+        @param[in] size 光标的宽高 如hbmp不为空则忽略
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        */
         virtual void createCaret(BonesRoot * sender, BonesCaret hbmp, const BonesSize & size, bool & stop) = 0;
-
+        /*!root需要改变光标位置
+        @param[in] sender 标签
+        @param[in] pt 光标位置
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        */
         virtual void changeCaretPos(BonesRoot * sender, const BonesPoint & pt, bool & stop) = 0;
-
+        /*!尺寸改变后收到该通知
+        @param[in] sender 标签
+        @param[in] size 标签改变后的尺寸
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @see BonesSize
+        */
         virtual void onSizeChanged(BonesRoot * sender, const BonesSize & size, bool & stop) = 0;
-
+        /*!位置改变后收到该通知
+        @param[in] sender 标签
+        @param[in] loc 标签改变后的位置
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @see BonesPoint
+        */
         virtual void onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool & stop) = 0;
-
+        /*!创建后收到该通知
+        @param[in] sender 标签
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        */
         virtual void onCreate(BonesRoot * sender, bool & stop) = 0;
-
+        /*!即将销毁收到该通知
+        @param[in] sender 标签
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        */
         virtual void onDestroy(BonesRoot * sender, bool & stop) = 0;
     };
-
+    /*!设置通知回调*/
     virtual void setListener(NotifyListener * listener) = 0;
-
+    /*!设置root的颜色
+    @param[in] color root的颜色
+    */
     virtual void setColor(BonesColor color) = 0;
-
+    /*!设置root关联的窗口
+    @param[in] hwnd 窗口
+    @note 目前除了richedit标签外都不需要依赖窗口如果不使用richedit 则可以不关联窗口
+    */
     virtual void attachTo(BonesWidget hwnd) = 0;
-
+    /*!root是否需要重绘
+    @return true则需要重绘 false 不需要
+    */
     virtual bool isDirty() const = 0;
-
+    /*!root需要绘制的区域
+    @return 重绘区域
+    */
     virtual BonesRect getDirtyRect() const = 0;
-
+    /*!root发起一次绘制 绘制后当前的脏区清空*/
     virtual void draw() = 0;
-
+    /*!得到root的位图
+    @return 位图 可以方便绘制到窗口
+    */
     virtual HBITMAP getBackBuffer() const = 0;
-
+    /*!得到root的位图像素
+    @param[out] 得到位图像素的首地址
+    @param[out] 得到位图每一行占用的字节数
+    @note 位图的尺寸即为root的尺寸,位图像素为预乘后的像素
+    */
     virtual void getBackBuffer(const void * & data, size_t & pitch) const = 0;
-
+    /*!传递mouse消息
+    @return 通常返回true
+    */
     virtual bool handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
-
+    /*!传递key消息
+    @return 通常返回true
+    */
     virtual bool handleKey(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
-
+    /*!传递focus消息
+    @return 通常返回true
+    */
     virtual bool handleFocus(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
-
+    /*!传递ime消息
+    @return 返回false则需要自己处理
+    @note 由于webview使用的cef浏览器 暂时没有找到处理IME的接口
+          所以返回false时需要自己处理 通常是调用DefWindowProc
+    */
     virtual bool handleComposition(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
-
+    /*!传递wheel消息
+    @return 通常返回true
+    */
     virtual bool handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
 };
 
@@ -503,68 +648,187 @@ template <class T>
 class BonesHandler : public BonesObject
 {
 public:
-    //除root外每一个标签支持的notify
+    /*!除root外每一个标签支持的通知*/
     class NotifyListener
     {
     public:
+        /*!在节点创建后收到该通知
+           @param[in] sender 标签
+           @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+           @note 通知顺序是先发送子节点的onCreate 然后是父节点的onCreate,这意味着
+                 当接收到一个节点的onCreate通知时 意味着它的子节点已经处理过onCreate通知
+                 并初始化完毕，所以此时可以安全的设置子节点属性
+        */
         virtual void onCreate(T * sender, bool & stop) = 0;
-
+        /*!在节点即将销毁收到该通知
+        @param[in] sender 标签
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @note 通知顺序是先发送父节点的onDestroy 然后是子节点的onDestroy,这意味着
+        当接收到一个节点的onDestroy通知时 意味着它的子节点还没有处理过onDestroy通知
+        所以此时可以安全的设置子节点属性 通常是恢复onCreate中设置的属性
+        */
         virtual void onDestroy(T * sender, bool & stop) = 0;
-
+        /*!在节点尺寸改变后收到该通知
+        @param[in] sender 标签
+        @param[in] size 标签改变后的尺寸
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @see BonesSize
+        */
         virtual void onSizeChanged(T * sender, const BonesSize & size, bool & stop) = 0;
-
+        /*!在节点位置改变后收到该通知
+        @param[in] sender 标签
+        @param[in] loc 标签改变后的位置
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @see BonesPoint
+        */
         virtual void onPositionChanged(T * sender, const BonesPoint & loc, bool & stop) = 0;
-
+        /*!在节点接收鼠标事件前会先收到onHitTest通知，该通知决定了标签是否接收鼠标事件
+        @param[in] sender 标签
+        @param[in] loc 鼠标在标签中的位置
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @return 返回true 则代表接收鼠标事件 返回false 代表不接受鼠标事件
+        @see BonesPoint
+        */
         virtual bool onHitTest(T * sender, const BonesPoint & loc, bool & stop) = 0;
     };
 
-    //除root外每一个标签支持的mouse event
+    /*!除root外每一个标签支持的mouse event*/
     class MouseListener
     {
     public:
+        /*!鼠标进入事件
+        @param[in] sender 标签
+        @param[in] e 鼠标事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @see BonesMouseEvent
+        */
         virtual void onMouseEnter(T * sender, BonesMouseEvent & e, bool & stop) = 0;
-
+        /*!鼠标移动事件
+        @param[in] sender 标签
+        @param[in] e 鼠标事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @note 鼠标默认在左键按下时启用capture模式，在capture时鼠标事件的位置有可能在标签外部
+        @see BonesMouseEvent
+        */
         virtual void onMouseMove(T * sender, BonesMouseEvent & e, bool & stop) = 0;
-
+        /*!鼠标按下事件
+        @param[in] sender 标签
+        @param[in] e 鼠标事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @note 左键按下时启用capture模式
+        @see BonesMouseEvent
+        */
         virtual void onMouseDown(T * sender, BonesMouseEvent & e, bool & stop) = 0;
-
+        /*!鼠标弹起事件
+        @param[in] sender 标签
+        @param[in] e 鼠标事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @note 左键弹起时关闭capture模式 如果弹起时 鼠标不再标签内部 则产生enter 和leave事件
+        @see BonesMouseEvent
+        */
         virtual void onMouseUp(T * sender, BonesMouseEvent & e, bool & stop) = 0;
-
+        /*!鼠标点击事件
+        @param[in] sender 标签
+        @param[in] e 鼠标事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @warning 目前没有针对事件发生的时间来判断鼠标是点击还是双击，除非是由root直接传递
+        click和dclick事件，否则不会自动产生click 和dclick事件
+        @see BonesMouseEvent
+        */
         virtual void onMouseClick(T * sender, BonesMouseEvent & e, bool & stop) = 0;
-
+        /*!鼠标双击事件
+        @param[in] sender 标签
+        @param[in] e 鼠标事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @warning 目前没有针对事件发生的时间来判断鼠标是点击还是双击，除非是由root直接传递
+        click和dclick事件，否则不会自动产生click 和dclick事件
+        @see BonesMouseEvent
+        */
         virtual void onMouseDClick(T * sender, BonesMouseEvent & e, bool & stop) = 0;
-
+        /*!鼠标离开事件
+        @param[in] sender 标签
+        @param[in] e 鼠标事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @note capture模式下 离开标签不会产生leave事件，在鼠标左键弹起 关闭capture后 才产生leave消息
+        */
         virtual void onMouseLeave(T * sender, BonesMouseEvent & e, bool & stop) = 0;
     };
 
-    //除root外每一个标签支持的key event
+    /*!除root外每一个标签支持的key event*/
     class KeyListener
     {
     public:
+        /*!键盘按下事件
+        @param[in] sender 标签
+        @param[in] e 键盘事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @note 键盘事件默认发送给当前焦点标签
+        @see BonesKeyEvent
+        */
         virtual void onKeyDown(T * sender, BonesKeyEvent & e, bool & stop) = 0;
-
+        /*!键盘弹起事件
+        @param[in] sender 标签
+        @param[in] e 键盘事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @note 键盘事件默认发送给当前焦点标签
+        @see BonesKeyEvent
+        */
         virtual void onKeyUp(T * sender, BonesKeyEvent & e, bool & stop) = 0;
-
+        /*!键盘字符事件
+        @param[in] sender 标签
+        @param[in] e 键盘事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @note 键盘事件默认发送给当前焦点标签 ch()函数返回字符
+        @see BonesKeyEvent::ch
+        */
         virtual void onChar(T * sender, BonesKeyEvent & e, bool & stop) = 0;
     };
 
-    //除root外每一个标签支持的focus event
+    /*!除root外每一个标签支持的focus event*/
     class FocusListener
     {
     public:
+        /*!焦点即将离开
+        @param[in] sender 标签
+        @param[in] e 焦点事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @see BonesFocusEvent
+        */
         virtual void onFocusOut(T * sender, BonesFocusEvent & e, bool & stop) = 0;
-
+        /*!焦点即将进入
+        @param[in] sender 标签
+        @param[in] e 焦点事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @see BonesFocusEvent
+        */
         virtual void onFocusIn(T * sender, BonesFocusEvent & e, bool & stop) = 0;
-
+        /*!焦点离开
+        @param[in] sender 标签
+        @param[in] e 焦点事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @see BonesFocusEvent
+        */
         virtual void onBlur(T * sender, BonesFocusEvent & e, bool & stop) = 0;
-
+        /*!焦点进入
+        @param[in] sender 标签
+        @param[in] e 焦点事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @see BonesFocusEvent
+        */
         virtual void onFocus(T * sender, BonesFocusEvent & e, bool & stop) = 0;
     };
 
-    //除root外每一个标签支持的wheel event
+    /*!除root外每一个标签支持的wheel event*/
     class WheelListener
     {
     public:
+        /*!响应滚轮事件
+        @param[in] sender 标签
+        @param[in] e 滚轮事件
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @note 滚轮事件传递给当前鼠标所在的标签 而不是windows默认的传递给当前焦点标签
+        @see BonesWheelEvent
+        */
         virtual void onWheel(T * sender, BonesWheelEvent & e, bool & stop) = 0;
     };
 };
@@ -604,29 +868,73 @@ public:
     virtual void setListener(NotifyListener * lis) = 0;
 };
 
+/*!image标签 提供了对位图的处理*/
 class BonesImage : public BonesHandler<BonesImage>
 {
 public:
+    /*!将位图绘制到指定位置 不对位图进行缩放操作
+      @param[in] bp 位图左上角的位置 如果为空则将位图绘制到(0, 0)
+      @see BonesPoint
+    */
     virtual void setDirect(const BonesPoint * bp) = 0;
-
+    /*!将位图缩放绘制到指定区域 
+      @param[in] dst 绘制位图的目标区域 如果为空则目标区域就是BonesImage大小
+      @see BoensRect
+    */
     virtual void setStretch(const BonesRect * dst) = 0;
-
+    /*!将位图九宫格缩放绘制到指定区域
+       @param[in] dst 绘制位图的目标区域 如果为空则目标区域就是BonesImage大小
+       @param[in] center 九宫格拉伸时位图的中心区域 如果为空 则center为位图的(1/3, 1/3, 2/3, 2/3)
+       @see BonesRect
+    */
     virtual void setNine(const BonesRect * dst, const BonesRect * center) = 0;
-
+    /*!设置位图
+       @param[in] pm 被绘制的位图
+       @see BonesPixmap
+    */
     virtual void setContent(const BonesPixmap & pm) = 0;
-
+    /*!设置位图
+      @param[in] key 被绘制的位图在资源管理器里的key
+      @see BonesResManager
+    */
     virtual void setContent(const char * key) = 0;
-
+    /*!设置颜色矩阵
+      @param[in] cm 颜色矩阵 如果为空则清空当前使用的颜色矩阵
+      @see BonesColorMatrix
+    */
     virtual void setColorMatrix(const BonesColorMatrix * cm) = 0;
-
+    /*!设置鼠标事件回调
+      @param[in] phase 事件阶段 仅监听指定阶段的事件
+      @param[in] lis 事件监听接口
+      @see BonesEvent::Phase
+      @see BonesHandler::MouseListener
+    */
     virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
-
+    /*!设置键盘事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::KeyListener
+    */
     virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
-
+    /*!设置焦点事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::FocusListener
+    */
     virtual void setListener(BonesEvent::Phase phase, FocusListener * lis) = 0;
-
+    /*!设置滚轮事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::WheelListener
+    */
     virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
-
+    /*!设置通知事件回调
+    @param[in] lis 事件监听接口
+    @see BonesHandler::NotifyListener
+    */
     virtual void setListener(NotifyListener * lis) = 0;
 };
 

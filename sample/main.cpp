@@ -97,44 +97,13 @@ int main()
 
     BonesConfig config;
     config.log_level = BonesConfig::kVerbose;
-    config.cef_enable = true;
+    config.cef_enable = false;
     config.cef_locate = "zh-CN";
     BonesStartUp(config);
 
-    std::vector<char> pic;
-    ReadFile("..\\..\\sample\\lena.bmp", pic);
-    auto pm_pic = BonesGetCore()->createPixmap();
-    auto sub_pm_lt = BonesGetCore()->createPixmap();
-    auto sub_pm_rt = BonesGetCore()->createPixmap();
-    auto sub_pm_lb = BonesGetCore()->createPixmap();
-    auto sub_pm_rb = BonesGetCore()->createPixmap();
-    pm_pic->decode(&pic[0], pic.size());
-
-    BonesRect rlt = { 0, 0, 128, 128 };
-    BonesRect rrt = { 128, 0, 256, 128 };
-    BonesRect rlb = { 0, 128, 128, 256 };
-    BonesRect rrb = { 128, 128, 256, 256 };
-    pm_pic->extractSubset(*sub_pm_lt, rlt);
-    pm_pic->extractSubset(*sub_pm_rt, rrt);
-    pm_pic->extractSubset(*sub_pm_lb, rlb);
-    pm_pic->extractSubset(*sub_pm_rb, rrb);
-    //content:key
-    BonesGetCore()->getResManager()->clonePixmap("pic_lt", *sub_pm_lt);
-    BonesGetCore()->getResManager()->clonePixmap("pic_rt", *sub_pm_rt);
-    BonesGetCore()->getResManager()->clonePixmap("pic_lb", *sub_pm_lb);
-    BonesGetCore()->getResManager()->clonePixmap("pic_rb", *sub_pm_rb);
-    BonesGetCore()->destroyPixmap(pm_pic);
-    BonesGetCore()->destroyPixmap(sub_pm_lt);
-    BonesGetCore()->destroyPixmap(sub_pm_rt);
-    BonesGetCore()->destroyPixmap(sub_pm_lb);
-    BonesGetCore()->destroyPixmap(sub_pm_rb);
-    std::vector<char> xml;
-    ReadFile("..\\..\\sample\\test.xml", xml);
-    xml.push_back(0);//0结尾
-
     LoadListener load;
     BonesGetCore()->setXMLListener(&load);
-    BonesGetCore()->loadXMLFile(L"..\\..\\sample\\test.xml");
+    BonesGetCore()->loadXMLFile(L"test.xml");
     POINT pt = { 0, 0 };
     SIZE size = { 1024, 768 };
     test_window->setLoc(pt);
