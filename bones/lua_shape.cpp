@@ -18,6 +18,65 @@ static const char * kMethodsetRect = "setRect";
 static const char * kMethodsetLine = "setLine";
 static const char * kMethodsetPoint = "setPoint";
 
+static int SetStroke(lua_State * l)
+{
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaShape * shape = static_cast<LuaShape *>(
+        LuaContext::CallGetCObject(l));
+    if (shape)
+        shape->setStroke(!!(lua_toboolean(l, 2)));
+    return 0;
+}
+
+static int SetColor(lua_State * l)
+{
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaShape * shape = static_cast<LuaShape *>(
+        LuaContext::CallGetCObject(l));
+    if (shape)
+    {
+        if (lua_isinteger(l, 2))
+            shape->setColor(static_cast<BonesColor>(lua_tointeger(l, 2)));
+    }
+    return 0;
+}
+
+static int SetRect(lua_State * l)
+{//(self, rx, ry, l, t, r, b) || (self)
+    auto count = lua_gettop(l);
+    lua_settop(l, 7);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaShape * shape = static_cast<LuaShape *>(
+        LuaContext::CallGetCObject(l));
+    if (shape)
+    {
+        if (count == 1)
+            shape->setRect(0, 0, nullptr);
+        else if (count == 3)
+            shape->setRect(
+            static_cast<BonesScalar>(lua_tonumber(l, 2)),
+            static_cast<BonesScalar>(lua_tonumber(l, 3)), nullptr);
+        else
+        {
+            BonesRect rect = {
+                static_cast<BonesScalar>(lua_tonumber(l, 4)),
+                static_cast<BonesScalar>(lua_tonumber(l, 5)),
+                static_cast<BonesScalar>(lua_tonumber(l, 6)),
+                static_cast<BonesScalar>(lua_tonumber(l, 7)) };
+            shape->setRect(
+                static_cast<BonesScalar>(lua_tonumber(l, 2)),
+                static_cast<BonesScalar>(lua_tonumber(l, 3)), &rect);
+        }
+    }
+
+    return 0;
+}
+
 LuaShape::LuaShape(Shape * co)
 :LuaObject(co), notify_(nullptr)
 {
@@ -27,7 +86,17 @@ LuaShape::LuaShape(Shape * co)
 
 void LuaShape::createMetaTable(lua_State * l)
 {
-    LuaObject::createMetaTable(l, kMetaTableShape);
+    if (!LuaObject::createMetaTable(l, kMetaTableShape))
+    {
+        lua_pushcfunction(l, &SetStroke);
+        lua_setfield(l, -2, kMethodSetStroke);
+
+        lua_pushcfunction(l, &SetRect);
+        lua_setfield(l, -2, kMethodsetRect);
+
+        lua_pushcfunction(l, &SetColor);
+        lua_setfield(l, -2, kMethodsetColor);
+    }
 }
 
 void LuaShape::setStroke(bool stroke)

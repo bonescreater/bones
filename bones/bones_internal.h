@@ -47,6 +47,8 @@ extern const char * kMethodGC;
 extern const char * kMethodGetID;
 extern const char * kMethodGetRoot;
 extern const char * kMethodGetOpacity;
+extern const char * kMethodSetOpacity;
+extern const char * kMethodSetFocusable;
 extern const char * kMethodGetCObject;
 extern const char * kMethodAnimate;
 extern const char * kMethodStop;

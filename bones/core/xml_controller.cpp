@@ -205,8 +205,8 @@ View * XMLController::createView(View * parent,
         attrs[kStrClass] = class_name ? class_name : "";
         //设置通知
         notifyPrepare(v);
-        applyClass(v);
         notifyCreate(v);
+        applyClass(v);
         return v;
     }
     return nullptr;
@@ -573,8 +573,8 @@ void XMLController::parseModuleBody(const Module & mod)
         //create 和class 都是 先子后父
         //prepare在前 是因为应用class时 可能有事件回调
         notifyPrepare();
-        applyClass();
         notifyCreate();       
+        applyClass();
     }
     else
         clear();

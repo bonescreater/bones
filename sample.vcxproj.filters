@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="button">
-      <UniqueIdentifier>{8e51556b-c066-4d62-8346-bf0e0be2f6aa}</UniqueIdentifier>
-    </Filter>
     <Filter Include="animate">
       <UniqueIdentifier>{80e1074e-e66d-404d-ad9e-9535138deb43}</UniqueIdentifier>
     </Filter>
@@ -14,12 +11,6 @@
   <ItemGroup>
     <None Include="sample\test.css" />
     <None Include="sample\test.lua" />
-    <None Include="sample\button.css">
-      <Filter>button</Filter>
-    </None>
-    <None Include="sample\button.lua">
-      <Filter>button</Filter>
-    </None>
     <None Include="sample\animate.lua">
       <Filter>animate</Filter>
     </None>
@@ -32,9 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <Xml Include="sample\test.xml" />
-    <Xml Include="sample\button.xml">
-      <Filter>button</Filter>
-    </Xml>
     <Xml Include="sample\scrollbar.xml">
       <Filter>scroll</Filter>
     </Xml>

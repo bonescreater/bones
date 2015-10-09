@@ -1,6 +1,5 @@
-﻿local mod = {}
-
---setfenv(1, mod)
+﻿
+local mod = {}
 
 --control state
 local common = 1
@@ -8,7 +7,9 @@ local highlight = 2
 local press = 3
 local disable = 4
 
-local function stateChanged(self, force)
+--button
+
+local function stateChanged(self)
 	state = common;
 	if self:isEnable() ~= true then
 		state = disable;
@@ -21,60 +22,56 @@ local function stateChanged(self, force)
 	elseif self.hover_ then
 		state = highlight;
 	end
-    local width, height = self:getSize();
-    local common_css = string.format("{rect:0px 0px;border:1px solid #ff999999;linear-gradient:0px 0px 0px %dpx clamp #ffA9DB80 #ff96C56F;}", height);
-    local highlight_css = string.format("{rect:0px 0px;border:1px solid #ffaaaaaa;linear-gradient:0px 0px 0px %dpx clamp #ffA9DB80 #ff96C56F;}", height);
-    local press_css = string.format("{rect:0px 0px;border:1px solid #ff999999;linear-gradient:0px 0px 0px %dpx clamp #ff80ab5d #ff80ab5d;}", height);
-    local disable_css = string.format("{rect:0px 0px;border:1px solid #ffbbbbbb;linear-gradient:0px 0px 0px %dpx clamp #ff80ab5d #ff80ab5d;}", height);
-	if state ~= self.state_ or force then 
+
+	if state ~= self.state_ then 
 		self.state_ = state;
 		if self.state_ == common then
-			self:applyCSS(common_css)
+			self:setContent(self.common_)
 		elseif self.state_ == highlight then
-			self:applyCSS(highlight_css)
+			self:setContent(self.highlight_)
 		elseif self.state_ == press then
-			self:applyCSS(press_css)
+			self:setContent(self.press_)
 		elseif self.state_ == disable then
-			self:applyCSS(disable_css)
+			self:setContent(self.disable_)
 		end
 	end
 	
 end
 
---button
 local function isEnable(self)
 	return self.enable_
 end
 
-local function applyTextClass(self, class)
-    return self.text_:applyClass(class)
-end
 
-local function applyTextCSS(self, css)
-    return self.text_:applyCSS(css)
+local function setBitmap(self, common, highlight, press, disable)
+    self.common_ = common
+    self.highlight_ = highlight
+    self.press_ = press
+    self.disable_ = disable
+    stateChanged(self)
 end
 
 function mod.onCreate(self)
-print("onCreate")
-print(self)
 --public method
 self.isEnable = isEnable
-self.applyTextClass = applyTextClass
-self.applyTextCSS = applyTextCSS
+self.setBitmap = setBitmap
 --private member
 self.enable_ = true
 self.hover_ = false
 self.down_ = false
 
 self.state_ = disable
-self.shirt_ = self:getChildAt(0);
-self.text_ = self:getChildAt(1);
-self.border_ = self:getChildAt(2);
-
+self.focus_ = self:getChildAt(0)
+self.focus_:setRect();
+self.focus_:setColor(0xff00ffff)
+self.focus_:setOpacity(0)
+self.focus_:setStroke(true)
+self:setFocusable(false)
+--stateChanged(self)
 end
 
 function mod.onMouseEnter(self, e)
-self:applyCSS("{cursor:hand;}")
+
 end
 
 function mod.onMouseMove(self, e)
@@ -103,46 +100,29 @@ function mod.onMouseUp(self, e)
 			stateChanged(self)
 		end
         if notify then
-            print(self:getCObject())
-        	if type(self.onClick) == "function" then
-					self:onClick();
-            end
+            print("click")
         end
 	end
 end
 
 function mod.onMouseLeave(self, e)
-	print("mouse leave")
 	self.hover_ = false
 	self.down_ = false
 	stateChanged(self)
 end
 
-function mod.onBlur(self, e)
-    print("onBlur")
-    self.border_:applyCSS("{border:0px solid #ff00ff00;}")
+function mod.onSizeChanged(self, w, h)
+    self.focus_:setSize(w, h)
 end
 
 function mod.onFocus(self, e)
-    print("onFocus")
     if e:isTabTraversal() then
-        self.border_:applyCSS("{border:1px solid #ff00ff00;}")
+        self.focus_:setOpacity(1)
     end
 end
 
-function mod.onSizeChanged(self)
-	local width, height = self:getSize();
-	css = string.format("{width:%dpx;height:%dpx;}", width, height);
-	self.shirt_:applyCSS(css);
-	self.text_:applyCSS(css);
-    self.border_:applyCSS(css);
-    stateChanged(self, true);
+function mod.onBlur(self, e)
+self.focus_:setOpacity(0)
 end
 
-
-
-
-
-
-print("load button")
-return mod
+return mod;

@@ -434,6 +434,10 @@ public:
     @see BonesSize
     */
     virtual void setSize(const BonesSize & size) = 0;
+    /*!设置标签透明度
+    @param[in] opacity 透明度0~1.0f
+    */
+    virtual void setOpacity(float opacity) = 0;
     /*!得到标签透明度
     @return 透明度0~1.0f
     @note 透明度永远不能超过父的透明度 如父的透明度0.5 标签透明度1.0f

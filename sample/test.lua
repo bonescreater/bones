@@ -1,14 +1,13 @@
-﻿
-local mod = {}
+﻿local mod = {}
 
 
 function mod.onCreate(self)
-    local w, h = bones.getPixmapSize("bg")
-    self:setContent("bg")
-    self:setStretch()
-	self:setColorMatrix(2, 0, 0, 0, 0,   0, 1, 0, 0, 0,   0, 0, 1, 0, 0,   0, 0, 0, 1, 0)
-	--self:setColorMatrix()
+    local btn1 = self:getChildAt(0)
+    local btn2 = self:getChildAt(1)
+
+    btn1:setBitmap("common", "highlight", "press", "disable")
+    btn2:setBitmap("common", "highlight", "press", "disable")
 end
 
 
-return mod;
+return mod

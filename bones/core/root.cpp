@@ -244,6 +244,7 @@ void Root::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 {  
     SkPaint paint;
     paint.setColor(color_);
+    paint.setAlpha(ClampAlpha(opacity, ColorGetA(color_)));
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
     canvas.drawPaint(paint);
 }

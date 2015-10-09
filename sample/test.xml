@@ -1,8 +1,11 @@
-﻿
-<bones>
+﻿<bones>
   <head>
-    <link type ="pixmap" name ="bg" file ="pic.jpg"></link>
+    <link type ="pixmap" name ="common" file ="common.png"></link>
+    <link type ="pixmap" name ="highlight" file ="highlight.png"></link>
+    <link type ="pixmap" name ="press" file ="press.png"></link>
+    <link type ="pixmap" name ="disable" file ="disable.png"></link>
     <link type ="script" module ="test" file="test.lua"></link>
+    <link type ="xml" module ="button" file="button.xml"></link>
     <style>
       .red
       {
@@ -11,15 +14,20 @@
       .pic
       {
       loc:20px 20px;
-      size:200px 300px;
+      size:256px 256px;
+      }
+      .pic2
+      {
+      loc:296px 20px;
+      size:256px 256px;
       }
     </style>
   </head>
   <body>
     <root id ="main" class ="red" >
-      <image class ="pic">
-        <notify name ="onCreate" module ="test" func ="onCreate"></notify>
-      </image>
+      <button class ="pic"></button>
+      <button class ="pic2"></button>
+      <notify name ="onCreate" module ="test" func ="onCreate"></notify>
     </root>
   </body>
 </bones>

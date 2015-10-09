@@ -162,6 +162,16 @@ public:
         return object_->getOpacity();
     }
 
+    void setOpacity(float opacity) override
+    {
+        return object_->setOpacity(opacity);
+    }
+
+    void setFocusable(bool focusable) override
+    {
+        return object_->setFocusable(focusable);
+    }
+    
     void setLoc(const BonesPoint & loc) override
     {
         return object_->setLoc(loc.x, loc.y);
@@ -187,11 +197,6 @@ public:
     void setVisible(bool visible) override
     {
         object_->setVisible(visible);
-    }
-
-    void setFocusable(bool focusable)
-    {
-        object_->setFocusable(focusable);
     }
 
     bool contains(Scalar x, Scalar y) override
@@ -305,6 +310,12 @@ public:
             lua_pushcfunction(l, &GetOpacity);
             lua_setfield(l, -2, kMethodGetOpacity);
 
+            lua_pushcfunction(l, &SetOpacity);
+            lua_setfield(l, -2, kMethodSetOpacity);
+            
+            lua_pushcfunction(l, &SetFocusable);
+            lua_setfield(l, -2, kMethodSetFocusable);
+
             lua_pushcfunction(l, &SetLoc);
             lua_setfield(l, -2, kMethodSetLoc);
 
@@ -410,6 +421,31 @@ public:
             lua_pushnumber(l, bob->getOpacity());
 
         return 1;
+    }
+
+    static int SetOpacity(lua_State * l)
+    {
+        lua_settop(l, 2);
+
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        LuaObject * bob = static_cast<LuaObject *>(
+            LuaContext::CallGetCObject(l));
+        if (bob)
+            bob->setOpacity(static_cast<float>(lua_tonumber(l, 2)));
+        return 0;
+    }
+
+    static int SetFocusable(lua_State * l)
+    {
+        lua_settop(l, 2);
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        LuaObject * bob = static_cast<LuaObject *>(
+            LuaContext::CallGetCObject(l));
+        if (bob)
+            bob->setFocusable(!!lua_toboolean(l, 2));
+        return 0;
     }
 
     static int SetLoc(lua_State * l)
