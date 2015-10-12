@@ -94,7 +94,7 @@
     <ClCompile Include="bones\core\accelerator_manager.cpp" />
     <ClCompile Include="bones\core\animation.cpp" />
     <ClCompile Include="bones\core\animation_manager.cpp" />
-    <ClCompile Include="bones\core\core.cpp" />
+    <ClCompile Include="bones\core\core_imp.cpp" />
     <ClCompile Include="bones\core\css_manager.cpp" />
     <ClCompile Include="bones\core\css_utils.cpp" />
     <ClCompile Include="bones\core\device.cpp" />
@@ -175,6 +175,7 @@
     <ClInclude Include="bones\core\area.h" />
     <ClInclude Include="bones\core\color.h" />
     <ClInclude Include="bones\core\core.h" />
+    <ClInclude Include="bones\core\core_imp.h" />
     <ClInclude Include="bones\core\css_manager.h" />
     <ClInclude Include="bones\core\css_types.h" />
     <ClInclude Include="bones\core\css_utils.h" />

@@ -1,4 +1,5 @@
 ﻿#include "image.h"
+#include "core_imp.h"
 #include "helper.h"
 #include "rect.h"
 #include "res_manager.h"
@@ -73,6 +74,11 @@ void Image::setColorMatrix(const ColorMatrix * cm)
     color_filter_ = nullptr;
     if (cm)
         color_filter_ = SkColorMatrixFilter::Create(cm->mat);    
+}
+
+PMColor Image::getPMColor(int x, int y)
+{
+    return pixmap_.getPMColor(x, y);
 }
 
 void Image::setDelegate(Delegate * delegate)

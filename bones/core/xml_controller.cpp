@@ -1,4 +1,5 @@
 ﻿#include "xml_controller.h"
+#include "core_imp.h"
 #include "encoding.h"
 #include "helper.h"
 #include "root.h"

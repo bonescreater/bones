@@ -15,12 +15,6 @@ namespace bones
 class Shape : public Area<Shape>
 {
 public:
-    enum Effect
-    {
-        kSolid,
-        kDash,
-    };
-
     enum Style
     {
         kStroke,
@@ -34,6 +28,8 @@ private:
         kCircle,
         kLine,
         kPoint,
+        kOval,
+        kArc,
         kPath,
     };
 
@@ -75,6 +71,25 @@ private:
             Scalar xe;
             Scalar ye;
         } line;
+
+        struct Oval
+        {
+            Scalar left;
+            Scalar top;
+            Scalar right;
+            Scalar bottom;
+        } oval;
+
+        struct Arc
+        {
+            Scalar left;
+            Scalar top;
+            Scalar right;
+            Scalar bottom;
+            Scalar start;
+            Scalar sweep;
+            bool center;
+        } arc;
     }Param;
 
 public:
@@ -89,7 +104,7 @@ public:
 
     void setStyle(Style style);
 
-    void setStrokeEffect(Effect effect, Scalar * interval, size_t count, Scalar offset);
+    void setStrokeEffect(SkPathEffect * effect);
 
     void setStrokeWidth(Scalar stroke_width);
 
@@ -104,6 +119,10 @@ public:
     void set(const Point & pt);
 
     void set(const Point & start, const Point & end);
+
+    void set(const Rect * oval);
+
+    void set(const Rect * oval, Scalar start, Scalar sweep, bool center);
 
     void setDelegate(Delegate * delegate);
 
@@ -124,8 +143,6 @@ protected:
     void setRadialGradient(const CSSParams & params);
 
     void setStyle(const CSSParams & params);
-
-    void setStrokeEffect(const CSSParams & params);
 
     void setStrokeWidth(const CSSParams & params);
 

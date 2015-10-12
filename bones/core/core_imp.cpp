@@ -1,4 +1,4 @@
-﻿#include "core.h"
+﻿#include "core_imp.h"
 #include "logging.h"
 #include "animation_manager.h"
 #include "css_manager.h"
@@ -6,12 +6,12 @@
 #include "xml_controller.h"
 #include "point.h"
 
+#include "web_view.h"
 #include "helper.h"
 
 #include "SkGraphics.h"
-#include "web_view.h"
-
 #include "SkGradientShader.h"
+#include "SkDashPathEffect.h"
 
 namespace bones
 {
@@ -164,6 +164,26 @@ void Core::destroyShader(SkShader * shader)
 {
     if (shader)
         shader->unref();
+}
+
+SkPathEffect * Core::createDashEffect(
+    size_t count,
+    Scalar * interval,
+    Scalar offset)
+{
+    if (interval && count && ((count % 2) == 0))
+        return SkDashPathEffect::Create(interval, count, offset);
+    else
+    {
+        Scalar interval[2] = { 2, 2 };
+        return SkDashPathEffect::Create(interval, 2, 0);
+    }
+}
+
+void Core::destroyEffect(SkPathEffect * effect)
+{
+    if (effect)
+        effect->unref();
 }
 
 }

@@ -32,23 +32,13 @@ void Shape::setStyle(Style style)
     inval();
 }
 
-void Shape::setStrokeEffect(Effect effect, Scalar * interval, size_t count, Scalar offset)
+void Shape::setStrokeEffect(SkPathEffect * effect)
 {
     if (effect_)
         effect_->unref();
-    effect_ = nullptr;
-
-    if (kDash == effect)
-    {    
-        if (interval && count && ((count % 2) == 0))
-            effect_ = SkDashPathEffect::Create(interval, count, offset);
-        else
-        {
-            Scalar interval[2] = { 2, 2 };
-            effect_ = SkDashPathEffect::Create(interval, 2, 0);
-        }
-
-    }
+    effect_ = effect;
+    if (effect_)
+        effect_->ref();
     inval();
 }
 
@@ -128,6 +118,50 @@ void Shape::set(const Point & start, const Point & end)
     inval();
 }
 
+void Shape::set(const Rect * oval)
+{
+    category_ = kOval;
+    if (oval)
+    {
+        param_.oval.left = oval->left();
+        param_.oval.top = oval->top();
+        param_.oval.right = oval->right();
+        param_.oval.bottom = oval->bottom();
+    }
+    else
+    {
+        param_.oval.left = 0;
+        param_.oval.top = 0;
+        param_.oval.right = 0;
+        param_.oval.bottom = 0;
+    }
+    inval();
+}
+
+void Shape::set(const Rect * oval, Scalar start, Scalar sweep, bool center)
+{
+    category_ = kArc;
+    param_.arc.start = start;
+    param_.arc.sweep = sweep;
+    param_.arc.center = center;
+
+    if (oval)
+    {
+        param_.arc.left = oval->left();
+        param_.arc.top = oval->top();
+        param_.arc.right = oval->right();
+        param_.arc.bottom = oval->bottom();
+    }
+    else
+    {
+        param_.arc.left = 0;
+        param_.arc.top = 0;
+        param_.arc.right = 0;
+        param_.arc.bottom = 0;
+    }
+    inval();
+}
+
 void Shape::setDelegate(Delegate * delegate)
 {
     delegate_ = delegate;
@@ -168,7 +202,7 @@ void Shape::drawBackground(SkCanvas & canvas, float opacity)
     }
     else
         assert(0);
-
+    paint.setAntiAlias(true);
     paint.setStrokeWidth(stroke_width_);
     if (effect_)
         paint.setPathEffect(effect_);
@@ -229,27 +263,38 @@ void Shape::drawBackground(SkCanvas & canvas, float opacity)
     {
         canvas.drawPoint(param_.point.x, param_.point.y, paint);
     }
-    
+    else if (kOval == category_)
+    {
+        Rect re = Rect::MakeLTRB(param_.oval.left,
+            param_.oval.top,
+            param_.oval.right,
+            param_.oval.bottom);
+        if (re.isEmpty())
+            re.setLTRB(0, 0, getWidth(), getHeight());
+
+        canvas.drawOval(Helper::ToSkRect(re), paint);
+    }
+    else if (kArc == category_)
+    {
+        Rect re = Rect::MakeLTRB(param_.arc.left,
+            param_.arc.top,
+            param_.arc.right,
+            param_.arc.bottom);
+        if (re.isEmpty())
+            re.setLTRB(0, 0, getWidth(), getHeight());
+
+        canvas.drawArc(Helper::ToSkRect(re),
+            param_.arc.start, param_.arc.sweep, param_.arc.center, paint);
+    }
 }
 
 BONES_CSS_TABLE_BEGIN(Shape, View)
 BONES_CSS_SET_FUNC("color", &Shape::setColor)
 BONES_CSS_SET_FUNC("style", &Shape::setStyle)
-BONES_CSS_SET_FUNC("stroke-effect", &Shape::setStrokeEffect)
 BONES_CSS_SET_FUNC("stroke-width", &Shape::setStrokeWidth)
 BONES_CSS_SET_FUNC("rect", &Shape::setRect)
 BONES_CSS_SET_FUNC("circle", &Shape::setCircle)
 BONES_CSS_TABLE_END()
-
-static Shape::Effect CSSStrToEffect(const CSSString & str)
-{
-    if (str == "solid")
-        return Shape::kSolid;
-    else if (str == "dash")
-        return Shape::kDash;
-
-    return Shape::kSolid;
-}
 
 void Shape::setColor(const CSSParams & params)
 {
@@ -268,23 +313,6 @@ void Shape::setStyle(const CSSParams & params)
         setStyle(Shape::kFill);
     if (str == "stroke")
         setStyle(Shape::kStroke);
-}
-
-void Shape::setStrokeEffect(const CSSParams & params)
-{
-    if (params.empty())
-        return;
-    Scalar * interval = nullptr;
-    Scalar offset = 0;
-    std::vector<Scalar> vecinterval;
-    if (params.size() > 1)
-    {
-        for (size_t i = 1; i < params.size() - 1; ++i)
-            vecinterval.push_back(CSSUtils::CSSStrToPX(params[i]));
-        offset = CSSUtils::CSSStrToPX(params[params.size() - 1]);
-        interval = &vecinterval[0];
-    }
-    setStrokeEffect(CSSStrToEffect(params[0]), interval, vecinterval.size(), offset);
 }
 
 void Shape::setStrokeWidth(const CSSParams & params)

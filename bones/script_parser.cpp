@@ -3,6 +3,7 @@
 #include "lua_context.h"
 #include "lua_check.h"
 
+#include "core/core_imp.h"
 #include "core/root.h"
 #include "core/logging.h"
 #include "core/image.h"
@@ -23,8 +24,6 @@
 #include "lua_animation.h"
 #include "lua_web_view.h"
 #include "lua_scroller.h"
-
-#include "SkGradientShader.h"
 
 namespace bones
 {

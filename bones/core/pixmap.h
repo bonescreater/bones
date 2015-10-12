@@ -45,6 +45,8 @@ public:
 
     void erase(Color color);
 
+    PMColor getPMColor(int x, int y);
+
     Pixmap extractSubset(const Rect & subset);
 
     Pixmap & operator=(const Pixmap & pm);

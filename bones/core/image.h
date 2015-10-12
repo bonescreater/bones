@@ -42,6 +42,8 @@ public:
 
     void setColorMatrix(const ColorMatrix * cm);
 
+    PMColor getPMColor(int x, int y);
+
     void setDelegate(Delegate * delegate);
 
     const char * getClassName() const override;

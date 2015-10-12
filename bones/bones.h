@@ -111,7 +111,8 @@ typedef struct
 } BonesColorMatrix;
 /*!颜色描述 ARGB格式 A:31-24 R:23-16 G:15-8 B:7-0*/
 typedef uint32_t BonesColor;
-
+/*!颜色描述 ARGB格式 A:31-24 R:23-16 G:15-8 B:7-0 预乘后的颜色*/
+typedef uint32_t BonesPMColor;
 /*!BonesPixmap位图接口该接口可以对位图进行操作 位图存放预乘后的像素
    @note BonesPixmap通过BonesCore来创建和销毁
    @see BonesCore::createPixmap
@@ -836,39 +837,120 @@ public:
         virtual void onWheel(T * sender, BonesWheelEvent & e, bool & stop) = 0;
     };
 };
-
+/*!shape标签 提供了几何形状的绘制*/
 class BonesShape : public BonesHandler<BonesShape>
 {
 public:
+    /*!设置模式
+    @param[in] stroke true为线框模式 false为填充模式
+    @note 默认为填充模式
+    */
     virtual void setStroke(bool stroke) = 0;
-
-    virtual void setStrokeEffect(bool dash, size_t count, 
-                                 BonesScalar * interval, 
+    /*!设置线框模式效果
+    @param[in] count number of elements in the intervals array
+    @param[in] intervals array containing an even number of entries (>=2), with
+         the even indices specifying the length of "on" intervals, and the odd
+         indices specifying the length of "off" intervals
+    @param[in] offset offset into the intervals array 
+         (mod the sum of all of the intervals).
+    @note 仅线框模式下有效，目前仅支持dash效果
+    @see BonesShape::setStroke
+    */
+    virtual void setStrokeEffect(size_t count, 
+                                 BonesScalar * intervals, 
                                  BonesScalar offset) = 0;
-
+    /*!设置线框模式下线框的粗细
+    @param[in] stroke_width 线框宽度
+    @note 仅线框模式下有效
+    @see BonesShape::setStroke
+    */
     virtual void setStrokeWidth(BonesScalar stroke_width) = 0;
-
+    /*!设置颜色
+    @param[in] color 颜色
+    @warning shader 和 color 不能同时起效，后设置的为准
+    */
     virtual void setColor(BonesColor color) = 0;
-
+    /*!设置颜色
+    @param[in] shader 目前只支持渐变色
+    @note 必须通过BonesCore::createLinearGradient 或者createRadialGradient 创建
+    @warning shader 和 color 不能同时使用，后设置的有效
+    @see BonesCore
+    */
     virtual void setColor(BonesShader shader) = 0;
-
+    /*!设置几何形状为圆形
+    @param[in] center 圆心
+    @param[in] radius 半径
+    @warning 几何形状的设置不能同时起效 以最后设置的为准
+    */
     virtual void setCircle(const BonesPoint & center, BonesScalar radius) = 0;
-
+    /*!设置几何形状为矩形
+    @param[in] rx 矩形圆角 x方向上的半径
+    @param[in] ry 矩形圆角 y方向上的半径
+    @param[in] rect 指向一个矩形区域，为0则矩形区域为整个标签
+    @note rx ry为0时代表矩形是一个直角矩形
+    @warning 几何形状的设置不能同时起效 以最后设置的为准
+    */
     virtual void setRect(BonesScalar rx, BonesScalar ry, 
                          const BonesRect * rect) = 0;
-
+    /*!设置几何形状为线段
+    @param[in] start 线段起点
+    @param[in] end 线段终点
+    @warning 几何形状的设置不能同时起效 以最后设置的为准
+    */
     virtual void setLine(const BonesPoint & start, const BonesPoint & end) = 0;
-
+    /*!设置几何形状为点
+    @param[in] pt 点的位置
+    @warning 几何形状的设置不能同时起效 以最后设置的为准
+    */
     virtual void setPoint(const BonesPoint & pt) = 0;
-
+    /*!设置几何形状为椭圆
+    @param[in] oval 指向椭圆的外接矩形 为空则为标签的尺寸
+    @warning 几何形状的设置不能同时起效 以最后设置的为准
+    */
+    virtual void setOval(const BonesRect * oval) = 0;
+    /*!设置几何形状为弧线
+    @param[in] start 起始角度
+    @param[in] sweep 弧线旋转角度
+    @param[in] use_center true 绘制的图形包含中心点 false 不包含
+    @param[in] oval 指向定义弧线的矩形 为空则为标签的尺寸
+    @warning 几何形状的设置不能同时起效 以最后设置的为准
+    */
+    virtual void setArc(BonesScalar start, 
+                        BonesScalar sweep, 
+                        bool use_center, 
+                        const BonesRect * oval) = 0;
+    /*!设置鼠标事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::MouseListener
+    */
     virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
-
+    /*!设置键盘事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::KeyListener
+    */
     virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
-
+    /*!设置焦点事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::FocusListener
+    */
     virtual void setListener(BonesEvent::Phase phase, FocusListener * lis) = 0;
-
+    /*!设置滚轮事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::WheelListener
+    */
     virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
-
+    /*!设置通知事件回调
+    @param[in] lis 事件监听接口
+    @see BonesHandler::NotifyListener
+    */
     virtual void setListener(NotifyListener * lis) = 0;
 };
 
@@ -897,6 +979,13 @@ public:
        @see BonesPixmap
     */
     virtual void setContent(const BonesPixmap & pm) = 0;
+    /*!得到指定位置的颜色
+    @param[in] x 位图x方向的偏移
+    @param[in] y 位图y方向的偏移
+    @return 已经预乘后的颜色
+    @see BonesPMColor
+    */
+    virtual BonesPMColor getPMColor(int x, int y) = 0;
     /*!设置位图
       @param[in] key 被绘制的位图在资源管理器里的key
       @see BonesResManager

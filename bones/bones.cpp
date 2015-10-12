@@ -1,9 +1,8 @@
 ﻿#include "bones.h"
 #include "script_parser.h"
 #include "lua_context.h"
-//#include "core/pixmap.h"
-//#include "core/css_manager.h"
-//
+#include "core/core_imp.h"
+
 //namespace bones
 //{
 //
@@ -141,7 +140,12 @@ BONES_API(BonesCore *) BonesStartUp(const BonesConfig & config)
     using namespace bones;
     Core::Config cc;
     cc.log_file = L".\\bones_dll.log";
-    cc.log_level = static_cast<bones::LogLevel>(config.log_level);
+    cc.log_level = Log::kNone;
+    if (BonesConfig::kError == config.log_level)
+        cc.log_level = Log::kError;
+    else if (BonesConfig::kVerbose == config.log_level)
+        cc.log_level = Log::kVerbose;
+
     cc.cef_enable = config.cef_enable;
     cc.cef_locate = config.cef_locate;
     bool bret = Core::StartUp(cc);

@@ -25,6 +25,8 @@ public:
 
     void setContent(const char * key) override;
 
+    BonesPMColor getPMColor(int x, int y) override;
+
     void setColorMatrix(const BonesColorMatrix * cm) override;
 
     LUA_HANDLER(Image);

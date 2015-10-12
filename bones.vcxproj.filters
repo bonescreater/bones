@@ -133,7 +133,7 @@
     <ClCompile Include="bones\core\web_view.cpp">
       <Filter>core\bone\naked</Filter>
     </ClCompile>
-    <ClCompile Include="bones\core\core.cpp">
+    <ClCompile Include="bones\core\core_imp.cpp">
       <Filter>core</Filter>
     </ClCompile>
   </ItemGroup>
@@ -289,6 +289,9 @@
       <Filter>core\bone\naked</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\core.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\core_imp.h">
       <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>

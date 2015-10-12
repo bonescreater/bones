@@ -2,6 +2,7 @@
 #define BONES_LUA_OBJECT_H_
 
 #include "bones_internal.h"
+#include "core/core_imp.h"
 #include "core/view.h"
 #include "core/root.h"
 #include "core/logging.h"

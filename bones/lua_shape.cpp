@@ -102,15 +102,15 @@ void LuaShape::createMetaTable(lua_State * l)
 void LuaShape::setStroke(bool stroke)
 {
     object_->setStyle(stroke ? Shape::kStroke : Shape::kFill);
-
 }
 
-void LuaShape::setStrokeEffect(bool dash, size_t count,
-    BonesScalar * interval,
+void LuaShape::setStrokeEffect(size_t count,
+    BonesScalar * intervals,
     BonesScalar offset)
 {
-    object_->setStrokeEffect(dash ? Shape::kDash : Shape::kSolid,
-                             interval, count, offset);
+    auto effect = Core::createDashEffect(count, intervals, offset);
+    object_->setStrokeEffect(effect);
+    Core::destroyEffect(effect);
 }
 
 void LuaShape::setStrokeWidth(BonesScalar stroke_width)
@@ -162,6 +162,34 @@ void LuaShape::setPoint(const BonesPoint & pt)
     Point p;
     p.set(pt.x, pt.y);
     object_->set(p);
+}
+
+void LuaShape::setOval(const BonesRect * oval)
+{
+    Rect * r = nullptr;
+    Rect re;
+    if (oval)
+    {
+        re.setLTRB(oval->left, oval->top, oval->right, oval->bottom);
+        r = &re;
+    }
+    object_->set(r);
+}
+
+void LuaShape::setArc(
+    BonesScalar start,
+    BonesScalar sweep,
+    bool use_center,
+    const BonesRect * oval)
+{
+    Rect * r = nullptr;
+    Rect re;
+    if (oval)
+    {
+        re.setLTRB(oval->left, oval->top, oval->right, oval->bottom);
+        r = &re;
+    }
+    object_->set(r, start, sweep, use_center);
 }
 
 }

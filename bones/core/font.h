@@ -2,6 +2,7 @@
 #define BONES_CORE_FONT_H_
 
 #include "core.h"
+#include <string>
 
 namespace bones
 {

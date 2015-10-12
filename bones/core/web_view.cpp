@@ -1,4 +1,5 @@
 ﻿#include "web_view.h"
+#include "core_imp.h"
 #include "SkCanvas.h"
 #include "SkPaint.h"
 #include "helper.h"

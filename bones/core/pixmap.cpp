@@ -138,6 +138,26 @@ void Pixmap::erase(Color color)
     unlock();
 }
 
+PMColor Pixmap::getPMColor(int x, int y)
+{
+    Scalar sx = static_cast<Scalar>(x);
+    Scalar sy = static_cast<Scalar>(y);
+    if (!subset_.contains(sx, sy))
+        return 0;
+    
+    PMColor pmc = 0;
+    LockRec lr;
+    if (lock(lr))
+    {
+        void * row_start = static_cast<char *>(lr.bits) + 
+            (static_cast<int>(subset_.top()) + y) * lr.pitch;
+        PMColor * p = static_cast<PMColor *>(row_start);
+        pmc = *(p + x + static_cast<int>(subset_.left()));
+        unlock();
+    }
+    return pmc;
+}
+
 Pixmap & Pixmap::operator=(const Pixmap & pm)
 {
     subset_ = pm.subset_;

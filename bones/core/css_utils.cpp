@@ -1,4 +1,5 @@
 ﻿#include "css_utils.h"
+#include "core_imp.h"
 #include "rect.h"
 #include "res_manager.h"
 #include "font.h"

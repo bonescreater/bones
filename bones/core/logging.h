@@ -11,11 +11,18 @@ namespace bones
 class Log
 {
 public:
-    static bool StartUp(const wchar_t * file_name, LogLevel l);
+    enum Level
+    {
+        kNone = 0,
+        kError = 1,// only error
+        kVerbose = 2,// everything
+    };
+public:
+    static bool StartUp(const wchar_t * file_name, Level l);
     
     static void ShutDown();
 
-    Log(LogLevel level);
+    Log(Level level);
 
     ~Log();
 
@@ -27,14 +34,14 @@ public:
         return *this;
     }
 private:
-    LogLevel level_;
+    Level level_;
 private:
-    static LogLevel log_level;
+    static Level log_level;
     static std::ofstream log;
 };
 
-#define BLG_ERROR Log (kLOG_LEVEL_ERROR) <<"[LEVEL:ERROR]"<< " "
-#define BLG_VERBOSE Log (kLOG_LEVEL_VERBOSE) <<"[LEVEL:VERBOSE]"<< " "
+#define BLG_ERROR Log (Log::kError) <<"[LEVEL:ERROR]"<< " "
+#define BLG_VERBOSE Log (Log::kVerbose) <<"[LEVEL:VERBOSE]"<< " "
 
 }
 

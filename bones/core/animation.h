@@ -2,6 +2,7 @@
 #define BONES_CORE_ANIMATION_H_
 
 #include "view.h"
+#include <functional>
 
 namespace bones
 {

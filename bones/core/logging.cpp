@@ -3,11 +3,11 @@
 namespace bones
 {
 
-LogLevel Log::log_level = kLOG_LEVEL_NONE;
+Log::Level Log::log_level = kNone;
 
 std::ofstream Log::log;
 
-bool Log::StartUp(const wchar_t * file_name, LogLevel level)
+bool Log::StartUp(const wchar_t * file_name, Log::Level level)
 {
     log_level = level;
     bool bret = true;
@@ -21,11 +21,11 @@ bool Log::StartUp(const wchar_t * file_name, LogLevel level)
 
 void Log::ShutDown()
 {
-    log_level = kLOG_LEVEL_NONE;
+    log_level = kNone;
     log.close();
 }
 
-Log::Log(LogLevel level)
+Log::Log(Log::Level level)
 :level_(level)
 {
 

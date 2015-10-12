@@ -17,7 +17,7 @@ public:
 
     void setStroke(bool stroke) override;
 
-    void setStrokeEffect(bool dash, size_t count,
+    void setStrokeEffect(size_t count,
         BonesScalar * interval,
         BonesScalar offset) override;
 
@@ -35,6 +35,13 @@ public:
     void setLine(const BonesPoint & start, const BonesPoint & end) override;
 
     void setPoint(const BonesPoint & pt) override;
+
+    void setOval(const BonesRect * oval) override;
+
+    void setArc(BonesScalar start,
+        BonesScalar sweep,
+        bool use_center,
+        const BonesRect * oval) override;
 
     LUA_HANDLER(Shape);
 };

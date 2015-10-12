@@ -14,7 +14,7 @@ static const char * kMethodSetStretch = "setStretch";
 static const char * kMethodSetNine = "setNine";
 static const char * kMethodSetContent = "setContent";
 static const char * kMethodSetColorMatrix = "setColorMatrix";
-
+static const char * kMethodGetPMColor = "getPMColor";
 //(self, x, y)
 static int SetDirect(lua_State * l)
 {
@@ -162,6 +162,28 @@ static int SetColorMatrix(lua_State * l)
     }
     return 0;
 }
+//(self, x, y)
+static int GetPMColor(lua_State * l)
+{
+    auto count = lua_gettop(l);
+    lua_pushnil(l);
+    if (3 == count)
+    {
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        LuaImage * bob = static_cast<LuaImage *>(
+            LuaContext::CallGetCObject(l));
+        if (bob)
+            lua_pushinteger(l, 
+            static_cast<lua_Integer>(bob->getPMColor(
+            static_cast<int>(lua_tointeger(l, 2)), 
+            static_cast<int>(lua_tointeger(l, 3)))));
+    }
+
+
+    return 1;
+
+}
 
 LuaImage::LuaImage(Image * ob)
 :LuaObject(ob)
@@ -184,6 +206,8 @@ void LuaImage::createMetaTable(lua_State * l)
         lua_setfield(l, -2, kMethodSetContent);
         lua_pushcfunction(l, &SetColorMatrix);
         lua_setfield(l, -2, kMethodSetColorMatrix);
+        lua_pushcfunction(l, &GetPMColor);
+        lua_setfield(l, -2, kMethodGetPMColor);
     }
 }
 
@@ -238,6 +262,11 @@ void LuaImage::setContent(const BonesPixmap & pm)
 void LuaImage::setContent(const char * key)
 {
     object_->set(key);
+}
+
+BonesPMColor LuaImage::getPMColor(int x, int y)
+{
+    return object_->getPMColor(x, y);
 }
 
 void LuaImage::setColorMatrix(const BonesColorMatrix * cm)
