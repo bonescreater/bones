@@ -12,11 +12,12 @@ static const char * kMethodSetStroke = "setStroke";
 static const char * kMethodsetStrokeEffect = "setStrokeEffect";
 static const char * kMethodsetStrokeWidth = "setStrokeWidth";
 static const char * kMethodsetColor = "setColor";
-static const char * kMethodsetBorder = "setBorder";
 static const char * kMethodsetCircle = "setCircle";
 static const char * kMethodsetRect = "setRect";
 static const char * kMethodsetLine = "setLine";
 static const char * kMethodsetPoint = "setPoint";
+static const char * kMethodsetOval = "setOval";
+static const char * kMethodsetArc = "setArc";
 
 static int SetStroke(lua_State * l)
 {
@@ -27,6 +28,43 @@ static int SetStroke(lua_State * l)
         LuaContext::CallGetCObject(l));
     if (shape)
         shape->setStroke(!!(lua_toboolean(l, 2)));
+    return 0;
+}
+
+static int SetStrokeEffect(lua_State * l)
+{
+    auto count = lua_gettop(l);
+    if (count > 2)
+    {
+        auto intervals_count = static_cast<size_t>(lua_tointeger(l, 2));
+        lua_settop(l, intervals_count + 3);
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        LuaShape * shape = static_cast<LuaShape *>(
+            LuaContext::CallGetCObject(l));
+        if (shape)
+        {
+            std::vector<BonesScalar> intervals;
+            for (size_t i = 1; i <= intervals_count; ++i)
+                intervals.push_back(static_cast<BonesScalar>(lua_tonumber(l, 2 + i)));
+            shape->setStrokeEffect(intervals_count, &intervals[0],
+                static_cast<BonesScalar>(lua_tonumber(l, 3 + intervals_count)));
+        }
+
+    }
+
+    return 0;
+}
+
+static int SetStrokeWidth(lua_State * l)
+{
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaShape * shape = static_cast<LuaShape *>(
+        LuaContext::CallGetCObject(l));
+    if (shape)
+        shape->setStrokeWidth(static_cast<BonesScalar>(lua_tonumber(l, 2)));
     return 0;
 }
 
@@ -41,6 +79,25 @@ static int SetColor(lua_State * l)
     {
         if (lua_isinteger(l, 2))
             shape->setColor(static_cast<BonesColor>(lua_tointeger(l, 2)));
+        else if (lua_islightuserdata(l, 2))
+            shape->setColor(static_cast<BonesShader>(lua_touserdata(l, 2)));
+    }
+    return 0;
+}
+
+static int SetCircle(lua_State * l)
+{
+    lua_settop(l, 4);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaShape * shape = static_cast<LuaShape *>(
+        LuaContext::CallGetCObject(l));
+    if (shape)
+    {
+        BonesPoint center = { 
+            static_cast<BonesScalar>(lua_tonumber(l, 2)),
+            static_cast<BonesScalar>(lua_tonumber(l, 3)) };
+        shape->setCircle(center, static_cast<BonesScalar>(lua_tonumber(l, 4)));
     }
     return 0;
 }
@@ -77,6 +134,96 @@ static int SetRect(lua_State * l)
     return 0;
 }
 
+static int SetLine(lua_State * l)
+{
+    lua_settop(l, 5);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaShape * shape = static_cast<LuaShape *>(
+        LuaContext::CallGetCObject(l));
+    if (shape)
+    {
+        BonesPoint start = {
+            static_cast<BonesScalar>(lua_tonumber(l, 2)),
+            static_cast<BonesScalar>(lua_tonumber(l, 3)) };
+        BonesPoint end = {
+            static_cast<BonesScalar>(lua_tonumber(l, 4)),
+            static_cast<BonesScalar>(lua_tonumber(l, 5)) };
+        shape->setLine(start, end);
+    }
+    return 0;
+}
+
+static int SetPoint(lua_State * l)
+{
+    lua_settop(l, 3);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaShape * shape = static_cast<LuaShape *>(
+        LuaContext::CallGetCObject(l));
+    if (shape)
+    {
+        BonesPoint pt = {
+            static_cast<BonesScalar>(lua_tonumber(l, 2)),
+            static_cast<BonesScalar>(lua_tonumber(l, 3)) };
+        shape->setPoint(pt);
+    }
+    return 0;
+}
+
+static int SetOval(lua_State * l)
+{
+    auto count = lua_gettop(l);
+    lua_settop(l, 5);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaShape * shape = static_cast<LuaShape *>(
+        LuaContext::CallGetCObject(l));
+    if (shape)
+    {
+        if (count == 1)
+            shape->setOval(nullptr);
+        else
+        {
+            BonesRect oval = { 
+                static_cast<BonesScalar>(lua_tonumber(l, 2)),
+                static_cast<BonesScalar>(lua_tonumber(l, 3)),
+                static_cast<BonesScalar>(lua_tonumber(l, 4)),
+                static_cast<BonesScalar>(lua_tonumber(l, 5)) };
+            shape->setOval(&oval);
+        }
+    }
+    return 0;
+}
+
+static int SetArc(lua_State * l)
+{
+    auto count = lua_gettop(l);
+    lua_settop(l, 8);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaShape * shape = static_cast<LuaShape *>(
+        LuaContext::CallGetCObject(l));
+    if (shape)
+    {
+        auto start = static_cast<BonesScalar>(lua_tonumber(l, 2));
+        auto sweep = static_cast<BonesScalar>(lua_tonumber(l, 3));
+        auto center = !!lua_toboolean(l, 4);
+        if (count == 4)
+            shape->setArc(start, sweep, center, nullptr);
+        else
+        {
+            BonesRect oval = {
+                static_cast<BonesScalar>(lua_tonumber(l, 5)),
+                static_cast<BonesScalar>(lua_tonumber(l, 6)),
+                static_cast<BonesScalar>(lua_tonumber(l, 7)),
+                static_cast<BonesScalar>(lua_tonumber(l, 8)) };
+            shape->setArc(start, sweep, center, &oval);
+        }
+    }
+    return 0;
+}
+
 LuaShape::LuaShape(Shape * co)
 :LuaObject(co), notify_(nullptr)
 {
@@ -91,11 +238,31 @@ void LuaShape::createMetaTable(lua_State * l)
         lua_pushcfunction(l, &SetStroke);
         lua_setfield(l, -2, kMethodSetStroke);
 
-        lua_pushcfunction(l, &SetRect);
-        lua_setfield(l, -2, kMethodsetRect);
+        lua_pushcfunction(l, &SetStrokeEffect);
+        lua_setfield(l, -2, kMethodsetStrokeEffect);
+        lua_pushcfunction(l, &SetStrokeWidth);
+        lua_setfield(l, -2, kMethodsetStrokeWidth);
 
         lua_pushcfunction(l, &SetColor);
         lua_setfield(l, -2, kMethodsetColor);
+
+        lua_pushcfunction(l, &SetCircle);
+        lua_setfield(l, -2, kMethodsetCircle);
+
+        lua_pushcfunction(l, &SetRect);
+        lua_setfield(l, -2, kMethodsetRect);
+
+        lua_pushcfunction(l, &SetLine);
+        lua_setfield(l, -2, kMethodsetLine);
+
+        lua_pushcfunction(l, &SetPoint);
+        lua_setfield(l, -2, kMethodsetPoint);
+
+        lua_pushcfunction(l, &SetOval);
+        lua_setfield(l, -2, kMethodsetOval);
+
+        lua_pushcfunction(l, &SetArc);
+        lua_setfield(l, -2, kMethodsetArc);
     }
 }
 
