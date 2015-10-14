@@ -33,12 +33,6 @@ private:
         kPath,
     };
 
-    enum ColourType
-    {
-        kColor,
-        kShader,
-    };
-
     typedef union
     {
         struct Rect
@@ -110,7 +104,7 @@ public:
 
     void setColor(Color color);
 
-    void setShader(SkShader * shader);
+    void setColor(SkShader * shader);
 
     void set(Scalar rx, Scalar ry, const Rect * r = nullptr);
 
@@ -157,7 +151,6 @@ private:
     Param param_;
     SkPathEffect * effect_;
 
-    ColourType colour_type_;
     Color color_;
     SkShader * shader_;
 };

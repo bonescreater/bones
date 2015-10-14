@@ -15,6 +15,16 @@ public:
 
     void createMetaTable(lua_State * l) override;
 
+    void setFont(const BonesFont & font) override;
+
+    void setColor(BonesColor color) override;
+
+    void setColor(BonesShader shader) override;
+
+    void setAutoContent(const wchar_t * str, Align align, OverFlow of) override;
+
+    void setPosContent(const wchar_t * str, const BonesPoint * pts) override;
+
     LUA_HANDLER(Text);
 };
 

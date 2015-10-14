@@ -97,6 +97,16 @@ typedef struct
     BonesScalar x;
     BonesScalar y;
 }BonesPoint;
+/*!字体描述*/
+struct BonesFont
+{
+    const char * family;//!<family name like "Microsoft YaHei"
+    BonesScalar size;//!<字体大小
+    bool bold;//!<true为粗体
+    bool italic;//!<true为斜体
+    bool underline;//!<true字体有下划线
+    bool strike;//!<true字体有删除线
+};
 /*!颜色矩阵 4X5\n
     m=[a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t]\n
       |a, b, c, d, e|       |R|      |aR + bG + cB + dA + e|     |R1|\n
@@ -979,6 +989,11 @@ public:
        @see BonesPixmap
     */
     virtual void setContent(const BonesPixmap & pm) = 0;
+    /*!设置位图
+      @param[in] key 被绘制的位图在资源管理器里的key
+      @see BonesResManager
+    */
+    virtual void setContent(const char * key) = 0;
     /*!得到指定位置的颜色
     @param[in] x 位图x方向的偏移
     @param[in] y 位图y方向的偏移
@@ -986,11 +1001,6 @@ public:
     @see BonesPMColor
     */
     virtual BonesPMColor getPMColor(int x, int y) = 0;
-    /*!设置位图
-      @param[in] key 被绘制的位图在资源管理器里的key
-      @see BonesResManager
-    */
-    virtual void setContent(const char * key) = 0;
     /*!设置颜色矩阵
       @param[in] cm 颜色矩阵 如果为空则清空当前使用的颜色矩阵
       @see BonesColorMatrix
@@ -1034,14 +1044,78 @@ public:
 class BonesText : public BonesHandler<BonesText>
 {
 public:
+    /*!文字自动布局时水平方向对齐方式*/
+    enum Align
+    {
+        kLeft = 0,//!<左对齐
+        kCenter,//!<中间对齐
+        kRight,//!<右对齐
+    };
+    /*!文字自动布局时单行超出时的处理方式*/
+    enum OverFlow
+    {
+        kNone = 0,//!<超长不特殊处理即截断不显示
+        kWordWrap,//!<超长自动换行
+        kEllipsis,//!<超长以省略号代替
+    };
+public:
+    /*!设置文字字体
+    @param[in] font 字体
+    */
+    virtual void setFont(const BonesFont & font) = 0;
+    /*!设置文字颜色
+    @param[in] color 文字颜色
+    */
+    virtual void setColor(BonesColor color) = 0;
+    /*!设置文字颜色
+    @param[in] shader 文字颜色为渐变色
+    */
+    virtual void setColor(BonesShader shader) = 0;
+    /*!设置文字
+    @param[in] str 字符串 支持\n换行
+    @param[in] align 字符串水平方向的对齐方式
+    @param[in] of 单行字符串超出后的处理方式
+    @warning set*Content不能同时起效 以最后设置的为准
+    */
+    virtual void setAutoContent(const wchar_t * str, Align align, OverFlow of) = 0;
+    /*!设置文字
+    @param[in] str 字符串 不支持\n换行
+    @param[in] pts 字符串中每个字符显示的位置, pts的数组长度应该和str的字符长度相同
+    @warning set*Content不能同时起效 以最后设置的为准
+    */
+    virtual void setPosContent(const wchar_t * str, const BonesPoint * pts) = 0;
+    /*!设置鼠标事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::MouseListener
+    */
     virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
-
+    /*!设置键盘事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::KeyListener
+    */
     virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
-
+    /*!设置焦点事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::FocusListener
+    */
     virtual void setListener(BonesEvent::Phase phase, FocusListener * lis) = 0;
-
+    /*!设置滚轮事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::WheelListener
+    */
     virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
-
+    /*!设置通知事件回调
+    @param[in] lis 事件监听接口
+    @see BonesHandler::NotifyListener
+    */
     virtual void setListener(NotifyListener * lis) = 0;
 };
 

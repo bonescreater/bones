@@ -3,6 +3,8 @@
 #include "helper.h"
 
 #include "SkCanvas.h"
+#include "SkShader.h"
+
 #include "css_utils.h"
 
 namespace bones
@@ -17,17 +19,11 @@ static Scalar GetTextHeight(SkPaint & paint)
     return fm.fBottom - fm.fTop;
 }
 
-static void AdjustSkPaint(SkPaint & paint, Color color, float opacity, Text::Align align)
+static SkPaint::Align ToSkPaintStyle(Text::Align align)
 {
-    paint.setColor(color);
-    paint.setAlpha(ClampAlpha(opacity, ColorGetA(color)));
-
-    SkPaint::Align skalign;
+    SkPaint::Align skalign = SkPaint::kLeft_Align;;
     switch (align)
     {
-    case Text::kLeft:
-        skalign = SkPaint::kLeft_Align;
-        break;
     case Text::kCenter:
         skalign = SkPaint::kCenter_Align;
         break;
@@ -35,18 +31,26 @@ static void AdjustSkPaint(SkPaint & paint, Color color, float opacity, Text::Ali
         skalign = SkPaint::kRight_Align;
         break;
     default:
-        assert(0);
-        skalign = SkPaint::kLeft_Align;
+        assert(0);      
         break;
     }
-    paint.setTextAlign(skalign);
+    return skalign;
 }
 
 Text::Text()
-:cache_dirty_(false), of_(kNone), text_color_(0xff000000),
-text_align_(kCenter), delegate_(nullptr)
+:delegate_(nullptr), cache_dirty_(false), of_(kNone), align_(kCenter),
+color_(BONES_RGB_BLACK), shader_(nullptr), mode_(kAuto),
+pts_(nullptr)
 {
-    ;
+
+}
+
+Text::~Text()
+{
+    if (shader_)
+        shader_->unref();
+    if (pts_)
+        delete pts_;
 }
 
 void Text::setDelegate(Delegate * delegate)
@@ -64,11 +68,37 @@ Text::DelegateBase * Text::delegate()
     return delegate_;
 }
 
-void Text::set(const wchar_t * text)
+void Text::set(const wchar_t * text, Align align, Overflow of)
 {
     content_.clear();
     if (text)
         content_ = text;
+    of_ = of;
+    align_ = align;
+
+    cache_dirty_ = true;
+    inval();
+}
+
+void Text::set(const wchar_t * text, const Point * ps)
+{
+    content_.clear();
+    if (!pts_)
+        pts_ = new std::vector<SkPoint>;
+    else
+        pts_->clear();
+
+    if (text)
+        content_ = text;
+
+    if (ps)
+    {
+        for (size_t i = 0; i < content_.size(); ++i)
+        {
+            SkPoint pt = { ps[i].x(), ps[i].y() };
+            pts_->push_back(pt);
+        }
+    }
     cache_dirty_ = true;
     inval();
 }
@@ -82,24 +112,26 @@ void Text::setFont(const Font & font)
 
 void Text::setColor(Color c)
 {
-    text_color_ = c;
+    //使用简单颜色
+    color_ = c;
+    if (shader_)
+        shader_->unref();
+    shader_ = nullptr;
+
     inval();
 }
 
-void Text::setAlign(Align align)
+void Text::setColor(SkShader * shader)
 {
-    text_align_ = align;
-    inval();
-}
+    //使用渐变色  渐变色的alpha受到paint控制
+    if (shader_)
+        shader_->unref();
+    shader_ = shader;
+    if (shader_)
+        shader_->ref();
+    color_ = BONES_RGB_BLACK;
 
-void Text::setOverflow(Overflow of)
-{
-    if (of_ != of)
-    {
-        of_ = of;
-        cache_dirty_ = true;
-        inval();
-    }
+    inval();
 }
 
 void Text::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
@@ -114,7 +146,26 @@ void Text::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 
     SkPaint paint;
     Helper::ToSkPaint(font_, paint);
-    AdjustSkPaint(paint, text_color_, opacity, text_align_);
+    paint.setColor(color_);
+    paint.setShader(shader_);
+    paint.setAlpha(ClampAlpha(opacity, ColorGetA(color_)));
+    paint.setTextAlign(ToSkPaintStyle(align_));
+
+    if (kAuto == mode_)
+        drawAuto(canvas, paint);
+    else if (kPos == mode_)
+        drawPos(canvas, paint);
+
+}
+
+void Text::drawPos(SkCanvas & canvas, SkPaint & paint)
+{
+    canvas.drawPosText(content_.data(), 
+        content_.size() * sizeof(content_[0]), &(*pts_)[0], paint);
+}
+
+void Text::drawAuto(SkCanvas & canvas, SkPaint & paint)
+{
     auto line_height = GetTextHeight(paint);
     auto total_height = line_height * lines_.size();
     //垂直居中
@@ -122,7 +173,7 @@ void Text::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
     paint.getFontMetrics(&fm);
     auto base_line = getHeight() / 2 - total_height / 2 - fm.fTop;
     Scalar x = 0;
-    switch (text_align_)
+    switch (align_)
     {
     case kRight:
         x = getWidth();
@@ -151,6 +202,7 @@ void Text::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 void Text::onSizeChanged()
 {
     cache_dirty_ = true;
+    Area::onSizeChanged();
 }
 
 void Text::adjustCache()
@@ -161,7 +213,9 @@ void Text::adjustCache()
     lines_.clear();
     if (content_.empty())
         return;
-    breakToLine();
+    if (kAuto == mode_)
+        breakToLine();
+    //kPos kPath不需要计算缓存
 }
 
 void Text::breakToLine()
@@ -201,11 +255,14 @@ void Text::appendEllipsis(size_t begin, size_t length)
     }
     SkPaint paint;
     Helper::ToSkPaint(font_, paint);
-    AdjustSkPaint(paint, text_color_, 1.0f, text_align_);
+    paint.setColor(color_);
+    paint.setShader(shader_);
+    paint.setTextAlign(ToSkPaintStyle(align_));
 
     std::vector<Scalar> widths;
     widths.resize(length);
-    paint.getTextWidths(content_.data() + begin, sizeof(wchar_t)* length, &widths[0]);
+    paint.getTextWidths(content_.data() + begin,
+        sizeof(wchar_t)* length, &widths[0]);
     Scalar line_width = 0;
     Scalar max_width = getWidth();
     
@@ -215,7 +272,7 @@ void Text::appendEllipsis(size_t begin, size_t length)
         lines_.push_back(std::wstring(content_.data() + begin, length));
     else
     {
-        auto ellipsis_length = paint.measureText(kStrEllipsis, 
+        auto ellipsis_length = paint.measureText(kStrEllipsis,
                               sizeof(kStrEllipsis[0]) * wcslen(kStrEllipsis));
         if (ellipsis_length > max_width)
             lines_.push_back(kStrEllipsis);
@@ -242,11 +299,14 @@ void Text::wordWrap(size_t begin, size_t length)
 {
     SkPaint paint;
     Helper::ToSkPaint(font_, paint);
-    AdjustSkPaint(paint, text_color_, 1.0f, text_align_);
+    paint.setColor(color_);
+    paint.setShader(shader_);
+    paint.setTextAlign(ToSkPaintStyle(align_));
 
     std::vector<Scalar> widths;
     widths.resize(length);
-    paint.getTextWidths(content_.data() + begin, sizeof(wchar_t)* length, &widths[0]);
+    paint.getTextWidths(content_.data() + begin,
+        sizeof(wchar_t)* length, &widths[0]);
     Scalar line_width = 0;
     Scalar max_width = getWidth();
     size_t line_start = 0;
@@ -285,10 +345,7 @@ void Text::wordWrap(size_t begin, size_t length)
 
 BONES_CSS_TABLE_BEGIN(Text, View)
 BONES_CSS_SET_FUNC("color", &Text::setColor)
-BONES_CSS_SET_FUNC("content", &Text::setContent)
-BONES_CSS_SET_FUNC("overflow", &Text::setOverflow)
 BONES_CSS_SET_FUNC("font", &Text::setFont)
-BONES_CSS_SET_FUNC("align", &Text::setAlign)
 BONES_CSS_TABLE_END()
 
 void Text::setColor(const CSSParams & params)
@@ -298,27 +355,13 @@ void Text::setColor(const CSSParams & params)
     setColor(CSSUtils::CSSStrToColor(params[0]));
 }
 
-void Text::setContent(const CSSParams & params)
-{
-    if (params.empty())
-        return;
-    CSSText content(params[0]);
-    set(Encoding::FromUTF8(content.begin, content.length).data());
-}
-
-void Text::setOverflow(const CSSParams & params)
-{
-    if (params.empty())
-        return;
-    auto & str = params[0];
-    Overflow of = kNone;
-    if (str == "word-wrap")
-        of = kWordWrap;
-    else if (str == "ellipsis")
-        of = kEllipsis;
-    setOverflow(of);
-}
-
+//void Text::setContent(const CSSParams & params)
+//{
+//    if (params.empty())
+//        return;
+//    CSSText content(params[0]);
+//    set(Encoding::FromUTF8(content.begin, content.length).data());
+//}
 void Text::setFont(const CSSParams & params)
 {
     if (params.empty())
@@ -326,18 +369,5 @@ void Text::setFont(const CSSParams & params)
     setFont(CSSUtils::CSSParamsToFont(params));
 }
 
-void Text::setAlign(const CSSParams & params)
-{
-    if (params.empty())
-        return;
-    Text::Align align = kLeft;
-    auto & str = params[0];
-    if (str == "center")
-        align = Text::kCenter;
-    else if (str == "right")
-        align = Text::kRight;
-
-    setAlign(align);
-}
 
 }

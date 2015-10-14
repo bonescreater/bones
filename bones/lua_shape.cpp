@@ -292,7 +292,7 @@ void LuaShape::setColor(BonesColor color)
 
 void LuaShape::setColor(BonesShader shader)
 {
-    object_->setShader(static_cast<SkShader *>(shader));
+    object_->setColor(static_cast<SkShader *>(shader));
 }
 
 

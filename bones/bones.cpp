@@ -2,6 +2,7 @@
 #include "script_parser.h"
 #include "lua_context.h"
 #include "core/core_imp.h"
+#include "core/font.h"
 
 //namespace bones
 //{
@@ -111,6 +112,24 @@ const char * ToEventPhaseStr(BonesEvent::Phase phase)
     if (BonesEvent::kTarget == phase)
         return kStrTarget;
     return "";
+}
+
+Font ToFont(const BonesFont & font)
+{
+    Font ft;
+    ft.setFamily(font.family);
+    ft.setSize(font.size);
+    uint32_t style = Font::kNormal;
+    if (font.bold)
+        style |= Font::kBold;
+    if (font.italic)
+        style |= Font::kItalic;
+    if (font.underline)
+        style |= Font::kUnderline;
+    if (font.strike)
+        style |= Font::kStrikeOut;
+    ft.setStyle(style);
+    return ft;
 }
 
 int EventStack::event_stack_count = 0;

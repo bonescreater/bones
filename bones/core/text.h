@@ -5,6 +5,10 @@
 #include "color.h"
 #include "font.h"
 
+class SkPaint;
+class SkShader;
+struct SkPoint;
+
 namespace bones
 {
 
@@ -27,7 +31,13 @@ public:
     };
     typedef std::wstring Line;
     typedef std::vector<Line> Lines;
-
+private:
+    enum Mode
+    {
+        kAuto,//自动布局， 支持自动换行什么的
+        kPos,//pos 在指定的位置显示
+        kPath,//通过path显示文字
+    };
 public:
     class Delegate : public DelegateBase
     {
@@ -36,15 +46,17 @@ public:
 public:
     Text();
 
-    void set(const wchar_t * text);
+    ~Text();
 
     void setFont(const Font & font);
 
     void setColor(Color c);
 
-    void setAlign(Align align);
+    void setColor(SkShader * shader);
 
-    void setOverflow(Overflow of);
+    void set(const wchar_t * text, Align align, Overflow of);
+
+    void set(const wchar_t * text, const Point * ps);
 
     void setDelegate(Delegate * delegate);
 
@@ -56,6 +68,10 @@ protected:
 
     void onSizeChanged() override;
 private:
+    void drawPos(SkCanvas & canvas, SkPaint & paint);
+
+    void drawAuto(SkCanvas & canvas, SkPaint & paint);
+
     void adjustCache();
 
     void breakToLine();
@@ -68,22 +84,19 @@ private:
 
     void setColor(const CSSParams & params);
 
-    void setContent(const CSSParams & params);
-
-    void setOverflow(const CSSParams & params);
-
     void setFont(const CSSParams & params);
-
-    void setAlign(const CSSParams & params);
 private:
     Delegate * delegate_;
     bool cache_dirty_;
     std::wstring content_;
     Lines lines_;
-    Color text_color_;
-    Align text_align_;
     Overflow of_;
+    Align align_;
+    Color color_;
+    SkShader * shader_;
     Font font_;
+    Mode mode_;
+    std::vector<SkPoint> * pts_;
 };
 
 }

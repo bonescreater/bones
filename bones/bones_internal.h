@@ -97,6 +97,9 @@ enum AnimationType
 
 extern const char * ToEventPhaseStr(BonesEvent::Phase phase);
 
+class Font;
+extern Font ToFont(const BonesFont & font);
+
 class EventStack
 {
 public:
@@ -108,7 +111,6 @@ public:
 private:
     static int event_stack_count;
 };
-
 }
 
 #endif

@@ -12,8 +12,8 @@ namespace bones
 {
 
 Shape::Shape()
-:category_(kNone), style_(kFill), color_(0xff000000), stroke_width_(1),
-colour_type_(kColor), effect_(nullptr), delegate_(nullptr), shader_(nullptr)
+:category_(kNone), style_(kFill), color_(BONES_RGB_BLACK), stroke_width_(1),
+effect_(nullptr), delegate_(nullptr), shader_(nullptr)
 {
     //param 未初始化 category= kNone用不到param
 }
@@ -50,19 +50,22 @@ void Shape::setStrokeWidth(Scalar stroke_width)
 
 void Shape::setColor(Color color)
 {
-    colour_type_ = kColor;
     color_ = color;
+    if (shader_)
+        shader_->unref();
+    shader_ = nullptr;
+
     inval();
 }
 
-void Shape::setShader(SkShader * shader)
+void Shape::setColor(SkShader * shader)
 {
-    colour_type_ = kShader;
     if (shader_)
         shader_->unref();
     shader_ = shader;
     if (shader_)
         shader_->ref();
+    color_ = BONES_RGB_BLACK;
     inval();
 }
 
@@ -190,19 +193,10 @@ void Shape::drawBackground(SkCanvas & canvas, float opacity)
         return;
 
     SkPaint paint;
-    if (kShader == colour_type_)
-    {
-        paint.setShader(shader_);
-        paint.setAlpha(ClampAlpha(opacity));
-    }  
-    else if (kColor == colour_type_)
-    {
-        paint.setColor(color_);
-        paint.setAlpha(ClampAlpha(opacity, ColorGetA(color_)));
-    }
-    else
-        assert(0);
     paint.setAntiAlias(true);
+    paint.setColor(color_);
+    paint.setShader(shader_);
+    paint.setAlpha(ClampAlpha(opacity, ColorGetA(color_)));
     paint.setStrokeWidth(stroke_width_);
     if (effect_)
         paint.setPathEffect(effect_);

@@ -97,6 +97,7 @@ typedef struct
     Scalar mat[20];
 }ColorMatrix;
 
+#define BONES_RGB_BLACK 0xff000000
 
 }
 
