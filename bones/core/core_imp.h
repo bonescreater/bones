@@ -26,6 +26,7 @@ public:
     {
         const wchar_t * log_file;
         Log::Level log_level;
+        bool aa_enable;
         bool cef_enable;
         const char * cef_locate;//"zh-CN"
     };
@@ -44,6 +45,8 @@ public:
     static void Update();
 
     static bool CEFEnable();
+
+    static bool AntiAliasEnable();
 
     static AnimationManager * GetAnimationManager();
 

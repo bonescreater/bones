@@ -45,9 +45,13 @@ static XMLController * xml = nullptr;
 
 static bool cef_enable = false;
 
+static bool aa_enable = false;
+
+
 bool Core::StartUp(const Config & config)
 {
     SkGraphics::Init();
+    aa_enable = config.aa_enable;
     bool bret = Log::StartUp(config.log_file, config.log_level);
     if (bret)
         bret = !!(animations = new AnimationManager);
@@ -111,6 +115,11 @@ void Core::Update()
 bool Core::CEFEnable()
 {
     return cef_enable;
+}
+
+bool Core::AntiAliasEnable()
+{
+    return aa_enable;
 }
 
 AnimationManager * Core::GetAnimationManager()

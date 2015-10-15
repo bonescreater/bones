@@ -3,7 +3,7 @@
 #include "point.h"
 #include "pixmap.h"
 #include "font.h"
-
+#include "core_imp.h"
 #include "SkRect.h"
 #include "SkBitmap.h"
 #include "SkPixelRef.h"
@@ -71,7 +71,7 @@ void Helper::ToSkPaint(const Font & font, SkPaint & paint)
     auto style = font.getStyle();
     paint.setTextSize(font.getSize());
     paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-    paint.setAntiAlias(true);
+    paint.setAntiAlias(Core::AntiAliasEnable());
     //paint.setDistanceFieldTextTEMP(true);
     paint.setUnderlineText(!!(style & Font::kUnderline));
     paint.setStrikeThruText(!!(style & Font::kStrikeOut));

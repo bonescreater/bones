@@ -164,7 +164,7 @@ BONES_API(BonesCore *) BonesStartUp(const BonesConfig & config)
         cc.log_level = Log::kError;
     else if (BonesConfig::kVerbose == config.log_level)
         cc.log_level = Log::kVerbose;
-
+    cc.aa_enable = config.aa_enable;
     cc.cef_enable = config.cef_enable;
     cc.cef_locate = config.cef_locate;
     bool bret = Core::StartUp(cc);

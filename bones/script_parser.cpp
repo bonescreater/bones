@@ -239,8 +239,9 @@ void ScriptParser::destroyPixmap(BonesPixmap * bp)
 BonesShader ScriptParser::createLinearGradient(
     const BonesPoint & begin,
     const BonesPoint & end,
+    TileMode mode,
     size_t count, BonesColor * color,
-    BonesScalar * pos, TileMode mode)
+    BonesScalar * pos)
 {
     Point bpt, ept;
     bpt.set(begin.x, begin.y);
@@ -253,8 +254,9 @@ BonesShader ScriptParser::createLinearGradient(
 BonesShader ScriptParser::createRadialGradient(
     const BonesPoint & center,
     BonesScalar radius,
+    TileMode mode,
     size_t count, BonesColor * color,
-    float * pos, TileMode mode)
+    float * pos)
 {
     Point pt;
     pt.set( center.x, center.y);

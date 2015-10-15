@@ -97,6 +97,7 @@ int main()
 
     BonesConfig config;
     config.log_level = BonesConfig::kVerbose;
+    config.aa_enable = true;
     config.cef_enable = false;
     config.cef_locate = "zh-CN";
     BonesStartUp(config);

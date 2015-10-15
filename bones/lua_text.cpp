@@ -106,7 +106,7 @@ static int SetPosContent(lua_State * l)
                     text->setPosContent(str.data(), &bps[0]);
                 }
                 else
-                    BLG_ERROR << kMethodSetPosContent << "params invalid";
+                    BLG_ERROR << kMethodSetPosContent << " params invalid";
             }
             else
                 text->setPosContent(nullptr, nullptr);

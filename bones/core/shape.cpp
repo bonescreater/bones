@@ -5,6 +5,7 @@
 #include "css_utils.h"
 #include "SkDashPathEffect.h"
 #include "SkShader.h"
+#include "core_imp.h"
 
 #include <vector>
 
@@ -193,7 +194,7 @@ void Shape::drawBackground(SkCanvas & canvas, float opacity)
         return;
 
     SkPaint paint;
-    paint.setAntiAlias(true);
+    paint.setAntiAlias(Core::AntiAliasEnable());
     paint.setColor(color_);
     paint.setShader(shader_);
     paint.setAlpha(ClampAlpha(opacity, ColorGetA(color_)));
@@ -234,8 +235,8 @@ void Shape::drawBackground(SkCanvas & canvas, float opacity)
                 re = Rect::MakeLTRB(re.left() + offset, re.top() + offset, 
                                     re.right() - offset, re.bottom()- offset);
             }
-            else
-                r = Helper::ToSkRect(re);
+
+            r = Helper::ToSkRect(re);
 
         }
             

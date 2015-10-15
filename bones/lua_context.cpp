@@ -17,6 +17,9 @@ static const char * kCacheEvent = "__event__cache";
 static const char * kMethodGetObject = "getObject";
 static const char * kMethodGetPixmapSize = "getPixmapSize";
 static const char * kMethodExsubetPixmap = "extractSubsetPixmap";
+static const char * kMethodCreateLinearGradient = "createLinearGradient";
+static const char * kMethodCreateRadialGradient = "createRadialGradient";
+static const char * kMethodDestroyShader = "destroyShader";
 
 static lua_State * state = nullptr;
 
@@ -83,6 +86,79 @@ static int BonesExtractSubsetPixmap(lua_State * l)
     return 0;
 }
 
+static int BonesCreateLinearGradient(lua_State * l)
+{//(begin.x, begin.y, end.x, end.y, mode, count, color..., pos...)
+    auto count = lua_gettop(l);
+    if (count > 6)
+    {
+        BonesPoint begin = {
+            static_cast<BonesScalar>(lua_tonumber(l, 1)),
+            static_cast<BonesScalar>(lua_tonumber(l, 2)) };
+        BonesPoint end = {
+            static_cast<BonesScalar>(lua_tonumber(l, 3)),
+            static_cast<BonesScalar>(lua_tonumber(l, 4)) };
+        BonesCore::TileMode mode = 
+            static_cast<BonesCore::TileMode>(lua_tointeger(l, 5));
+        auto array_count = static_cast<size_t>(lua_tointeger(l, 6));
+        count = 6 + array_count * 2;
+        lua_settop(l, count);
+        std::vector<BonesColor> color;
+        std::vector<BonesScalar> pos;       
+        for (size_t i = 0; i < array_count; ++i)
+        {
+            color.push_back(static_cast<BonesColor>(lua_tointeger(l, 7 + i)));
+            pos.push_back(static_cast<BonesScalar>(
+                lua_tonumber(l, 7 + i + array_count)));
+        }
+        lua_pushlightuserdata(l,
+            GetCoreInstance()->createLinearGradient(
+            begin, end, mode, array_count,
+            &color[0], &pos[0]));
+    }
+    else
+        lua_pushnil(l);
+    return 1;
+}
+
+static int BonesCreateRadialGradient(lua_State * l)
+{
+    auto count = lua_gettop(l);
+    if (count > 5)
+    {
+        BonesPoint center = {
+            static_cast<BonesScalar>(lua_tonumber(l, 1)),
+            static_cast<BonesScalar>(lua_tonumber(l, 2)) };
+        BonesScalar radius = static_cast<BonesScalar>(lua_tonumber(l, 3));
+        BonesCore::TileMode mode = 
+            static_cast<BonesCore::TileMode>(lua_tointeger(l, 4));
+        auto array_count = static_cast<size_t>(lua_tointeger(l, 5));
+        count = 5 + array_count * 2;
+        lua_settop(l, count);
+        std::vector<BonesColor> color;
+        std::vector<BonesScalar> pos;
+        for (size_t i = 0; i < array_count; ++i)
+        {
+            color.push_back(static_cast<BonesColor>(lua_tointeger(l, 6 + i)));
+            pos.push_back(static_cast<BonesScalar>(
+                lua_tonumber(l, 6 + i + array_count)));
+        }
+        lua_pushlightuserdata(l,
+            GetCoreInstance()->createRadialGradient(
+            center, radius, mode, array_count,
+            &color[0], &pos[0]));
+    }
+    else
+        lua_pushnil(l);
+    return 1;
+}
+
+static int BonesDestroyShader(lua_State * l)
+{//self, shader
+    lua_settop(l, 1);
+    GetCoreInstance()->destroyShader(lua_touserdata(l, 1));
+    return 0;
+}
+
 bool LuaContext::StartUp()
 {
     state = luaL_newstate();
@@ -103,6 +179,15 @@ bool LuaContext::StartUp()
         lua_pushcfunction(state, &BonesGetPixmapSize);
         lua_setfield(state, -2, kMethodGetPixmapSize);
 
+        lua_pushcfunction(state, &BonesCreateLinearGradient);
+        lua_setfield(state, -2, kMethodCreateLinearGradient);
+
+        lua_pushcfunction(state, &BonesCreateRadialGradient);
+        lua_setfield(state, -2, kMethodCreateRadialGradient);
+        
+        lua_pushcfunction(state, &BonesDestroyShader);
+        lua_setfield(state, -2, kMethodDestroyShader);
+        
         lua_setglobal(state, kBonesTable);
     }
 

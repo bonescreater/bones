@@ -30,6 +30,7 @@ struct BonesConfig
         kVerbose = 2,// everything
     };
     LogLevel log_level;
+    bool aa_enable;//anti alias
     bool cef_enable;
     const char * cef_locate;//"zh-CN"
 };
@@ -41,6 +42,7 @@ class BonesCore;
                               kNone无日志输出\n
                               kError只输出错误\n
                               kVerbose输出所有信息\n
+             config.aa_enable true 启用抗锯齿
              config.cef_enable true xml中遇到webview标签则创建浏览器\n
                                false 忽略webview标签\n
              config.cef_locate cef_enable为true时有效
@@ -50,7 +52,8 @@ class BonesCore;
   @code
   BonesConfig config
   config.log_level = BonesConfig::kVerbose;
-  config.cef_enable = true;
+  config.aa_enable = true;
+  config.cef_enable = false;//不支持webview
   config.cef_locate = "zh-CN";
   BonesStartUp(config);
   @endcode
@@ -994,13 +997,12 @@ public:
       @see BonesResManager
     */
     virtual void setContent(const char * key) = 0;
-    /*!得到指定位置的颜色
+    /*!指定位置的像素是否透明
     @param[in] x 位图x方向的偏移
     @param[in] y 位图y方向的偏移
-    @return 已经预乘后的颜色
-    @see BonesPMColor
+    @note 只判断位图的像素是否透明，不受opacity的影响
     */
-    virtual BonesPMColor getPMColor(int x, int y) = 0;
+    virtual bool isTransparent(int x, int y) = 0;
     /*!设置颜色矩阵
       @param[in] cm 颜色矩阵 如果为空则清空当前使用的颜色矩阵
       @see BonesColorMatrix
@@ -1242,14 +1244,16 @@ public:
     virtual BonesShader createLinearGradient(
         const BonesPoint & begin, 
         const BonesPoint & end,
+        TileMode mode, 
         size_t count, BonesColor * color,
-        BonesScalar * pos, TileMode mode) = 0;
+        BonesScalar * pos) = 0;
 
     virtual BonesShader createRadialGradient(
         const BonesPoint & center, 
         BonesScalar radius,
+        TileMode mode,
         size_t count, BonesColor * color,
-        float * pos, TileMode mode) = 0;
+        float * pos) = 0;
 
     virtual void destroyShader(BonesShader shader) = 0;
 

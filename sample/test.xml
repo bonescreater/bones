@@ -1,33 +1,17 @@
 ﻿<bones>
   <head>
-    <link type ="pixmap" name ="common" file ="common.png"></link>
-    <link type ="pixmap" name ="highlight" file ="highlight.png"></link>
-    <link type ="pixmap" name ="press" file ="press.png"></link>
-    <link type ="pixmap" name ="disable" file ="disable.png"></link>
-    <link type ="script" module ="test" file="test.lua"></link>
-    <link type ="xml" module ="button" file="button.xml"></link>
-    <style>
-      .red
-      {
-      color:#ffff0000;
-      }
-      .pic
-      {
-      loc:20px 20px;
-      size:256px 256px;
-      }
-      .pic2
-      {
-      loc:296px 20px;
-      size:256px 256px;
-      }
-    </style>
+    <link type ="script" module ="shape" file ="test.lua"></link>
   </head>
   <body>
-    <root id ="main" class ="red" >
-      <button class ="pic"></button>
-      <button class ="pic2"></button>
-      <notify name ="onCreate" module ="test" func ="onCreate"></notify>
+    <root id ="main">
+      <notify name ="onCreate" module ="shape" func ="onCreate"></notify>
+      <shape></shape>
+      <shape></shape>
+      <shape></shape>
+      <shape></shape>
+      <shape></shape>
+      <shape></shape>
+      <shape></shape>
     </root>
   </body>
 </bones>

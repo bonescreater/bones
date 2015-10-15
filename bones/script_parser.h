@@ -39,14 +39,16 @@ public:
     BonesShader createLinearGradient(
         const BonesPoint & begin,
         const BonesPoint & end,
+        TileMode mode,
         size_t count, BonesColor * color,
-        BonesScalar * pos, TileMode mode) override;
+        BonesScalar * pos) override;
 
     BonesShader createRadialGradient(
         const BonesPoint & center,
         BonesScalar radius,
+        TileMode mode,
         size_t count, BonesColor * color,
-        float * pos, TileMode mode) override;
+        float * pos) override;
 
     void destroyShader(BonesShader shader) override;
 

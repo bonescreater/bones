@@ -42,7 +42,7 @@ public:
 
     void setColorMatrix(const ColorMatrix * cm);
 
-    PMColor getPMColor(int x, int y);
+    bool isTransparent(int x, int y);
 
     void setDelegate(Delegate * delegate);
 

@@ -76,9 +76,9 @@ void Image::setColorMatrix(const ColorMatrix * cm)
         color_filter_ = SkColorMatrixFilter::Create(cm->mat);    
 }
 
-PMColor Image::getPMColor(int x, int y)
+bool Image::isTransparent(int x, int y)
 {
-    return pixmap_.getPMColor(x, y);
+    return !!(ColorGetA(pixmap_.getPMColor(x, y)) & 0xff);
 }
 
 void Image::setDelegate(Delegate * delegate)
