@@ -5,13 +5,25 @@
   <body>
     <root id ="main">
       <notify name ="onCreate" module ="shape" func ="onCreate"></notify>
-      <shape></shape>
-      <shape></shape>
-      <shape></shape>
-      <shape></shape>
-      <shape></shape>
-      <shape></shape>
-      <shape></shape>
+      <shape>
+        <text></text>
+      </shape>
+      <shape>
+        <text></text>
+      </shape>
+      <shape>
+        <text></text>
+      </shape>
+      <shape>
+        <text></text>
+      </shape>
+      <shape>
+        <text></text>
+      </shape>
+
+      <shape>
+        <text></text>
+      </shape>
     </root>
   </body>
 </bones>
