@@ -30,16 +30,13 @@ static SkPaint::Align ToSkPaintStyle(Text::Align align)
     case Text::kRight:
         skalign = SkPaint::kRight_Align;
         break;
-    default:
-        assert(0);      
-        break;
     }
     return skalign;
 }
 
 Text::Text()
 :delegate_(nullptr), cache_dirty_(false), of_(kNone), align_(kCenter),
-color_(BONES_RGB_BLACK), shader_(nullptr), mode_(kAuto),
+color_(BONES_RGB_BLACK), shader_(nullptr), mode_(kAuto), line_space_(0),
 pts_(nullptr)
 {
 
@@ -68,20 +65,22 @@ Text::DelegateBase * Text::delegate()
     return delegate_;
 }
 
-void Text::set(const wchar_t * text, Align align, Overflow of)
+void Text::set(const wchar_t * text, Scalar space, Align align, Overflow of)
 {
+    mode_ = kAuto;
     content_.clear();
     if (text)
         content_ = text;
     of_ = of;
     align_ = align;
-
+    line_space_ = space;
     cache_dirty_ = true;
     inval();
 }
 
 void Text::set(const wchar_t * text, const Point * ps)
 {
+    mode_ = kPos;
     content_.clear();
     if (!pts_)
         pts_ = new std::vector<SkPoint>;
@@ -167,7 +166,8 @@ void Text::drawPos(SkCanvas & canvas, SkPaint & paint)
 void Text::drawAuto(SkCanvas & canvas, SkPaint & paint)
 {
     auto line_height = GetTextHeight(paint);
-    auto total_height = line_height * lines_.size();
+    auto total_height = line_height * lines_.size() + 
+        line_space_ * (lines_.size() - 1);
     //垂直居中
     SkPaint::FontMetrics fm;
     paint.getFontMetrics(&fm);
@@ -193,7 +193,7 @@ void Text::drawAuto(SkCanvas & canvas, SkPaint & paint)
         auto bytelength = iter->size() * sizeof(wchar_t);
         if (bytelength != 0)
             canvas.drawText(iter->data(), bytelength, x, base_line, paint);
-        base_line += line_height;
+        base_line += line_height + line_space_;
     }
 }
 
@@ -201,7 +201,8 @@ void Text::drawAuto(SkCanvas & canvas, SkPaint & paint)
 
 void Text::onSizeChanged()
 {
-    cache_dirty_ = true;
+    if (kAuto == mode_)
+        cache_dirty_ = true;
     Area::onSizeChanged();
 }
 

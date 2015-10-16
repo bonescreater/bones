@@ -54,7 +54,7 @@ public:
 
     void setColor(SkShader * shader);
 
-    void set(const wchar_t * text, Align align, Overflow of);
+    void set(const wchar_t * text, Scalar space, Align align, Overflow of);
 
     void set(const wchar_t * text, const Point * ps);
 
@@ -96,6 +96,7 @@ private:
     SkShader * shader_;
     Font font_;
     Mode mode_;
+    Scalar line_space_;
     std::vector<SkPoint> * pts_;
 };
 

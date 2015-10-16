@@ -1075,11 +1075,12 @@ public:
     virtual void setColor(BonesShader shader) = 0;
     /*!设置文字
     @param[in] str 字符串 支持\n换行
+    @param[in] ls 行间距 上一行的底部 跟下一行的顶部之间的距离
     @param[in] align 字符串水平方向的对齐方式
     @param[in] of 单行字符串超出后的处理方式
     @warning set*Content不能同时起效 以最后设置的为准
     */
-    virtual void setAutoContent(const wchar_t * str, Align align, OverFlow of) = 0;
+    virtual void setAutoContent(const wchar_t * str, BonesScalar ls, Align align, OverFlow of) = 0;
     /*!设置文字
     @param[in] str 字符串 不支持\n换行
     @param[in] pts 字符串中每个字符显示的位置, pts的数组长度应该和str的字符长度相同

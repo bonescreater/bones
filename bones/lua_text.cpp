@@ -54,7 +54,7 @@ static int SetColor(lua_State * l)
 
 static int SetAutoContent(lua_State * l)
 {
-    lua_settop(l, 4);
+    lua_settop(l, 5);
     lua_pushnil(l);
     lua_copy(l, 1, -1);
     LuaText * text = static_cast<LuaText *>(
@@ -62,15 +62,16 @@ static int SetAutoContent(lua_State * l)
     if (text)
     {
         const char * utf8 = lua_tostring(l, 2);
-        auto align = static_cast<BonesText::Align>(lua_tointeger(l, 3));
-        auto of = static_cast<BonesText::OverFlow>(lua_tointeger(l, 4));     
+        auto ls = static_cast<BonesScalar>(lua_tonumber(l, 3));
+        auto align = static_cast<BonesText::Align>(lua_tointeger(l, 4));
+        auto of = static_cast<BonesText::OverFlow>(lua_tointeger(l, 5));     
         if (utf8)
         {
             auto str = Encoding::FromUTF8(utf8);
-            text->setAutoContent(str.data(), align, of);
+            text->setAutoContent(str.data(), ls, align, of);
         }          
         else
-            text->setAutoContent(nullptr, align, of);
+            text->setAutoContent(nullptr, ls, align, of);
     }    
     return 0;
 }
@@ -156,7 +157,7 @@ void LuaText::setColor(BonesShader shader)
     object_->setColor(static_cast<SkShader *>(shader));
 }
 
-void LuaText::setAutoContent(const wchar_t * str, Align align, OverFlow of)
+void LuaText::setAutoContent(const wchar_t * str, BonesScalar ls, Align align, OverFlow of)
 {
     Text::Overflow tof = Text::kNone;
     if (kWordWrap == of)
@@ -170,7 +171,7 @@ void LuaText::setAutoContent(const wchar_t * str, Align align, OverFlow of)
     else if (kRight == align)
         talign = Text::kRight;
 
-    object_->set(str, talign, tof);
+    object_->set(str, ls, talign, tof);
 }
 
 void LuaText::setPosContent(const wchar_t * str, const BonesPoint * pts)

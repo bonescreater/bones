@@ -21,7 +21,7 @@ public:
 
     void setColor(BonesShader shader) override;
 
-    void setAutoContent(const wchar_t * str, Align align, OverFlow of) override;
+    void setAutoContent(const wchar_t * str, BonesScalar ls, Align align, OverFlow of) override;
 
     void setPosContent(const wchar_t * str, const BonesPoint * pts) override;
 
