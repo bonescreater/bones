@@ -43,6 +43,8 @@ public:
         bool use_center,
         const BonesRect * oval) override;
 
+    void setPath(BonesPath path) override;
+
     LUA_HANDLER(Shape);
 };
 

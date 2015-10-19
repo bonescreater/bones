@@ -155,7 +155,7 @@ Cursor CSSUtils::CSSStrToCursor(const CSSString & str)
     return Core::GetResManager()->getCursor(std::string(str.begin, str.length).data());
 }
 
-Pixmap CSSUtils::CSSStrToPixmap(const CSSString & str)
+Pixmap * CSSUtils::CSSStrToPixmap(const CSSString & str)
 {
     return Core::GetResManager()->getPixmap(std::string(str.begin, str.length).data());
 }

@@ -21,11 +21,7 @@ public:
 
     void setNine(const BonesRect * dst, const BonesRect * center) override;
 
-    void setContent(const BonesPixmap & pm) override;
-
-    void setContent(const char * key) override;
-
-    bool isTransparent(int x, int y) override;
+    void setContent(BonesPixmap pm) override;
 
     void setColorMatrix(const BonesColorMatrix * cm) override;
 

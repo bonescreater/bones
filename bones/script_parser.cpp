@@ -1,5 +1,4 @@
 ﻿#include "script_parser.h"
-#include "picture.h"
 #include "lua_context.h"
 #include "lua_check.h"
 
@@ -32,15 +31,6 @@ static const char * kStrFunc = "func";
 static const char * kStrScript = "script";
 static const char * kStrEvent = "event";
 static const char * kStrNotify = "notify";
-
-Core::TileMode ToCoreTileMode(BonesCore::TileMode mode)
-{
-    if (BonesCore::kRepeat == mode)
-        return Core::kRepeat;
-    if (BonesCore::kMirror == mode)
-        return Core::kMirror;
-    return Core::kClamp;
-}
 
 ////(self, arg1, arg2)
 static int ScriptCB(lua_State * l)
@@ -194,79 +184,24 @@ void ScriptParser::cleanObject(BonesObject * bo)
     Core::GetXMLController()->clean(getObject(bo));
 }
 
-BonesResManager * ScriptParser::getResManager()
+BonesResourceManager * ScriptParser::getResourceManager()
 {
-    return this;
-}
-//res manager
-
-void ScriptParser::clonePixmap(const char * key, BonesPixmap & pm)
-{
-    Core::GetResManager()->add(key, static_cast<Picture *>(&pm)->getPixmap());
+    return &resource_manager_;
 }
 
-void ScriptParser::cloneCursor(const char * key, BonesCursor cursor)
+BonesPathProxy * ScriptParser::getPathProxy()
 {
-    Core::GetResManager()->add(key, cursor);
+    return &path_proxy_;
 }
 
-void ScriptParser::getPixmap(const char * key, BonesPixmap & pm)
+BonesShaderProxy * ScriptParser::getShaderProxy()
 {
-    static_cast<Picture *>(&pm)->getPixmap() = 
-        Core::GetResManager()->getPixmap(key);
+    return &shader_proxy_;
 }
 
-void ScriptParser::getCursor(const char * key, BonesCursor & cursor)
+BonesPixmapProxy *ScriptParser::getPixmapProxy()
 {
-    cursor = Core::GetResManager()->getCursor(key);
-}
-
-void ScriptParser::clean()
-{
-    Core::GetResManager()->clean();
-}
-
-BonesPixmap * ScriptParser::createPixmap()
-{ 
-    return new Picture();
-}
-
-void ScriptParser::destroyPixmap(BonesPixmap * bp)
-{
-    delete bp;
-}
-
-BonesShader ScriptParser::createLinearGradient(
-    const BonesPoint & begin,
-    const BonesPoint & end,
-    TileMode mode,
-    size_t count, BonesColor * color,
-    BonesScalar * pos)
-{
-    Point bpt, ept;
-    bpt.set(begin.x, begin.y);
-    ept.set(end.x, end.y);
-
-    return Core::createLinearGradient(bpt, ept, count, color, pos,
-        ToCoreTileMode(mode));
-}
-
-BonesShader ScriptParser::createRadialGradient(
-    const BonesPoint & center,
-    BonesScalar radius,
-    TileMode mode,
-    size_t count, BonesColor * color,
-    float * pos)
-{
-    Point pt;
-    pt.set( center.x, center.y);
-    return Core::createRadialGradient(pt, radius, count, color, pos,
-                                          ToCoreTileMode(mode));
-}
-
-void ScriptParser::destroyShader(BonesShader shader)
-{
-    Core::destroyShader(static_cast<SkShader *>(shader));
+    return &pixmap_proxy_;
 }
 
 bool ScriptParser::onLoad()

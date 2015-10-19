@@ -35,7 +35,7 @@ public:
 
     static Cursor CSSStrToCursor(const CSSString & str);
 
-    static Pixmap CSSStrToPixmap(const CSSString & str);
+    static Pixmap * CSSStrToPixmap(const CSSString & str);
 
     static Color  CSSStrToColor(const CSSString & str);
 

@@ -14,7 +14,7 @@ namespace bones
 
 Shape::Shape()
 :category_(kNone), style_(kFill), color_(BONES_RGB_BLACK), stroke_width_(1),
-effect_(nullptr), delegate_(nullptr), shader_(nullptr)
+effect_(nullptr), delegate_(nullptr), shader_(nullptr), path_(nullptr)
 {
     //param 未初始化 category= kNone用不到param
 }
@@ -25,6 +25,8 @@ Shape::~Shape()
         effect_->unref();
     if (shader_)
         shader_->unref();
+    if (path_)
+        delete path_;
 }
 
 void Shape::setStyle(Style style)
@@ -166,6 +168,15 @@ void Shape::set(const Rect * oval, Scalar start, Scalar sweep, bool center)
     inval();
 }
 
+void Shape::set(const SkPath & path)
+{
+    category_ = kPath;
+    if (!path_)
+        path_ = new SkPath;
+    *path_ = path;
+    inval();
+}
+
 void Shape::setDelegate(Delegate * delegate)
 {
     delegate_ = delegate;
@@ -281,6 +292,8 @@ void Shape::drawBackground(SkCanvas & canvas, float opacity)
         canvas.drawArc(Helper::ToSkRect(re),
             param_.arc.start, param_.arc.sweep, param_.arc.center, paint);
     }
+    else if (kPath == category_)
+        canvas.drawPath(*path_, paint);
 }
 
 BONES_CSS_TABLE_BEGIN(Shape, View)

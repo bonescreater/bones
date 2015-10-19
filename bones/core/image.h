@@ -38,11 +38,7 @@ public:
 
     void set(const Pixmap & pm);
 
-    void set(const char * key);
-
     void setColorMatrix(const ColorMatrix * cm);
-
-    bool isTransparent(int x, int y);
 
     void setDelegate(Delegate * delegate);
 

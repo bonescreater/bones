@@ -12,13 +12,13 @@ namespace bones
 class ResManager
 {
 public:
-    void add(const char * key, Pixmap & pm);
+    void addPixmap(const char * key, Pixmap & pm);
 
-    void add(const char * key, Cursor cursor);
+    void addCursor(const char * key, Cursor cursor);
 
     void clean();
 
-    Pixmap getPixmap(const char * key);
+    Pixmap * getPixmap(const char * key);
 
     Cursor getCursor(const char * key);
 private:

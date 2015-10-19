@@ -21,9 +21,13 @@ public:
 
     void setColor(BonesShader shader) override;
 
-    void setAutoContent(const wchar_t * str, BonesScalar ls, Align align, OverFlow of) override;
+    void setContent(const wchar_t * str) override;
 
-    void setPosContent(const wchar_t * str, const BonesPoint * pts) override;
+    void setAuto(Align align, OverFlow of, BonesScalar ls) override;
+
+    void setPos(size_t count, const BonesPoint * pts) override;
+
+    void setPath(BonesPath path) override;
 
     LUA_HANDLER(Text);
 };

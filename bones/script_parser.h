@@ -3,7 +3,7 @@
 
 #include "bones_internal.h"
 #include "core/xml_controller.h"
-
+#include "simple_proxy.h"
 
 namespace bones
 {
@@ -16,7 +16,6 @@ class WebView;
 class Scroller;
 
 class ScriptParser : public BonesCore, 
-                     public BonesResManager,
                      public XMLController::Delegate
 {
 public:
@@ -32,26 +31,6 @@ public:
 
     void cleanXML() override;
 
-    BonesPixmap * createPixmap() override;
-
-    void destroyPixmap(BonesPixmap *) override;
-
-    BonesShader createLinearGradient(
-        const BonesPoint & begin,
-        const BonesPoint & end,
-        TileMode mode,
-        size_t count, BonesColor * color,
-        BonesScalar * pos) override;
-
-    BonesShader createRadialGradient(
-        const BonesPoint & center,
-        BonesScalar radius,
-        TileMode mode,
-        size_t count, BonesColor * color,
-        float * pos) override;
-
-    void destroyShader(BonesShader shader) override;
-
     BonesObject * getObject(const char * id) override;
 
     BonesObject * getObject(BonesObject * ob, const char * id) override;
@@ -65,18 +44,13 @@ public:
 
     void cleanObject(BonesObject * bo) override;
 
-    BonesResManager * getResManager() override;
-    //res manager
-    void clonePixmap(const char * key, BonesPixmap & pm) override;
+    BonesResourceManager * getResourceManager() override;
 
-    void cloneCursor(const char * key, BonesCursor cursor) override;
+    BonesPathProxy * getPathProxy() override;
 
-    void getPixmap(const char * key, BonesPixmap & pm) override;
+    BonesShaderProxy * getShaderProxy() override;
 
-    void getCursor(const char * key, BonesCursor & cursor) override;
-
-    void clean() override;
-
+    BonesPixmapProxy * getPixmapProxy() override;
     
     //xml controller 
     //XML刚载入时触发 返回false 自动clean
@@ -153,6 +127,10 @@ private:
     BonesXMLListener * listener_;
     BonesObjectListener * ob_listener_;
     std::map<View *, BonesObject *>v2bo_;
+    PathProxy path_proxy_;
+    ShaderProxy shader_proxy_;
+    PixmapProxy pixmap_proxy_;
+    ResourceManager resource_manager_;
 };
 
 }

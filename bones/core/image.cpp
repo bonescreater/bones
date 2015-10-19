@@ -61,12 +61,6 @@ void Image::set(const Pixmap & pm)
     inval();
 }
 
-void Image::set(const char * key)
-{
-    pixmap_ = Core::GetResManager()->getPixmap(key);
-    inval();
-}
-
 void Image::setColorMatrix(const ColorMatrix * cm)
 {
     if (color_filter_)
@@ -74,11 +68,6 @@ void Image::setColorMatrix(const ColorMatrix * cm)
     color_filter_ = nullptr;
     if (cm)
         color_filter_ = SkColorMatrixFilter::Create(cm->mat);    
-}
-
-bool Image::isTransparent(int x, int y)
-{
-    return !!(ColorGetA(pixmap_.getPMColor(x, y)) & 0xff);
 }
 
 void Image::setDelegate(Delegate * delegate)
@@ -165,7 +154,9 @@ void Image::set(const CSSParams & params)
 {
     if (params.empty())
         return;
-    set(CSSUtils::CSSStrToPixmap(params[0]));
+    auto pm = CSSUtils::CSSStrToPixmap(params[0]);
+    if (pm)
+        set(*pm);
 }
 
 }

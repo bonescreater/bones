@@ -1,7 +1,7 @@
 ﻿#include "lua_shape.h"
 #include "lua_context.h"
 #include "lua_check.h"
-
+#include "utils.h"
 #include "core/logging.h"
 
 namespace bones
@@ -357,6 +357,11 @@ void LuaShape::setArc(
         r = &re;
     }
     object_->set(r, start, sweep, use_center);
+}
+
+void LuaShape::setPath(BonesPath path)
+{
+    object_->set(*Utils::ToSkPath(path));
 }
 
 }

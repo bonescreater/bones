@@ -135,7 +135,7 @@ int main()
         BonesUpdate();
     }
     
-    BonesGetCore()->getResManager()->clean();
+    BonesGetCore()->getResourceManager()->clean();
     BonesGetCore()->setXMLListener(nullptr);
 
     BonesShutDown();

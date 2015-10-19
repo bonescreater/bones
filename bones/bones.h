@@ -79,6 +79,8 @@ typedef HANDLE BonesCursor;
 typedef HBITMAP BonesCaret;
 typedef HWND BonesWidget;
 typedef void * BonesShader;
+typedef void * BonesPath;
+typedef void * BonesPixmap;
 
 /*!矩形描述*/
 typedef struct
@@ -126,59 +128,6 @@ typedef struct
 typedef uint32_t BonesColor;
 /*!颜色描述 ARGB格式 A:31-24 R:23-16 G:15-8 B:7-0 预乘后的颜色*/
 typedef uint32_t BonesPMColor;
-/*!BonesPixmap位图接口该接口可以对位图进行操作 位图存放预乘后的像素
-   @note BonesPixmap通过BonesCore来创建和销毁
-   @see BonesCore::createPixmap
-*/
-class BonesPixmap
-{
-public:
-    struct LockRec
-    {
-        void * bits;//!<内存首地址
-        size_t pitch;//!<每一行的字节数
-        BonesRect subset;//!<位图在内存中的矩形区域
-    };
-public:
-    /*!分配一块内存位图
-       @param[in] width 位图宽
-       @param[in] height 位图高
-       @return 成功返回true否则返回false
-    */
-    virtual bool alloc(int width, int height) = 0;
-    /*!解码图片
-       @param[in] data 图片内存首地址
-       @param[in] len 图片内存大小
-       @note 内部使用wic解码 支持png bmp等格式
-    */
-    virtual bool decode(const void * data, size_t len) = 0;
-    /*!得到位图宽
-       @return 位图宽
-    */
-    virtual int getWidth() const = 0;
-    /*!得到位图高
-       @return 位图高
-    */
-    virtual int getHeight() const = 0;
-    /*!锁住位图 
-       @param[out] rec 返回位图信息
-       @return 成功返回true 失败返回false
-       @warning 必须和unlock成对使用
-    */
-    virtual bool lock(LockRec & rec) = 0;
-    /*!解锁位图
-    */
-    virtual void unlock() = 0;
-    /*!用指定颜色填充位图
-       @param[in] color 填充位图的颜色
-    */
-    virtual void erase(BonesColor color) = 0;
-    /*!裁剪子位图
-       @param[out] pm 存放裁剪后的子位图
-       @param[in] subset 子位图的矩形区域
-    */
-    virtual void extractSubset(BonesPixmap & pm, const BonesRect & subset) = 0;
-};
 
 struct BonesScriptArg
 {
@@ -932,6 +881,11 @@ public:
                         BonesScalar sweep, 
                         bool use_center, 
                         const BonesRect * oval) = 0;
+    /*!设置几何形状为Path中的形状
+    @param[in] path 路径
+    @warning 几何形状的设置不能同时起效 以最后设置的为准
+    */
+    virtual void setPath(BonesPath path) = 0;
     /*!设置鼠标事件回调
     @param[in] phase 事件阶段 仅监听指定阶段的事件
     @param[in] lis 事件监听接口
@@ -991,18 +945,7 @@ public:
        @param[in] pm 被绘制的位图
        @see BonesPixmap
     */
-    virtual void setContent(const BonesPixmap & pm) = 0;
-    /*!设置位图
-      @param[in] key 被绘制的位图在资源管理器里的key
-      @see BonesResManager
-    */
-    virtual void setContent(const char * key) = 0;
-    /*!指定位置的像素是否透明
-    @param[in] x 位图x方向的偏移
-    @param[in] y 位图y方向的偏移
-    @note 只判断位图的像素是否透明，不受opacity的影响
-    */
-    virtual bool isTransparent(int x, int y) = 0;
+    virtual void setContent(BonesPixmap pm) = 0;
     /*!设置颜色矩阵
       @param[in] cm 颜色矩阵 如果为空则清空当前使用的颜色矩阵
       @see BonesColorMatrix
@@ -1074,19 +1017,30 @@ public:
     */
     virtual void setColor(BonesShader shader) = 0;
     /*!设置文字
-    @param[in] str 字符串 支持\n换行
-    @param[in] ls 行间距 上一行的底部 跟下一行的顶部之间的距离
+    @param[in] str 字符串
+    */
+    virtual void setContent(const wchar_t * str) = 0;
+    /*!设置文字显示模式为自动布局
     @param[in] align 字符串水平方向的对齐方式
     @param[in] of 单行字符串超出后的处理方式
-    @warning set*Content不能同时起效 以最后设置的为准
+    @param[in] ls 行间距 上一行的底部 跟下一行的顶部之间的距离
+    @note 自动布局文字 垂直方向永远居中 支持'\n'换行
+    @warning setAuto setPos setPath不能同时起效 以最后设置的为准
     */
-    virtual void setAutoContent(const wchar_t * str, BonesScalar ls, Align align, OverFlow of) = 0;
-    /*!设置文字
-    @param[in] str 字符串 不支持\n换行
-    @param[in] pts 字符串中每个字符显示的位置, pts的数组长度应该和str的字符长度相同
-    @warning set*Content不能同时起效 以最后设置的为准
+    virtual void setAuto(Align align, OverFlow of, BonesScalar ls) = 0;
+    /*!设置文字显示模式为绝对位置模式
+    @param[in] count pts数组长度, 应该和str的字符长度相同
+    @param[in] pts 字符串中每个字符显示的位置
+    @note 不支持'\n'换行
+    @warning setAuto setPos setPath不能同时起效 以最后设置的为准
     */
-    virtual void setPosContent(const wchar_t * str, const BonesPoint * pts) = 0;
+    virtual void setPos(size_t count, const BonesPoint * pts) = 0;
+    /*!设置文字显示模式为Path模式
+    @param[in] path 字符串按照path的形状显示
+    @note 不支持'\n'换行
+    @warning setAuto setPos setPath不能同时起效 以最后设置的为准
+    */
+    virtual void setPath(BonesPath path) = 0;
     /*!设置鼠标事件回调
     @param[in] phase 事件阶段 仅监听指定阶段的事件
     @param[in] lis 事件监听接口
@@ -1198,19 +1152,135 @@ public:
 };
 
 
-class BonesResManager
+class BonesResourceManager
 {
 public:
-    virtual void clonePixmap(const char * key, BonesPixmap & pm) = 0;
+    virtual void addPixmap(const char * key, BonesPixmap pm) = 0;
 
-    virtual void cloneCursor(const char * key, BonesCursor cursor) = 0;
+    virtual void addCursor(const char * key, BonesCursor cursor) = 0;
 
-    virtual void getPixmap(const char * key, BonesPixmap & pm) = 0;
+    virtual BonesPixmap getPixmap(const char * key) = 0;
 
-    virtual void getCursor(const char * key, BonesCursor & cursor) = 0;
+    virtual BonesCursor getCursor(const char * key) = 0;
 
     virtual void clean() = 0;
 };
+/*!path封装*/
+class BonesPathProxy
+{
+public:
+    virtual BonesPath create() = 0;
+    
+    virtual void moveTo(BonesPath path, const BonesPoint & p) = 0;
+
+    virtual void lineTo(BonesPath path, const BonesPoint & p) = 0;
+
+    virtual void quadTo(BonesPath path, const BonesPoint & p1, 
+                        const BonesPoint & p2) = 0;
+
+    virtual void conicTo(BonesPath path, const BonesPoint & p1, 
+                         const BonesPoint & p2, BonesScalar w) = 0;
+
+    virtual void cubicTo(BonesPath path, const BonesPoint & p1, 
+                         const BonesPoint & p2, const BonesPoint & p3) = 0;
+
+    virtual void arcTo(BonesPath path, const BonesRect & oval, 
+                       BonesScalar startAngle, BonesScalar sweepAngle) = 0;
+
+    virtual void arcTo(BonesPath path, const BonesPoint & p1, 
+                       const BonesPoint & p2, BonesScalar radius) = 0;
+
+    virtual void close(BonesPath path) = 0;
+
+    virtual void release(BonesPath path) = 0;
+};
+/*!shader 封装*/
+class BonesShaderProxy
+{
+public:
+    enum TileMode
+    {
+        kClamp = 0,
+        kRepeat,
+        kMirror,
+    };
+
+public:
+    virtual BonesShader createLinearGradient(
+        const BonesPoint & begin,
+        const BonesPoint & end,
+        TileMode mode,
+        size_t count, BonesColor * color,
+        BonesScalar * pos) = 0;
+
+    virtual BonesShader createRadialGradient(
+        const BonesPoint & center,
+        BonesScalar radius,
+        TileMode mode,
+        size_t count, BonesColor * color,
+        float * pos) = 0;
+
+    virtual void release(BonesShader shader) = 0;
+};
+/*!pixmap封装*/
+class BonesPixmapProxy
+{
+public:
+    struct LockRec
+    {
+        void * bits;//!<内存首地址
+        size_t pitch;//!<每一行的字节数
+        BonesRect subset;//!<位图在内存中的矩形区域
+    };
+public:
+    virtual BonesPixmap create() = 0;
+    /*!分配一块内存位图
+    @param[in] width 位图宽
+    @param[in] height 位图高
+    @return 成功返回true否则返回false
+    */
+    virtual bool alloc(BonesPixmap pm, int width, int height) = 0;
+    /*!解码图片
+    @param[in] data 图片内存首地址
+    @param[in] len 图片内存大小
+    @note 内部使用wic解码 支持png bmp等格式
+    */
+    virtual bool decode(BonesPixmap pm, const void * data, size_t len) = 0;
+    /*!得到位图宽
+    @return 位图宽
+    */
+    virtual int getWidth(BonesPixmap pm) const = 0;
+    /*!得到位图高
+    @return 位图高
+    */
+    virtual int getHeight(BonesPixmap pm) const = 0;
+    /*!锁住位图
+    @param[out] rec 返回位图信息
+    @return 成功返回true 失败返回false
+    @warning 必须和unlock成对使用
+    */
+    virtual bool lock(BonesPixmap pm, LockRec & rec) = 0;
+    /*!解锁位图
+    */
+    virtual void unlock(BonesPixmap pm) = 0;
+    /*!用指定颜色填充位图
+    @param[in] color 填充位图的颜色
+    */
+    virtual void erase(BonesPixmap pm, BonesColor color) = 0;
+    /*!裁剪子位图
+    @param[out] dst 存放裁剪后的子位图
+    @param[in] subset 子位图的矩形区域
+    */
+    virtual void extractSubset(BonesPixmap dst, BonesPixmap src, const BonesRect & subset) = 0;
+    /*!指定位置的像素是否透明
+    @param[in] x 位图x方向的偏移
+    @param[in] y 位图y方向的偏移
+    */
+    virtual bool isTransparent(BonesPixmap pm, int x, int y) = 0;
+
+    virtual void release(BonesPixmap pm) = 0;
+};
+
 
 class BonesObjectListener
 {
@@ -1229,34 +1299,13 @@ public:
 class BonesCore
 {
 public:
-    enum TileMode
-    {
-        kClamp = 0,
-        kRepeat,
-        kMirror,
-    };
+    virtual BonesResourceManager * getResourceManager() = 0;
 
-    virtual BonesResManager * getResManager() = 0;
+    virtual BonesPathProxy * getPathProxy() = 0;
 
-    virtual BonesPixmap * createPixmap() = 0;
+    virtual BonesShaderProxy * getShaderProxy() = 0;
 
-    virtual void destroyPixmap(BonesPixmap *) = 0;
-
-    virtual BonesShader createLinearGradient(
-        const BonesPoint & begin, 
-        const BonesPoint & end,
-        TileMode mode, 
-        size_t count, BonesColor * color,
-        BonesScalar * pos) = 0;
-
-    virtual BonesShader createRadialGradient(
-        const BonesPoint & center, 
-        BonesScalar radius,
-        TileMode mode,
-        size_t count, BonesColor * color,
-        float * pos) = 0;
-
-    virtual void destroyShader(BonesShader shader) = 0;
+    virtual BonesPixmapProxy * getPixmapProxy() = 0;
 
     virtual void setXMLListener(BonesXMLListener * listener) = 0;
 

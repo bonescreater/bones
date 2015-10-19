@@ -37,7 +37,7 @@ static SkPaint::Align ToSkPaintStyle(Text::Align align)
 Text::Text()
 :delegate_(nullptr), cache_dirty_(false), of_(kNone), align_(kCenter),
 color_(BONES_RGB_BLACK), shader_(nullptr), mode_(kAuto), line_space_(0),
-pts_(nullptr)
+pts_(nullptr), path_(nullptr)
 {
 
 }
@@ -48,6 +48,8 @@ Text::~Text()
         shader_->unref();
     if (pts_)
         delete pts_;
+    if (path_)
+        delete path_;
 }
 
 void Text::setDelegate(Delegate * delegate)
@@ -65,12 +67,20 @@ Text::DelegateBase * Text::delegate()
     return delegate_;
 }
 
-void Text::set(const wchar_t * text, Scalar space, Align align, Overflow of)
+void Text::set(const wchar_t * text)
 {
-    mode_ = kAuto;
     content_.clear();
     if (text)
         content_ = text;
+
+    cache_dirty_ = true;
+    inval();
+}
+
+void Text::setAuto(Align align, Overflow of, Scalar space)
+{
+    mode_ = kAuto;
+
     of_ = of;
     align_ = align;
     line_space_ = space;
@@ -78,26 +88,35 @@ void Text::set(const wchar_t * text, Scalar space, Align align, Overflow of)
     inval();
 }
 
-void Text::set(const wchar_t * text, const Point * ps)
+void Text::setPos(const Point * ps, size_t count)
 {
     mode_ = kPos;
-    content_.clear();
+
     if (!pts_)
         pts_ = new std::vector<SkPoint>;
     else
         pts_->clear();
 
-    if (text)
-        content_ = text;
-
     if (ps)
     {
-        for (size_t i = 0; i < content_.size(); ++i)
+        for (size_t i = 0; i < count; ++i)
         {
             SkPoint pt = { ps[i].x(), ps[i].y() };
             pts_->push_back(pt);
         }
     }
+    cache_dirty_ = true;
+    inval();
+}
+
+void Text::setPath(const SkPath & path)
+{
+    mode_ = kPath;
+
+    if (!path_)
+        path_ = new SkPath;
+    *path_ = path;
+
     cache_dirty_ = true;
     inval();
 }
@@ -154,13 +173,21 @@ void Text::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
         drawAuto(canvas, paint);
     else if (kPos == mode_)
         drawPos(canvas, paint);
-
+    else if (kPath == mode_)
+        drawPath(canvas, paint);
 }
 
 void Text::drawPos(SkCanvas & canvas, SkPaint & paint)
 {
+    if (content_.size() != pts_->size())
+        return;
     canvas.drawPosText(content_.data(), 
         content_.size() * sizeof(content_[0]), &(*pts_)[0], paint);
+}
+
+void Text::drawPath(SkCanvas & canvas, SkPaint & paint)
+{
+    canvas.drawPath(*path_, paint);
 }
 
 void Text::drawAuto(SkCanvas & canvas, SkPaint & paint)

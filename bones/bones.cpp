@@ -4,29 +4,6 @@
 #include "core/core_imp.h"
 #include "core/font.h"
 
-//namespace bones
-//{
-//
-////const char * kStrETMouseEnter = "et-mouse-enter";
-////const char * kStrETMouseMove = "et-mouse-move";
-////const char * kStrETMouseDown = "et-mouse-down";
-////const char * kStrETMouseUp = "et-mouse-up";
-////const char * kStrETMouseClick = "et-mouse-click";
-////const char * kStrETMouseDClick = "et-mouse-dclick";
-////const char * kStrETMouseLeave = "et-mouse-leave";
-////const char * kStrETMouseWHEEL = "et-mouse-wheel";
-////const char * kStrETKeyDown = "et-key-down";
-////const char * kStrETKeyUp = "et-key-up";
-////const char * kStrETFocusOut = "et-focus-out";
-////const char * kStrETFocusIn = "et-focus-in";
-////const char * kStrETBlur = "et-blur";
-////const char * kStrETFocus = "et-focus";
-////const char * kStrETCustom = "et-custom";
-////const char * kStrETUnknown = "et-unknown";
-//
-//}
-//
-
 static const wchar_t * third =
 L"skia unknown\n"
 L"rapidxml 1.13\n"

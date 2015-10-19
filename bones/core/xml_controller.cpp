@@ -351,17 +351,18 @@ bool XMLController::handleLink(XMLNode node, const char * full_path)
             return true;
         //查找name是否存在
         auto pm = Core::GetResManager()->getPixmap(name);
-        if (pm.isValid())
+        if (pm)
             return true;
         //位图不存在则载入
         if (!file)
             return true;
+        Pixmap fpm;
         auto path = GetRealPath(file, full_path);
         FileStream fs;
         if (ReadFile(path.data(), fs))
         {//增加1个位图
-            if (pm.decode(&fs[0], fs.size()))
-                Core::GetResManager()->add(name, pm);
+            if (fpm.decode(&fs[0], fs.size()))
+                Core::GetResManager()->addPixmap(name, fpm);
             else
                 BLG_ERROR << path << " can't decode to pixmap";
         }

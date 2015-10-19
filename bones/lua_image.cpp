@@ -2,7 +2,7 @@
 #include "lua_context.h"
 #include "lua_check.h"
 #include "core/image.h"
-#include "picture.h"
+#include "utils.h"
 
 namespace bones
 {
@@ -14,7 +14,6 @@ static const char * kMethodSetStretch = "setStretch";
 static const char * kMethodSetNine = "setNine";
 static const char * kMethodSetContent = "setContent";
 static const char * kMethodSetColorMatrix = "setColorMatrix";
-static const char * kMethodIsTransparent = "isTransparent";
 //(self, x, y)
 static int SetDirect(lua_State * l)
 {
@@ -106,7 +105,7 @@ static int SetNine(lua_State * l)
     return 0;
 }
 
-//self key
+//self pixmap
 static int SetContent(lua_State * l)
 {
     lua_settop(l, 2);
@@ -115,7 +114,7 @@ static int SetContent(lua_State * l)
     LuaImage * bob = static_cast<LuaImage *>(
         LuaContext::CallGetCObject(l));
     if (bob)
-        bob->setContent(lua_tostring(l, 2));
+        bob->setContent(lua_touserdata(l, 2));
     return 0;
 }
 //self, matrix[20]
@@ -162,26 +161,6 @@ static int SetColorMatrix(lua_State * l)
     }
     return 0;
 }
-//(self, x, y)
-static int IsTransparent(lua_State * l)
-{
-    lua_settop(l, 3);
-    lua_pushnil(l);
-
-    lua_pushnil(l);
-    lua_copy(l, 1, -1);
-    LuaImage * bob = static_cast<LuaImage *>(
-        LuaContext::CallGetCObject(l));
-    if (bob)
-        lua_pushboolean(l, 
-        static_cast<lua_Integer>(bob->isTransparent(
-        static_cast<int>(lua_tointeger(l, 2)), 
-        static_cast<int>(lua_tointeger(l, 3)))));
-
-
-    return 1;
-
-}
 
 LuaImage::LuaImage(Image * ob)
 :LuaObject(ob)
@@ -204,8 +183,6 @@ void LuaImage::createMetaTable(lua_State * l)
         lua_setfield(l, -2, kMethodSetContent);
         lua_pushcfunction(l, &SetColorMatrix);
         lua_setfield(l, -2, kMethodSetColorMatrix);
-        lua_pushcfunction(l, &IsTransparent);
-        lua_setfield(l, -2, kMethodIsTransparent);
     }
 }
 
@@ -252,19 +229,9 @@ void LuaImage::setNine(const BonesRect * dst, const BonesRect * center)
     object_->setNine(d, c);
 }
 
-void LuaImage::setContent(const BonesPixmap & pm)
+void LuaImage::setContent(BonesPixmap pm)
 {
-    object_->set(static_cast<const Picture *>(&pm)->getPixmap());
-}
-
-void LuaImage::setContent(const char * key)
-{
-    object_->set(key);
-}
-
-bool LuaImage::isTransparent(int x, int y)
-{
-    return object_->isTransparent(x, y);
+    object_->set(*Utils::ToPixmap(pm));
 }
 
 void LuaImage::setColorMatrix(const BonesColorMatrix * cm)

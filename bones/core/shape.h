@@ -8,6 +8,7 @@
 
 class SkPathEffect;
 class SkShader;
+class SkPath;
 
 namespace bones
 {
@@ -118,6 +119,8 @@ public:
 
     void set(const Rect * oval, Scalar start, Scalar sweep, bool center);
 
+    void set(const SkPath & path);
+
     void setDelegate(Delegate * delegate);
 
     const char * getClassName() const override;
@@ -153,6 +156,7 @@ private:
 
     Color color_;
     SkShader * shader_;
+    SkPath * path_;
 };
 
 

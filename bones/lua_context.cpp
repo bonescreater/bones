@@ -1,7 +1,8 @@
 ﻿#include "lua_context.h"
-#include "bones_internal.h"
+#include "bones.h"
 #include "lua_check.h"
 #include "script_parser.h"
+#include "utils.h"
 
 #include "core/logging.h"
 #include "core/ref.h"
@@ -14,12 +15,42 @@ static const char * kBonesTable = "bones";
 static const char * kCO2LOTable = "__co2lo";
 static const char * kCacheEvent = "__event__cache";
 
-static const char * kMethodGetObject = "getObject";
-static const char * kMethodGetPixmapSize = "getPixmapSize";
-static const char * kMethodExsubetPixmap = "extractSubsetPixmap";
+static const char * kResourceTable = "resource";
+static const char * kPathTable = "path";
+static const char * kShaderTable = "shader";
+static const char * kPixmapTable = "pixmap";
+
+static const char * kMethodAddPixmap = "addPixmap";
+static const char * kMethodAddCursor = "addCursor";
+static const char * kMethodGetPixmap = "addPixmap";
+static const char * kMethodGetCursor = "getCursor";
+static const char * kMethodClean = "clean";
+
+static const char * kMethodCreate = "create";
+static const char * kMethodMoveTo = "moveTo";
+static const char * kMethodLineTo = "lineTo";
+static const char * kMethodQuadTo = "quadTo";
+static const char * kMethodConicTo = "conicTo";
+static const char * kMethodCubicTo = "cubicTo";
+static const char * kMethodArcTo = "arcTo";
+static const char * kMethodClose = "close";
+
 static const char * kMethodCreateLinearGradient = "createLinearGradient";
 static const char * kMethodCreateRadialGradient = "createRadialGradient";
-static const char * kMethodDestroyShader = "destroyShader";
+
+//static const char * kMethodAlloc = "alloc";
+//static const char * kMethodDecode = "decode";
+static const char * kMethodGetSize = "getSize";
+//static const char * kMethodLock = "lock";
+//static const char * kMethodUnlock = "unlock";
+static const char * kMethodErase = "erase";
+static const char * kMethodExtractSubset = "extractSubset";
+static const char * kMethodIsTransparent = "isTransparent";
+
+static const char * kMethodRelease = "release";
+static const char * kMethodGetObject = "getObject";
+
+
 
 static lua_State * state = nullptr;
 
@@ -49,44 +80,7 @@ static int BonesGetObject(lua_State * l)
     return 1;
 }
 
-//资源接口 获取指定资源的宽高
-static int BonesGetPixmapSize(lua_State * l)
-{//(key)
-    lua_settop(l, 1);
-    lua_pushnil(l);
-    lua_pushnil(l);
-
-    auto key = lua_tostring(l, 1);
-    auto pm = GetCoreInstance()->createPixmap();
-    GetCoreInstance()->getPixmap(key, *pm);
-    lua_pushinteger(l, pm->getWidth());
-    lua_pushinteger(l, pm->getHeight());
-    GetCoreInstance()->destroyPixmap(pm);
-    return 2;
-}
-
-static int BonesExtractSubsetPixmap(lua_State * l)
-{//(dkey, skey, l, t, r, b)
-    lua_settop(l, 6);
-
-    auto dkey = lua_tostring(l, 1);
-    auto dpm = GetCoreInstance()->createPixmap();
-    auto skey = lua_tostring(l, 2);
-    auto spm = GetCoreInstance()->createPixmap();
-    GetCoreInstance()->getPixmap(skey, *spm);
-    BonesRect sub;
-    sub.left = static_cast<BonesScalar>(lua_tointeger(l, 3));
-    sub.top = static_cast<BonesScalar>(lua_tointeger(l, 4));
-    sub.right = static_cast<BonesScalar>(lua_tointeger(l, 5));
-    sub.bottom = static_cast<BonesScalar>(lua_tointeger(l, 6));
-    spm->extractSubset(*dpm, sub);
-    GetCoreInstance()->clonePixmap(dkey, *dpm);
-    GetCoreInstance()->destroyPixmap(spm);
-    GetCoreInstance()->destroyPixmap(dpm);
-    return 0;
-}
-
-static int BonesCreateLinearGradient(lua_State * l)
+static int ShaderCreateLinearGradient(lua_State * l)
 {//(begin.x, begin.y, end.x, end.y, mode, count, color..., pos...)
     auto count = lua_gettop(l);
     if (count > 6)
@@ -97,8 +91,8 @@ static int BonesCreateLinearGradient(lua_State * l)
         BonesPoint end = {
             static_cast<BonesScalar>(lua_tonumber(l, 3)),
             static_cast<BonesScalar>(lua_tonumber(l, 4)) };
-        BonesCore::TileMode mode = 
-            static_cast<BonesCore::TileMode>(lua_tointeger(l, 5));
+        BonesShaderProxy::TileMode mode =
+            static_cast<BonesShaderProxy::TileMode>(lua_tointeger(l, 5));
         auto array_count = static_cast<size_t>(lua_tointeger(l, 6));
         count = 6 + array_count * 2;
         lua_settop(l, count);
@@ -111,7 +105,7 @@ static int BonesCreateLinearGradient(lua_State * l)
                 lua_tonumber(l, 7 + i + array_count)));
         }
         lua_pushlightuserdata(l,
-            GetCoreInstance()->createLinearGradient(
+            GetCoreInstance()->getShaderProxy()->createLinearGradient(
             begin, end, mode, array_count,
             &color[0], &pos[0]));
     }
@@ -120,7 +114,7 @@ static int BonesCreateLinearGradient(lua_State * l)
     return 1;
 }
 
-static int BonesCreateRadialGradient(lua_State * l)
+static int ShaderCreateRadialGradient(lua_State * l)
 {
     auto count = lua_gettop(l);
     if (count > 5)
@@ -129,8 +123,8 @@ static int BonesCreateRadialGradient(lua_State * l)
             static_cast<BonesScalar>(lua_tonumber(l, 1)),
             static_cast<BonesScalar>(lua_tonumber(l, 2)) };
         BonesScalar radius = static_cast<BonesScalar>(lua_tonumber(l, 3));
-        BonesCore::TileMode mode = 
-            static_cast<BonesCore::TileMode>(lua_tointeger(l, 4));
+        BonesShaderProxy::TileMode mode =
+            static_cast<BonesShaderProxy::TileMode>(lua_tointeger(l, 4));
         auto array_count = static_cast<size_t>(lua_tointeger(l, 5));
         count = 5 + array_count * 2;
         lua_settop(l, count);
@@ -143,7 +137,7 @@ static int BonesCreateRadialGradient(lua_State * l)
                 lua_tonumber(l, 6 + i + array_count)));
         }
         lua_pushlightuserdata(l,
-            GetCoreInstance()->createRadialGradient(
+            GetCoreInstance()->getShaderProxy()->createRadialGradient(
             center, radius, mode, array_count,
             &color[0], &pos[0]));
     }
@@ -152,10 +146,249 @@ static int BonesCreateRadialGradient(lua_State * l)
     return 1;
 }
 
-static int BonesDestroyShader(lua_State * l)
-{//self, shader
+static int ShaderRelease(lua_State * l)
+{//shader
     lua_settop(l, 1);
-    GetCoreInstance()->destroyShader(lua_touserdata(l, 1));
+    BonesGetCore()->getShaderProxy()->release(lua_touserdata(l, 1));
+    return 0;
+}
+//key, pixmap
+static int ResourceAddPixmap(lua_State * l)
+{
+    if (lua_gettop(l) == 2)
+    {
+        BonesGetCore()->getResourceManager()->addPixmap(
+            lua_tostring(l, 2), lua_touserdata(l, 3));
+    }
+    else
+        BLG_ERROR << "resource." << kMethodAddPixmap << " error";
+    return 0;
+}
+//key
+static int ResourceGetPixmap(lua_State * l)
+{
+    if (lua_gettop(l) == 1)
+    {
+        auto pm = BonesGetCore()->getResourceManager()->getPixmap(
+            lua_tostring(l, 2));
+        lua_pushlightuserdata(l, pm);
+    }
+    else
+    {
+        BLG_ERROR << "resource." << kMethodGetPixmap << " error";
+        lua_pushnil(l);
+    }
+    return 1;
+}
+
+static int ResourceClean(lua_State * l)
+{
+    BonesGetCore()->getResourceManager()->clean();
+    return 0;
+}
+
+static int PathCreate(lua_State * l)
+{
+    lua_pushlightuserdata(l, BonesGetCore()->getPathProxy()->create());
+    return 1;
+}
+//path, x, y
+static int PathMoveTo(lua_State * l)
+{
+    if (lua_gettop(l) != 3)
+    {
+        BonesPoint bp =
+        {
+            Utils::ToBonesScalar(lua_tonumber(l, 2)),
+            Utils::ToBonesScalar(lua_tonumber(l, 3)),
+        };
+        BonesGetCore()->getPathProxy()->moveTo(
+            lua_touserdata(l, 1), bp);
+    }
+    else
+        BLG_ERROR << "path." << kMethodMoveTo << " error";
+    return 0;
+}
+//path, x, y
+static int PathLineTo(lua_State * l)
+{
+    if (lua_gettop(l) != 3)
+    {
+        BonesPoint bp =
+        {
+            Utils::ToBonesScalar(lua_tonumber(l, 2)),
+            Utils::ToBonesScalar(lua_tonumber(l, 3)),
+        };
+        BonesGetCore()->getPathProxy()->lineTo(
+            lua_touserdata(l, 1), bp);
+    }
+    else
+        BLG_ERROR << "path." << kMethodLineTo << " error";
+    return 0;
+}
+
+static int PathQuadTo(lua_State * l)
+{
+    if (lua_gettop(l) != 5)
+    {
+        BonesPoint bp[2] =
+        { 
+            { Utils::ToBonesScalar(lua_tonumber(l, 2)) ,
+              Utils::ToBonesScalar(lua_tonumber(l, 3)), },
+              { Utils::ToBonesScalar(lua_tonumber(l, 4)),
+              Utils::ToBonesScalar(lua_tonumber(l, 5)), },
+        };
+        BonesGetCore()->getPathProxy()->quadTo(
+            lua_touserdata(l, 1), bp[0], bp[1]);
+    }
+    else
+        BLG_ERROR << "path." << kMethodQuadTo << " error";
+    return 0;
+}
+
+static int PathConicTo(lua_State * l)
+{
+    if (lua_gettop(l) != 6)
+    {
+        BonesPoint bp[2] =
+        {
+            { Utils::ToBonesScalar(lua_tonumber(l, 2)),
+            Utils::ToBonesScalar(lua_tonumber(l, 3)), },
+            { Utils::ToBonesScalar(lua_tonumber(l, 4)),
+            Utils::ToBonesScalar(lua_tonumber(l, 5)), },
+        };
+        BonesGetCore()->getPathProxy()->conicTo(
+            lua_touserdata(l, 1), bp[0], bp[1],
+            Utils::ToBonesScalar(lua_tonumber(l, 6)));
+    }
+    else
+        BLG_ERROR << "path." << kMethodConicTo << " error";
+    return 0;
+}
+
+static int PathCubicTo(lua_State * l)
+{
+    if (lua_gettop(l) != 7)
+    {
+        BonesPoint bp[3] =
+        {
+            { Utils::ToBonesScalar(lua_tonumber(l, 2)),
+            Utils::ToBonesScalar(lua_tonumber(l, 3)), },
+            { Utils::ToBonesScalar(lua_tonumber(l, 4)),
+            Utils::ToBonesScalar(lua_tonumber(l, 5)), },
+            { Utils::ToBonesScalar(lua_tonumber(l, 6)),
+            Utils::ToBonesScalar(lua_tonumber(l, 7)), },
+        };
+        BonesGetCore()->getPathProxy()->cubicTo(
+            lua_touserdata(l, 1), bp[0], bp[1], bp[2]);
+    }
+    else
+        BLG_ERROR << "path." << kMethodCubicTo << " error";
+    return 0;
+}
+
+static int PathArcTo(lua_State * l)
+{
+    if (lua_gettop(l) != 7)
+    {
+        BonesRect oval =
+        {
+            Utils::ToBonesScalar(lua_tonumber(l, 2)),
+            Utils::ToBonesScalar(lua_tonumber(l, 3)),
+            Utils::ToBonesScalar(lua_tonumber(l, 4)),
+            Utils::ToBonesScalar(lua_tonumber(l, 5)),
+        };
+
+        BonesGetCore()->getPathProxy()->arcTo(
+            lua_touserdata(l, 1), oval, 
+            Utils::ToBonesScalar(lua_tonumber(l, 6)), 
+            Utils::ToBonesScalar(lua_tonumber(l, 7)));
+    }
+    else
+        BLG_ERROR << "path." << kMethodArcTo << " error";
+    return 0;
+}
+
+static int PathClose(lua_State * l)
+{
+    if (lua_gettop(l) != 1)
+        BonesGetCore()->getPathProxy()->close(lua_touserdata(l, 1));
+    return 0;
+}
+
+static int PathRelease(lua_State * l)
+{
+    if (lua_gettop(l) != 1)
+        BonesGetCore()->getPathProxy()->release(lua_touserdata(l, 1));
+    return 0;
+}
+
+static int PixmapCreate(lua_State * l)
+{
+    lua_pushlightuserdata(l, BonesGetCore()->getPixmapProxy()->create());
+    return 1;
+}
+//pixmap
+static int PixmapGetSize(lua_State * l)
+{
+    lua_settop(l, 1);
+    lua_pushnil(l);
+    lua_pushnil(l);
+    auto pm = lua_touserdata(l, 1);
+    if (pm)
+    {
+        lua_pushinteger(l, BonesGetCore()->getPixmapProxy()->getWidth(pm));
+        lua_pushinteger(l, BonesGetCore()->getPixmapProxy()->getHeight(pm));
+    }
+    return 2;
+}
+//self color
+static int PixmapErase(lua_State * l)
+{
+    lua_settop(l, 1);
+    lua_pushnil(l);
+    lua_pushnil(l);
+
+    BonesGetCore()->getPixmapProxy()->erase(
+        lua_touserdata(l, 1),
+        Utils::ToBonesColor(lua_tointeger(l, 2)));
+    return 0;
+}
+
+static int PixmapExtractSubset(lua_State * l)
+{
+    lua_settop(l, 6);
+
+    BonesRect subset =
+    {
+        Utils::ToBonesScalar(lua_tonumber(l, 3)),
+        Utils::ToBonesScalar(lua_tonumber(l, 4)),
+        Utils::ToBonesScalar(lua_tonumber(l, 5)),
+        Utils::ToBonesScalar(lua_tonumber(l, 6)),
+    };
+    BonesGetCore()->getPixmapProxy()->extractSubset(
+        lua_touserdata(l, 1),
+        lua_touserdata(l, 2),
+        subset);
+    return 0;
+}
+//self, x, y
+static int PixmapIsTransparent(lua_State * l)
+{
+    lua_settop(l, 3);
+    lua_pushnil(l);
+
+    BonesGetCore()->getPixmapProxy()->isTransparent(
+        lua_touserdata(l, 1),
+        Utils::ToInt(lua_tointeger(l, 2)),
+        Utils::ToInt(lua_tointeger(l, 3)));
+    return 1;
+}
+
+static int PixmapRelease(lua_State * l)
+{
+    if (lua_gettop(l) != 1)
+        BonesGetCore()->getPixmapProxy()->release(lua_touserdata(l, 1));
     return 0;
 }
 
@@ -172,21 +405,78 @@ bool LuaContext::StartUp()
         lua_setfield(state, -2, kCO2LOTable);
         lua_newtable(state);
         lua_setfield(state, -2, kCacheEvent);
+        //resource
+        lua_newtable(state);
+        lua_pushcfunction(state, &ResourceAddPixmap);
+        lua_setfield(state, -2, kMethodAddPixmap);
+        //lua_pushcfunction(state, &ResourceAddCursor);
+        //lua_setfield(state, -2, kMethodAddCursor);
+        lua_pushcfunction(state, &ResourceGetPixmap);
+        lua_setfield(state, -2, kMethodGetPixmap);
+        //lua_pushcfunction(state, &ResourceGetCursor);
+        //lua_setfield(state, -2, kMethodGetCursor);
+        lua_pushcfunction(state, &ResourceClean);
+        lua_setfield(state, -2, kMethodClean);
+        lua_setfield(state, -2, kResourceTable);
+        //path
+        lua_newtable(state);
+        lua_pushcfunction(state, &PathCreate);
+        lua_setfield(state, -2, kMethodCreate);
+        lua_pushcfunction(state, &PathMoveTo);
+        lua_setfield(state, -2, kMethodMoveTo);
+        lua_pushcfunction(state, &PathLineTo);
+        lua_setfield(state, -2, kMethodLineTo);
+        lua_pushcfunction(state, &PathQuadTo);
+        lua_setfield(state, -2, kMethodQuadTo);
+        lua_pushcfunction(state, &PathConicTo);
+        lua_setfield(state, -2, kMethodConicTo);
+        lua_pushcfunction(state, &PathCubicTo);
+        lua_setfield(state, -2, kMethodCubicTo);
+        lua_pushcfunction(state, &PathArcTo);
+        lua_setfield(state, -2, kMethodArcTo);
+        lua_pushcfunction(state, &PathClose);
+        lua_setfield(state, -2, kMethodClose);
+        lua_pushcfunction(state, &PathRelease);
+        lua_setfield(state, -2, kMethodRelease);
+        lua_setfield(state, -2, kPathTable);
+        //shader
+        lua_newtable(state);
+        lua_pushcfunction(state, &ShaderCreateLinearGradient);
+        lua_setfield(state, -2, kMethodCreateLinearGradient);
+        lua_pushcfunction(state, &ShaderCreateRadialGradient);
+        lua_setfield(state, -2, kMethodCreateRadialGradient);
+        lua_pushcfunction(state, &ShaderRelease);
+        lua_setfield(state, -2, kMethodRelease);
+        lua_setfield(state, -2, kShaderTable);
+        //pixmap
+        lua_newtable(state);
+        lua_pushcfunction(state, &PixmapCreate);
+        lua_setfield(state, -2, kMethodCreate);
+        //lua_pushcfunction(state, &PixmapAlloc);
+        //lua_setfield(state, -2, kMethodAlloc);
+        //lua_pushcfunction(state, &PixmapDecode);
+        //lua_setfield(state, -2, kMethodDecode);
+        lua_pushcfunction(state, &PixmapGetSize);
+        lua_setfield(state, -2, kMethodGetSize);
+        //lua_pushcfunction(state, &PixmapLock);
+        //lua_setfield(state, -2, kMethodLock);
+        //lua_pushcfunction(state, &PixmapUnlock);
+        //lua_setfield(state, -2, kMethodUnlock);
+        lua_pushcfunction(state, &PixmapErase);
+        lua_setfield(state, -2, kMethodErase);
+        lua_pushcfunction(state, &PixmapExtractSubset);
+        lua_setfield(state, -2, kMethodExtractSubset);
+        lua_pushcfunction(state, &PixmapIsTransparent);
+        lua_setfield(state, -2, kMethodIsTransparent);
+        lua_pushcfunction(state, &PixmapRelease);
+        lua_setfield(state, -2, kMethodRelease);
+        lua_setfield(state, -2, kPixmapTable);
 
         lua_pushcfunction(state, &BonesGetObject);
         lua_setfield(state, -2, kMethodGetObject);
 
-        lua_pushcfunction(state, &BonesGetPixmapSize);
-        lua_setfield(state, -2, kMethodGetPixmapSize);
-
-        lua_pushcfunction(state, &BonesCreateLinearGradient);
-        lua_setfield(state, -2, kMethodCreateLinearGradient);
-
-        lua_pushcfunction(state, &BonesCreateRadialGradient);
-        lua_setfield(state, -2, kMethodCreateRadialGradient);
-        
-        lua_pushcfunction(state, &BonesDestroyShader);
-        lua_setfield(state, -2, kMethodDestroyShader);
+        //lua_pushcfunction(state, &BonesGetPixmapSize);
+        //lua_setfield(state, -2, kMethodGetPixmapSize);
         
         lua_setglobal(state, kBonesTable);
     }

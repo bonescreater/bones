@@ -30,7 +30,6 @@
     <ClCompile Include="bones\lua_root.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
-    <ClCompile Include="bones\picture.cpp" />
     <ClCompile Include="bones\lua_animation.cpp">
       <Filter>lua\proxy</Filter>
     </ClCompile>
@@ -136,6 +135,12 @@
     <ClCompile Include="bones\core\core_imp.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="bones\utils.cpp">
+      <Filter>lua</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\simple_proxy.cpp">
+      <Filter>lua</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
@@ -170,7 +175,6 @@
       <Filter>lua\proxy</Filter>
     </ClInclude>
     <ClInclude Include="bones\bones_internal.h" />
-    <ClInclude Include="bones\picture.h" />
     <ClInclude Include="bones\lua_animation.h">
       <Filter>lua\proxy</Filter>
     </ClInclude>
@@ -293,6 +297,12 @@
     </ClInclude>
     <ClInclude Include="bones\core\core_imp.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\utils.h">
+      <Filter>lua</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\simple_proxy.h">
+      <Filter>lua</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

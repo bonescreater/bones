@@ -14,7 +14,8 @@ s0:setStroke(true)
 s0:setColor(0xff00ff00)
 
 t0:setFont("Microsoft Yahei", 14, true, true, true, true)
-t0:setPosContent("bones ui中文", 20, 20, 30, 30, 40, 40, 50, 50, 60, 60, 70, 70, 80, 80, 90, 90, 100, 100, 110, 110)
+t0:setContent("bones ui中文")
+t0:setPos(10, 20, 20, 30, 30, 40, 40, 50, 50, 60, 60, 70, 70, 80, 80, 90, 90, 100, 100, 110, 110)
 t0:setSize(198, 198)
 t0:setLoc(1, 1)
 
@@ -27,7 +28,8 @@ s1:setStroke(true)
 s1:setColor(0xff00ff00)
 
 t1:setFont("Microsoft Yahei", 14, false, false, true, true)
-t1:setAutoContent("bones ui\n中\n文", 0, 0,  1)
+t1:setContent("bones ui\n中\n文")
+t1:setAuto(0, 1, 0)
 t1:setSize(198, 198)
 t1:setLoc(1, 1)
 
@@ -40,7 +42,8 @@ s2:setStroke(true)
 s2:setColor(0xff00ff00)
 
 t2:setFont("Microsoft Yahei", 14, false, false, true, true)
-t2:setAutoContent("bones ui\n中\n文", 0, 2,  1)
+t2:setContent("bones ui\n中\n文")
+t2:setAuto(2, 1, 0)
 t2:setSize(198, 198)
 t2:setLoc(1, 1)
 
@@ -53,7 +56,8 @@ s3:setStroke(true)
 s3:setColor(0xff00ff00)
 
 t3:setFont("Microsoft Yahei", 14, false, false, true, true)
-t3:setAutoContent("bones ui\n中\n文", 0, 1,  1)
+t3:setContent("bones ui\n中\n文")
+t3:setAuto(1, 1, 0)
 t3:setSize(198, 198)
 t3:setLoc(1, 1)
 
@@ -66,7 +70,8 @@ s4:setStroke(true)
 s4:setColor(0xff00ff00)
 
 t4:setFont("Microsoft Yahei", 14, true, true, true, true)
-t4:setAutoContent("bones ui\n中文abcd大师法法大赛的发生打发似的", 10, 1, 2)
+t4:setContent("bones ui\n中文abcd大师法法大赛的发生打发似的")
+t4:setAuto(1, 2, 10)
 t4:setSize(198, 198)
 t4:setLoc(1, 1)
 
@@ -79,13 +84,14 @@ s5:setStroke(true)
 s5:setColor(0xff00ff00)
 
 t5:setFont("Microsoft Yahei", 14, true, true, true, true)
-t5:setAutoContent("bones ui\n中文abcd大师法法大赛的发生打发似的", 10, 1, 1)
+t5:setContent("bones ui\n中文abcd大师法法大赛的发生打发似的")
+t5:setAuto(1, 1, 10)
 t5:setSize(198, 198)
 t5:setLoc(1, 1)
 
-local shader = bones.createLinearGradient(0, 0, 40, 0, 2, 3, 0xffff0000, 0xff00ff00, 0xff0000ff, 0, 0.5, 1);
+local shader = bones.shader.createLinearGradient(0, 0, 40, 0, 2, 3, 0xffff0000, 0xff00ff00, 0xff0000ff, 0, 0.5, 1);
 t5:setColor(shader)
-bones.destroyShader(shader)
+bones.shader.release(shader)
 
 end
 

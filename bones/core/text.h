@@ -7,7 +7,9 @@
 
 class SkPaint;
 class SkShader;
+//内部使用vector<Scalar>来模拟SkPoint 保留这个声明 万一SkPoint 变为class 编译会有警告
 struct SkPoint;
+class SkPath;
 
 namespace bones
 {
@@ -54,9 +56,13 @@ public:
 
     void setColor(SkShader * shader);
 
-    void set(const wchar_t * text, Scalar space, Align align, Overflow of);
+    void set(const wchar_t * text);
 
-    void set(const wchar_t * text, const Point * ps);
+    void setAuto(Align align, Overflow of, Scalar space);
+
+    void setPos(const Point * ps, size_t count);
+
+    void setPath(const SkPath & path);
 
     void setDelegate(Delegate * delegate);
 
@@ -71,6 +77,8 @@ private:
     void drawPos(SkCanvas & canvas, SkPaint & paint);
 
     void drawAuto(SkCanvas & canvas, SkPaint & paint);
+
+    void drawPath(SkCanvas & canvas, SkPaint & paint);
 
     void adjustCache();
 
@@ -97,6 +105,7 @@ private:
     Font font_;
     Mode mode_;
     Scalar line_space_;
+    SkPath * path_;
     std::vector<SkPoint> * pts_;
 };
 

@@ -1,6 +1,8 @@
 ﻿#include "lua_text.h"
 #include "lua_context.h"
 #include "lua_check.h"
+#include "utils.h"
+
 #include "core/text.h"
 #include "core/encoding.h"
 
@@ -11,8 +13,9 @@ static const char * kMetaTableText = "__mt_text";
 
 static const char * kMethodSetFont = "setFont";
 static const char * kMethodSetColor = "setColor";
-static const char * kMethodSetAutoContent = "setAutoContent";
-static const char * kMethodSetPosContent = "setPosContent";
+static const char * kMethodSetContent = "setContent";
+static const char * kMethodSetAuto = "setAuto";
+static const char * kMethodSetPos = "setPos";
 
 static int SetFont(lua_State * l)
 {
@@ -52,9 +55,9 @@ static int SetColor(lua_State * l)
     return 0;
 }
 
-static int SetAutoContent(lua_State * l)
+static int SetContent(lua_State * l)
 {
-    lua_settop(l, 5);
+    lua_settop(l, 2);
     lua_pushnil(l);
     lua_copy(l, 1, -1);
     LuaText * text = static_cast<LuaText *>(
@@ -62,25 +65,36 @@ static int SetAutoContent(lua_State * l)
     if (text)
     {
         const char * utf8 = lua_tostring(l, 2);
-        auto ls = static_cast<BonesScalar>(lua_tonumber(l, 3));
-        auto align = static_cast<BonesText::Align>(lua_tointeger(l, 4));
-        auto of = static_cast<BonesText::OverFlow>(lua_tointeger(l, 5));     
         if (utf8)
-        {
-            auto str = Encoding::FromUTF8(utf8);
-            text->setAutoContent(str.data(), ls, align, of);
-        }          
+            text->setContent(Encoding::FromUTF8(utf8).data());
         else
-            text->setAutoContent(nullptr, ls, align, of);
+            text->setContent(nullptr);
+    }
+    return 0;
+}
+
+static int SetAuto(lua_State * l)
+{
+    lua_settop(l, 4);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaText * text = static_cast<LuaText *>(
+        LuaContext::CallGetCObject(l));
+    if (text)
+    {      
+        auto align = static_cast<BonesText::Align>(lua_tointeger(l, 2));
+        auto of = static_cast<BonesText::OverFlow>(lua_tointeger(l, 3));     
+        auto ls = static_cast<BonesScalar>(lua_tonumber(l, 4));
+        text->setAuto(align, of, ls);
     }    
     return 0;
 }
 
-static int SetPosContent(lua_State * l)
+static int SetPos(lua_State * l)
 {
     auto count = lua_gettop(l);
 
-    if (count >= 2)
+    if (count > 2)
     {
         lua_pushnil(l);
         lua_copy(l, 1, -1);
@@ -88,29 +102,19 @@ static int SetPosContent(lua_State * l)
             LuaContext::CallGetCObject(l));
         if (text)
         {
-            const char * utf8 = lua_tostring(l, 2);
-            if (utf8)
-            {
-                auto str = Encoding::FromUTF8(utf8);
                 std::vector<BonesPoint> bps;
+                size_t pos_count = static_cast<size_t>(lua_tointeger(l, 2));
+                lua_settop(l, pos_count * 2 + 2);
 
-                if (str.length() * 2 + 2 == count)
-                {//pts和text匹配
-                    for (int i = 3; i <= count; i = i + 2)
-                    {
-                        BonesPoint bp ={ 
-                            static_cast<BonesScalar>(lua_tonumber(l, i)),
-                            static_cast<BonesScalar>(lua_tonumber(l, i + 1))
-                        };
-                        bps.push_back(bp);
-                    }
-                    text->setPosContent(str.data(), &bps[0]);
+                for (int i = 3; i <= count; i = i + 2)
+                {
+                    BonesPoint bp ={ 
+                        static_cast<BonesScalar>(lua_tonumber(l, i)),
+                        static_cast<BonesScalar>(lua_tonumber(l, i + 1))
+                    };
+                    bps.push_back(bp);
                 }
-                else
-                    BLG_ERROR << kMethodSetPosContent << " params invalid";
-            }
-            else
-                text->setPosContent(nullptr, nullptr);
+                text->setPos(pos_count, &bps[0]);
         }
     }
 
@@ -134,11 +138,14 @@ void LuaText::createMetaTable(lua_State * l)
         lua_pushcfunction(l, &SetColor);
         lua_setfield(l, -2, kMethodSetColor);
 
-        lua_pushcfunction(l, &SetAutoContent);
-        lua_setfield(l, -2, kMethodSetAutoContent);
+        lua_pushcfunction(l, &SetContent);
+        lua_setfield(l, -2, kMethodSetContent);
 
-        lua_pushcfunction(l, &SetPosContent);
-        lua_setfield(l, -2, kMethodSetPosContent);
+        lua_pushcfunction(l, &SetAuto);
+        lua_setfield(l, -2, kMethodSetAuto);
+
+        lua_pushcfunction(l, &SetPos);
+        lua_setfield(l, -2, kMethodSetPos);
     }
 }
 
@@ -157,7 +164,12 @@ void LuaText::setColor(BonesShader shader)
     object_->setColor(static_cast<SkShader *>(shader));
 }
 
-void LuaText::setAutoContent(const wchar_t * str, BonesScalar ls, Align align, OverFlow of)
+void LuaText::setContent(const wchar_t * str)
+{
+    object_->set(str);
+}
+
+void LuaText::setAuto(Align align, OverFlow of, BonesScalar ls)
 {
     Text::Overflow tof = Text::kNone;
     if (kWordWrap == of)
@@ -171,23 +183,25 @@ void LuaText::setAutoContent(const wchar_t * str, BonesScalar ls, Align align, O
     else if (kRight == align)
         talign = Text::kRight;
 
-    object_->set(str, ls, talign, tof);
+    object_->setAuto(talign, tof, ls);
 }
 
-void LuaText::setPosContent(const wchar_t * str, const BonesPoint * pts)
+void LuaText::setPath(BonesPath path)
+{
+    object_->setPath(*Utils::ToSkPath(path));
+}
+
+void LuaText::setPos(size_t count, const BonesPoint * pts)
 {
     if (!pts)
-        object_->set(str, nullptr);
-    else if (!str)
-        object_->set(nullptr, nullptr);
+        object_->setPos(nullptr, 0);
     else
     {
         std::vector<Point> ps;
-        auto length = wcslen(str);
-        for (size_t i = 0; i < length; ++i)
+        for (size_t i = 0; i < count; ++i)
             ps.push_back(Point::Make(pts[i].x, pts[i].y));
 
-        object_->set(str, &ps[0]);
+        object_->setPos(&ps[0], count);
     }
 }
 
