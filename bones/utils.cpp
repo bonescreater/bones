@@ -40,6 +40,16 @@ Rect Utils::ToRect(const BonesRect & rect)
     return Rect::MakeLTRB(rect.left, rect.top, rect.right, rect.bottom);
 }
 
+BonesRect Utils::ToBonesRect(const Rect & rect)
+{
+    BonesRect br;
+    br.left = rect.left();
+    br.top = rect.top();
+    br.right = rect.right();
+    br.bottom = rect.bottom();
+    return br;
+}
+
 BonesColor Utils::ToBonesColor(lua_Integer i)
 {
     return static_cast<BonesColor>(i);

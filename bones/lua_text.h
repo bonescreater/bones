@@ -29,6 +29,8 @@ public:
 
     void setPath(BonesPath path) override;
 
+    BonesRect getAutoBounds() const override;
+
     LUA_HANDLER(Text);
 };
 

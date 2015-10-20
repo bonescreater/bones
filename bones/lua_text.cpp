@@ -16,6 +16,7 @@ static const char * kMethodSetColor = "setColor";
 static const char * kMethodSetContent = "setContent";
 static const char * kMethodSetAuto = "setAuto";
 static const char * kMethodSetPos = "setPos";
+static const char * kMethodGetAutoBounds = "getAutoBounds";
 
 static int SetFont(lua_State * l)
 {
@@ -121,6 +122,29 @@ static int SetPos(lua_State * l)
     return 0;
 }
 
+static int GetAutoBounds(lua_State * l)
+{
+    lua_settop(l, 1);
+    lua_pushnil(l);
+    lua_pushnil(l);
+    lua_pushnil(l);
+    lua_pushnil(l);
+
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaText * text = static_cast<LuaText *>(
+        LuaContext::CallGetCObject(l));
+    if (text)
+    {
+        auto r = text->getAutoBounds();
+        lua_pushnumber(l, r.left);
+        lua_pushnumber(l, r.top);
+        lua_pushnumber(l, r.right);
+        lua_pushnumber(l, r.bottom);
+    }
+    return 4;
+}
+
 LuaText::LuaText(Text * ob)
 :LuaObject(ob), notify_(nullptr)
 {
@@ -146,6 +170,10 @@ void LuaText::createMetaTable(lua_State * l)
 
         lua_pushcfunction(l, &SetPos);
         lua_setfield(l, -2, kMethodSetPos);
+
+        lua_pushcfunction(l, &GetAutoBounds);
+        lua_setfield(l, -2, kMethodGetAutoBounds);
+        
     }
 }
 
@@ -203,6 +231,11 @@ void LuaText::setPos(size_t count, const BonesPoint * pts)
 
         object_->setPos(&ps[0], count);
     }
+}
+
+BonesRect LuaText::getAutoBounds() const
+{
+    return Utils::ToBonesRect(object_->getAutoBounds());
 }
 
 }

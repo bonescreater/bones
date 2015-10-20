@@ -1085,6 +1085,11 @@ public:
     @warning setAuto setPos setPath不能同时起效 以最后设置的为准
     */
     virtual void setPath(BonesPath path) = 0;
+    /*!获得自动布局下文字显示区域
+    @return 文字显示区域
+    @note 如果字符串为空 或者非自动布局 则返回空矩形
+    */
+    virtual BonesRect getAutoBounds() const = 0;
     /*!设置鼠标事件回调
     @param[in] phase 事件阶段 仅监听指定阶段的事件
     @param[in] lis 事件监听接口

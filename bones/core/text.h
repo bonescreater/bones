@@ -66,6 +66,7 @@ public:
 
     void setDelegate(Delegate * delegate);
 
+    Rect getAutoBounds() const;
     const char * getClassName() const override;
 protected:
     DelegateBase * delegate() override;

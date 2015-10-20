@@ -1,11 +1,12 @@
 ﻿#include "text.h"
 #include "encoding.h"
 #include "helper.h"
-
+#include "rect.h"
 #include "SkCanvas.h"
 #include "SkShader.h"
 
 #include "css_utils.h"
+
 
 namespace bones
 {
@@ -55,6 +56,47 @@ Text::~Text()
 void Text::setDelegate(Delegate * delegate)
 {
     delegate_ = delegate;
+}
+
+Rect Text::getAutoBounds() const
+{
+    Rect bounds;
+    if (!content_.empty() && kAuto == mode_)
+    {
+        SkPaint paint;
+        Helper::ToSkPaint(font_, paint);
+        paint.setColor(color_);
+        paint.setShader(shader_);
+        paint.setTextAlign(ToSkPaintStyle(align_));
+
+        Scalar max_width = 0;
+        Scalar width = 0;
+        size_t line_size = 0;
+        size_t i = 0;
+        size_t j = 0;
+        for (; i < content_.size(); ++i)
+        {
+            if ('\n' == content_[i])
+            {
+                width = paint.measureText(content_.data() + j, 
+                    (i - j) * sizeof(content_[0]));
+                if (width > max_width)
+                    max_width = width;
+                line_size++;
+                j = i + 1;
+            }
+        }
+        width = paint.measureText(content_.data() + j, 
+            (i - j) * sizeof(content_[0]));
+        if (width > max_width)
+            max_width = width;
+        line_size++;
+
+        Scalar height = GetTextHeight(paint) * line_size +
+            line_space_ * (line_size - 1);
+        bounds.setXYWH(0, 0, max_width, height);
+    }
+    return bounds;
 }
 
 const char * Text::getClassName() const

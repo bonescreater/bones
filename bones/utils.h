@@ -30,6 +30,8 @@ public:
 
     static Rect ToRect(const BonesRect & rect);
 
+    static BonesRect ToBonesRect(const Rect & rect);
+
     template<class T>
     static BonesScalar ToBonesScalar(T t)
     {
