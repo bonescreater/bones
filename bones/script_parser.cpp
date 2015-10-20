@@ -36,8 +36,8 @@ static const char * kStrNotify = "notify";
 static int ScriptCB(lua_State * l)
 {
     static const int kStatckArgCount = 10;
-    BonesScriptArg stack_args[kStatckArgCount] = { (BonesScriptArg::Type)0, 0 };
-    BonesScriptArg * args = stack_args;
+    BonesObject::ScriptArg stack_args[kStatckArgCount];
+    BonesObject::ScriptArg * args = stack_args;
 
     auto param_count = lua_gettop(l);
     if (param_count <= 0)
@@ -48,40 +48,15 @@ static int ScriptCB(lua_State * l)
         
     size_t arg_count = param_count - 1;
     if (arg_count > kStatckArgCount)
-    {
-        args = new BonesScriptArg[arg_count];
-        memset(args, 0, sizeof(args[0]) * arg_count);
-    }
+        args = new BonesObject::ScriptArg[arg_count];
+
+    memset(args, 0, sizeof(args[0]) * arg_count);
         
     //参数转化
     int j = 0;
     for (auto i = 2; i <= param_count; ++i)
     {
-        switch (lua_type(l, i))
-        {
-        case LUA_TNIL:
-            args[j].type = BonesScriptArg::kNill;
-            break;
-        case LUA_TBOOLEAN:
-            args[j].boolean = !!lua_toboolean(l, i);
-            args[j].type = BonesScriptArg::kBoolean;
-            break;
-        case LUA_TSTRING:
-            args[j].str = lua_tostring(l, i);
-            args[j].type = BonesScriptArg::kString;
-            break;
-        case LUA_TNUMBER:
-            args[j].number = lua_tonumber(l, i);
-            args[j].type = BonesScriptArg::kNumber;
-            break;
-        case LUA_TLIGHTUSERDATA:
-        case LUA_TUSERDATA:
-            args[j].ud = (void *)lua_touserdata(l, i);
-            args[j].type = BonesScriptArg::kUserData;
-            break;
-        default:
-            break;
-        }
+        args[j] = LuaContext::GetScriptArg(l, i);
         j++;
     }
     //获取sender
@@ -90,13 +65,17 @@ static int ScriptCB(lua_State * l)
     auto * sender = static_cast<BonesObject *>(LuaContext::CallGetCObject(l));
 
     assert(sender);
-    BonesScriptListener * lis = (BonesScriptListener *)lua_touserdata(l, lua_upvalueindex(1));
-    auto count = lis->onEvent(sender, args, arg_count);
+    auto lis = (BonesObject::ScriptListener *)lua_touserdata(l, lua_upvalueindex(1));
+    BonesObject::ScriptArg * ret = nullptr;
+    size_t ret_count = 0;
+    lis->onEvent(sender, args, arg_count, &ret, ret_count);
+    for (size_t i = 0; i < ret_count; ++i)
+        LuaContext::PushScriptArg(l, ret[i]);
 
     if (args != stack_args)
         delete[] args;
 
-    return count;
+    return ret_count;
 }
 
 ScriptParser::ScriptParser()
@@ -411,7 +390,36 @@ View * ScriptParser::getObject(BonesObject * bo)
     return nullptr;
 }
 
-void ScriptParser::listen(BonesObject * bo, const char * name, BonesScriptListener * listener)
+void ScriptParser::scriptSet(BonesObject * bo, const char * name,
+    BonesObject::ScriptListener * listener)
+{
+    if (!bo || !name)
+        return;
+
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, bo);
+    if (lua_istable(l, -1))
+    {
+        lua_pushstring(l, name);
+        if (listener)
+        {
+            //创建1个闭包
+            lua_pushlightuserdata(l, listener);
+            lua_pushcclosure(l, &ScriptCB, 1);
+        }
+        else
+            lua_pushnil(l);
+        lua_settable(l, -3);
+    }
+    else
+        BLG_ERROR << "scriptSet::unknown bones object";
+
+    lua_pop(l, 1);
+}
+
+void ScriptParser::scriptSet(BonesObject * bo, const char * name,
+    BonesObject::ScriptArg arg)
 {
     if (!bo || !name)
         return;
@@ -420,41 +428,90 @@ void ScriptParser::listen(BonesObject * bo, const char * name, BonesScriptListen
     auto l = LuaContext::State();
     LUA_STACK_AUTO_CHECK(l);
     LuaContext::GetLOFromCO(l, bo);
-    lua_pushstring(l, name);
-    if (listener)
+    if (lua_istable(l, -1))
     {
-        //创建1个闭包
-        lua_pushlightuserdata(l, listener);
-        lua_pushcclosure(l, &ScriptCB, 1);
-
+        lua_pushstring(l, name);
+        LuaContext::PushScriptArg(l, arg);
+        lua_settable(l, -3);
     }
     else
-        lua_pushnil(l);
-    lua_settable(l, -3);
+        BLG_ERROR << "scriptSet::unknown bones object";
+
     lua_pop(l, 1);
 }
 
-void ScriptParser::push(BonesScriptArg * arg)
+void ScriptParser::scriptInvoke(BonesObject * bo, const char * name,
+    BonesObject::ScriptArg * param, size_t param_count,
+    BonesObject::ScriptArg * ret, size_t ret_count)
 {
-    if (!arg)
+    if (!bo || !name)
         return;
+
+    using namespace bones;
     auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK_COUNT(l, 1);
-    switch (arg->type)
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, bo);
+    if (lua_istable(l, -1))
     {
-    case BonesScriptArg::kString:
-        lua_pushstring(l, arg->str);
-        break;
-    case BonesScriptArg::kNumber:
-        lua_pushnumber(l, arg->number);
-        break;
-    case BonesScriptArg::kBoolean:
-        lua_pushboolean(l, arg->boolean);
-        break;
-    case BonesScriptArg::kUserData:
-        lua_pushlightuserdata(l, arg->ud);
-        break;
+        lua_getfield(l, -1, name);
+        if (param && param_count)
+        {
+            for (size_t i = 0; i < param_count; ++i)
+                LuaContext::PushScriptArg(l, param[i]);
+        }
+        auto count = LuaContext::SafeLOPCall(l, param_count, LUA_MULTRET);
+        if (ret && ret_count)
+        {
+            if (ret_count >= (size_t)count)
+                ret_count = count;
+            else//ret数组过小
+                BLG_ERROR << "scriptInvoke 'ret' overflow";
+            for (size_t i = 0; i < ret_count; ++i)
+                ret[i] = LuaContext::GetScriptArg(l, -count + i);
+        } 
+        lua_pop(l, count);
     }
+    else
+        BLG_ERROR << "scriptInvoke::unknown bones object";
+
+    lua_pop(l, 1);
+}
+
+void ScriptParser::scriptInvoke(BonesObject * bo, const char * name,
+    BonesObject::ScriptListener * lis,
+    BonesObject::ScriptArg * ret, size_t ret_count)
+{
+    if (!bo || !name)
+        return;
+
+    using namespace bones;
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, bo);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, name);
+        //创建一个闭包
+        lua_pushlightuserdata(l, lis);
+        lua_pushcclosure(l, &ScriptCB, 1);
+
+        auto count = LuaContext::SafeLOPCall(l, 1, LUA_MULTRET);
+        if (ret && ret_count)
+        {
+            if (ret_count >= (size_t)count)
+                ret_count = count;
+            else//ret数组过小
+                BLG_ERROR << "scriptInvoke 'ret' overflow";
+
+            for (size_t i = 0; i < ret_count; ++i)
+                ret[i] = LuaContext::GetScriptArg(l, -count + i);
+        }
+        lua_pop(l, count);
+    }
+    else
+        BLG_ERROR << "scriptInvoke::unknown bones object";
+
+    lua_pop(l, 1);
 }
 
 BonesObject::Animation ScriptParser::createAnimate(

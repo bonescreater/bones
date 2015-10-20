@@ -22,14 +22,17 @@ void ReadFile(const char * path, std::vector<char> &stream)
 }
 
 //响应 关闭按钮
-class Close : public BonesScriptListener
+class Close : public BonesObject::ScriptListener
 {
 public:
-    int onEvent(BonesObject * ob, BonesScriptArg * arg, size_t arg_count)
+    void onEvent(BonesObject * ob, BonesObject::ScriptArg * arg, size_t arg_count,
+        BonesObject::ScriptArg ** ret, size_t ret_count) override
     {
         test_window->destroy();
         BonesGetCore()->cleanXML();
-        return 0;
+        //没有返回值
+        *ret = nullptr;
+        ret_count = 0;
     }
 };
 

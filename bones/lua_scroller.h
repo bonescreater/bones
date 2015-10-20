@@ -20,6 +20,10 @@ public:
 
     void setScrollPos(BonesScalar cur, bool horizontal) override;
 
+    void setWheelSpeed(float speed) override;
+
+    float getWheelSpeed() const override;
+
     void onScrollRange(Scroller * sender,
                        Scalar min_pos,
                        Scalar max_pos,

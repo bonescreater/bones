@@ -80,10 +80,6 @@ public:
 
     View * getObject(BonesObject *);
 
-    void listen(BonesObject * bo, const char * name, BonesScriptListener * listener);
-
-    void push(BonesScriptArg * arg);
-
     BonesObject::Animation createAnimate(
         BonesObject * target,
         uint64_t interval, uint64_t due,
@@ -105,6 +101,21 @@ public:
     void stopAllAnimate(BonesObject * ani, bool toend);
 
     const char * getID(BonesObject * bob);
+
+    void scriptSet(BonesObject * bo, const char * name, 
+        BonesObject::ScriptListener * listener);
+
+    void scriptSet(BonesObject * bo, const char * name, 
+        BonesObject::ScriptArg arg);
+
+    void scriptInvoke(BonesObject * bo, const char * name,
+        BonesObject::ScriptArg * param, size_t param_count,
+        BonesObject::ScriptArg * ret, size_t ret_count);
+
+    void scriptInvoke(BonesObject * bo, const char * name,
+        BonesObject::ScriptListener * lis,
+        BonesObject::ScriptArg * ret, size_t ret_count);
+
 private:
     void handleRoot(Root * ob);
 

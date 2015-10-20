@@ -14,6 +14,7 @@ namespace bones
 static const char * kBonesTable = "bones";
 static const char * kCO2LOTable = "__co2lo";
 static const char * kCacheEvent = "__event__cache";
+static const char * kCacheOnPrepare = "__onPrepare";
 
 static const char * kResourceTable = "resource";
 static const char * kPathTable = "path";
@@ -49,11 +50,27 @@ static const char * kMethodIsTransparent = "isTransparent";
 
 static const char * kMethodRelease = "release";
 static const char * kMethodGetObject = "getObject";
-
+static const char * kMethodCleanObject = "cleanObject";
+static const char * kMethodCreateObject = "createObject";
 
 
 static lua_State * state = nullptr;
 
+class LuaObjectListener : public BonesObjectListener
+{
+public:
+    void onPrepare(BonesObject * ob)
+    {
+        auto l = LuaContext::State();
+        LUA_STACK_AUTO_CHECK(l);
+        lua_getglobal(l, kBonesTable);
+        lua_getfield(l, -1, kCacheOnPrepare);
+        LuaContext::SafeLOPCall(l, 0, 0);
+        lua_pop(l, 1);
+    }
+};
+
+static LuaObjectListener lo;
 //(id) || (ob, id)
 static int BonesGetObject(lua_State * l)
 {
@@ -79,6 +96,50 @@ static int BonesGetObject(lua_State * l)
     }
     return 1;
 }
+
+static int BonesCreateObject(lua_State * l)
+{
+    lua_settop(l, 6);
+    lua_pushnil(l);
+    BonesObject * parent = nullptr;
+    int idx = 1;
+    if (lua_istable(l, 1))
+    {
+        idx = 2;
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        parent = static_cast<BonesObject *>(LuaContext::CallGetCObject(l));
+    }
+    const char * label = lua_tostring(l, idx);
+    const char * id = lua_tostring(l, idx + 1);
+    const char * class_name = lua_tostring(l, idx + 2);
+    const char * group_id = lua_tostring(l, idx + 3);
+    //onPrepare 放到bones中去
+    lua_getglobal(l, kBonesTable);
+    lua_pushnil(l);
+    lua_copy(l, idx + 4, -1);
+    lua_setfield(l, -2, kCacheOnPrepare);
+    lua_pop(l, 1);
+
+    auto bo = BonesGetCore()->createObject(parent, label, id, class_name, group_id, &lo);
+    LuaContext::GetLOFromCO(l, bo);
+    return 1;
+}
+
+static int BonesCleanObject(lua_State * l)
+{
+    lua_settop(l, 1);
+    if (lua_istable(l, 1))
+    {
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        auto ob = static_cast<BonesObject *>(LuaContext::CallGetCObject(l));
+        if (ob)
+            BonesGetCore()->cleanObject(ob);
+    }
+    return 0;
+}
+
 
 static int ShaderCreateLinearGradient(lua_State * l)
 {//(begin.x, begin.y, end.x, end.y, mode, count, color..., pos...)
@@ -323,11 +384,11 @@ static int PathRelease(lua_State * l)
     return 0;
 }
 
-static int PixmapCreate(lua_State * l)
-{
-    lua_pushlightuserdata(l, BonesGetCore()->getPixmapProxy()->create());
-    return 1;
-}
+//static int PixmapCreate(lua_State * l)
+//{
+//    lua_pushlightuserdata(l, BonesGetCore()->getPixmapProxy()->create());
+//    return 1;
+//}
 //pixmap
 static int PixmapGetSize(lua_State * l)
 {
@@ -385,12 +446,12 @@ static int PixmapIsTransparent(lua_State * l)
     return 1;
 }
 
-static int PixmapRelease(lua_State * l)
-{
-    if (lua_gettop(l) != 1)
-        BonesGetCore()->getPixmapProxy()->release(lua_touserdata(l, 1));
-    return 0;
-}
+//static int PixmapRelease(lua_State * l)
+//{
+//    if (lua_gettop(l) != 1)
+//        BonesGetCore()->getPixmapProxy()->release(lua_touserdata(l, 1));
+//    return 0;
+//}
 
 bool LuaContext::StartUp()
 {
@@ -450,8 +511,8 @@ bool LuaContext::StartUp()
         lua_setfield(state, -2, kShaderTable);
         //pixmap
         lua_newtable(state);
-        lua_pushcfunction(state, &PixmapCreate);
-        lua_setfield(state, -2, kMethodCreate);
+        //lua_pushcfunction(state, &PixmapCreate);
+        //lua_setfield(state, -2, kMethodCreate);
         //lua_pushcfunction(state, &PixmapAlloc);
         //lua_setfield(state, -2, kMethodAlloc);
         //lua_pushcfunction(state, &PixmapDecode);
@@ -468,13 +529,18 @@ bool LuaContext::StartUp()
         lua_setfield(state, -2, kMethodExtractSubset);
         lua_pushcfunction(state, &PixmapIsTransparent);
         lua_setfield(state, -2, kMethodIsTransparent);
-        lua_pushcfunction(state, &PixmapRelease);
-        lua_setfield(state, -2, kMethodRelease);
+        //lua_pushcfunction(state, &PixmapRelease);
+        //lua_setfield(state, -2, kMethodRelease);
         lua_setfield(state, -2, kPixmapTable);
 
         lua_pushcfunction(state, &BonesGetObject);
         lua_setfield(state, -2, kMethodGetObject);
 
+        lua_pushcfunction(state, &BonesCreateObject);
+        lua_setfield(state, -2, kMethodCreateObject);
+
+        lua_pushcfunction(state, &BonesCleanObject);
+        lua_setfield(state, -2, kMethodCleanObject);
         //lua_pushcfunction(state, &BonesGetPixmapSize);
         //lua_setfield(state, -2, kMethodGetPixmapSize);
         
@@ -577,7 +643,7 @@ int LuaContext::SafeLOPCall(lua_State * l, int nargs, int nresults)
     {
         if (lua_pcall(l, nargs, nresults, 0))
         {
-            BLG_ERROR << lua_tostring(l, -1) << "\n";
+            BLG_ERROR << lua_tostring(l, -1);
             lua_pop(l, 1);
         }
     }
@@ -628,6 +694,13 @@ void * LuaContext::CallGetCObject(lua_State *l)
 {
     LUA_STACK_AUTO_CHECK_COUNT(l, -1);
     assert(lua_istable(l, -1));
+    if (!lua_istable(l, -1))
+    {
+        lua_pop(l, 1);
+        BLG_ERROR << "CallGetCObject::unknown lua object";
+        return nullptr;
+    }
+
     lua_getfield(l, -1, kMethodGetCObject);
     assert(lua_isfunction(l, -1));
     if (!lua_isfunction(l, -1))
@@ -640,6 +713,75 @@ void * LuaContext::CallGetCObject(lua_State *l)
     lua_pop(l, ret + 1);
     assert(ud);
     return ud;
+}
+
+void LuaContext::PushScriptArg(lua_State * l, BonesObject::ScriptArg arg)
+{
+    LUA_STACK_AUTO_CHECK_COUNT(l, 1);
+    switch (arg.type)
+    {
+    case BonesObject::ScriptArg::kNill:
+        lua_pushnil(l);
+        break;
+    case BonesObject::ScriptArg::kString:
+        lua_pushstring(l, arg.str);
+        break;
+    case BonesObject::ScriptArg::kInterger:
+        lua_pushinteger(l, arg.integer);
+        break;
+    case BonesObject::ScriptArg::kNumber:
+        lua_pushnumber(l, arg.number);
+        break;
+    case BonesObject::ScriptArg::kBoolean:
+        lua_pushboolean(l, arg.boolean);
+        break;
+    case BonesObject::ScriptArg::kUserData:
+        lua_pushlightuserdata(l, arg.ud);
+        break;
+    default:
+        assert(0);
+        lua_pushnil(l);
+        break;
+    }
+}
+
+BonesObject::ScriptArg LuaContext::GetScriptArg(lua_State * l, int idx)
+{
+    LUA_STACK_AUTO_CHECK(l);
+    BonesObject::ScriptArg arg;
+    switch (lua_type(l, idx))
+    {
+    case LUA_TNIL:
+        arg.type = BonesObject::ScriptArg::kNill;
+        break;
+    case LUA_TBOOLEAN:
+        arg.boolean = !!lua_toboolean(l, idx);
+        arg.type = BonesObject::ScriptArg::kBoolean;
+        break;
+    case LUA_TSTRING:
+        arg.str = lua_tostring(l, idx);
+        arg.type = BonesObject::ScriptArg::kString;
+        break;
+    case LUA_TNUMBER:
+        arg.number = lua_tonumber(l, idx);
+        arg.type = BonesObject::ScriptArg::kNumber;
+        break;
+    case LUA_TLIGHTUSERDATA:
+    case LUA_TUSERDATA:
+        arg.ud = (void *)lua_touserdata(l, idx);
+        arg.type = BonesObject::ScriptArg::kUserData;
+        break;
+    default:
+        arg.type = BonesObject::ScriptArg::kNill;
+        break;
+    }
+    //没有LUA_TINTEGER
+    if (lua_isinteger(l, idx))
+    {
+        arg.integer = lua_tointeger(l, idx);
+        arg.type = BonesObject::ScriptArg::kInterger;
+    }
+    return arg;
 }
 
 }

@@ -6,7 +6,7 @@ namespace bones
 
 
 Scroller::Scroller()
-:delegate_(nullptr)
+:delegate_(nullptr), speed_(4.0f)
 {
     container_ = new View;
     attachChildToBack(container_);
@@ -79,6 +79,16 @@ void Scroller::setScrollPos(Scalar cur, bool horizontal)
         delegate_ ? delegate_->onScrollPos(this, info->cur_pos, horizontal) : 0;
         inval();
     }
+}
+
+void Scroller::setWheelSpeed(float speed)
+{
+    speed_ = speed;
+}
+
+float Scroller::getWheelSpeed() const
+{
+    return speed_;
 }
 
 void Scroller::updateVInfo()
@@ -162,9 +172,9 @@ void Scroller::onWheel(WheelEvent & e)
         }
     }
     if (e.dx() != 0)
-        setScrollPos(h_info_.cur_pos - e.dx() / BONES_WHEEL_SPEED, true);
+        setScrollPos(h_info_.cur_pos - e.dx() / (WHEEL_DELTA / speed_), true);
     if (e.dy() != 0)
-        setScrollPos(v_info_.cur_pos - e.dy() / BONES_WHEEL_SPEED, false);
+        setScrollPos(v_info_.cur_pos - e.dy() / (WHEEL_DELTA / speed_), false);
 }
 
 }

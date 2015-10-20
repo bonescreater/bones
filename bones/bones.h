@@ -129,34 +129,8 @@ typedef uint32_t BonesColor;
 /*!颜色描述 ARGB格式 A:31-24 R:23-16 G:15-8 B:7-0 预乘后的颜色*/
 typedef uint32_t BonesPMColor;
 
-struct BonesScriptArg
-{
-    enum Type
-    {
-        kNill,
-        kString,
-        kNumber,
-        kBoolean,
-        kUserData,
-    };
-
-    Type type;
-    union
-    {
-        const char * str;
-        double number;
-        bool boolean;
-        void * ud;
-    };
-};
-
 class BonesObject;
-class BonesScriptListener
-{
-public:
-    virtual int onEvent(BonesObject * ob, BonesScriptArg * arg, size_t arg_count) = 0;
-};
-
+/*!event基类接口*/
 class BonesEvent
 {
 public:
@@ -366,6 +340,44 @@ public:
         */
         virtual void onEvent(Animation ani, BonesObject * ob, AnimationAction action) = 0;
     };
+    /*!C++与lua脚本交互的参数定义*/
+    struct ScriptArg
+    {
+        enum Type
+        {
+            kNill,
+            kString,
+            kInterger,
+            kNumber,
+            kBoolean,
+            kUserData,
+        };
+
+        Type type;
+        union
+        {
+            const char * str;
+            int64_t integer;
+            double number;
+            bool boolean;
+            void * ud;
+        };
+    };
+
+    class ScriptListener
+    {
+    public:
+        /*!脚本回调函数
+        @param[in] ob 标签
+        @param[in] param      回调函数参数数组
+        @param[in] param      回调函数参数数量
+        @param[out] ret       指向回调函数返回值数组
+        @param[out] ret_count 回调函数返回值数量
+        */
+        virtual void onEvent(BonesObject * ob, 
+                             ScriptArg * param, size_t param_count,
+                             ScriptArg ** ret, size_t ret_count) = 0;
+    };
 public:
     /*!标签的具体类型描述
     @return 标签的类型 与xml 标签一致 如BonesRoot 返回"root" BonesImage 返回"image"
@@ -383,10 +395,6 @@ public:
     @return 标签的根节点
     */
     virtual BonesObject * getRoot() = 0;
-
-    virtual void listen(const char * name, BonesScriptListener * listener) = 0;
-
-    virtual void push(BonesScriptArg * arg) = 0;
     /*!设置标签位置
     @param[in] loc 位置 相对于父的左上角 如果是root 则相对于(0, 0)
     @see BonesPoint
@@ -425,6 +433,13 @@ public:
     @note 默认接收焦点
     */
     virtual void setFocusable(bool focusable) = 0;
+    /*!设置标签是否可接收鼠标事件
+    @param[in] mouseable true则可接收 false不可接收
+    @note mouseable为true时 标签会发送hittest通知 hittest返回true
+          则标签作为鼠标事件的target， mouseable为false时标签不能作为鼠标事件的target
+          但子标签获取鼠标事件时 依旧可以接收到capturing 和bubbling的鼠标事件
+    */
+    virtual void setMouseable(bool mouseable) = 0;
     /*!测试点是否在标签内
     @param[in] x 水平方向坐标 相对于标签左上角
     @param[in] y 垂直方向坐标 相对于标签左上角
@@ -482,6 +497,35 @@ public:
                      false 停止定时器
     */
     virtual void stopAllAnimate(bool toend) = 0;
+    /*!脚本交互 设置标签的脚本成员函数
+    @param[in] name 脚本对象的成员名
+    @param[in] lis  脚本对象的值
+    */
+    virtual void scriptSet(const char * name, ScriptListener * lis) = 0;
+    /*!脚本交互 设置标签的脚本成员值
+    @param[in] name 脚本对象的成员名
+    @param[in] lis  脚本对象的值
+    */
+    virtual void scriptSet(const char * name, ScriptArg arg) = 0;
+    /*!脚本交互 以指定的参数调用脚本成员函数
+    @param[in] name 脚本成员名 必须指向一个脚本函数
+    @param[in] param 调用脚本的参数
+    @param[in] param_count 调用脚本的参数数量
+    @param[out] ret 脚本返回值
+    @param[out] ret_count 脚本返回值的数量
+    */
+    virtual void scriptInvoke(const char * name,
+        ScriptArg * param, size_t param_count,
+        ScriptArg * ret, size_t ret_count) = 0;
+    /*!脚本交互 以指定的参数调用脚本成员函数
+    @param[in] name 脚本成员名 必须指向一个脚本函数
+    @param[in] lis 调用脚本的参数
+    @param[out] ret 脚本返回值
+    @param[out] ret_count 脚本返回值的数量
+    */
+    virtual void scriptInvoke(const char * name,
+        ScriptListener * lis,
+        ScriptArg * ret, size_t ret_count) = 0;
 };
 
 /*!root 标签提供了与native window 交互的接口*/
@@ -1135,19 +1179,58 @@ public:
                                  BonesScalar cur_pos,
                                  bool horizontal) = 0;
     };
-
+    /*!设置子控件可显示的尺寸
+    @param[in] total 子控件可显示的尺寸
+    @param[in] horizontal true则为水平滚动属性 false为垂直滚动属性
+    @note scroller的size作为视口的尺寸 total 与视口的差值即为最大滚动范围
+    */
     virtual void setScrollInfo(BonesScalar total, bool horizontal) = 0;
-
+    /*!设置当前滚动值
+    @param[in] cur 当前滚动值
+    @param[in] horizontal true则为水平滚动属性 false为垂直滚动属性
+    */
     virtual void setScrollPos(BonesScalar cur, bool horizontal) = 0;
-
+    /*!设置滚动的速率
+    @param[in] speed 速率
+    @note 通常滚轮值是120的倍数 滚动的像素为倍数X速率 默认是4倍
+    */
+    virtual void setWheelSpeed(float speed) = 0;
+    /*!得到滚动的速率
+    @return 滚动速率
+    */
+    virtual float getWheelSpeed() const = 0;
+    /*!设置鼠标事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::MouseListener
+    */
     virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
-
+    /*!设置键盘事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::KeyListener
+    */
     virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
-
+    /*!设置焦点事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::FocusListener
+    */
     virtual void setListener(BonesEvent::Phase phase, FocusListener * lis) = 0;
-
+    /*!设置滚轮事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::WheelListener
+    */
     virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
-
+    /*!设置通知事件回调
+    @param[in] lis 事件监听接口
+    @see BonesHandler::NotifyListener
+    */
     virtual void setListener(NotifyListener * lis) = 0;
 };
 

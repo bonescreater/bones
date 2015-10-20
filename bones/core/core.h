@@ -25,7 +25,5 @@ typedef HANDLE Cursor;
 typedef HBITMAP Caret;
 typedef HWND Widget;
 
-#define BONES_WHEEL_SPEED (WHEEL_DELTA / 4.0f)
-
 }
 #endif

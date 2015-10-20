@@ -1,4 +1,5 @@
 ﻿#include "lua_scroller.h"
+#include "utils.h"
 
 namespace bones
 {
@@ -8,7 +9,8 @@ static const char * kMethodonScrollRange = "onScrollRange";
 static const char * kMethodonScrollPos = "onScrollPos";
 static const char * kMethodsetScrollInfo = "setScrollInfo";
 static const char * kMethodsetScrollPos = "setScrollPos";
-
+static const char * kMethodSetWheelSpeed = "setWheelSpeed";
+static const char * kMethodGetWheelSpeed = "getWheelSpeed";
 //(self, range, bool)
 static int SetScrollInfo(lua_State * l)
 {
@@ -39,6 +41,32 @@ static int SetScrollPos(lua_State * l)
     return 0;
 }
 
+static int SetWheelSpeed(lua_State * l)
+{
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaScroller * bob = static_cast<LuaScroller *>(
+        LuaContext::CallGetCObject(l));
+    if (bob)
+        bob->setWheelSpeed(Utils::ToBonesScalar(lua_tonumber(l, 2)));
+    return 0;
+}
+
+static int GetWheelSpeed(lua_State * l)
+{
+    lua_settop(l, 1);
+    lua_pushnil(l);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaScroller * bob = static_cast<LuaScroller *>(
+        LuaContext::CallGetCObject(l));
+    if (bob)
+        lua_pushnumber(l, bob->getWheelSpeed());
+    return 1;
+}
+
+
 LuaScroller::LuaScroller(Scroller * ob)
 :LuaObject(ob)
 {
@@ -54,6 +82,10 @@ void LuaScroller::createMetaTable(lua_State * l)
         lua_setfield(l, -2, kMethodsetScrollInfo);
         lua_pushcfunction(l, &SetScrollPos);
         lua_setfield(l, -2, kMethodsetScrollPos);
+        lua_pushcfunction(l, &SetWheelSpeed);
+        lua_setfield(l, -2, kMethodSetWheelSpeed);
+        lua_pushcfunction(l, &GetWheelSpeed);
+        lua_setfield(l, -2, kMethodGetWheelSpeed);
     }
 }
 
@@ -65,6 +97,16 @@ void LuaScroller::setScrollInfo(BonesScalar total, bool horizontal)
 void LuaScroller::setScrollPos(BonesScalar cur, bool horizontal)
 {
     object_->setScrollPos(cur, horizontal);
+}
+
+void LuaScroller::setWheelSpeed(float speed)
+{
+    object_->setWheelSpeed(speed);
+}
+
+float LuaScroller::getWheelSpeed() const
+{
+    return object_->getWheelSpeed();
 }
 
 void LuaScroller::onScrollRange(Scroller * sender,

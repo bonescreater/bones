@@ -41,6 +41,10 @@ public:
 
     void setScrollPos(Scalar cur, bool horizontal);
 
+    void setWheelSpeed(float speed);
+
+    float getWheelSpeed() const;
+
     View * getContainer();
 
     const char * getClassName() const override;
@@ -58,6 +62,7 @@ private:
     Delegate * delegate_;
     ScrollInfo v_info_;
     ScrollInfo h_info_;
+    float speed_;
 };
 
 

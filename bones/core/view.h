@@ -25,6 +25,7 @@ private:
     {
         uint32_t visible : 1;
         uint32_t focusable : 1;
+        uint32_t mouseable : 1;//true则接收target鼠标事件
         uint32_t clip : 1;//true 则子孙全部限制在自己的范围之内
     };
 public:
@@ -70,9 +71,13 @@ public:
 
     void setFocusable(bool focusable);
 
+    void setMouseable(bool mouseable);
+
     bool visible() const;
 
     bool focusable() const;
+
+    bool mouseable() const;
 
     bool clip() const;
 

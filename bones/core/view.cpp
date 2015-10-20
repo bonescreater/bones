@@ -15,6 +15,7 @@ View::View() :tag_(kInvalidTag), group_id_(-1), children_count_(0), opacity_(1.0
     flag_.focusable = true;
     flag_.visible = true;
     flag_.clip = true;
+    flag_.mouseable = true;
 }
 
 View::~View()
@@ -136,13 +137,18 @@ void View::setVisible(bool vis)
     {
         flag_.visible = vis;
         propagateVisibleNotifications();
+        inval();
     }
-    
 }
 
 void View::setFocusable(bool focusable)
 {
     flag_.focusable = focusable;
+}
+
+void View::setMouseable(bool mouseable)
+{
+    flag_.mouseable = mouseable;
 }
 
 bool View::visible() const
@@ -153,6 +159,11 @@ bool View::visible() const
 bool View::focusable() const
 {
     return flag_.focusable;
+}
+
+bool View::mouseable() const
+{
+    return flag_.mouseable;
 }
 
 bool View::clip() const
@@ -763,7 +774,7 @@ View * View::hitTest(const Point & pt)
         child = child->getPrevSibling();
     }
 
-    if (contain && onHitTest(pt))
+    if (contain && mouseable() && onHitTest(pt))
         target = this;
     return target;
 }

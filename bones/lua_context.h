@@ -32,6 +32,10 @@ public:
     static void SetGetCObject(lua_State * l, void * co);
 
     static void * CallGetCObject(lua_State *l);
+
+    static void PushScriptArg(lua_State * l, BonesObject::ScriptArg arg);
+
+    static BonesObject::ScriptArg GetScriptArg(lua_State * l, int idx);
 };
 
 }

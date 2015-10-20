@@ -148,16 +148,6 @@ public:
             static_cast<View *>(object_->getRoot()));
     }
 
-    void listen(const char * name, BonesScriptListener * listener) override
-    {
-        GetCoreInstance()->listen(this, name, listener);
-    }
-
-    void push(BonesScriptArg * arg) override
-    {
-        GetCoreInstance()->push(arg);
-    }
-
     float getOpacity() const override
     {
         return object_->getOpacity();
@@ -171,6 +161,11 @@ public:
     void setFocusable(bool focusable) override
     {
         return object_->setFocusable(focusable);
+    }
+
+    void setMouseable(bool mouseable) override
+    {
+        return object_->setMouseable(mouseable);
     }
     
     void setLoc(const BonesPoint & loc) override
@@ -267,6 +262,28 @@ public:
     {
         GetCoreInstance()->stopAllAnimate(this, toend);
     }
+    void scriptSet(const char * name, BonesObject::ScriptListener * lis) override
+    {
+        GetCoreInstance()->scriptSet(this, name, lis);
+    }
+    void scriptSet(const char * name, BonesObject::ScriptArg arg) override
+    {
+        GetCoreInstance()->scriptSet(this, name, arg);
+    }
+    void scriptInvoke(const char * name,
+        BonesObject::ScriptArg * param, size_t param_count,
+        BonesObject::ScriptArg * ret, size_t ret_count) override
+    {
+        GetCoreInstance()->scriptInvoke(this, name, param, param_count,
+            ret, ret_count);
+    }
+    void scriptInvoke(const char * name,
+        BonesObject::ScriptListener * lis,
+        BonesObject::ScriptArg * ret, size_t ret_count) override
+    {
+        GetCoreInstance()->scriptInvoke(this, name, lis,
+            ret, ret_count);
+    }
     // lua 封装模版
     void createLuaTable()
     {
@@ -316,6 +333,9 @@ public:
             
             lua_pushcfunction(l, &SetFocusable);
             lua_setfield(l, -2, kMethodSetFocusable);
+
+            lua_pushcfunction(l, &SetMouseable);
+            lua_setfield(l, -2, kMethodSetMouseable);
 
             lua_pushcfunction(l, &SetLoc);
             lua_setfield(l, -2, kMethodSetLoc);
@@ -448,6 +468,19 @@ public:
             bob->setFocusable(!!lua_toboolean(l, 2));
         return 0;
     }
+
+    static int SetMouseable(lua_State * l)
+    {
+        lua_settop(l, 2);
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        LuaObject * bob = static_cast<LuaObject *>(
+            LuaContext::CallGetCObject(l));
+        if (bob)
+            bob->setMouseable(!!lua_toboolean(l, 2));
+        return 0;
+    }
+    
 
     static int SetLoc(lua_State * l)
     {
