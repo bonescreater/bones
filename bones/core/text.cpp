@@ -36,9 +36,9 @@ static SkPaint::Align ToSkPaintStyle(Text::Align align)
 }
 
 Text::Text()
-:delegate_(nullptr), cache_dirty_(false), of_(kNone), align_(kCenter),
+:delegate_(nullptr), cache_dirty_(false), align_(kCenter),
 color_(BONES_RGB_BLACK), shader_(nullptr), mode_(kAuto), line_space_(0),
-pts_(nullptr), path_(nullptr)
+pts_(nullptr), path_(nullptr), ellipsis_(false), indent_(0)
 {
 
 }
@@ -58,43 +58,72 @@ void Text::setDelegate(Delegate * delegate)
     delegate_ = delegate;
 }
 
-Rect Text::getAutoBounds() const
+Rect Text::getFloatBounds(Scalar max_width) const
 {
     Rect bounds;
-    if (!content_.empty() && kAuto == mode_)
+    if (!content_.empty() && kFloat == mode_)
     {
         SkPaint paint;
-        Helper::ToSkPaint(font_, paint);
-        paint.setColor(color_);
-        paint.setShader(shader_);
-        paint.setTextAlign(ToSkPaintStyle(align_));
-
-        Scalar max_width = 0;
+        ToSkPaint(paint);
+        bool max_width_enable = max_width > 0;
+        Scalar bounds_height = 0;
+        Scalar bounds_width = 0;        
         Scalar width = 0;
-        size_t line_size = 0;
-        size_t i = 0;
-        size_t j = 0;
-        for (; i < content_.size(); ++i)
-        {
-            if ('\n' == content_[i])
+        if (!max_width_enable)
+        {//如果没有设置最大宽度
+            size_t i = 0;
+            size_t j = 0;
+            Scalar line_size = 0;
+            for (; i < content_.size(); ++i)
             {
-                width = paint.measureText(content_.data() + j, 
-                    (i - j) * sizeof(content_[0]));
-                if (width > max_width)
-                    max_width = width;
-                line_size++;
-                j = i + 1;
-            }
-        }
-        width = paint.measureText(content_.data() + j, 
-            (i - j) * sizeof(content_[0]));
-        if (width > max_width)
-            max_width = width;
-        line_size++;
+                if ('\n' == content_[i])
+                {
+                    width = paint.measureText(content_.data() + j, 
+                        (i - j) * sizeof(content_[0]));
+                    if (0 == j)//第一行
+                        width += indent_;
+                    if (bounds_width < width)
+                        bounds_width = width;
+                    line_size++;
 
-        Scalar height = GetTextHeight(paint) * line_size +
-            line_space_ * (line_size - 1);
-        bounds.setXYWH(0, 0, max_width, height);
+                    j = i + 1;
+                }
+            }
+            width = paint.measureText(content_.data() + j,
+                (i - j) * sizeof(content_[0]));
+            if (0 == j)//第一行
+                width += indent_;
+            if (bounds_width < width)
+                bounds_width = width;
+            line_size++;
+
+            bounds_height = GetTextHeight(paint) * line_size +
+                line_space_ * (line_size - 1);
+            
+        }
+        else
+        {//设置了最大宽度
+            Lines lines;
+            size_t i = 0;
+            size_t j = 0;
+            for (; i < content_.size(); ++i)
+            {
+                if ('\n' == content_[i])
+                {
+                    width = wordWrap(j, i - j, max_width, indent_, lines);
+                    if (bounds_width < width)
+                        bounds_width = width;
+
+                    j = i + 1;
+                }
+            }
+            width = wordWrap(j, i - j, max_width, indent_, lines);
+            if (bounds_width < width)
+                bounds_width = width;
+            bounds_height = GetTextHeight(paint) * lines_.size() +
+                line_space_ * (lines_.size() - 1);
+        }
+        bounds.setXYWH(0, 0, bounds_width, bounds_height);
     }
     return bounds;
 }
@@ -119,13 +148,28 @@ void Text::set(const wchar_t * text)
     inval();
 }
 
-void Text::setAuto(Align align, Overflow of, Scalar space)
+void Text::setLineSpace(Scalar space)
+{
+    line_space_ = space;
+    cache_dirty_ = true;
+    inval();
+}
+
+void Text::setAuto(Align align, bool ellipsis)
 {
     mode_ = kAuto;
 
-    of_ = of;
+    ellipsis_ = ellipsis;
     align_ = align;
-    line_space_ = space;
+    
+    cache_dirty_ = true;
+    inval();
+}
+
+void Text::setFloat(Scalar indent)
+{
+    mode_ = kFloat;
+    indent_ = indent;
     cache_dirty_ = true;
     inval();
 }
@@ -205,14 +249,13 @@ void Text::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
         return;
 
     SkPaint paint;
-    Helper::ToSkPaint(font_, paint);
-    paint.setColor(color_);
-    paint.setShader(shader_);
+    ToSkPaint(paint);
     paint.setAlpha(ClampAlpha(opacity, ColorGetA(color_)));
-    paint.setTextAlign(ToSkPaintStyle(align_));
 
     if (kAuto == mode_)
         drawAuto(canvas, paint);
+    else if (kFloat == mode_)
+        drawFloat(canvas, paint);
     else if (kPos == mode_)
         drawPos(canvas, paint);
     else if (kPath == mode_)
@@ -259,9 +302,41 @@ void Text::drawAuto(SkCanvas & canvas, SkPaint & paint)
     }
     for (auto iter = lines_.begin(); iter != lines_.end(); ++iter)
     {
-        auto bytelength = iter->size() * sizeof(wchar_t);
+        auto bytelength = iter->size() * sizeof(content_[0]);
         if (bytelength != 0)
             canvas.drawText(iter->data(), bytelength, x, base_line, paint);
+        base_line += line_height + line_space_;
+    }
+}
+
+void Text::drawFloat(SkCanvas & canvas, SkPaint & paint)
+{
+    SkPaint::FontMetrics fm;
+    paint.getFontMetrics(&fm);
+    auto line_height = GetTextHeight(paint);
+    auto base_line = 0 - fm.fTop;
+    
+    Scalar indent = indent_;
+    Scalar max_width = getWidth();
+    size_t first_line = 0;
+    while (max_width <= indent)
+    {
+        indent -= max_width;
+        first_line++;
+    }
+
+    for (size_t i = 0; i < lines_.size(); ++i)
+    {
+        auto & line = lines_[i];
+        auto bytelength = line.size() * sizeof(content_[0]);
+
+        Scalar x = 0;
+        if (first_line == i)
+            x = indent;
+
+        if (bytelength != 0)
+            canvas.drawText(line.data(), bytelength, x, base_line, paint);
+
         base_line += line_height + line_space_;
     }
 }
@@ -270,7 +345,7 @@ void Text::drawAuto(SkCanvas & canvas, SkPaint & paint)
 
 void Text::onSizeChanged()
 {
-    if (kAuto == mode_)
+    if (kAuto == mode_ || kFloat == mode_)
         cache_dirty_ = true;
     Area::onSizeChanged();
 }
@@ -284,11 +359,13 @@ void Text::adjustCache()
     if (content_.empty())
         return;
     if (kAuto == mode_)
-        breakToLine();
+        adjustEllipsisCache();
+    else if (kFloat == mode_)
+        adjustWordWrapCache();
     //kPos kPath不需要计算缓存
 }
 
-void Text::breakToLine()
+void Text::adjustWordWrapCache()
 {
     //支持\n换行
     size_t i = 0;
@@ -297,24 +374,35 @@ void Text::breakToLine()
     {
         if ('\n' == content_[i])
         {
-            if (kEllipsis == of_)
-                appendEllipsis(j, i - j);
-            else if (kWordWrap == of_)
-                wordWrap(j, i - j);
-            else
-                lines_.push_back(std::wstring(content_.data() + j, i - j));
-
+            wordWrap(j, i - j, getWidth(), indent_, lines_);
             j = i + 1;
         }
     }
+    wordWrap(j, i - j, getWidth(), indent_, lines_);
+}
 
-    if (kEllipsis == of_)
+void Text::adjustEllipsisCache()
+{
+    //支持\n换行
+    size_t i = 0;
+    size_t j = 0;
+    for (; i < content_.size(); ++i)
+    {
+        if ('\n' == content_[i])
+        {
+            if (ellipsis_)
+                appendEllipsis(j, i - j);
+            else
+                lines_.push_back(std::wstring(content_.data() + j, i - j));
+            j = i + 1;
+        }
+    }
+    if (ellipsis_)
         appendEllipsis(j, i - j);
-    else if (kWordWrap == of_)
-        wordWrap(j, i - j);
     else
         lines_.push_back(std::wstring(content_.data() + j, i - j));
 }
+
 
 void Text::appendEllipsis(size_t begin, size_t length)
 {
@@ -324,15 +412,12 @@ void Text::appendEllipsis(size_t begin, size_t length)
         return;
     }
     SkPaint paint;
-    Helper::ToSkPaint(font_, paint);
-    paint.setColor(color_);
-    paint.setShader(shader_);
-    paint.setTextAlign(ToSkPaintStyle(align_));
+    ToSkPaint(paint);
 
     std::vector<Scalar> widths;
     widths.resize(length);
     paint.getTextWidths(content_.data() + begin,
-        sizeof(wchar_t)* length, &widths[0]);
+        sizeof(content_[0])* length, &widths[0]);
     Scalar line_width = 0;
     Scalar max_width = getWidth();
     
@@ -365,25 +450,41 @@ void Text::appendEllipsis(size_t begin, size_t length)
        
 }
 
-void Text::wordWrap(size_t begin, size_t length)
+Scalar Text::wordWrap(size_t begin, size_t length,
+    Scalar max_width, Scalar indent, Lines & lines) const
 {
+    if (max_width <= 0)
+        return 0;
+
+    bool word_wrap = false;
+
+    Scalar my_max_width = max_width;
     SkPaint paint;
-    Helper::ToSkPaint(font_, paint);
-    paint.setColor(color_);
-    paint.setShader(shader_);
-    paint.setTextAlign(ToSkPaintStyle(align_));
+    ToSkPaint(paint);
 
     std::vector<Scalar> widths;
     widths.resize(length);
     paint.getTextWidths(content_.data() + begin,
-        sizeof(wchar_t)* length, &widths[0]);
+        sizeof(content_[0])* length, &widths[0]);
     Scalar line_width = 0;
-    Scalar max_width = getWidth();
+    if (lines.empty())
+    {//正在解析第一行 要加上首行缩进
+        while (my_max_width <= indent)//如果缩进过大则使用空行
+        {
+            lines.push_back(L"");
+            word_wrap = true;
+
+            indent -= my_max_width;
+        } 
+        
+        my_max_width -= indent;
+    }
+
     size_t line_start = 0;
     for (size_t i = 0; i < widths.size();  ++i)
     {
         line_width += widths[i];
-        if (line_width > max_width)
+        if (line_width > my_max_width)
         {
             size_t line_length = i - line_start;
             std::wstring line;
@@ -399,7 +500,8 @@ void Text::wordWrap(size_t begin, size_t length)
                 line_start = i;
                 line_width = widths[i];
             }
-            lines_.push_back(line);                
+            lines.push_back(line);
+            word_wrap = true;
         }
     }
 
@@ -408,9 +510,18 @@ void Text::wordWrap(size_t begin, size_t length)
     {
         std::wstring line;
         line.append(content_.data() + begin + line_start, line_length);
-        lines_.push_back(line);
+        lines.push_back(line);
     }
-        
+    //indent 是负值时 首行宽度可能是大于max_width 但应该返回max_width
+    return word_wrap ? max_width : line_width;
+}
+
+void Text::ToSkPaint(SkPaint & paint) const
+{
+    Helper::ToSkPaint(font_, paint);
+    paint.setColor(color_);
+    paint.setShader(shader_);
+    paint.setTextAlign(ToSkPaintStyle(align_));
 }
 
 BONES_CSS_TABLE_BEGIN(Text, View)

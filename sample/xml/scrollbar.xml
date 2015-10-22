@@ -2,26 +2,11 @@
 <bones>
   <head>
     <link type ='script' module ='scrollbar' file ='scrollbar.lua'></link>
-    <style>
-      .slider_normal
-      {
-      color:#ff00ff00;
-      rect: 0px 0px;
-      }
-      .scrollbar_bg
-      {
-      color:#ffff0000;
-      rect: 0px 0px;
-      }
-    </style>
   </head>
   <body>
+    <!--底色-->
     <shape>
-      <!--底色-->
-      <shape class='scrollbar_bg'></shape>
-      <!--滑块-->
-      <shape class ='slider_normal'></shape>
-      <!--滑块响应区域与滑块的区域一致-->
+      <!--滑块区域-->
       <shape>
         <event name ="onMouseDown" phase ="target" module ="scrollbar" func ="onSliderMouseDown"></event>
         <event name ="onMouseUp" phase ="target" module ="scrollbar" func ="onSliderMouseUp"></event>
@@ -29,7 +14,6 @@
         <event name ="onMouseLeave" phase ="target" module ="scrollbar" func ="onSliderMouseLeave"></event>
       </shape>
       <notify name ="onCreate" module ="scrollbar" func ="onCreate"></notify>
-      <!--底色跟area一样大-->
       <notify name ="onSizeChanged" module ="scrollbar" func ="onSizeChanged"></notify>
     </shape>
   </body>

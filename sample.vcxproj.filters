@@ -10,23 +10,23 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="sample\test.css" />
-    <None Include="sample\test.lua" />
     <None Include="sample\animate.lua">
       <Filter>animate</Filter>
-    </None>
-    <None Include="sample\scrollbar.lua">
-      <Filter>scroll</Filter>
     </None>
     <None Include="sample\scrollimg.lua">
       <Filter>scroll</Filter>
     </None>
+    <None Include="sample\xml\test.lua" />
+    <None Include="sample\xml\scrollbar.lua">
+      <Filter>scroll</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="sample\test.xml" />
-    <Xml Include="sample\scrollbar.xml">
+    <Xml Include="sample\scrollimg.xml">
       <Filter>scroll</Filter>
     </Xml>
-    <Xml Include="sample\scrollimg.xml">
+    <Xml Include="sample\xml\test.xml" />
+    <Xml Include="sample\xml\scrollbar.xml">
       <Filter>scroll</Filter>
     </Xml>
   </ItemGroup>

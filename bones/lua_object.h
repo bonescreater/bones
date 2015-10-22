@@ -374,6 +374,11 @@ public:
             lua_setfield(l, -2, kMethodResume);
             lua_pushcfunction(l, &StopAllAnimate);
             lua_setfield(l, -2, kMethodStopAll);
+
+            lua_pushcfunction(l, &AddNotify);
+            lua_setfield(l, -2, kMethodAddNotify);
+            lua_pushcfunction(l, &AddEvent);
+            lua_setfield(l, -2, kMethodAddEvent);
         }    
         return exist;
     }
@@ -728,6 +733,70 @@ public:
         auto bo = static_cast<LuaObject *>(
             LuaContext::CallGetCObject(l));
         GetCoreInstance()->stopAllAnimate(bo, !!lua_toboolean(l, 2));
+        return 0;
+    }
+
+    static int AddNotify(lua_State * l)
+    {//self, name func_code
+        lua_settop(l, 3);
+        if (lua_istable(l, 1))
+        {
+            lua_pushnil(l);
+            lua_copy(l, 1, -1);
+            lua_getfield(l, -1, kNotifyOrder);
+            if (!lua_istable(l, -1))
+            {
+                lua_pop(l, 1);
+                lua_newtable(l);
+                assert(lua_istable(l, -2));
+                lua_setfield(l, -2, kNotifyOrder);
+                lua_getfield(l, -1, kNotifyOrder);
+            }
+            const char * notify_name = lua_tostring(l, 2);
+            if (notify_name && lua_isfunction(l, 3))
+            {
+                lua_pushnil(l);
+                lua_copy(l, 3, -1);
+                lua_setfield(l, -2, notify_name);
+            }        
+        }
+        return 0;
+    }
+
+    static int AddEvent(lua_State * l)
+    {//self name phase func_code
+        lua_settop(l, 4);
+        if (lua_istable(l, 1))
+        {
+            lua_pushnil(l);
+            lua_copy(l, 1, -1);
+            lua_getfield(l, -1, kEventOrder);
+            if (!lua_istable(l, -1))
+            {
+                lua_pop(l, 1);
+                lua_newtable(l);
+                assert(lua_istable(l, -2));
+                lua_setfield(l, -2, kEventOrder);
+                lua_getfield(l, -1, kEventOrder);
+            }
+            auto phase = lua_tostring(l, 3);
+            auto name = lua_tostring(l, 2);
+            if (phase && name && lua_isfunction(l, 4))
+            {
+                lua_getfield(l, -1, phase);
+                if (!lua_istable(l, -1))
+                {
+                    lua_pop(l, 1);
+                    lua_newtable(l);
+                    assert(lua_istable(l, -2));
+                    lua_setfield(l, -2, phase);
+                    lua_getfield(l, -1, phase);
+                }
+                lua_pushnil(l);
+                lua_copy(l, 4, -1);
+                lua_setfield(l, -2, name);
+            }      
+        }
         return 0;
     }
 protected:

@@ -89,17 +89,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="sample\animate.lua" />
-    <None Include="sample\scrollbar.lua" />
     <None Include="sample\scrollimg.lua" />
     <None Include="sample\test.css" />
-    <None Include="sample\test.lua" />
+    <None Include="sample\xml\scrollbar.lua" />
+    <None Include="sample\xml\test.lua" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="sample\scrollbar.xml" />
     <Xml Include="sample\scrollimg.xml" />
-    <Xml Include="sample\test.xml">
-      <SubType>Designer</SubType>
-    </Xml>
+    <Xml Include="sample\xml\scrollbar.xml" />
+    <Xml Include="sample\xml\test.xml" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sample\main.cpp" />

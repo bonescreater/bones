@@ -23,13 +23,17 @@ public:
 
     void setContent(const wchar_t * str) override;
 
-    void setAuto(Align align, OverFlow of, BonesScalar ls) override;
+    void setLineSpace(BonesScalar ls) override;
+
+    void setAuto(Align align, bool ellipsis) override;
+
+    void setFloat(BonesScalar indent) override;
 
     void setPos(size_t count, const BonesPoint * pts) override;
 
     void setPath(BonesPath path) override;
 
-    BonesRect getAutoBounds() const override;
+    BonesRect getFloatBounds(BonesScalar max_width) const override;
 
     LUA_HANDLER(Text);
 };

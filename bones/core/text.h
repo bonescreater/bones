@@ -24,19 +24,13 @@ public:
         kCenter,//!<中间对齐
         kRight,//!<右对齐
     };
-
-    enum Overflow
-    {
-        kNone,//超长不特殊处理
-        kWordWrap,//超长自动换行
-        kEllipsis,//超长以省略号代替
-    };
     typedef std::wstring Line;
     typedef std::vector<Line> Lines;
 private:
     enum Mode
     {
         kAuto,//自动布局， 支持自动换行什么的
+        kFloat,
         kPos,//pos 在指定的位置显示
         kPath,//通过path显示文字
     };
@@ -56,9 +50,13 @@ public:
 
     void setColor(SkShader * shader);
 
+    void setLineSpace(Scalar space);
+
     void set(const wchar_t * text);
 
-    void setAuto(Align align, Overflow of, Scalar space);
+    void setAuto(Align align, bool ellipsis);
+
+    void setFloat(Scalar indent);
 
     void setPos(const Point * ps, size_t count);
 
@@ -66,7 +64,8 @@ public:
 
     void setDelegate(Delegate * delegate);
 
-    Rect getAutoBounds() const;
+    Rect getFloatBounds(Scalar max_width) const;
+
     const char * getClassName() const override;
 protected:
     DelegateBase * delegate() override;
@@ -77,17 +76,25 @@ protected:
 private:
     void drawPos(SkCanvas & canvas, SkPaint & paint);
 
+    void drawFloat(SkCanvas & canvas, SkPaint & paint);
+
     void drawAuto(SkCanvas & canvas, SkPaint & paint);
 
     void drawPath(SkCanvas & canvas, SkPaint & paint);
 
     void adjustCache();
 
-    void breakToLine();
+    void adjustEllipsisCache();
+
+    void adjustWordWrapCache();
 
     void appendEllipsis(size_t begin, size_t length);
 
-    void wordWrap(size_t begin, size_t length);
+    Scalar wordWrap(size_t begin, size_t length, 
+        Scalar max_width, Scalar indent,
+        Lines & ls) const;
+
+    void ToSkPaint(SkPaint & paint) const;
 
     BONES_CSS_TABLE_DECLARE()
 
@@ -95,11 +102,9 @@ private:
 
     void setFont(const CSSParams & params);
 private:
-    Delegate * delegate_;
-    bool cache_dirty_;
+    Delegate * delegate_;  
     std::wstring content_;
     Lines lines_;
-    Overflow of_;
     Align align_;
     Color color_;
     SkShader * shader_;
@@ -108,6 +113,9 @@ private:
     Scalar line_space_;
     SkPath * path_;
     std::vector<SkPoint> * pts_;
+    Scalar indent_;
+    bool cache_dirty_;
+    bool ellipsis_;//是否以省略号显示
 };
 
 }

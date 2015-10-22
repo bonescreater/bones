@@ -39,6 +39,8 @@ public:
     //设置滚动属性
     void setScrollInfo(Scalar total, bool horizontal);
 
+    void Page(bool up);
+
     void setScrollPos(Scalar cur, bool horizontal);
 
     void setWheelSpeed(float speed);
@@ -54,6 +56,8 @@ protected:
     void onSizeChanged() override;
     //支持滚动
     void onWheel(WheelEvent & e) override;
+    //支持pagedown pageup
+    void onKeyDown(KeyEvent & e) override;
 private:
     void updateVInfo();
     void updateHInfo();

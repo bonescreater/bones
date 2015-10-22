@@ -14,9 +14,13 @@ static const char * kMetaTableText = "__mt_text";
 static const char * kMethodSetFont = "setFont";
 static const char * kMethodSetColor = "setColor";
 static const char * kMethodSetContent = "setContent";
+static const char * kMethodSetLineSpace = "setLineSpace";
 static const char * kMethodSetAuto = "setAuto";
+static const char * kMethodSetFloat = "setFloat";
 static const char * kMethodSetPos = "setPos";
-static const char * kMethodGetAutoBounds = "getAutoBounds";
+static const char * kMethodSetPath = "setPath";
+
+static const char * kMethodGetFloatBounds = "getFloatBounds";
 
 static int SetFont(lua_State * l)
 {
@@ -74,9 +78,21 @@ static int SetContent(lua_State * l)
     return 0;
 }
 
+static int SetLineSpace(lua_State * l)
+{
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaText * text = static_cast<LuaText *>(
+        LuaContext::CallGetCObject(l));
+    if (text)
+        text->setLineSpace(Utils::ToBonesScalar(lua_tonumber(l, 2)));
+    return 0;
+}
+
 static int SetAuto(lua_State * l)
 {
-    lua_settop(l, 4);
+    lua_settop(l, 3);
     lua_pushnil(l);
     lua_copy(l, 1, -1);
     LuaText * text = static_cast<LuaText *>(
@@ -84,13 +100,23 @@ static int SetAuto(lua_State * l)
     if (text)
     {      
         auto align = static_cast<BonesText::Align>(lua_tointeger(l, 2));
-        auto of = static_cast<BonesText::OverFlow>(lua_tointeger(l, 3));     
-        auto ls = static_cast<BonesScalar>(lua_tonumber(l, 4));
-        text->setAuto(align, of, ls);
+        auto ellipsis = !!(lua_toboolean(l, 3));
+        text->setAuto(align, ellipsis);
     }    
     return 0;
 }
 
+static int SetFloat(lua_State * l)
+{
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaText * text = static_cast<LuaText *>(
+        LuaContext::CallGetCObject(l));
+    if (text)
+        text->setFloat(Utils::ToBonesScalar(lua_tonumber(l, 2)));
+    return 0;
+}
 static int SetPos(lua_State * l)
 {
     auto count = lua_gettop(l);
@@ -122,9 +148,21 @@ static int SetPos(lua_State * l)
     return 0;
 }
 
-static int GetAutoBounds(lua_State * l)
+static int SetPath(lua_State * l)
 {
-    lua_settop(l, 1);
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaText * text = static_cast<LuaText *>(
+        LuaContext::CallGetCObject(l));
+    if (text)
+        text->setPath(lua_touserdata(l, 2));
+    return 0;
+}
+
+static int GetFloatBounds(lua_State * l)
+{
+    lua_settop(l, 2);
     lua_pushnil(l);
     lua_pushnil(l);
     lua_pushnil(l);
@@ -136,7 +174,7 @@ static int GetAutoBounds(lua_State * l)
         LuaContext::CallGetCObject(l));
     if (text)
     {
-        auto r = text->getAutoBounds();
+        auto r = text->getFloatBounds(Utils::ToBonesScalar(lua_tonumber(l, 2)));
         lua_pushnumber(l, r.left);
         lua_pushnumber(l, r.top);
         lua_pushnumber(l, r.right);
@@ -162,17 +200,28 @@ void LuaText::createMetaTable(lua_State * l)
         lua_pushcfunction(l, &SetColor);
         lua_setfield(l, -2, kMethodSetColor);
 
+        lua_pushcfunction(l, &SetLineSpace);
+        lua_setfield(l, -2, kMethodSetLineSpace);
+
         lua_pushcfunction(l, &SetContent);
         lua_setfield(l, -2, kMethodSetContent);
 
         lua_pushcfunction(l, &SetAuto);
         lua_setfield(l, -2, kMethodSetAuto);
 
+        lua_pushcfunction(l, &SetFloat);
+        lua_setfield(l, -2, kMethodSetFloat);
+
         lua_pushcfunction(l, &SetPos);
         lua_setfield(l, -2, kMethodSetPos);
 
-        lua_pushcfunction(l, &GetAutoBounds);
-        lua_setfield(l, -2, kMethodGetAutoBounds);
+        lua_pushcfunction(l, &SetPath);
+        lua_setfield(l, -2, kMethodSetPath);
+
+        lua_pushcfunction(l, &GetFloatBounds);
+        lua_setfield(l, -2, kMethodGetFloatBounds);
+
+        
         
     }
 }
@@ -197,21 +246,20 @@ void LuaText::setContent(const wchar_t * str)
     object_->set(str);
 }
 
-void LuaText::setAuto(Align align, OverFlow of, BonesScalar ls)
+void LuaText::setLineSpace(BonesScalar ls)
 {
-    Text::Overflow tof = Text::kNone;
-    if (kWordWrap == of)
-        tof = Text::kWordWrap;
-    else if (kEllipsis == of)
-        tof = Text::kEllipsis;
+    object_->setLineSpace(ls);
+}
 
+void LuaText::setAuto(Align align, bool ellipsis)
+{
     Text::Align talign = Text::kCenter;
     if (kLeft == align)
         talign = Text::kLeft;
     else if (kRight == align)
         talign = Text::kRight;
 
-    object_->setAuto(talign, tof, ls);
+    object_->setAuto(talign, ellipsis);
 }
 
 void LuaText::setPath(BonesPath path)
@@ -233,9 +281,14 @@ void LuaText::setPos(size_t count, const BonesPoint * pts)
     }
 }
 
-BonesRect LuaText::getAutoBounds() const
+void LuaText::setFloat(BonesScalar indent)
 {
-    return Utils::ToBonesRect(object_->getAutoBounds());
+    object_->setFloat(indent);
+}
+
+BonesRect LuaText::getFloatBounds(BonesScalar max_width) const
+{
+    return Utils::ToBonesRect(object_->getFloatBounds(max_width));
 }
 
 }

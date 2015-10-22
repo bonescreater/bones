@@ -21,6 +21,10 @@ ScriptParser * GetCoreInstance()
 
 const char * kNotifyOrder = "__notify";
 const char * kEventOrder = "__event";
+
+const char * kMethodAddNotify = "addNotify";
+const char * kMethodAddEvent = "addEvent";
+
 const char * kMethodOnCreate = "onCreate";
 const char * kMethodOnDestroy = "onDestroy";
 

@@ -6,7 +6,7 @@ namespace bones
 
 
 Scroller::Scroller()
-:delegate_(nullptr), speed_(4.0f)
+:delegate_(nullptr), speed_(10.0f)
 {
     container_ = new View;
     attachChildToBack(container_);
@@ -54,6 +54,14 @@ void Scroller::setScrollInfo(Scalar total, bool horizontal)
         h_info_.total = total;
         updateHInfo();
     }
+}
+
+void Scroller::Page(bool up)
+{
+    Scalar delta = getHeight();
+    if (up)
+        delta = -delta;
+    setScrollPos(h_info_.cur_pos + delta, false);
 }
 
 void Scroller::setScrollPos(Scalar cur, bool horizontal)
@@ -148,6 +156,15 @@ void Scroller::onSizeChanged()
     Area::onSizeChanged();
 }
 
+static bool isNesting(View * v)
+{
+    //scroller richedit webview本身就是可以滚动的 所以如果事件经过这些就不处理
+    return v && 
+        (kClassScroller == v->getClassName() ||
+         kClassRichEdit == v->getClassName() ||
+         kClassWebView == v->getClassName());
+}
+
 void Scroller::onWheel(WheelEvent & e)
 {//只处理冒泡阶段的
     Area::onWheel(e);
@@ -161,20 +178,41 @@ void Scroller::onWheel(WheelEvent & e)
         return;
     for (auto iter = path->begin(); iter != path->end(); ++iter)
     {//为了防止scroller嵌套 如果滚动在scroller子孙中的一个scroller发生则不管
-        if (this == (*iter).get())
+        View * v = (*iter).get();
+        if (this == v)
             break;
-        //scroller richedit webview本身就是可以滚动的 所以如果事件经过这些就不处理
-        if (kClassScroller == (*iter)->getClassName() ||
-            kClassRichEdit == (*iter)->getClassName() ||
-            kClassWebView == (*iter)->getClassName())
-        {
+        if (isNesting(v))
             return;
-        }
     }
     if (e.dx() != 0)
         setScrollPos(h_info_.cur_pos - e.dx() / (WHEEL_DELTA / speed_), true);
     if (e.dy() != 0)
         setScrollPos(v_info_.cur_pos - e.dy() / (WHEEL_DELTA / speed_), false);
+}
+
+void Scroller::onKeyDown(KeyEvent & e)
+{
+    Area::onKeyDown(e);
+    if (e.canceled())
+        return;
+    if (Event::kBubbling != e.phase())
+        return;
+    auto key = e.key();
+    if (kVKEY_PRIOR != key && kVKEY_NEXT != key)
+        return;
+
+    auto path = e.getPath();
+    if (!path)
+        return;
+    for (auto iter = path->begin(); iter != path->end(); ++iter)
+    {//为了防止scroller嵌套 如果滚动在scroller子孙中的一个scroller发生则不管
+        View * v = (*iter).get();
+        if (this == v)
+            break;
+        if (isNesting(v))
+            return;
+    }
+    Page(key == kVKEY_PRIOR);
 }
 
 }

@@ -21,11 +21,11 @@ static const char * kPathTable = "path";
 static const char * kShaderTable = "shader";
 static const char * kPixmapTable = "pixmap";
 
-static const char * kMethodAddPixmap = "addPixmap";
-static const char * kMethodAddCursor = "addCursor";
-static const char * kMethodGetPixmap = "addPixmap";
+//static const char * kMethodAddPixmap = "addPixmap";
+//static const char * kMethodAddCursor = "addCursor";
+static const char * kMethodGetPixmap = "getPixmap";
 static const char * kMethodGetCursor = "getCursor";
-static const char * kMethodClean = "clean";
+//static const char * kMethodClean = "clean";
 
 static const char * kMethodCreate = "create";
 static const char * kMethodMoveTo = "moveTo";
@@ -214,24 +214,24 @@ static int ShaderRelease(lua_State * l)
     return 0;
 }
 //key, pixmap
-static int ResourceAddPixmap(lua_State * l)
-{
-    if (lua_gettop(l) == 2)
-    {
-        BonesGetCore()->getResourceManager()->addPixmap(
-            lua_tostring(l, 2), lua_touserdata(l, 3));
-    }
-    else
-        BLG_ERROR << "resource." << kMethodAddPixmap << " error";
-    return 0;
-}
+//static int ResourceAddPixmap(lua_State * l)
+//{
+//    if (lua_gettop(l) == 2)
+//    {
+//        BonesGetCore()->getResourceManager()->addPixmap(
+//            lua_tostring(l, 2), lua_touserdata(l, 3));
+//    }
+//    else
+//        BLG_ERROR << "resource." << kMethodAddPixmap << " error";
+//    return 0;
+//}
 //key
 static int ResourceGetPixmap(lua_State * l)
 {
     if (lua_gettop(l) == 1)
     {
         auto pm = BonesGetCore()->getResourceManager()->getPixmap(
-            lua_tostring(l, 2));
+            lua_tostring(l, 1));
         lua_pushlightuserdata(l, pm);
     }
     else
@@ -242,11 +242,11 @@ static int ResourceGetPixmap(lua_State * l)
     return 1;
 }
 
-static int ResourceClean(lua_State * l)
-{
-    BonesGetCore()->getResourceManager()->clean();
-    return 0;
-}
+//static int ResourceClean(lua_State * l)
+//{
+//    BonesGetCore()->getResourceManager()->clean();
+//    return 0;
+//}
 
 static int PathCreate(lua_State * l)
 {
@@ -468,16 +468,16 @@ bool LuaContext::StartUp()
         lua_setfield(state, -2, kCacheEvent);
         //resource
         lua_newtable(state);
-        lua_pushcfunction(state, &ResourceAddPixmap);
-        lua_setfield(state, -2, kMethodAddPixmap);
+        //lua_pushcfunction(state, &ResourceAddPixmap);
+        //lua_setfield(state, -2, kMethodAddPixmap);
         //lua_pushcfunction(state, &ResourceAddCursor);
         //lua_setfield(state, -2, kMethodAddCursor);
         lua_pushcfunction(state, &ResourceGetPixmap);
         lua_setfield(state, -2, kMethodGetPixmap);
         //lua_pushcfunction(state, &ResourceGetCursor);
         //lua_setfield(state, -2, kMethodGetCursor);
-        lua_pushcfunction(state, &ResourceClean);
-        lua_setfield(state, -2, kMethodClean);
+        //lua_pushcfunction(state, &ResourceClean);
+        //lua_setfield(state, -2, kMethodClean);
         lua_setfield(state, -2, kResourceTable);
         //path
         lua_newtable(state);

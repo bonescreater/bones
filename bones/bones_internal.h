@@ -13,6 +13,9 @@ extern ScriptParser * GetCoreInstance();
 extern const char * kNotifyOrder;
 extern const char * kEventOrder;
 
+extern const char * kMethodAddNotify;
+extern const char * kMethodAddEvent;
+
 extern const char * kMethodOnCreate;
 extern const char * kMethodOnDestroy;
 

@@ -105,7 +105,7 @@ static int SetNine(lua_State * l)
     return 0;
 }
 
-//self pixmap
+//self key
 static int SetContent(lua_State * l)
 {
     lua_settop(l, 2);
@@ -114,7 +114,8 @@ static int SetContent(lua_State * l)
     LuaImage * bob = static_cast<LuaImage *>(
         LuaContext::CallGetCObject(l));
     if (bob)
-        bob->setContent(lua_touserdata(l, 2));
+        bob->setContent(
+        BonesGetCore()->getResourceManager()->getPixmap(lua_tostring(l, 2)));
     return 0;
 }
 //self, matrix[20]

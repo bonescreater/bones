@@ -1050,6 +1050,7 @@ public:
 public:
     /*!设置文字字体
     @param[in] font 字体
+    @bug setPos模式下underline strike无效,可能是skia版本过老的原因
     */
     virtual void setFont(const BonesFont & font) = 0;
     /*!设置文字颜色
@@ -1064,32 +1065,42 @@ public:
     @param[in] str 字符串
     */
     virtual void setContent(const wchar_t * str) = 0;
+    /*!设置显示多行文字时的行间距
+    @param[in] ls 行间距 上一行的底部 跟下一行的顶部之间的距离
+    */
+    virtual void setLineSpace(BonesScalar ls) = 0;
     /*!设置文字显示模式为自动布局
     @param[in] align 字符串水平方向的对齐方式
-    @param[in] of 单行字符串超出后的处理方式
-    @param[in] ls 行间距 上一行的底部 跟下一行的顶部之间的距离
+    @param[in] ellipsis true单行字符串超出部分以省略号替代 
     @note 自动布局文字 垂直方向永远居中 支持'\n'换行
-    @warning setAuto setPos setPath不能同时起效 以最后设置的为准
+    @warning setAuto setFloat setPos setPath不能同时起效 以最后设置的为准
     */
-    virtual void setAuto(Align align, OverFlow of, BonesScalar ls) = 0;
+    virtual void setAuto(Align align, bool ellipsis) = 0;
+    /*!设置文字显示模式为Float
+    @param[in] indent 首行缩进
+    @note float模式下 文字从左到右显示 支持'\n'换行和自动换行
+    @warning setAuto setFloat setPos setPath不能同时起效 以最后设置的为准
+    */
+    virtual void setFloat(BonesScalar indent) = 0;
     /*!设置文字显示模式为绝对位置模式
     @param[in] count pts数组长度, 应该和str的字符长度相同
     @param[in] pts 字符串中每个字符显示的位置
     @note 不支持'\n'换行
-    @warning setAuto setPos setPath不能同时起效 以最后设置的为准
+    @warning setAuto setFloat setPos setPath不能同时起效 以最后设置的为准
     */
     virtual void setPos(size_t count, const BonesPoint * pts) = 0;
     /*!设置文字显示模式为Path模式
     @param[in] path 字符串按照path的形状显示
     @note 不支持'\n'换行
-    @warning setAuto setPos setPath不能同时起效 以最后设置的为准
+    @warning setAuto setFloat setPos setPath不能同时起效 以最后设置的为准
     */
     virtual void setPath(BonesPath path) = 0;
-    /*!获得自动布局下文字显示区域
+    /*!获得Float下文字显示区域
+    @param[in] max_width max_width 不为0则以max_width自动换行
     @return 文字显示区域
-    @note 如果字符串为空 或者非自动布局 则返回空矩形
+    @note 如果字符串为空 或者非float则返回空矩形
     */
-    virtual BonesRect getAutoBounds() const = 0;
+    virtual BonesRect getFloatBounds(BonesScalar max_width) const = 0;
     /*!设置鼠标事件回调
     @param[in] phase 事件阶段 仅监听指定阶段的事件
     @param[in] lis 事件监听接口
@@ -1197,7 +1208,7 @@ public:
     virtual void setScrollPos(BonesScalar cur, bool horizontal) = 0;
     /*!设置滚动的速率
     @param[in] speed 速率
-    @note 通常滚轮值是120的倍数 滚动的像素为倍数X速率 默认是4倍
+    @note 通常滚轮值是120的倍数 滚动的像素为倍数X速率 默认是10倍
     */
     virtual void setWheelSpeed(float speed) = 0;
     /*!得到滚动的速率
