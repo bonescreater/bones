@@ -12,9 +12,6 @@ static const char * kMetaTableRoot = "__mt_root";
 static const char * kMethodRequestFocus = "requestFocus";
 static const char * kMethodInvalidRect = "invalidRect";
 static const char * kMethodChangeCursor = "changeCursor";
-static const char * kMethodcreateCaret = "createCaret";
-static const char * kMethodshowCaret = "showCaret";
-static const char * kMethodchangeCaretPos = "changeCaretPos";
 
 //(self, color)
 static int SetColor(lua_State * l)
@@ -30,60 +27,15 @@ static int SetColor(lua_State * l)
 }
 
 LuaRoot::LuaRoot(Root * ob)
-:LuaObject(ob), listener_(nullptr)
+:LuaObject(ob)
 {
+    LUA_HANDLER_INIT();
     createLuaTable();
 }
 
 LuaRoot::~LuaRoot()
 {
     ;
-}
-
-void LuaRoot::notifyCreate() 
-{
-    object_->setDelegate(this);
-
-    bool stop = false;
-    listener_ ? listener_->onCreate(this, stop) : 0;
-    if (stop)
-        return;
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetLOFromCO(l, this);
-    lua_getfield(l, -1, kNotifyOrder);
-    if (lua_istable(l, -1))
-    {
-        lua_getfield(l, -1, kMethodOnCreate);
-        lua_pushnil(l);
-        lua_copy(l, -4, -1);
-        auto count = LuaContext::SafeLOPCall(l, 1, 0);
-        lua_pop(l, count);
-    }
-    lua_pop(l, 2);
-}
-
-void LuaRoot::notifyDestroy() 
-{
-    bool stop = false;
-    listener_ ? listener_->onDestroy(this, stop) : 0;
-    if (stop)
-        return;
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetLOFromCO(l, this);
-    lua_getfield(l, -1, kNotifyOrder);
-    if (lua_istable(l, -1))
-    {
-        lua_getfield(l, -1, kMethodOnDestroy);
-        lua_pushnil(l);
-        lua_copy(l, -4, -1);
-        auto count = LuaContext::SafeLOPCall(l, 1, 0);
-        lua_pop(l, count);
-    }
-    lua_pop(l, 2);
-
-    object_->setDelegate(nullptr);
 }
 
 void LuaRoot::createMetaTable(lua_State * l)
@@ -93,11 +45,6 @@ void LuaRoot::createMetaTable(lua_State * l)
         lua_pushcfunction(l, SetColor);
         lua_setfield(l, -2, kMethodSetColor);
     }
-}
-
-void LuaRoot::setListener(NotifyListener * listener)
-{
-    listener_ = listener;
 }
 
 void LuaRoot::setColor(BonesColor color)
@@ -169,7 +116,7 @@ bool LuaRoot::handleWheel(UINT msg, WPARAM wparam, LPARAM lparam)
 void LuaRoot::requestFocus(Root * sender)
 {
     bool stop = false;
-    listener_ ? listener_->requestFocus(this, stop): 0;
+    notify_ ? notify_->requestFocus(this, stop) : 0;
     if (stop)
         return;
     //post to script
@@ -193,7 +140,7 @@ void LuaRoot::invalidRect(Root * sender, const Rect & rect)
 {
     bool stop = false;
     BonesRect r = { rect.left(), rect.top(), rect.right(), rect.bottom() };
-    listener_ ? listener_->invalidRect(this, r, stop) : 0;
+    notify_ ? notify_->invalidRect(this, r, stop) : 0;
     if (stop)
         return;
     //(self, l, t, r, b)
@@ -218,7 +165,7 @@ void LuaRoot::invalidRect(Root * sender, const Rect & rect)
 void LuaRoot::changeCursor(Root * sender, Cursor cursor)
 {
     bool stop = false;
-    listener_ ? listener_->changeCursor(this, cursor, stop) : 0;
+    notify_ ? notify_->changeCursor(this, cursor, stop) : 0;
     if (stop)
         return;
     //(self, cursor)
@@ -237,124 +184,124 @@ void LuaRoot::changeCursor(Root * sender, Cursor cursor)
     lua_pop(l, 2);
 }
 
-void LuaRoot::createCaret(Root * sender, Caret caret, const Size & size)
-{
-    bool stop = false;
-    BonesSize bs = { size.width(), size.height() };
-    listener_ ? listener_->createCaret(this, caret, bs, stop) : 0;
-    if (stop)
-        return;
-    //(self, cursor)
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetLOFromCO(l, this);
-    lua_getfield(l, -1, kNotifyOrder);
-    if (lua_istable(l, -1))
-    {
-        lua_getfield(l, -1, kMethodcreateCaret);
-        lua_pushnil(l);
-        lua_copy(l, -4, -1);
-        lua_pushinteger(l, (lua_Integer)caret);
-        lua_pushnumber(l, size.width());
-        lua_pushnumber(l, size.height());
-        LuaContext::SafeLOPCall(l, 4, 0);
-    }
-    lua_pop(l, 2);
-}
+//void LuaRoot::createCaret(Root * sender, Caret caret, const Size & size)
+//{
+//    bool stop = false;
+//    BonesSize bs = { size.width(), size.height() };
+//    listener_ ? listener_->createCaret(this, caret, bs, stop) : 0;
+//    if (stop)
+//        return;
+//    //(self, cursor)
+//    auto l = LuaContext::State();
+//    LUA_STACK_AUTO_CHECK(l);
+//    LuaContext::GetLOFromCO(l, this);
+//    lua_getfield(l, -1, kNotifyOrder);
+//    if (lua_istable(l, -1))
+//    {
+//        lua_getfield(l, -1, kMethodcreateCaret);
+//        lua_pushnil(l);
+//        lua_copy(l, -4, -1);
+//        lua_pushinteger(l, (lua_Integer)caret);
+//        lua_pushnumber(l, size.width());
+//        lua_pushnumber(l, size.height());
+//        LuaContext::SafeLOPCall(l, 4, 0);
+//    }
+//    lua_pop(l, 2);
+//}
+//
+//void LuaRoot::showCaret(Root * sender, bool show)
+//{
+//    bool stop = false;
+//    listener_ ? listener_->showCaret(this, show, stop) : true;
+//    if (stop)
+//        return;
+//    //(self, cursor)
+//    auto l = LuaContext::State();
+//    LUA_STACK_AUTO_CHECK(l);
+//    LuaContext::GetLOFromCO(l, this);
+//    lua_getfield(l, -1, kNotifyOrder);
+//    if (lua_istable(l, -1))
+//    {
+//        lua_getfield(l, -1, kMethodshowCaret);
+//        lua_pushnil(l);
+//        lua_copy(l, -4, -1);
+//        lua_pushboolean(l, show);
+//        LuaContext::SafeLOPCall(l, 2, 0);
+//    }
+//    lua_pop(l, 2);
+//}
+//
+//void LuaRoot::changeCaretPos(Root * sender, const Point & pt)
+//{
+//    bool stop = false;
+//    BonesPoint bp = { pt.x(), pt.y() };
+//    listener_ ? listener_->changeCaretPos(this, bp, stop) : 0;
+//    if (stop)
+//        return;
+//    //(self, cursor)
+//    auto l = LuaContext::State();
+//    LUA_STACK_AUTO_CHECK(l);
+//    LuaContext::GetLOFromCO(l, this);
+//    lua_getfield(l, -1, kNotifyOrder);
+//    if (lua_istable(l, -1))
+//    {
+//        lua_getfield(l, -1, kMethodchangeCaretPos);
+//        lua_pushnil(l);
+//        lua_copy(l, -4, -1);
+//        lua_pushnumber(l, pt.x());
+//        lua_pushnumber(l, pt.y());
+//        LuaContext::SafeLOPCall(l, 3, 0);
+//    }
+//    lua_pop(l, 2);
+//}
 
-void LuaRoot::showCaret(Root * sender, bool show)
-{
-    bool stop = false;
-    listener_ ? listener_->showCaret(this, show, stop) : true;
-    if (stop)
-        return;
-    //(self, cursor)
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetLOFromCO(l, this);
-    lua_getfield(l, -1, kNotifyOrder);
-    if (lua_istable(l, -1))
-    {
-        lua_getfield(l, -1, kMethodshowCaret);
-        lua_pushnil(l);
-        lua_copy(l, -4, -1);
-        lua_pushboolean(l, show);
-        LuaContext::SafeLOPCall(l, 2, 0);
-    }
-    lua_pop(l, 2);
-}
-
-void LuaRoot::changeCaretPos(Root * sender, const Point & pt)
-{
-    bool stop = false;
-    BonesPoint bp = { pt.x(), pt.y() };
-    listener_ ? listener_->changeCaretPos(this, bp, stop) : 0;
-    if (stop)
-        return;
-    //(self, cursor)
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetLOFromCO(l, this);
-    lua_getfield(l, -1, kNotifyOrder);
-    if (lua_istable(l, -1))
-    {
-        lua_getfield(l, -1, kMethodchangeCaretPos);
-        lua_pushnil(l);
-        lua_copy(l, -4, -1);
-        lua_pushnumber(l, pt.x());
-        lua_pushnumber(l, pt.y());
-        LuaContext::SafeLOPCall(l, 3, 0);
-    }
-    lua_pop(l, 2);
-}
-
-void LuaRoot::onSizeChanged(Root * sender, const Size & size)
-{
-    bool stop = false;
-    BonesSize bs = { size.width(), size.height() };
-    listener_ ? listener_->onSizeChanged(this, bs, stop) : 0;
-    if (stop)
-        return;
-    //(self, w, h)
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetLOFromCO(l, this);
-    lua_getfield(l, -1, kNotifyOrder);
-    if (lua_istable(l, -1))
-    {
-        lua_getfield(l, -1, kMethodOnSizeChanged);
-        lua_pushnil(l);
-        lua_copy(l, -4, -1);
-        lua_pushnumber(l, bs.width);
-        lua_pushnumber(l, bs.height);
-        LuaContext::SafeLOPCall(l, 3, 0);
-    }
-    lua_pop(l, 2);
-}
-
-void LuaRoot::onPositionChanged(Root * sender, const Point & loc)
-{
-    bool stop = false;
-    BonesPoint bp = { loc.x(), loc.y() };
-    listener_ ? listener_->onPositionChanged(this, bp, stop) : 0;
-    if (stop)
-        return;
-    //(self, w, h)
-    auto l = LuaContext::State();
-    LUA_STACK_AUTO_CHECK(l);
-    LuaContext::GetLOFromCO(l, this);
-    lua_getfield(l, -1, kNotifyOrder);
-    if (lua_istable(l, -1))
-    {
-        lua_getfield(l, -1, kMethodOnPositionChanged);
-        lua_pushnil(l);
-        lua_copy(l, -4, -1);
-        lua_pushnumber(l, bp.x);
-        lua_pushnumber(l, bp.y);
-        LuaContext::SafeLOPCall(l, 3, 0);
-    }
-    lua_pop(l, 2);
-}
+//void LuaRoot::onSizeChanged(Root * sender, const Size & size)
+//{
+//    bool stop = false;
+//    BonesSize bs = { size.width(), size.height() };
+//    listener_ ? listener_->onSizeChanged(this, bs, stop) : 0;
+//    if (stop)
+//        return;
+//    //(self, w, h)
+//    auto l = LuaContext::State();
+//    LUA_STACK_AUTO_CHECK(l);
+//    LuaContext::GetLOFromCO(l, this);
+//    lua_getfield(l, -1, kNotifyOrder);
+//    if (lua_istable(l, -1))
+//    {
+//        lua_getfield(l, -1, kMethodOnSizeChanged);
+//        lua_pushnil(l);
+//        lua_copy(l, -4, -1);
+//        lua_pushnumber(l, bs.width);
+//        lua_pushnumber(l, bs.height);
+//        LuaContext::SafeLOPCall(l, 3, 0);
+//    }
+//    lua_pop(l, 2);
+//}
+//
+//void LuaRoot::onPositionChanged(Root * sender, const Point & loc)
+//{
+//    bool stop = false;
+//    BonesPoint bp = { loc.x(), loc.y() };
+//    listener_ ? listener_->onPositionChanged(this, bp, stop) : 0;
+//    if (stop)
+//        return;
+//    //(self, w, h)
+//    auto l = LuaContext::State();
+//    LUA_STACK_AUTO_CHECK(l);
+//    LuaContext::GetLOFromCO(l, this);
+//    lua_getfield(l, -1, kNotifyOrder);
+//    if (lua_istable(l, -1))
+//    {
+//        lua_getfield(l, -1, kMethodOnPositionChanged);
+//        lua_pushnil(l);
+//        lua_copy(l, -4, -1);
+//        lua_pushnumber(l, bp.x);
+//        lua_pushnumber(l, bp.y);
+//        LuaContext::SafeLOPCall(l, 3, 0);
+//    }
+//    lua_pop(l, 2);
+//}
 
 
 }

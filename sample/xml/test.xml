@@ -1,33 +1,29 @@
 ﻿<bones>
   <head>
-    <link type ="script" module ="test" file ="test.lua"></link>
-    <link type ="pixmap" name ="lena" file ="../res/lena.bmp"></link>
-    <link type ="xml" module ="scrollbar" file ="scrollbar.xml"></link>
-    <style>
-      .bg
-      {
-      color:#ffff0000;
-      }
-    </style>
+    <link type ="script" module ="shape" file ="test.lua"></link>
   </head>
   <body>
-    <root id ="main" class ="bg">
-      <notify name ="onCreate" module ="test" func ="onCreate"></notify>
-      <!--正常显示图片-->
-      <image></image>
-      <!--垂直滚动显示图片-->
-      <scroller>
-        <image></image>
-        <!--注册通知 关联滚动条-->
-        <notify name ="onScrollRange" module ="test" func ="onScrollRange"></notify>
-        <notify name ="onScrollPos" module ="test" func ="onScrollPos"></notify>
-      </scroller>
-      
-      <!--垂直滚动条-->
-      <scrollbar></scrollbar>
-      
-      <!--水平滚动条-->
-      <scrollbar></scrollbar>
+    <root id ="main">
+      <notify name ="onCreate" module ="shape" func ="onCreate"></notify>
+      <shape>
+        <text></text>
+      </shape>
+      <shape>
+        <text></text>
+      </shape>
+      <shape>
+        <text></text>
+      </shape>
+      <shape>
+        <text></text>
+      </shape>
+      <shape>
+        <text></text>
+      </shape>
+
+      <shape>
+        <text></text>
+      </shape>
     </root>
   </body>
 </bones>

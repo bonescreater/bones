@@ -301,9 +301,6 @@ protected:
     float opacity_;
     friend class EventDispatcher;
     friend class RootView;
-
-    friend class B2FIter;
-    friend class F2BIter;
 };
 
 }

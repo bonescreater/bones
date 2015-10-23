@@ -521,7 +521,8 @@ void Text::ToSkPaint(SkPaint & paint) const
     Helper::ToSkPaint(font_, paint);
     paint.setColor(color_);
     paint.setShader(shader_);
-    paint.setTextAlign(ToSkPaintStyle(align_));
+    if (kAuto == mode_)
+        paint.setTextAlign(ToSkPaintStyle(align_));
 }
 
 BONES_CSS_TABLE_BEGIN(Text, View)

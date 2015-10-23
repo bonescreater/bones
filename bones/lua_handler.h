@@ -64,7 +64,10 @@ public:\
         bool stop = false;\
         notify_ ? notify_->onDestroy(this, stop) : 0;\
         if (stop)\
-            return;\
+        {\
+            object_->setDelegate(nullptr); \
+            return; \
+        }\
         auto l = LuaContext::State();\
         LUA_STACK_AUTO_CHECK(l);\
         LuaContext::GetLOFromCO(l, this);\

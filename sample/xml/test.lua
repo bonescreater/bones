@@ -3,69 +3,103 @@ local mod = {}
 
 --self代表root标签
 function mod.onCreate(self)
-    self.image_ = self:getChildAt(0)
-    self.scroller_ = self:getChildAt(1)
+self:setColor(0xffff0000)
 
-    --设置image标签显示完整的图片
-    local pm_key = "lena"
-    local pm = bones.resource.getPixmap(pm_key)
-    local w, h = bones.pixmap.getSize(pm)
-    print(w)
-    self.image_:setSize(w, h)
-    self.image_:setContent(pm_key)
+local s0 = self:getChildAt(0)
+local t0 = s0:getChildAt(0)
+s0:setSize(200, 200)
+s0:setLoc(20, 20)
+s0:setRect(0, 0)
+s0:setStroke(true)
+s0:setColor(0xff00ff00)
 
-    --关联scroller 和滚动条
-    local vbar = self:getChildAt(2)
-    local hbar = self:getChildAt(3)
-    self.scroller_.vbar_ = vbar
-    self.scroller_.hbar_ = hbar
-    vbar:setSlave(self.scroller_)
-    vbar:setStyle(false)
-    hbar:setSlave(self.scroller_)
-    hbar:setStyle(true)
+t0:setFont("Microsoft Yahei", 14, true, true, true, true)
+t0:setContent("bones ui中文")
+t0:setPos(10, 20, 20, 30, 30, 40, 40, 50, 50, 60, 60, 70, 70, 80, 80, 90, 90, 100, 100, 110, 110)
+t0:setSize(198, 198)
+t0:setLoc(1, 1)
 
-    --设置scroller大小 即视口
-    self.scroller_:setSize(w / 2, h / 2)
-    self.scroller_:setLoc(w + 10, 10)
-    --设置滚动条的位置 
-    local bar_const = 12
-    vbar:setLoc(w + 10 + w / 2, 10)
-    vbar:setSize(bar_const, h / 2)
-    --滚动条的位置可以是任意的 垂直滚动条是紧贴 水平滚动条可以离远点
-    local delta = 20
-    hbar:setLoc(w + 10, 10 + h /2 + delta )
-    hbar:setSize(w / 2, bar_const)
-    --需要滚动显示image标签大小为图片大小
-    local image = self.scroller_:getChildAt(0)
-    image:setSize(w, h)
-    image:setContent(pm_key)
+local s1 = self:getChildAt(1)
+local t1 = s1:getChildAt(0)
+s1:setSize(200, 200)
+s1:setLoc(230, 20)
+s1:setRect(0, 0)
+s1:setStroke(true)
+s1:setColor(0xff00ff00)
 
-    --scroller计算滚动范围
-    self.scroller_:setScrollInfo(h, false)
-    self.scroller_:setScrollInfo(w, true)
+t1:setFont("Microsoft Yahei", 14, false, false, true, true)
+t1:setContent("bones ui\n中\n文")
+t1:setAuto(0, 0)
+t1:setSize(198, 198)
+t1:setLoc(1, 1)
+
+local s2 = self:getChildAt(2)
+local t2 = s2:getChildAt(0)
+s2:setSize(200, 200)
+s2:setLoc(440, 20)
+s2:setRect(0, 0)
+s2:setStroke(true)
+s2:setColor(0xff00ff00)
+
+t2:setFont("Microsoft Yahei", 14, false, false, true, true)
+t2:setContent("bones ui\n中\n文")
+t2:setAuto(1, false)
+t2:setSize(198, 198)
+t2:setLoc(1, 1)
+
+local s3 = self:getChildAt(3)
+local t3 = s3:getChildAt(0)
+s3:setSize(200, 200)
+s3:setLoc(650, 20)
+s3:setRect(0, 0)
+s3:setStroke(true)
+s3:setColor(0xff00ff00)
+
+t3:setFont("Microsoft Yahei", 14, false, false, true, true)
+t3:setContent("bones ui\n中\n文")
+t3:setAuto(2, true)
+t3:setSize(198, 198)
+t3:setLoc(1, 1)
+
+local s4 = self:getChildAt(4)
+local t4 = s4:getChildAt(0)
+s4:setSize(200, 200)
+s4:setLoc(20, 230)
+s4:setRect(0, 0)
+s4:setStroke(true)
+s4:setColor(0xff00ff00)
+
+t4:setFont("Microsoft Yahei", 14, true, true, true, true)
+t4:setContent("bones ui\n中文abcd大师法法大赛的发生打发似的")
+t4:setLineSpace(10)
+t4:setFloat(0)
+t4:setSize(198, 198)
+t4:setLoc(1, 1)
+
+local s5 = self:getChildAt(5)
+local t5 = s5:getChildAt(0)
+s5:setSize(200, 200)
+s5:setLoc(230, 230)
+s5:setRect(0, 0)
+s5:setStroke(true)
+s5:setColor(0xff00ff00)
+
+t5:setFont("Microsoft Yahei", 14, true, true, true, true)
+t5:setContent("bones ui\n中文abcd大师法法大赛的发生打发似的")
+t5:setLineSpace(10)
+t5:setAuto(1, true)
+
+t5:setSize(198, 198)
+t5:setLoc(1, 1)
+
+local shader = bones.shader.createLinearGradient(0, 0, 40, 0, 2, 3, 0xffffffff, 0xff00ff00, 0xff0000ff, 0, 0.5, 1);
+t5:setColor(shader)
+bones.shader.release(shader)
 
 end
 
 
-function mod.onScrollRange(self, min, max, view, horiz)
-    local vbar = self.vbar_
-    local hbar = self.hbar_
-    --调用scrollbar的setScrollRange
-    if horiz then
-        hbar:setScrollRange(min, max, view)
-    else
-        vbar:setScrollRange(min, max, view)
-    end
-end
 
-function mod.onScrollPos(self, cur, horiz)
-    local vbar = self.vbar_
-    local hbar = self.hbar_
-    if horiz then
-        hbar:setScrollPos(cur)
-    else
-        vbar:setScrollPos(cur)
-    end
-end
+
 
 return mod;

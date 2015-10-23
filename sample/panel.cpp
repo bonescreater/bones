@@ -368,6 +368,21 @@ void BSPanel::onDestroy(BonesRoot * sender, bool & stop)
     ;
 }
 
+void BSPanel::onSizeChanged(BonesRoot * sender, const BonesSize & size, bool & stop)
+{
+    ;
+}
+
+void BSPanel::onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool & stop)
+{
+    ;
+}
+
+bool BSPanel::onHitTest(BonesRoot * sender, const BonesPoint & loc, bool & stop)
+{
+    return true;
+}
+
 void BSPanel::requestFocus(BonesRoot * sender, bool & stop)
 {
     ::SetFocus(hwnd_);
@@ -391,39 +406,6 @@ void BSPanel::changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop)
         //PostMessage(hwnd(), WM_SETCURSOR, 0, HTCLIENT);
     } 
     stop = true;
-}
-
-void BSPanel::showCaret(BonesRoot * sender, bool fshow, bool & stop)
-{
-    
-    BOOL ret = 0;
-    if (fshow)
-        ret = ::ShowCaret(hwnd_);     
-    else
-        ret = ::HideCaret(hwnd_);
-    stop = true;
-}
-
-void BSPanel::createCaret(BonesRoot * sender, BonesCaret hbmp, const BonesSize & size, bool & stop)
-{
-    
-    auto ret = ::CreateCaret(hwnd_, hbmp, (int)size.width,  (int)size.height);
-    stop = true;
-}
-
-void BSPanel::changeCaretPos(BonesRoot * sender, const BonesPoint & pt, bool & stop)
-{
-    stop = true;
-    ::SetCaretPos((int)pt.x, (int)pt.y);
-}
-
-void BSPanel::onSizeChanged(BonesRoot * sender, const BonesSize & size, bool & stop)
-{
-    ;
-}
-void BSPanel::onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool & stop)
-{
-    ;
 }
 
 

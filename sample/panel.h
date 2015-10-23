@@ -45,15 +45,11 @@ public:
 
     void changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop) override;
 
-    void showCaret(BonesRoot * sender, bool fshow, bool & stop) override;
-
-    void createCaret(BonesRoot * sender, BonesCaret hbmp, const BonesSize & size, bool & stop) override;
-
-    void changeCaretPos(BonesRoot * sender, const BonesPoint & pt, bool & stop) override;
-
     void onSizeChanged(BonesRoot * sender, const BonesSize & size, bool & stop) override;
 
     void onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool & stop) override;
+
+    bool onHitTest(BonesRoot * sender, const BonesPoint & loc, bool & stop) override;
 protected:
     void onPaint(HDC hdc, const RECT & rect);
 

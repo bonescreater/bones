@@ -43,9 +43,7 @@ public:
 
     void setScrollPos(Scalar cur, bool horizontal);
 
-    void setWheelSpeed(float speed);
-
-    float getWheelSpeed() const;
+    Scalar getScrollPos(bool horizontal);
 
     View * getContainer();
 
@@ -55,9 +53,9 @@ protected:
 
     void onSizeChanged() override;
     //支持滚动
-    void onWheel(WheelEvent & e) override;
+    //void onWheel(WheelEvent & e) override;
     //支持pagedown pageup
-    void onKeyDown(KeyEvent & e) override;
+    //void onKeyDown(KeyEvent & e) override;
 private:
     void updateVInfo();
     void updateHInfo();
@@ -66,7 +64,6 @@ private:
     Delegate * delegate_;
     ScrollInfo v_info_;
     ScrollInfo h_info_;
-    float speed_;
 };
 
 

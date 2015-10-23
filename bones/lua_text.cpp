@@ -184,7 +184,7 @@ static int GetFloatBounds(lua_State * l)
 }
 
 LuaText::LuaText(Text * ob)
-:LuaObject(ob), notify_(nullptr)
+:LuaObject(ob)
 {
     LUA_HANDLER_INIT();
     createLuaTable();

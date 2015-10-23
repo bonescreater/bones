@@ -225,7 +225,7 @@ static int SetArc(lua_State * l)
 }
 
 LuaShape::LuaShape(Shape * co)
-:LuaObject(co), notify_(nullptr)
+:LuaObject(co)
 {
     LUA_HANDLER_INIT();
     createLuaTable();

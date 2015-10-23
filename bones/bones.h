@@ -528,138 +528,11 @@ public:
         ScriptArg * ret, size_t ret_count) = 0;
 };
 
-/*!root 标签提供了与native window 交互的接口*/
-class BonesRoot : public BonesObject
-{
-public:
-    /*!使用root要响应的通知
-    @note root通常是与本地窗口交互
-          由于脚本层没有调用windows api扩展库 大多数的通知没有必要传到脚本层 即stop 返回true
-    */
-    class NotifyListener
-    {
-    public:
-        /*!内部标签需要获取焦点
-        @param[in] sender 标签
-        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
-        */
-        virtual void requestFocus(BonesRoot * sender, bool & stop) = 0;
-        /*!root需要重绘
-        @param[in] sender 标签
-        @param[in] rect 需要重绘的区域
-        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
-        */
-        virtual void invalidRect(BonesRoot * sender, const BonesRect & rect, bool & stop) = 0;
-        /*!root鼠标样式改变
-        @param[in] sender 标签
-        @param[in] cursor 新的鼠标样式
-        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
-        */
-        virtual void changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop) = 0;
-        /*!root需要显示光标
-        @param[in] sender 标签
-        @param[in] fshow true 显示光标 false隐藏光标
-        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
-        */
-        virtual void showCaret(BonesRoot * sender, bool fshow, bool & stop) = 0;
-        /*!root需要创建光标
-        @param[in] sender 标签
-        @param[in] hbmp 光标位图
-        @param[in] size 光标的宽高 如hbmp不为空则忽略
-        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
-        */
-        virtual void createCaret(BonesRoot * sender, BonesCaret hbmp, const BonesSize & size, bool & stop) = 0;
-        /*!root需要改变光标位置
-        @param[in] sender 标签
-        @param[in] pt 光标位置
-        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
-        */
-        virtual void changeCaretPos(BonesRoot * sender, const BonesPoint & pt, bool & stop) = 0;
-        /*!尺寸改变后收到该通知
-        @param[in] sender 标签
-        @param[in] size 标签改变后的尺寸
-        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
-        @see BonesSize
-        */
-        virtual void onSizeChanged(BonesRoot * sender, const BonesSize & size, bool & stop) = 0;
-        /*!位置改变后收到该通知
-        @param[in] sender 标签
-        @param[in] loc 标签改变后的位置
-        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
-        @see BonesPoint
-        */
-        virtual void onPositionChanged(BonesRoot * sender, const BonesPoint & loc, bool & stop) = 0;
-        /*!创建后收到该通知
-        @param[in] sender 标签
-        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
-        */
-        virtual void onCreate(BonesRoot * sender, bool & stop) = 0;
-        /*!即将销毁收到该通知
-        @param[in] sender 标签
-        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
-        */
-        virtual void onDestroy(BonesRoot * sender, bool & stop) = 0;
-    };
-    /*!设置通知回调*/
-    virtual void setListener(NotifyListener * listener) = 0;
-    /*!设置root的颜色
-    @param[in] color root的颜色
-    */
-    virtual void setColor(BonesColor color) = 0;
-    /*!设置root关联的窗口
-    @param[in] hwnd 窗口
-    @note 目前除了richedit标签外都不需要依赖窗口如果不使用richedit 则可以不关联窗口
-    */
-    virtual void attachTo(BonesWidget hwnd) = 0;
-    /*!root是否需要重绘
-    @return true则需要重绘 false 不需要
-    */
-    virtual bool isDirty() const = 0;
-    /*!root需要绘制的区域
-    @return 重绘区域
-    */
-    virtual BonesRect getDirtyRect() const = 0;
-    /*!root发起一次绘制 绘制后当前的脏区清空*/
-    virtual void draw() = 0;
-    /*!得到root的位图
-    @return 位图 可以方便绘制到窗口
-    */
-    virtual HBITMAP getBackBuffer() const = 0;
-    /*!得到root的位图像素
-    @param[out] 得到位图像素的首地址
-    @param[out] 得到位图每一行占用的字节数
-    @note 位图的尺寸即为root的尺寸,位图像素为预乘后的像素
-    */
-    virtual void getBackBuffer(const void * & data, size_t & pitch) const = 0;
-    /*!传递mouse消息
-    @return 通常返回true
-    */
-    virtual bool handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
-    /*!传递key消息
-    @return 通常返回true
-    */
-    virtual bool handleKey(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
-    /*!传递focus消息
-    @return 通常返回true
-    */
-    virtual bool handleFocus(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
-    /*!传递ime消息
-    @return 返回false则需要自己处理
-    @note 由于webview使用的cef浏览器 暂时没有找到处理IME的接口
-          所以返回false时需要自己处理 通常是调用DefWindowProc
-    */
-    virtual bool handleComposition(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
-    /*!传递wheel消息
-    @return 通常返回true
-    */
-    virtual bool handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
-};
-
 template <class T>
 class BonesHandler : public BonesObject
 {
 public:
-    /*!除root外每一个标签支持的通知*/
+    /*!每一个标签支持的通知*/
     class NotifyListener
     {
     public:
@@ -703,7 +576,7 @@ public:
         virtual bool onHitTest(T * sender, const BonesPoint & loc, bool & stop) = 0;
     };
 
-    /*!除root外每一个标签支持的mouse event*/
+    /*!每一个标签支持的mouse event*/
     class MouseListener
     {
     public:
@@ -765,7 +638,7 @@ public:
         virtual void onMouseLeave(T * sender, BonesMouseEvent & e, bool & stop) = 0;
     };
 
-    /*!除root外每一个标签支持的key event*/
+    /*!每一个标签支持的key event*/
     class KeyListener
     {
     public:
@@ -795,7 +668,7 @@ public:
         virtual void onChar(T * sender, BonesKeyEvent & e, bool & stop) = 0;
     };
 
-    /*!除root外每一个标签支持的focus event*/
+    /*!每一个标签支持的focus event*/
     class FocusListener
     {
     public:
@@ -829,7 +702,7 @@ public:
         virtual void onFocus(T * sender, BonesFocusEvent & e, bool & stop) = 0;
     };
 
-    /*!除root外每一个标签支持的wheel event*/
+    /*!每一个标签支持的wheel event*/
     class WheelListener
     {
     public:
@@ -842,7 +715,122 @@ public:
         */
         virtual void onWheel(T * sender, BonesWheelEvent & e, bool & stop) = 0;
     };
+}; 
+/*!root 标签提供了与native window 交互的接口*/
+class BonesRoot : public BonesHandler<BonesRoot>
+{
+public:
+    /*!使用root要响应的通知
+    @note root通常是与本地窗口交互
+    由于脚本层没有调用windows api扩展库 大多数的通知没有必要传到脚本层 即stop 返回true
+    */
+    class NotifyListener : public BonesHandler::NotifyListener
+    {
+    public:
+        /*!内部标签需要获取焦点
+        @param[in] sender 标签
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        */
+        virtual void requestFocus(BonesRoot * sender, bool & stop) = 0;
+        /*!root需要重绘
+        @param[in] sender 标签
+        @param[in] rect 需要重绘的区域
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        */
+        virtual void invalidRect(BonesRoot * sender, const BonesRect & rect, bool & stop) = 0;
+        /*!root鼠标样式改变
+        @param[in] sender 标签
+        @param[in] cursor 新的鼠标样式
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        */
+        virtual void changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop) = 0;
+    };
+    /*!设置root的颜色
+    @param[in] color root的颜色
+    */
+    virtual void setColor(BonesColor color) = 0;
+    /*!设置root关联的窗口
+    @param[in] hwnd 窗口
+    @note 目前除了richedit标签外都不需要依赖窗口如果不使用richedit 则可以不关联窗口
+    */
+    virtual void attachTo(BonesWidget hwnd) = 0;
+    /*!root是否需要重绘
+    @return true则需要重绘 false 不需要
+    */
+    virtual bool isDirty() const = 0;
+    /*!root需要绘制的区域
+    @return 重绘区域
+    */
+    virtual BonesRect getDirtyRect() const = 0;
+    /*!root发起一次绘制 绘制后当前的脏区清空*/
+    virtual void draw() = 0;
+    /*!得到root的位图
+    @return 位图 可以方便绘制到窗口
+    */
+    virtual HBITMAP getBackBuffer() const = 0;
+    /*!得到root的位图像素
+    @param[out] 得到位图像素的首地址
+    @param[out] 得到位图每一行占用的字节数
+    @note 位图的尺寸即为root的尺寸,位图像素为预乘后的像素
+    */
+    virtual void getBackBuffer(const void * & data, size_t & pitch) const = 0;
+    /*!传递mouse消息
+    @return 通常返回true
+    */
+    virtual bool handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    /*!传递key消息
+    @return 通常返回true
+    */
+    virtual bool handleKey(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    /*!传递focus消息
+    @return 通常返回true
+    */
+    virtual bool handleFocus(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    /*!传递ime消息
+    @return 返回false则需要自己处理
+    @note 由于webview使用的cef浏览器 暂时没有找到处理IME的接口
+    所以返回false时需要自己处理 通常是调用DefWindowProc
+    */
+    virtual bool handleComposition(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    /*!传递wheel消息
+    @return 通常返回true
+    */
+    virtual bool handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    /*!设置鼠标事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::MouseListener
+    */
+    virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
+    /*!设置键盘事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::KeyListener
+    */
+    virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
+    /*!设置焦点事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::FocusListener
+    */
+    virtual void setListener(BonesEvent::Phase phase, FocusListener * lis) = 0;
+    /*!设置滚轮事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::WheelListener
+    */
+    virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
+    /*!设置通知事件回调
+    @param[in] lis 事件监听接口
+    @see BonesHandler::NotifyListener
+    */
+    virtual void setListener(NotifyListener * lis) = 0;
 };
+
 /*!shape标签 提供了几何形状的绘制*/
 class BonesShape : public BonesHandler<BonesShape>
 {
@@ -1206,15 +1194,10 @@ public:
     @param[in] horizontal true则为水平滚动属性 false为垂直滚动属性
     */
     virtual void setScrollPos(BonesScalar cur, bool horizontal) = 0;
-    /*!设置滚动的速率
-    @param[in] speed 速率
-    @note 通常滚轮值是120的倍数 滚动的像素为倍数X速率 默认是10倍
+    /*!得到当前滚动值
+    @return 当前滚动值
     */
-    virtual void setWheelSpeed(float speed) = 0;
-    /*!得到滚动的速率
-    @return 滚动速率
-    */
-    virtual float getWheelSpeed() const = 0;
+    virtual BonesScalar getScrollPos(bool horizontal) = 0;
     /*!设置鼠标事件回调
     @param[in] phase 事件阶段 仅监听指定阶段的事件
     @param[in] lis 事件监听接口

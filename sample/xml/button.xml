@@ -1,0 +1,22 @@
+<bones>
+<head>
+  <link type ='script' module ='button' file ='button.lua'></link>
+</head>
+<body>
+  <image class ="pic">
+    <notify name ="onCreate" module ="button" func ="onCreate"></notify>
+    <notify name ="onHitTest" module ="button" func ="onHitTest"></notify>
+    <notify name ="onSizeChanged" module ="button" func ="onSizeChanged"></notify>
+    <event name ="onMouseDown" phase ="target" module ="button" func ="onMouseDown"></event>
+    <event name ="onMouseUp" phase ="target" module ="button" func ="onMouseUp"></event>
+    <event name ="onMouseMove" phase ="target" module ="button" func ="onMouseMove"></event>
+    <event name ="onMouseLeave" phase ="target" module ="button" func ="onMouseLeave"></event>
+    <event name ="onMouseEnter" phase ="target" module ="button" func ="onMouseEnter"></event>
+    <event name ="onFocus" phase ="target" module ="button" func ="onFocus"></event>
+    <event name ="onBlur" phase ="target" module ="button" func ="onBlur"></event>
+    <!--shape不接受事件-->
+    <shape></shape>
+  </image>
+  
+</body>
+</bones>

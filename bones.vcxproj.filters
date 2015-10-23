@@ -126,9 +126,6 @@
     <ClCompile Include="bones\core\rich_edit.cpp">
       <Filter>core\bone\naked</Filter>
     </ClCompile>
-    <ClCompile Include="bones\core\scroller.cpp">
-      <Filter>core\bone\naked</Filter>
-    </ClCompile>
     <ClCompile Include="bones\core\web_view.cpp">
       <Filter>core\bone\naked</Filter>
     </ClCompile>
@@ -140,6 +137,9 @@
     </ClCompile>
     <ClCompile Include="bones\simple_proxy.cpp">
       <Filter>lua</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\scroller.cpp">
+      <Filter>core\bone\facade</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -286,9 +286,6 @@
     <ClInclude Include="bones\core\rich_edit.h">
       <Filter>core\bone\naked</Filter>
     </ClInclude>
-    <ClInclude Include="bones\core\scroller.h">
-      <Filter>core\bone\naked</Filter>
-    </ClInclude>
     <ClInclude Include="bones\core\web_view.h">
       <Filter>core\bone\naked</Filter>
     </ClInclude>
@@ -303,6 +300,9 @@
     </ClInclude>
     <ClInclude Include="bones\simple_proxy.h">
       <Filter>lua</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\scroller.h">
+      <Filter>core\bone\facade</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

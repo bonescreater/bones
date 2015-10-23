@@ -76,6 +76,7 @@ static int Canceled(lua_State * l)
 static int Target(lua_State * l)
 {
     lua_settop(l, 1);
+    lua_pushnil(l);
     auto e = *(BonesEvent **)lua_touserdata(l, 1);
     lua_pushnil(l);
     BonesObject * target = nullptr;
@@ -401,8 +402,8 @@ WHEEL event
 static int DX(lua_State * l)
 {
     lua_settop(l, 1);
-    auto e = *(BonesWheelEvent **)luaL_checkudata(l, 1, kMetaTableWheelEvent);
     lua_pushnil(l);
+    auto e = *(BonesWheelEvent **)luaL_checkudata(l, 1, kMetaTableWheelEvent);
     if (e)
         lua_pushinteger(l, e->dx());
     return 1;
@@ -411,8 +412,8 @@ static int DX(lua_State * l)
 static int DY(lua_State * l)
 {
     lua_settop(l, 1);
-    auto e = *(BonesWheelEvent **)luaL_checkudata(l, 1, kMetaTableWheelEvent);
     lua_pushnil(l);
+    auto e = *(BonesWheelEvent **)luaL_checkudata(l, 1, kMetaTableWheelEvent);
     if (e)
         lua_pushinteger(l, e->dy());
     return 1;

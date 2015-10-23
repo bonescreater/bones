@@ -302,24 +302,29 @@ bool Root::notifyChangeCursor(View * n, Cursor cursor)
     delegate_ ? delegate_->changeCursor(this, cursor) : 0;
     return true;
 }
-
+//caret打算自绘
 bool Root::notifyShowCaret(View * n, bool show)
 {//应该是只有root 和focus才能显示光标 但是show 在windows 是要一一对应的
     //所以只能由view自己来负责显示以及隐藏
-    delegate_ ? delegate_->showCaret(this, show) : true;
+    //delegate_ ? delegate_->showCaret(this, show) : true;
     return true;
 }
 
 bool Root::notifyChangeCaretPos(const Point & pt)
 {
-    delegate_ ? delegate_->changeCaretPos(this, pt) : 0;
+    //delegate_ ? delegate_->changeCaretPos(this, pt) : 0;
     return true;
 }
 
 bool Root::notifyCreateCaret(Caret caret, const Size & size)
 {
-    delegate_ ? delegate_->createCaret(this ,caret, size) : 0;
+    //delegate_ ? delegate_->createCaret(this ,caret, size) : 0;
     return true;
+}
+
+Root::DelegateBase * Root::delegate()
+{
+    return delegate_;
 }
 
 void Root::onVisibleChanged(View * n)

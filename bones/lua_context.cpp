@@ -437,12 +437,12 @@ static int PixmapExtractSubset(lua_State * l)
 static int PixmapIsTransparent(lua_State * l)
 {
     lua_settop(l, 3);
-    lua_pushnil(l);
 
-    BonesGetCore()->getPixmapProxy()->isTransparent(
+    lua_pushboolean(l, 
+        BonesGetCore()->getPixmapProxy()->isTransparent(
         lua_touserdata(l, 1),
         Utils::ToInt(lua_tointeger(l, 2)),
-        Utils::ToInt(lua_tointeger(l, 3)));
+        Utils::ToInt(lua_tointeger(l, 3))));
     return 1;
 }
 

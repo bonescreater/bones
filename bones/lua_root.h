@@ -1,7 +1,7 @@
 ﻿#ifndef BONES_LUA_ROOT_H_
 #define BONES_LUA_ROOT_H_
 
-#include "lua_object.h"
+#include "lua_handler.h"
 #include "core/root.h"
 
 namespace bones
@@ -15,13 +15,7 @@ public:
 
     ~LuaRoot();
 
-    void notifyCreate();
-
-    void notifyDestroy();
-
     void createMetaTable(lua_State * l) override;
-
-    void setListener(NotifyListener * listener) override;
 
     void setColor(BonesColor color) override;
 
@@ -53,17 +47,7 @@ public:
 
     void changeCursor(Root * sender, Cursor cursor) override;
 
-    void createCaret(Root * sender, Caret caret, const Size & size) override;
-
-    void showCaret(Root * sender, bool show) override;
-
-    void changeCaretPos(Root * sender, const Point & pt) override;
-
-    void onSizeChanged(Root * sender, const Size & size) override;
-
-    void onPositionChanged(Root * sender, const Point & loc) override;
-private:
-    NotifyListener * listener_;
+    LUA_HANDLER(Root);
 };
 
 

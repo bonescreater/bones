@@ -1,13 +1,12 @@
 ﻿#ifndef BONES_CORE_ROOT_H_
 #define BONES_CORE_ROOT_H_
 
-#include "view.h"
+#include "area.h"
 #include "accelerator_manager.h"
 #include "mouse_controller.h"
 #include "focus_controller.h"
 #include "pixmap.h"
 #include "rect.h"
-#include <functional>
 
 class SkBaseDevice;
 
@@ -22,10 +21,10 @@ struct NativeEvent
     LRESULT result;
 };
 
-class Root : public View
+class Root : public Area<Root>
 {
 public:
-    class Delegate
+    class Delegate : public DelegateBase
     {
     public:
         virtual void requestFocus(Root * sender) = 0;
@@ -33,16 +32,6 @@ public:
         virtual void invalidRect(Root * sender, const Rect & rect) = 0;
 
         virtual void changeCursor(Root * sender, Cursor cursor) = 0;
-
-        virtual void createCaret(Root * sender, Caret caret, const Size & size) = 0;
-
-        virtual void showCaret(Root * sender, bool show) = 0;        
-
-        virtual void changeCaretPos(Root * sender, const Point & pt) = 0;
-
-        virtual void onSizeChanged(Root * sender, const Size & size) = 0;
-
-        virtual void onPositionChanged(Root * sender, const Point & loc) = 0;
     };
 public:
     Root();
@@ -108,6 +97,8 @@ protected:
     virtual bool notifyChangeCaretPos(const Point & pt) override;
 
     virtual bool notifyCreateCaret(Caret caret, const Size & size) override;
+protected:
+    DelegateBase * delegate() override;
 private:
     void adjustPixmap();
 
