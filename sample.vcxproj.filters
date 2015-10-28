@@ -7,6 +7,9 @@
     <Filter Include="scroll">
       <UniqueIdentifier>{26feb3d4-2b2c-4a6b-afd9-61ce934f2a96}</UniqueIdentifier>
     </Filter>
+    <Filter Include="list">
+      <UniqueIdentifier>{30ca2e45-b8ee-4f60-a39b-48460f698003}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="sample\test.css" />
@@ -20,6 +23,18 @@
     <None Include="sample\xml\scrollbar.lua">
       <Filter>scroll</Filter>
     </None>
+    <None Include="sample\xml\tabctrl.lua">
+      <Filter>list</Filter>
+    </None>
+    <None Include="sample\xml\tabitem.lua">
+      <Filter>list</Filter>
+    </None>
+    <None Include="sample\xml\listitem.lua">
+      <Filter>list</Filter>
+    </None>
+    <None Include="sample\xml\listctrl.lua">
+      <Filter>list</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="sample\scrollimg.xml">
@@ -28,6 +43,18 @@
     <Xml Include="sample\xml\test.xml" />
     <Xml Include="sample\xml\scrollbar.xml">
       <Filter>scroll</Filter>
+    </Xml>
+    <Xml Include="sample\xml\tabctrl.xml">
+      <Filter>list</Filter>
+    </Xml>
+    <Xml Include="sample\xml\tabitem.xml">
+      <Filter>list</Filter>
+    </Xml>
+    <Xml Include="sample\xml\listitem.xml">
+      <Filter>list</Filter>
+    </Xml>
+    <Xml Include="sample\xml\listctrl.xml">
+      <Filter>list</Filter>
     </Xml>
   </ItemGroup>
   <ItemGroup>

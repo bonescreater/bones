@@ -65,7 +65,8 @@ public:
         LUA_STACK_AUTO_CHECK(l);
         lua_getglobal(l, kBonesTable);
         lua_getfield(l, -1, kCacheOnPrepare);
-        LuaContext::SafeLOPCall(l, 0, 0);
+        LuaContext::GetLOFromCO(l, ob);
+        LuaContext::SafeLOPCall(l, 1, 0);
         lua_pop(l, 1);
     }
 };
@@ -96,7 +97,8 @@ static int BonesGetObject(lua_State * l)
     }
     return 1;
 }
-
+//(parent, label, id, class_name, group, onPrepare)
+//(parent, label, onPrepare)
 static int BonesCreateObject(lua_State * l)
 {
     lua_settop(l, 6);
@@ -110,14 +112,22 @@ static int BonesCreateObject(lua_State * l)
         lua_copy(l, 1, -1);
         parent = static_cast<BonesObject *>(LuaContext::CallGetCObject(l));
     }
-    const char * label = lua_tostring(l, idx);
-    const char * id = lua_tostring(l, idx + 1);
-    const char * class_name = lua_tostring(l, idx + 2);
-    const char * group_id = lua_tostring(l, idx + 3);
+    const char * label = lua_tostring(l, idx++);
+    const char * id = nullptr;
+    if (lua_isstring(l, idx))
+        id = lua_tostring(l, idx++);
+    const char * class_name = nullptr;
+    if (lua_isstring(l, idx))
+        class_name = lua_tostring(l, idx++);
+    const char * group_id = nullptr;
+    if (lua_isstring(l, idx))
+        group_id = lua_tostring(l, idx++);
+
     //onPrepare 放到bones中去
+    assert(lua_isnil(l, idx) || lua_isfunction(l, idx));
     lua_getglobal(l, kBonesTable);
     lua_pushnil(l);
-    lua_copy(l, idx + 4, -1);
+    lua_copy(l, idx, -1);
     lua_setfield(l, -2, kCacheOnPrepare);
     lua_pop(l, 1);
 

@@ -337,6 +337,9 @@ public:
             lua_pushcfunction(l, &SetMouseable);
             lua_setfield(l, -2, kMethodSetMouseable);
 
+            lua_pushcfunction(l, &SetVisible);
+            lua_setfield(l, -2, kMethodSetVisible);
+            
             lua_pushcfunction(l, &SetLoc);
             lua_setfield(l, -2, kMethodSetLoc);
 
@@ -485,6 +488,20 @@ public:
             bob->setMouseable(!!lua_toboolean(l, 2));
         return 0;
     }
+
+    static int SetVisible(lua_State * l)
+    {
+        lua_settop(l, 2);
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        LuaObject * bob = static_cast<LuaObject *>(
+            LuaContext::CallGetCObject(l));
+        if (bob)
+            bob->setVisible(!!lua_toboolean(l, 2));
+        return 0;
+    }
+
+    
     
 
     static int SetLoc(lua_State * l)

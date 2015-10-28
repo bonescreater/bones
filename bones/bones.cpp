@@ -61,6 +61,7 @@ const char * kMethodGetOpacity = "getOpacity";
 const char * kMethodSetOpacity = "setOpacity";
 const char * kMethodSetFocusable = "setFocusable";
 const char * kMethodSetMouseable = "setMouseable";
+const char * kMethodSetVisible = "setVisible";
 const char * kMethodGetCObject = "getCObject";
 const char * kMethodAnimate = "animate";
 const char * kMethodStop = "stop";

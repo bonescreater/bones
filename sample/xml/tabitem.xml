@@ -1,0 +1,29 @@
+<bones>
+<head>
+  <link type ='script' module ='tabitem' file ='tabitem.lua'></link>
+</head>
+  
+<!--一个item有上下右三条线 一个底色 一个点一个文字表示-->
+<body>
+  <!--底色-->
+  <shape>
+    <!--上-->
+    <shape></shape>
+    <!--下-->
+    <shape></shape>
+    <!--右-->
+    <shape></shape>
+    <!--圆点-->
+    <shape></shape>
+    <!--文字-->
+    <text></text>
+    <notify name ='onCreate' module='tabitem' func='onCreate'></notify>
+    <notify name ='onSizeChanged' module='tabitem' func='onSizeChanged'></notify>
+    <event name ="onMouseMove" phase ="target" module ="tabitem" func ="onMouseMove"></event>
+    <event name ="onMouseLeave" phase ="target" module ="tabitem" func ="onMouseLeave"></event>
+    <event name ="onMouseDown" phase ="target" module ="tabitem" func ="onMouseDown"></event>
+    <event name ="onMouseUp" phase ="target" module ="tabitem" func ="onMouseUp"></event>
+  </shape>
+  
+</body>
+</bones>

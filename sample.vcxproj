@@ -91,13 +91,25 @@
     <None Include="sample\animate.lua" />
     <None Include="sample\scrollimg.lua" />
     <None Include="sample\test.css" />
+    <None Include="sample\xml\listctrl.lua" />
     <None Include="sample\xml\scrollbar.lua" />
+    <None Include="sample\xml\listitem.lua" />
+    <None Include="sample\xml\tabctrl.lua" />
+    <None Include="sample\xml\tabitem.lua" />
     <None Include="sample\xml\test.lua" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="sample\scrollimg.xml" />
+    <Xml Include="sample\xml\listctrl.xml" />
     <Xml Include="sample\xml\scrollbar.xml" />
-    <Xml Include="sample\xml\test.xml" />
+    <Xml Include="sample\xml\listitem.xml" />
+    <Xml Include="sample\xml\tabctrl.xml" />
+    <Xml Include="sample\xml\tabitem.xml">
+      <SubType>Designer</SubType>
+    </Xml>
+    <Xml Include="sample\xml\test.xml">
+      <SubType>Designer</SubType>
+    </Xml>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sample\main.cpp" />

@@ -1,0 +1,19 @@
+<bones>
+<head>
+  <link type ="xml" module="tabitem" file="tabitem.xml"></link>
+  <link type ='script' module ='tabctrl' file ='tabctrl.lua'></link>
+</head>
+<body>
+  <shape>
+    <!--垂直的一条线-->
+    <shape></shape>
+    <tabitem></tabitem>
+    <tabitem></tabitem>
+    <tabitem></tabitem>
+    <tabitem></tabitem>
+    <tabitem></tabitem>
+    <notify name ='onCreate' module='tabctrl' func='onCreate'></notify>
+    <notify name ='onSizeChanged' module='tabctrl' func='onSizeChanged'></notify>
+  </shape>
+</body>
+</bones>

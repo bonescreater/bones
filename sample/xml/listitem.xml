@@ -1,0 +1,15 @@
+<bones>
+<head>
+  <link type ="xml" module="button" file="button.xml"></link>
+  <link type ='script' module ='listitem' file ='listitem.lua'></link>
+</head>
+<body>
+  <!--线-->
+  <shape>
+    <!--标题-->
+    <text></text>
+    <notify name ='onCreate' module='listitem' func ='onCreate'></notify>
+    <notify name ='onSizeChanged' module='listitem' func='onSizeChanged'></notify>
+  </shape>
+</body>
+</bones>

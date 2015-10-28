@@ -1,29 +1,32 @@
 ﻿<bones>
   <head>
     <link type ="script" module ="shape" file ="test.lua"></link>
+    <link type ="xml" module="tabctrl" file="tabctrl.xml"></link>
+    <link type ="xml" module="listctrl" file="listctrl.xml"></link>
+    <style>
+      .main
+      {
+      color:#ffff0000;
+      }
+
+      .list
+      {
+      loc:20px 20px;
+      size:918px 378px;
+      }
+    </style>
   </head>
   <body>
-    <root id ="main">
+    <root id ="main" class="main">
       <notify name ="onCreate" module ="shape" func ="onCreate"></notify>
-      <shape>
-        <text></text>
-      </shape>
-      <shape>
-        <text></text>
-      </shape>
-      <shape>
-        <text></text>
-      </shape>
-      <shape>
-        <text></text>
-      </shape>
-      <shape>
-        <text></text>
+      <!--滚动list-->
+      <shape class="list">
+        <tabctrl></tabctrl>
+        <listctrl></listctrl>
+        <notify name ="onCreate" module ="shape" func ="onListCreate"></notify>
+        <notify name ="onSizeChanged" module ="shape" func ="onListSizeChanged"></notify>
       </shape>
 
-      <shape>
-        <text></text>
-      </shape>
     </root>
   </body>
 </bones>

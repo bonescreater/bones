@@ -53,6 +53,7 @@ extern const char * kMethodGetOpacity;
 extern const char * kMethodSetOpacity;
 extern const char * kMethodSetFocusable;
 extern const char * kMethodSetMouseable;
+extern const char * kMethodSetVisible;
 extern const char * kMethodGetCObject;
 extern const char * kMethodAnimate;
 extern const char * kMethodStop;

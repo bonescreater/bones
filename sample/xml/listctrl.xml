@@ -1,0 +1,13 @@
+<bones>
+<head>
+  <link type ="xml" module="listitem" file="listitem.xml"></link>
+  <link type ='script' module ='listctrl' file ='listctrl.lua'></link>
+</head>
+<body>
+  <!--listctrl是一个可滚动显示的多个listitem的scroller-->
+  <!--动态创建listitem-->
+  <scroller>
+    <notify name ='onCreate' module='listctrl' func ='onCreate'></notify>
+  </scroller>
+</body>
+</bones>

@@ -46,13 +46,20 @@ void Scroller::setScrollInfo(Scalar total, bool horizontal)
         return;
     if (!horizontal)
     {
-        v_info_.total = total;
-        updateVInfo();
+        if (v_info_.total != total)
+        {
+            v_info_.total = total;
+            updateVInfo();
+        }
     }
     else
     {
-        h_info_.total = total;
-        updateHInfo();
+        if (h_info_.total != total)
+        {
+            h_info_.total = total;
+            updateHInfo();
+        }
+
     }
 }
 
