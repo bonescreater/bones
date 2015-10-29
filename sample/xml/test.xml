@@ -3,6 +3,11 @@
     <link type ="script" module ="shape" file ="test.lua"></link>
     <link type ="xml" module="tabctrl" file="tabctrl.xml"></link>
     <link type ="xml" module="listctrl" file="listctrl.xml"></link>
+    <link type ="xml" module="scrollbar" file="scrollbar.xml"></link>
+    <link type ="pixmap" name ="common" file ="../res/common_small.png"></link>
+    <link type ="pixmap" name ="highlight" file ="../res/highlight_small.png"></link>
+    <link type ="pixmap" name ="press" file ="../res/press_small.png"></link>
+    <link type ="pixmap" name ="disable" file ="../res/disable_small.png"></link>
     <style>
       .main
       {
@@ -19,12 +24,18 @@
   <body>
     <root id ="main" class="main">
       <notify name ="onCreate" module ="shape" func ="onCreate"></notify>
+      
       <!--滚动list-->
       <shape class="list">
         <tabctrl></tabctrl>
+        <!--list ctrl 就是scroller 注册scroller通知-->
         <listctrl></listctrl>
+        <!--垂直滚动条-->
+        <scrollbar></scrollbar>
+        
         <notify name ="onCreate" module ="shape" func ="onListCreate"></notify>
         <notify name ="onSizeChanged" module ="shape" func ="onListSizeChanged"></notify>
+
       </shape>
 
     </root>

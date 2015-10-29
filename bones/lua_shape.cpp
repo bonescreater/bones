@@ -46,9 +46,9 @@ static int SetStrokeEffect(lua_State * l)
         {
             std::vector<BonesScalar> intervals;
             for (size_t i = 1; i <= intervals_count; ++i)
-                intervals.push_back(static_cast<BonesScalar>(lua_tonumber(l, 2 + i)));
+                intervals.push_back(Utils::ToBonesScalar(lua_tonumber(l, 2 + i)));
             shape->setStrokeEffect(intervals_count, &intervals[0],
-                static_cast<BonesScalar>(lua_tonumber(l, 3 + intervals_count)));
+                Utils::ToBonesScalar(lua_tonumber(l, 3 + intervals_count)));
         }
 
     }
@@ -64,7 +64,7 @@ static int SetStrokeWidth(lua_State * l)
     LuaShape * shape = static_cast<LuaShape *>(
         LuaContext::CallGetCObject(l));
     if (shape)
-        shape->setStrokeWidth(static_cast<BonesScalar>(lua_tonumber(l, 2)));
+        shape->setStrokeWidth(Utils::ToBonesScalar(lua_tonumber(l, 2)));
     return 0;
 }
 
@@ -95,9 +95,9 @@ static int SetCircle(lua_State * l)
     if (shape)
     {
         BonesPoint center = { 
-            static_cast<BonesScalar>(lua_tonumber(l, 2)),
-            static_cast<BonesScalar>(lua_tonumber(l, 3)) };
-        shape->setCircle(center, static_cast<BonesScalar>(lua_tonumber(l, 4)));
+            Utils::ToBonesScalar(lua_tonumber(l, 2)),
+            Utils::ToBonesScalar(lua_tonumber(l, 3)) };
+        shape->setCircle(center, Utils::ToBonesScalar(lua_tonumber(l, 4)));
     }
     return 0;
 }
@@ -116,18 +116,18 @@ static int SetRect(lua_State * l)
             shape->setRect(0, 0, nullptr);
         else if (count == 3)
             shape->setRect(
-            static_cast<BonesScalar>(lua_tonumber(l, 2)),
-            static_cast<BonesScalar>(lua_tonumber(l, 3)), nullptr);
+            Utils::ToBonesScalar(lua_tonumber(l, 2)),
+            Utils::ToBonesScalar(lua_tonumber(l, 3)), nullptr);
         else
         {
             BonesRect rect = {
-                static_cast<BonesScalar>(lua_tonumber(l, 4)),
-                static_cast<BonesScalar>(lua_tonumber(l, 5)),
-                static_cast<BonesScalar>(lua_tonumber(l, 6)),
-                static_cast<BonesScalar>(lua_tonumber(l, 7)) };
+                Utils::ToBonesScalar(lua_tonumber(l, 4)),
+                Utils::ToBonesScalar(lua_tonumber(l, 5)),
+                Utils::ToBonesScalar(lua_tonumber(l, 6)),
+                Utils::ToBonesScalar(lua_tonumber(l, 7)) };
             shape->setRect(
-                static_cast<BonesScalar>(lua_tonumber(l, 2)),
-                static_cast<BonesScalar>(lua_tonumber(l, 3)), &rect);
+                Utils::ToBonesScalar(lua_tonumber(l, 2)),
+                Utils::ToBonesScalar(lua_tonumber(l, 3)), &rect);
         }
     }
 
@@ -144,11 +144,11 @@ static int SetLine(lua_State * l)
     if (shape)
     {
         BonesPoint start = {
-            static_cast<BonesScalar>(lua_tonumber(l, 2)),
-            static_cast<BonesScalar>(lua_tonumber(l, 3)) };
+            Utils::ToBonesScalar(lua_tonumber(l, 2)),
+            Utils::ToBonesScalar(lua_tonumber(l, 3)) };
         BonesPoint end = {
-            static_cast<BonesScalar>(lua_tonumber(l, 4)),
-            static_cast<BonesScalar>(lua_tonumber(l, 5)) };
+            Utils::ToBonesScalar(lua_tonumber(l, 4)),
+            Utils::ToBonesScalar(lua_tonumber(l, 5)) };
         shape->setLine(start, end);
     }
     return 0;
@@ -164,8 +164,8 @@ static int SetPoint(lua_State * l)
     if (shape)
     {
         BonesPoint pt = {
-            static_cast<BonesScalar>(lua_tonumber(l, 2)),
-            static_cast<BonesScalar>(lua_tonumber(l, 3)) };
+            Utils::ToBonesScalar(lua_tonumber(l, 2)),
+            Utils::ToBonesScalar(lua_tonumber(l, 3)) };
         shape->setPoint(pt);
     }
     return 0;
@@ -186,10 +186,10 @@ static int SetOval(lua_State * l)
         else
         {
             BonesRect oval = { 
-                static_cast<BonesScalar>(lua_tonumber(l, 2)),
-                static_cast<BonesScalar>(lua_tonumber(l, 3)),
-                static_cast<BonesScalar>(lua_tonumber(l, 4)),
-                static_cast<BonesScalar>(lua_tonumber(l, 5)) };
+                Utils::ToBonesScalar(lua_tonumber(l, 2)),
+                Utils::ToBonesScalar(lua_tonumber(l, 3)),
+                Utils::ToBonesScalar(lua_tonumber(l, 4)),
+                Utils::ToBonesScalar(lua_tonumber(l, 5)) };
             shape->setOval(&oval);
         }
     }
@@ -206,18 +206,18 @@ static int SetArc(lua_State * l)
         LuaContext::CallGetCObject(l));
     if (shape)
     {
-        auto start = static_cast<BonesScalar>(lua_tonumber(l, 2));
-        auto sweep = static_cast<BonesScalar>(lua_tonumber(l, 3));
+        auto start = Utils::ToBonesScalar(lua_tonumber(l, 2));
+        auto sweep = Utils::ToBonesScalar(lua_tonumber(l, 3));
         auto center = !!lua_toboolean(l, 4);
         if (count == 4)
             shape->setArc(start, sweep, center, nullptr);
         else
         {
             BonesRect oval = {
-                static_cast<BonesScalar>(lua_tonumber(l, 5)),
-                static_cast<BonesScalar>(lua_tonumber(l, 6)),
-                static_cast<BonesScalar>(lua_tonumber(l, 7)),
-                static_cast<BonesScalar>(lua_tonumber(l, 8)) };
+                Utils::ToBonesScalar(lua_tonumber(l, 5)),
+                Utils::ToBonesScalar(lua_tonumber(l, 6)),
+                Utils::ToBonesScalar(lua_tonumber(l, 7)),
+                Utils::ToBonesScalar(lua_tonumber(l, 8)) };
             shape->setArc(start, sweep, center, &oval);
         }
     }

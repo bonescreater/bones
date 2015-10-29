@@ -54,7 +54,13 @@ BonesColor Utils::ToBonesColor(lua_Integer i)
 {
     return static_cast<BonesColor>(i);
 }
-int Utils::ToInt(lua_Integer i)
+
+BonesScalar Utils::ToBonesScalar(lua_Number t)
+{
+    return static_cast<BonesScalar>(t);
+}
+
+int Utils::ToInt(lua_Number i)
 {
     return static_cast<int>(i);
 }

@@ -20,9 +20,6 @@
       <Filter>scroll</Filter>
     </None>
     <None Include="sample\xml\test.lua" />
-    <None Include="sample\xml\scrollbar.lua">
-      <Filter>scroll</Filter>
-    </None>
     <None Include="sample\xml\tabctrl.lua">
       <Filter>list</Filter>
     </None>
@@ -35,15 +32,15 @@
     <None Include="sample\xml\listctrl.lua">
       <Filter>list</Filter>
     </None>
+    <None Include="sample\xml\scrollbar.lua">
+      <Filter>list</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="sample\scrollimg.xml">
       <Filter>scroll</Filter>
     </Xml>
     <Xml Include="sample\xml\test.xml" />
-    <Xml Include="sample\xml\scrollbar.xml">
-      <Filter>scroll</Filter>
-    </Xml>
     <Xml Include="sample\xml\tabctrl.xml">
       <Filter>list</Filter>
     </Xml>
@@ -54,6 +51,9 @@
       <Filter>list</Filter>
     </Xml>
     <Xml Include="sample\xml\listctrl.xml">
+      <Filter>list</Filter>
+    </Xml>
+    <Xml Include="sample\xml\scrollbar.xml">
       <Filter>list</Filter>
     </Xml>
   </ItemGroup>

@@ -56,6 +56,10 @@ local function setSelected(self, selected)
     stateChanged(self)
 end
 
+local function isSelected(self)
+    return self.selected_
+end
+
 --设置回调
 local function setDelegate(self, func)
     self.onSelected_ = func
@@ -65,6 +69,7 @@ function mod.onCreate(self)
     --public method
     self.setText = setText
     self.setSelected = setSelected
+    self.isSelected = isSelected
     self.setDelegate = setDelegate
     --缓存并设置变量 除了底色shape 其它都不接受鼠标事件和焦点事件
     self:setRect(0,0)

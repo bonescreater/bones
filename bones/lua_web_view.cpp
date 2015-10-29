@@ -1,5 +1,6 @@
 ﻿#include "lua_web_view.h"
 #include "core/encoding.h"
+#include "utils.h"
 
 namespace bones
 {
@@ -55,7 +56,7 @@ static int ExecuteJS(lua_State * l)
     {
         bob->executeJS(Encoding::FromUTF8(lua_tostring(l, 2)).data(),
                        Encoding::FromUTF8(lua_tostring(l, 3)).data(),
-                       static_cast<int>(lua_tointeger(l, 4)));
+                       Utils::ToInt(lua_tonumber(l, 4)));
     }
         
     return 0;

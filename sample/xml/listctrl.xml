@@ -8,6 +8,16 @@
   <!--动态创建listitem-->
   <scroller>
     <notify name ='onCreate' module='listctrl' func ='onCreate'></notify>
+    <!--注册通知 关联滚动条-->
+    <notify name ="onScrollRange" module ="listctrl" func ="onScrollRange"></notify>
+    <notify name ="onScrollPos" module ="listctrl" func ="onScrollPos"></notify>
+    
+    <listitem></listitem>
+    <listitem></listitem>
+    <listitem></listitem>
+    <listitem></listitem>
+    <listitem></listitem>
+    
   </scroller>
 </body>
 </bones>

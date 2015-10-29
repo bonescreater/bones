@@ -1,10 +1,6 @@
 ﻿
 
 local mod = {}
---滚动条
-local function setSlave(self, slave)
-    self.slave_ = slave
-end
 
 --设置水平还是垂直
 local function setStyle(self, horiz)
@@ -71,12 +67,16 @@ local function setScrollRange(self, min, max, view)
 end
 
 
+local function setDelegate(self, delegate)
+    self.onDelegate_ = delegate
+end
 
 function mod.onCreate(self)
     self.setScrollPos = setScrollPos
-    self.setSlave = setSlave
     self.setScrollRange = setScrollRange
+
     self.setStyle = setStyle
+    self.setDelegate = setDelegate
     --底色
     self:setRect(0, 0)
     self:setColor(0xff000000)
@@ -84,9 +84,6 @@ function mod.onCreate(self)
     self.slider_ = self:getChildAt(0)
     self.slider_:setRect(0, 0)
     self.slider_:setColor(0xff00ff00)
-    
-    --滑块保留对父的引用 方便调用接口
-    self.slider_.parent_ = self
 
     self.min_ = 0
     self.max_ = 0
@@ -104,12 +101,20 @@ function mod.onSliderMouseDown(self, e)
     if e:isLeftMouse() then
         self.click_ = true
         self.last_x_, self.last_y_ = e:getRootLoc()
+        self.last_cur_ = self:getParent().cur_
     end
 end
 
 function mod.onSliderMouseUp(self, e)
     if e:isLeftMouse() then
         self.click_ = false
+        self.last_x_ = -1
+        self.last_y_ = -1
+
+        local parent = self:getParent()
+        if type(parent.onDelegate_) == "function" then
+            parent:onDelegate_("release", parent.cur_)
+        end
     end
 end
 
@@ -119,19 +124,19 @@ function mod.onSliderMouseMove(self, e)
         local x, y = e:getRootLoc()
         local ydelta = y - self.last_y_
         local xdelta = x - self.last_x_
-        local parent = self.parent_        
+        local parent = self:getParent()        
         local w, h = self:getSize()
         local cur = 0
         local horiz = parent.horiz_
         if horiz then
-            cur = xdelta / w * (parent.max_ - parent.min_) + parent.cur_
+            cur = xdelta / w * parent.view_ + self.last_cur_
         else
-            cur = ydelta / h * (parent.max_ - parent.min_) + parent.cur_ 
+            cur = ydelta / h * parent.view_ + self.last_cur_ 
         end
-        parent.slave_:setScrollPos(cur, horiz)
+        if type(parent.onDelegate_) == "function" then
+            parent:onDelegate_("drag", cur)
+        end      
     end
-
-    self.last_x_, self.last_y_ = e:getRootLoc()
 end
 
 function mod.onSliderMouseLeave(self, e)

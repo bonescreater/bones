@@ -20,7 +20,7 @@ static int SetScrollInfo(lua_State * l)
     LuaScroller * bob = static_cast<LuaScroller *>(
         LuaContext::CallGetCObject(l));
     if (bob)
-        bob->setScrollInfo(static_cast<BonesScalar>(lua_tonumber(l, 2)), 
+        bob->setScrollInfo(Utils::ToBonesScalar(lua_tonumber(l, 2)),
                            !!lua_toboolean(l, 3));
 
     return 0;
@@ -35,7 +35,7 @@ static int SetScrollPos(lua_State * l)
     LuaScroller * bob = static_cast<LuaScroller *>(
         LuaContext::CallGetCObject(l));
     if (bob)
-        bob->setScrollPos(static_cast<BonesScalar>(lua_tonumber(l, 2)),
+        bob->setScrollPos(Utils::ToBonesScalar(lua_tonumber(l, 2)),
                           !!lua_toboolean(l, 3));
     return 0;
 }

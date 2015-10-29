@@ -32,14 +32,11 @@ public:
 
     static BonesRect ToBonesRect(const Rect & rect);
 
-    template<class T>
-    static BonesScalar ToBonesScalar(T t)
-    {
-        return static_cast<BonesScalar>(t);
-    }
+    static BonesScalar ToBonesScalar(lua_Number t);
+
     static BonesColor ToBonesColor(lua_Integer i);
 
-    static int ToInt(lua_Integer i);
+    static int ToInt(lua_Number i);
 };
 }
 

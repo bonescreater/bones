@@ -33,7 +33,7 @@ static int SetFont(lua_State * l)
     {
         BonesFont font;
         font.family = lua_tostring(l, 2);
-        font.size = static_cast<BonesScalar>(lua_tonumber(l, 3));
+        font.size = Utils::ToBonesScalar(lua_tonumber(l, 3));
         font.bold = !!lua_toboolean(l, 4);
         font.italic = !!lua_toboolean(l, 5);
         font.underline = !!lua_toboolean(l, 6);
@@ -136,8 +136,8 @@ static int SetPos(lua_State * l)
                 for (int i = 3; i <= count; i = i + 2)
                 {
                     BonesPoint bp ={ 
-                        static_cast<BonesScalar>(lua_tonumber(l, i)),
-                        static_cast<BonesScalar>(lua_tonumber(l, i + 1))
+                        Utils::ToBonesScalar(lua_tonumber(l, i)),
+                        Utils::ToBonesScalar(lua_tonumber(l, i + 1))
                     };
                     bps.push_back(bp);
                 }

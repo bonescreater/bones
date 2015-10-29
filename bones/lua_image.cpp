@@ -31,8 +31,8 @@ static int SetDirect(lua_State * l)
         BonesPoint p;
         if (count >= 3)
         {
-            p.x = static_cast<BonesScalar>(lua_tointeger(l, 2));
-            p.y = static_cast<BonesScalar>(lua_tointeger(l, 3));
+            p.x = Utils::ToBonesScalar(lua_tonumber(l, 2));
+            p.y = Utils::ToBonesScalar(lua_tonumber(l, 3));
             bp = &p;
         }
         bob->setDirect(bp);
@@ -56,10 +56,10 @@ static int SetStretch(lua_State * l)
         BonesRect rect;
         if (count >= 5)
         {
-            rect.left = static_cast<BonesScalar>(lua_tointeger(l, 2));
-            rect.top = static_cast<BonesScalar>(lua_tointeger(l, 3));
-            rect.right = static_cast<BonesScalar>(lua_tointeger(l, 4));
-            rect.bottom = static_cast<BonesScalar>(lua_tointeger(l, 5));
+            rect.left = Utils::ToBonesScalar(lua_tonumber(l, 2));
+            rect.top = Utils::ToBonesScalar(lua_tonumber(l, 3));
+            rect.right = Utils::ToBonesScalar(lua_tonumber(l, 4));
+            rect.bottom = Utils::ToBonesScalar(lua_tonumber(l, 5));
             br = &rect;
         }
         bob->setStretch(br);
@@ -84,20 +84,20 @@ static int SetNine(lua_State * l)
         BonesRect rect;
         if (count >= 5)
         {
-            rect.left = static_cast<BonesScalar>(lua_tointeger(l, 2));
-            rect.top = static_cast<BonesScalar>(lua_tointeger(l, 3));
-            rect.right = static_cast<BonesScalar>(lua_tointeger(l, 4));
-            rect.bottom = static_cast<BonesScalar>(lua_tointeger(l, 5));
+            rect.left = Utils::ToBonesScalar(lua_tonumber(l, 2));
+            rect.top = Utils::ToBonesScalar(lua_tonumber(l, 3));
+            rect.right = Utils::ToBonesScalar(lua_tonumber(l, 4));
+            rect.bottom = Utils::ToBonesScalar(lua_tonumber(l, 5));
             br = &rect;
         }
         BonesRect * cr = nullptr;
         BonesRect center;
         if (count >= 9)
         {
-            center.left = static_cast<BonesScalar>(lua_tointeger(l, 6));
-            center.top = static_cast<BonesScalar>(lua_tointeger(l, 7));
-            center.right = static_cast<BonesScalar>(lua_tointeger(l, 8));
-            center.bottom = static_cast<BonesScalar>(lua_tointeger(l, 9));
+            center.left = Utils::ToBonesScalar(lua_tonumber(l, 6));
+            center.top = Utils::ToBonesScalar(lua_tonumber(l, 7));
+            center.right = Utils::ToBonesScalar(lua_tonumber(l, 8));
+            center.bottom = Utils::ToBonesScalar(lua_tonumber(l, 9));
             cr = &center;
         }
         bob->setNine(br, cr);
@@ -145,7 +145,7 @@ static int SetColorMatrix(lua_State * l)
             {
                 lua_pushinteger(l, i);
                 lua_gettable(l, -2);
-                cm.mat[i - 1] = static_cast<BonesScalar>(lua_tointeger(l, -1));
+                cm.mat[i - 1] = Utils::ToBonesScalar(lua_tonumber(l, -1));
                 lua_pop(l, 1);
             }
             bcm = &cm;
@@ -154,7 +154,7 @@ static int SetColorMatrix(lua_State * l)
         {//20个矩阵数字
             lua_settop(l, 21);
             for (auto i = 2; i <= 21; ++i)
-                cm.mat[i - 2] = static_cast<BonesScalar>(lua_tointeger(l, i));
+                cm.mat[i - 2] = Utils::ToBonesScalar(lua_tonumber(l, i));
 
             bcm = &cm;
         }

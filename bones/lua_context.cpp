@@ -451,8 +451,8 @@ static int PixmapIsTransparent(lua_State * l)
     lua_pushboolean(l, 
         BonesGetCore()->getPixmapProxy()->isTransparent(
         lua_touserdata(l, 1),
-        Utils::ToInt(lua_tointeger(l, 2)),
-        Utils::ToInt(lua_tointeger(l, 3))));
+        Utils::ToInt(lua_tonumber(l, 2)),
+        Utils::ToInt(lua_tonumber(l, 3))));
     return 1;
 }
 
