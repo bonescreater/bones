@@ -113,9 +113,10 @@ static int SetContent(lua_State * l)
     lua_copy(l, 1, -1);
     LuaImage * bob = static_cast<LuaImage *>(
         LuaContext::CallGetCObject(l));
-    if (bob)
-        bob->setContent(
-        BonesGetCore()->getResourceManager()->getPixmap(lua_tostring(l, 2)));
+    auto pm = BonesGetCore()->getResourceManager()->getPixmap(lua_tostring(l, 2));
+    if (bob && pm)
+        bob->setContent(pm);
+
     return 0;
 }
 //self, matrix[20]

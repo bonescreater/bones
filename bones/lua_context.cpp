@@ -238,17 +238,10 @@ static int ShaderRelease(lua_State * l)
 //key
 static int ResourceGetPixmap(lua_State * l)
 {
-    if (lua_gettop(l) == 1)
-    {
-        auto pm = BonesGetCore()->getResourceManager()->getPixmap(
-            lua_tostring(l, 1));
-        lua_pushlightuserdata(l, pm);
-    }
-    else
-    {
-        BLG_ERROR << "resource." << kMethodGetPixmap << " error";
-        lua_pushnil(l);
-    }
+    lua_settop(l, 1);
+    auto pm = BonesGetCore()->getResourceManager()->getPixmap(
+        lua_tostring(l, 1));
+    lua_pushlightuserdata(l, pm);
     return 1;
 }
 

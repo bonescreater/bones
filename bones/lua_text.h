@@ -27,7 +27,7 @@ public:
 
     void setAuto(Align align, bool ellipsis) override;
 
-    void setFloat(BonesScalar indent) override;
+    void setFloat() override;
 
     void setPos(size_t count, const BonesPoint * pts) override;
 

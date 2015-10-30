@@ -108,13 +108,13 @@ static int SetAuto(lua_State * l)
 
 static int SetFloat(lua_State * l)
 {
-    lua_settop(l, 2);
+    lua_settop(l, 1);
     lua_pushnil(l);
     lua_copy(l, 1, -1);
     LuaText * text = static_cast<LuaText *>(
         LuaContext::CallGetCObject(l));
     if (text)
-        text->setFloat(Utils::ToBonesScalar(lua_tonumber(l, 2)));
+        text->setFloat();
     return 0;
 }
 static int SetPos(lua_State * l)
@@ -281,9 +281,9 @@ void LuaText::setPos(size_t count, const BonesPoint * pts)
     }
 }
 
-void LuaText::setFloat(BonesScalar indent)
+void LuaText::setFloat()
 {
-    object_->setFloat(indent);
+    object_->setFloat();
 }
 
 BonesRect LuaText::getFloatBounds(BonesScalar max_width) const

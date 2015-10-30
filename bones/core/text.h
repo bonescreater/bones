@@ -56,7 +56,7 @@ public:
 
     void setAuto(Align align, bool ellipsis);
 
-    void setFloat(Scalar indent);
+    void setFloat();
 
     void setPos(const Point * ps, size_t count);
 
@@ -91,8 +91,7 @@ private:
     void appendEllipsis(size_t begin, size_t length);
 
     Scalar wordWrap(size_t begin, size_t length, 
-        Scalar max_width, Scalar indent,
-        Lines & ls) const;
+        Scalar max_width, Lines & ls) const;
 
     void ToSkPaint(SkPaint & paint) const;
 
@@ -113,7 +112,6 @@ private:
     Scalar line_space_;
     SkPath * path_;
     std::vector<SkPoint> * pts_;
-    Scalar indent_;
     bool cache_dirty_;
     bool ellipsis_;//是否以省略号显示
 };

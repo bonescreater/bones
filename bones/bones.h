@@ -76,7 +76,6 @@ BONES_API(BonesCore *) BonesGetCore();
 //基础类型声明
 typedef float BonesScalar;
 typedef HANDLE BonesCursor;
-typedef HBITMAP BonesCaret;
 typedef HWND BonesWidget;
 typedef void * BonesShader;
 typedef void * BonesPath;
@@ -1065,11 +1064,10 @@ public:
     */
     virtual void setAuto(Align align, bool ellipsis) = 0;
     /*!设置文字显示模式为Float
-    @param[in] indent 首行缩进
     @note float模式下 文字从左到右显示 支持'\n'换行和自动换行
     @warning setAuto setFloat setPos setPath不能同时起效 以最后设置的为准
     */
-    virtual void setFloat(BonesScalar indent) = 0;
+    virtual void setFloat() = 0;
     /*!设置文字显示模式为绝对位置模式
     @param[in] count pts数组长度, 应该和str的字符长度相同
     @param[in] pts 字符串中每个字符显示的位置
