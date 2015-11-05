@@ -14,6 +14,7 @@ class Text;
 class RichEdit;
 class WebView;
 class Scroller;
+class Input;
 
 class ScriptParser : public BonesCore, 
                      public XMLController::Delegate
@@ -117,19 +118,13 @@ public:
         BonesObject::ScriptArg * ret, size_t ret_count);
 
 private:
-    void handleRoot(Root * ob);
+    template<class T1, class T2>
+    void handleView(View * ob)
+    {
+        auto lo = AdoptRef(new T1(static_cast<T2 *>(ob)));
+        v2bo_[ob] = lo.get();
+    }
 
-    void handleShape(Shape * ob);
-
-    void handleImage(Image * ob);
-
-    void handleText(Text * ob);
-
-    void handleRichEdit(RichEdit * ob);
-
-    void handleWebView(WebView * ob);
-
-    void handleScroller(Scroller * ob);
 
     bool handleNotify(XMLNode node, View * parent_ob, View ** ob);
 

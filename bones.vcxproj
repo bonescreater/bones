@@ -105,6 +105,7 @@
     <ClCompile Include="bones\core\font.cpp" />
     <ClCompile Include="bones\core\helper.cpp" />
     <ClCompile Include="bones\core\image.cpp" />
+    <ClCompile Include="bones\core\input.cpp" />
     <ClCompile Include="bones\core\logging.cpp" />
     <ClCompile Include="bones\core\mouse_controller.cpp" />
     <ClCompile Include="bones\core\pixmap.cpp" />
@@ -133,6 +134,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="bones\lua_input.cpp" />
     <ClCompile Include="bones\lua_rich_edit.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -188,6 +190,7 @@
     <ClInclude Include="bones\core\font.h" />
     <ClInclude Include="bones\core\helper.h" />
     <ClInclude Include="bones\core\image.h" />
+    <ClInclude Include="bones\core\input.h" />
     <ClInclude Include="bones\core\keyboard_codes.h" />
     <ClInclude Include="bones\core\logging.h" />
     <ClInclude Include="bones\core\mouse_controller.h" />
@@ -208,6 +211,7 @@
     <ClInclude Include="bones\core\xml_controller.h" />
     <ClInclude Include="bones\lua_animation.h" />
     <ClInclude Include="bones\lua_handler.h" />
+    <ClInclude Include="bones\lua_input.h" />
     <ClInclude Include="bones\lua_object.h" />
     <ClInclude Include="bones\lua_image.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>

@@ -98,6 +98,8 @@ typedef struct
 }ColorMatrix;
 
 #define BONES_RGB_BLACK 0xff000000
+#define BONES_RGB_WHITE 0xffffffff
+#define BONES_RGB_BLUE 0xff0000ff
 
 }
 

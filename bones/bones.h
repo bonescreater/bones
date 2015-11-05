@@ -1122,6 +1122,66 @@ public:
     virtual void setListener(NotifyListener * lis) = 0;
 };
 
+/*!单行文本编辑框*/
+class BonesInput : public BonesHandler<BonesInput>
+{
+public:
+    /*!设置文字字体
+    @param[in] font 字体
+    */
+    virtual void setFont(const BonesFont & font) = 0;
+    /*!设置文字颜色
+    @param[in] color 文字颜色
+    */
+    virtual void setColor(BonesColor color) = 0;
+    /*!设置文字颜色
+    @param[in] shader 文字颜色为渐变色
+    */
+    virtual void setColor(BonesShader shader) = 0;
+    /*!设置文字
+    @param[in] str 字符串
+    */
+    virtual void setContent(const wchar_t * str) = 0;
+    /*!设置密码显示模式
+    @param[in] pw true 编辑框以密码代替文本来显示
+    @param[in] password 密码字符，pw为true是有效
+    */
+    virtual void setPassword(bool pw, wchar_t password) = 0;
+    /*!设置鼠标事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::MouseListener
+    */
+    virtual void setListener(BonesEvent::Phase phase, MouseListener * lis) = 0;
+    /*!设置键盘事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::KeyListener
+    */
+    virtual void setListener(BonesEvent::Phase phase, KeyListener * lis) = 0;
+    /*!设置焦点事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::FocusListener
+    */
+    virtual void setListener(BonesEvent::Phase phase, FocusListener * lis) = 0;
+    /*!设置滚轮事件回调
+    @param[in] phase 事件阶段 仅监听指定阶段的事件
+    @param[in] lis 事件监听接口
+    @see BonesEvent::Phase
+    @see BonesHandler::WheelListener
+    */
+    virtual void setListener(BonesEvent::Phase phase, WheelListener * lis) = 0;
+    /*!设置通知事件回调
+    @param[in] lis 事件监听接口
+    @see BonesHandler::NotifyListener
+    */
+    virtual void setListener(NotifyListener * lis) = 0;
+};
+
 class BonesRichEdit : public BonesHandler<BonesRichEdit>
 {
 public:
@@ -1230,7 +1290,6 @@ public:
     */
     virtual void setListener(NotifyListener * lis) = 0;
 };
-
 
 class BonesResourceManager
 {

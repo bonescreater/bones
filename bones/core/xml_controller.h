@@ -108,6 +108,8 @@ protected:
 
     bool handleText(XMLNode node, View * parent_ob, View ** ob);
 
+    bool handleInput(XMLNode node, View * parent_ob, View ** ob);
+
     bool handleShape(XMLNode node, View * parent_ob, View ** ob);
 
     bool handleScroller(XMLNode node, View * parent_ob, View ** ob);

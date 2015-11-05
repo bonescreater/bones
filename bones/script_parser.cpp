@@ -16,6 +16,7 @@
 #include "core/animation.h"
 
 #include "lua_root.h"
+#include "lua_input.h"
 #include "lua_shape.h"
 #include "lua_image.h"
 #include "lua_text.h"
@@ -217,6 +218,8 @@ void ScriptParser::onCreate(View * v)
         static_cast<LuaImage *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassText)
         static_cast<LuaText *>(ob)->notifyCreate();
+    else if (ob->getClassName() == kClassInput)
+        static_cast<LuaInput *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassRichEdit)
         static_cast<LuaRichEdit *>(ob)->notifyCreate();
     else if (ob->getClassName() == kClassWebView)
@@ -240,6 +243,8 @@ void ScriptParser::onDestroy(View * v)
         static_cast<LuaImage *>(ob)->notifyDestroy();
     else if (ob->getClassName() == kClassText)
         static_cast<LuaText *>(ob)->notifyDestroy();
+    else if (ob->getClassName() == kClassInput)
+        static_cast<LuaInput *>(ob)->notifyDestroy();
     else if (ob->getClassName() == kClassRichEdit)
         static_cast<LuaRichEdit *>(ob)->notifyDestroy();
     else if (ob->getClassName() == kClassWebView)
@@ -251,19 +256,21 @@ void ScriptParser::onDestroy(View * v)
 void ScriptParser::onCreating(View * v)
 {
     if (v->getClassName() == kClassRoot)
-        handleRoot(static_cast<Root *>(v));
+        handleView<LuaRoot, Root>(v);
     else if (v->getClassName() == kClassShape)
-        handleShape(static_cast<Shape *>(v));
+        handleView<LuaShape, Shape>(v);
     else if (v->getClassName() == kClassImage)
-        handleImage(static_cast<Image *>(v));
+        handleView<LuaImage, Image>(v);
     else if (v->getClassName() == kClassText)
-        handleText(static_cast<Text *>(v));
+        handleView<LuaText, Text>(v);
+    else if (v->getClassName() == kClassInput)
+        handleView<LuaInput, Input>(v);
     else if (v->getClassName() == kClassRichEdit)
-        handleRichEdit(static_cast<RichEdit *>(v));
+        handleView<LuaRichEdit, RichEdit>(v);
     else if (v->getClassName() == kClassWebView)
-        handleWebView(static_cast<WebView *>(v));
+        handleView<LuaWebView, WebView>(v);
     else if (v->getClassName() == kClassScroller)
-        handleScroller(static_cast<Scroller *>(v));
+        handleView<LuaScroller, Scroller>(v);
 }
 
 void ScriptParser::onDestroying(View * v)
@@ -560,48 +567,6 @@ void ScriptParser::stopAllAnimate(BonesObject * bo, bool toend)
 const char * ScriptParser::getID(BonesObject * bob)
 {
     return Core::GetXMLController()->getID(getObject(bob));
-}
-
-void ScriptParser::handleRoot(Root * ob)
-{
-    auto lo = AdoptRef(new LuaRoot(ob));
-    v2bo_[ob] = lo.get();
-}
-
-void ScriptParser::handleShape(Shape * ob)
-{
-    auto lo = AdoptRef(new LuaShape(ob));
-    v2bo_[ob] = lo.get();
-}
-
-void ScriptParser::handleImage(Image * ob)
-{
-    auto lo = AdoptRef(new LuaImage(ob));
-    v2bo_[ob] = lo.get();
-}
-
-void ScriptParser::handleText(Text * ob)
-{
-    auto lo = AdoptRef(new LuaText(ob));
-    v2bo_[ob] = lo.get();
-}
-
-void ScriptParser::handleRichEdit(RichEdit * ob)
-{
-    auto lo = AdoptRef(new LuaRichEdit(ob));
-    v2bo_[ob] = lo.get();
-}
-
-void ScriptParser::handleWebView(WebView * ob)
-{
-    auto lo = AdoptRef(new LuaWebView(ob));
-    v2bo_[ob] = lo.get();
-}
-
-void ScriptParser::handleScroller(Scroller * ob)
-{
-    auto lo = AdoptRef(new LuaScroller(ob));
-    v2bo_[ob] = lo.get();
 }
 
 bool ScriptParser::handleNotify(XMLNode node, View * parent_ob, View ** ob)

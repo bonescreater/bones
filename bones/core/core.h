@@ -16,6 +16,7 @@ extern const char * kClassView;
 extern const char * kClassImage;
 extern const char * kClassShape;
 extern const char * kClassText;
+extern const char * kClassInput;
 extern const char * kClassRichEdit;
 extern const char * kClassWebView;
 extern const char * kClassScroller;

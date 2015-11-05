@@ -21,6 +21,7 @@ const char * kClassView = "view";
 const char * kClassImage = "image";
 const char * kClassShape = "shape";
 const char * kClassText = "text";
+const char * kClassInput = "input";
 const char * kClassRichEdit = "richedit";
 const char * kClassWebView = "webview";
 const char * kClassScroller = "scroller";

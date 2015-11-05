@@ -141,6 +141,12 @@
     <ClCompile Include="bones\core\scroller.cpp">
       <Filter>core\bone\facade</Filter>
     </ClCompile>
+    <ClCompile Include="bones\core\input.cpp">
+      <Filter>core\bone\facade</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\lua_input.cpp">
+      <Filter>lua\proxy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
@@ -303,6 +309,12 @@
     </ClInclude>
     <ClInclude Include="bones\core\scroller.h">
       <Filter>core\bone\facade</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\input.h">
+      <Filter>core\bone\facade</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\lua_input.h">
+      <Filter>lua\proxy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

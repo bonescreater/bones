@@ -7,6 +7,8 @@
 #include "rich_edit.h"
 #include "image.h"
 #include "text.h"
+#include "input.h"
+
 #include "shape.h"
 #include "web_view.h"
 #include "scroller.h"
@@ -603,6 +605,8 @@ bool XMLController::createViewFromNode(XMLNode node, const char * label, View * 
             bret = handleImage(node, parent_ob, &node_ob);
         else if (!strcmp(label, kClassText))
             bret = handleText(node, parent_ob, &node_ob);
+        else if (!strcmp(label, kClassInput))
+            bret = handleInput(node, parent_ob, &node_ob);
         else if (!strcmp(label, kClassShape))
             bret = handleShape(node, parent_ob, &node_ob);
         else if (!strcmp(label, kClassScroller))
@@ -665,10 +669,11 @@ bool XMLController::handleExtendLabel(XMLNode node, const char * label, View * p
 
 bool XMLController::handleRoot(XMLNode node, View * parent_ob, View ** ob)
 {
+    assert(!parent_ob);
     //root 不能添加到父上
     if (parent_ob)
         return false;
-    assert(!parent_ob);
+
     auto v = AdoptRef(new Root);
     saveNode(v.get(), node);
     roots_.push_back(v);
@@ -679,10 +684,24 @@ bool XMLController::handleRoot(XMLNode node, View * parent_ob, View ** ob)
 
 bool XMLController::handleText(XMLNode node, View * parent_ob, View ** ob)
 {
+    assert(parent_ob);
     if (!parent_ob)
         return false;
-    assert(parent_ob);
     auto v = AdoptRef(new Text);
+    saveNode(v.get(), node);
+    attachToParentBack(parent_ob, v.get());
+    if (ob)
+        *ob = v.get();
+    return v != nullptr;
+}
+
+bool XMLController::handleInput(XMLNode node, View * parent_ob, View ** ob)
+{
+    assert(parent_ob);
+    if (!parent_ob)
+        return false;
+    
+    auto v = AdoptRef(new Input);
     saveNode(v.get(), node);
     attachToParentBack(parent_ob, v.get());
     if (ob)
