@@ -150,7 +150,8 @@ bool Root::handleComposition(NativeEvent & e)
     ce.setUserData(&e);
     EventDispatcher::Push(ce);
 
-    return kClassWebView != focus->getClassName() || msg != WM_IME_COMPOSITION;
+    return ( kClassWebView != focus->getClassName() && kClassInput != focus->getClassName())
+        || msg != WM_IME_COMPOSITION;
 }
 
 bool Root::handleWheel(NativeEvent & e)

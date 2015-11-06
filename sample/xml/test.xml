@@ -19,25 +19,30 @@
       loc:20px 20px;
       size:918px 378px;
       }
+      .input
+      {
+      loc:20px 20px;
+      size:200px 50px;
+      }
     </style>
   </head>
   <body>
     <root id ="main" class="main">
       <notify name ="onCreate" module ="shape" func ="onCreate"></notify>
       
-      <!--滚动list-->
+      <!--滚动list--><!--
       <shape class="list">
         <tabctrl></tabctrl>
-        <!--list ctrl 就是scroller 注册scroller通知-->
+        --><!--list ctrl 就是scroller 注册scroller通知--><!--
         <listctrl></listctrl>
-        <!--垂直滚动条-->
+        --><!--垂直滚动条--><!--
         <scrollbar></scrollbar>
         
         <notify name ="onCreate" module ="shape" func ="onListCreate"></notify>
         <notify name ="onSizeChanged" module ="shape" func ="onListSizeChanged"></notify>
 
-      </shape>
-
+      </shape>-->
+      <input class ="input"></input>
     </root>
   </body>
 </bones>

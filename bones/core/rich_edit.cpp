@@ -767,6 +767,7 @@ void RichEdit::onMouseEnter(MouseEvent & e)
 
 void RichEdit::onMouseLeave(MouseEvent & e)
 {
+    Area::onMouseLeave(e);
     //services_->OnTxInPlaceDeactivate();
 }
 
