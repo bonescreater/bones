@@ -17,6 +17,13 @@ public:
     {
 
     };
+private:
+    enum Status
+    {
+        kNormal,//显示光标
+        kSelect,//选中块有效 显示选中块 不显示光标
+        kIME,//IME状态下 显示光标 但光标只在IME的composition中移动
+    };
 public:
     Input();
 
@@ -60,6 +67,8 @@ protected:
 
     void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 
+    void drawBackground(SkCanvas & canvas, float opcatiy);
+
     void drawText(SkCanvas & canvas, float opacity);
 
     void drawCaret(SkCanvas & canvas, float opacity);
@@ -80,18 +89,35 @@ private:
 
     void resetCaret();
 
-    Scalar getCaretXOfContent(int index);
+    Scalar getOffsetOfContent(int index);
 
     void moveContentCaretTo(int index);
+
+    void switchToSelect(int begin, int end);
+
+    void switchToNormal(int index);
+
+    bool isInSelection(int index);
+
+    void updateCaretPos();
+
+    Scalar mapToScroll(Scalar x);
+
+    void setMaxScroll();
+
+    void scroll(Scalar delta);
 private:
     Delegate * delegate_;
+    Scalar max_scroll_;//文本滚动支持
+    Scalar current_scroll_;
     std::wstring content_;
     std::wstring composition_;//IME中的组合字符串
-    Scalar caret_left_;//光标位置
     Color color_;//字体颜色
     SkShader * shader_;
     Font font_;//字体
     std::vector<Scalar> content_widths_;
+    Scalar caret_left_;//光标位置
+    Status status_;
     //选中块处理
     int select_begin_;
     int select_end_;

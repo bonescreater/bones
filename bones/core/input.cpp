@@ -8,8 +8,9 @@ namespace bones
 {
 
 Input::Input()
-:delegate_(nullptr), caret_left_(0), color_(BONES_RGB_BLACK), shader_(nullptr),
-select_begin_(0), select_end_(0),
+:delegate_(nullptr), max_scroll_(0), current_scroll_(0), 
+caret_left_(0), color_(BONES_RGB_BLACK), shader_(nullptr),
+select_begin_(0), select_end_(0), status_(kNormal),
 password_(L'*'), pw_valid(false), display_caret_(true)
 {
 
@@ -48,9 +49,9 @@ void Input::setColor(SkShader * shader)
 void Input::setFont(const Font & font)
 {
     font_ = font;
+
     adjustContentWidthsCache();
-    //光标需要显示的时候 要更新光标位置
-    if (select_begin_ == select_end_)
+    if (kNormal == status_)
         moveContentCaretTo(select_begin_);
     inval();
 }
@@ -58,14 +59,14 @@ void Input::setFont(const Font & font)
 void Input::set(const wchar_t * text)
 {
     content_.clear();
-    resetCaret();
 
     if (text)
         content_ = text;
     adjustContentWidthsCache();
+    //更新最大可滚动范围
+    setMaxScroll();
     //选中文本框的内容
-    select_begin_ = 0;
-    select_end_ = content_.size();
+    switchToSelect(0, content_.size());
 
     inval();
 }
@@ -75,8 +76,7 @@ void Input::setPassword(bool pw, wchar_t password)
     pw_valid = pw;
     password_ = password;
     adjustContentWidthsCache();
-    //光标需要显示的时候 要更新光标位置
-    if (select_begin_ == select_end_)
+    if (kNormal == status_)
         moveContentCaretTo(select_begin_);
     inval();
 }
@@ -230,9 +230,34 @@ void Input::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 
     if (opacity == 0)
         return;
-
+    canvas.translate(current_scroll_, 0);
+    drawBackground(canvas, opacity);
     drawText(canvas, opacity);
     drawCaret(canvas, opacity);
+}
+
+void Input::drawBackground(SkCanvas & canvas, float opacity)
+{
+    //无选中块
+    if (kSelect != status_)
+        return;
+
+    SkRect rect;
+    SkPaint paint;
+    ToSkPaint(paint);
+    paint.setColor(BONES_RGB_BLUE);
+    paint.setAlpha(ClampAlpha(opacity));
+
+    //计算Rect
+    auto begin = select_begin_ < select_end_ ? select_begin_ : select_end_;
+    auto end = select_begin_ > select_end_ ? select_begin_ : select_end_;
+    SkPaint::FontMetrics fm;
+    paint.getFontMetrics(&fm);
+    Scalar text_height = fm.fBottom - fm.fTop;
+    Scalar top = getHeight() / 2 - text_height / 2;
+    rect.setLTRB(getOffsetOfContent(begin), top, getOffsetOfContent(end), top + text_height);
+    //以蓝底绘制被选中的区域
+    canvas.drawRect(rect, paint);
 }
 
 void Input::drawText(SkCanvas & canvas, float opacity)
@@ -255,6 +280,19 @@ void Input::drawText(SkCanvas & canvas, float opacity)
         if (pw_valid)
             ch = password_;
 
+        if (kSelect == status_ && isInSelection(i))
+        {
+            paint.setColor(BONES_RGB_WHITE);
+            paint.setShader(nullptr);
+            paint.setAlpha(ClampAlpha(opacity));
+        }
+        else
+        {
+            paint.setColor(color_);
+            paint.setShader(shader_);
+            paint.setAlpha(ClampAlpha(opacity, ColorGetA(color_)));
+        }
+
         canvas.drawText(&ch, sizeof(ch), left, baseline, paint);
         left += content_widths_[i];
 
@@ -263,6 +301,8 @@ void Input::drawText(SkCanvas & canvas, float opacity)
 
 void Input::drawCaret(SkCanvas & canvas, float opacity)
 {
+    if (kNormal != status_)
+        return;
     if (display_caret_)
     {
         SkPaint paint;
@@ -311,7 +351,7 @@ void Input::ToSkPaint(SkPaint & paint) const
 
 void Input::insertCharAtCaret(wchar_t ch)
 {//在光标处插入一个字符
-    if (select_begin_ != select_end_)
+    if (kSelect == status_)
     {//先删除选中块的内容
         removeSelection();
         assert(select_begin_ == select_end_);
@@ -319,13 +359,14 @@ void Input::insertCharAtCaret(wchar_t ch)
     //现在开始插入字符
     content_.insert(select_begin_, 1, ch);
     adjustContentWidthsCache();
+    setMaxScroll();
     //光标右移
     moveContentCaret(true);
 }
 
 void Input::removeTextAtCaret()
 {
-    if (select_begin_ != select_end_)
+    if (kSelect == status_)
         removeSelection();
     else
         removeCharAtCaret();
@@ -333,7 +374,7 @@ void Input::removeTextAtCaret()
 
 void Input::removeSelection()
 {
-    if (select_begin_ != select_end_)
+    if (kSelect == status_)
     {
         auto begin = select_begin_ < select_end_ ? select_begin_ : select_end_;
         auto end = select_begin_ > select_end_ ? select_begin_ : select_end_;
@@ -349,12 +390,13 @@ void Input::removeSelection()
 
 void Input::removeCharAtCaret()
 {
-    if (select_begin_ == select_end_)
+    if (kNormal == status_)
     {
         if (select_begin_ > 0)
         {
             content_.erase(select_begin_ - 1, 1);
             adjustContentWidthsCache();
+            setMaxScroll();
             moveContentCaretTo(select_begin_ - 1);
         }        
     }
@@ -384,8 +426,13 @@ void Input::resetCaret()
     caret_left_ = 0;
 }
 
-Scalar Input::getCaretXOfContent(int index)
+Scalar Input::getOffsetOfContent(int index)
 {
+    if (index < 0)
+        index = 0;
+    if (index > static_cast<int>(content_.size()))
+        index = content_.size();
+
     Scalar left = 0;
     if (index > 0)
     {
@@ -397,13 +444,77 @@ Scalar Input::getCaretXOfContent(int index)
 
 void Input::moveContentCaretTo(int index)
 {
+    switchToNormal(index);
+}
+
+void Input::switchToSelect(int begin, int end)
+{
+    status_ = kSelect;
+    select_begin_ = begin;
+    select_end_ = end;   
+}
+
+void Input::switchToNormal(int index)
+{
+    status_ = kNormal;
     if (index < 0)
         index = 0;
     if (index > static_cast<int>(content_.size()))
         index = content_.size();
 
-    select_end_ = select_begin_ = index;
-    caret_left_ = getCaretXOfContent(index);
+    select_begin_ = select_end_ = index;
+    caret_left_ = getOffsetOfContent(index);
+    //更新光标后要保证光标在可显示区域内
+    updateCaretPos();
 }
+
+bool Input::isInSelection(int index)
+{
+    auto begin = select_begin_ < select_end_ ? select_begin_ : select_end_;
+    auto end = select_begin_ > select_end_ ? select_begin_ : select_end_;
+    return index >= begin && index < end;
+}
+
+void Input::updateCaretPos()
+{
+    if (kNormal != status_)
+        return;
+
+    auto viewport_left = mapToScroll(0);
+    auto viewport_right = mapToScroll(getWidth());
+    if (caret_left_ < viewport_left)
+    {//在显示区域内左边 向右滚动
+        scroll(viewport_left - caret_left_);
+    }
+    else if (caret_left_ >= viewport_right)
+    {//在显示区域右边 向左滚动
+        scroll(viewport_right - caret_left_);
+    }
+}
+
+Scalar Input::mapToScroll(Scalar x)
+{
+    return x - current_scroll_;
+}
+
+void Input::setMaxScroll()
+{
+    max_scroll_ = getWidth() - getOffsetOfContent(content_.size());
+    if (max_scroll_ > 0)
+        max_scroll_ = 0;
+    if (current_scroll_ < max_scroll_)
+        current_scroll_ = max_scroll_;
+}
+
+//- 向左 +向右
+void Input::scroll(Scalar delta)
+{
+    current_scroll_ += delta;
+    if (current_scroll_ > 0)
+        current_scroll_ = 0;
+    if (current_scroll_ < max_scroll_)
+        current_scroll_ = max_scroll_;
+}
+
 
 }
