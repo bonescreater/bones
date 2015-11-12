@@ -150,7 +150,6 @@ void FocusController::setFocusWithReason(View * view, FocusChangeReason reason)
 {
     if (current_.get() == view)
         return;
-
     EventDispatcher dispatcher;
     EventDispatcher::Path last_path, newly_path;
 
@@ -165,8 +164,10 @@ void FocusController::setFocusWithReason(View * view, FocusChangeReason reason)
     if (view)
         dispatcher.run(FocusEvent(kET_FOCUS_IN, view, tab), newly_path);
 
+    root_->restoreCaret();
     current_.reset(view);
     reason_ = reason;
+
 
     if (last)
         dispatcher.run(FocusEvent(kET_BLUR, last, tab), last_path);

@@ -11,13 +11,18 @@
 #include "logging.h"
 #include <windowsx.h>
 #include "css_utils.h"
+#include "core_imp.h"
+#include "animation_manager.h"
+#include "res_manager.h"
 
 namespace bones
 {
 
 Root::Root()
 :mouse_(this), focus_(this), device_(nullptr), delegate_(nullptr),
-widget_(NULL), color_(0)
+widget_(NULL), color_(0), 
+caret_show_(false), caret_display_(false), caret_ani_(nullptr),
+focus_caret_display_(false)
 {
     
 }
@@ -180,6 +185,16 @@ Widget Root::getWidget()
     return widget_;
 }
 
+void Root::restoreCaret()
+{
+    notifyDestroyCaret(focus_.current());
+}
+
+void Root::restoreCursor()
+{
+    setCursor(Core::GetResManager()->getCursor("arrow"));
+}
+
 bool Root::isVisible() const
 {
     return visible();
@@ -207,7 +222,10 @@ void Root::draw()
     //无交集
     Rect local_bounds;
     getLocalBounds(local_bounds);
-    rect.intersect(local_bounds);
+
+    if (!rect.intersect(local_bounds))
+        return;
+
     if (rect.isEmpty())
         return;
 
@@ -217,6 +235,44 @@ void Root::draw()
         return;
     SkCanvas canvas(device_);
     View::draw(canvas, rect, 1.0f);
+    //绘制光标
+    drawCaret(canvas, rect);
+}
+
+void Root::drawCaret(SkCanvas & canvas, const Rect & inval)
+{
+    if (!caret_display_ && !focus_caret_display_)//光标不显示
+        return;
+    if (focus_caret_display_)
+        focus_caret_display_ = false;
+
+    //无效区跟光标有交集
+    Rect caret = getCaretRect();
+    if (!caret.intersect(inval))
+        return;
+    if (caret.isEmpty())
+        return;
+    View * focus = focus_.current();
+    if (focus)
+    {
+        float opacity = focus->getOpacity();
+        View * parent = focus->parent();
+        while (parent)
+        {
+            float popa = parent->getOpacity();
+            opacity = opacity > popa ? popa : opacity;
+            parent = parent->parent();
+        }
+
+        auto count = canvas.save();
+        canvas.clipRect(Helper::ToSkRect(caret));
+        canvas.translate(caret.left(), caret.top());
+        //只有当前焦点才能绘制光标焦点切换同样会销毁旧光标
+        if (focus)
+            focus->onDrawCaret(canvas, caret, caret_size_, opacity);
+        canvas.restoreToCount(count);
+    }
+
 }
 
 const Rect & Root::getDirtyRect() const
@@ -262,8 +318,11 @@ void Root::onPositionChanged()
 
 bool Root::notifyInval(const Rect & inval)
 {
-    dirty_.join(inval);
-    delegate_ ? delegate_->invalidRect(this, inval) : 0;
+    if (!inval.isEmpty())
+    {
+        dirty_.join(inval);
+        delegate_ ? delegate_->invalidRect(this, inval) : 0;
+    }
     return true;
 }
 
@@ -305,21 +364,94 @@ bool Root::notifyChangeCursor(View * n, Cursor cursor)
 }
 //caret打算自绘
 bool Root::notifyShowCaret(View * n, bool show)
-{//应该是只有root 和focus才能显示光标 但是show 在windows 是要一一对应的
-    //所以只能由view自己来负责显示以及隐藏
-    //delegate_ ? delegate_->showCaret(this, show) : true;
+{//只有当前焦点
+    if (n && n == focus_.current() && caret_show_ != show && caret_ani_)
+    {
+        caret_show_ = show;
+        if (caret_show_)//定时器继续运行
+        {
+            Core::GetAnimationManager()->resume(caret_ani_);
+        }
+        else
+        {//暂停定时器 隐藏光标显示
+            Core::GetAnimationManager()->pause(caret_ani_);
+            caret_display_ = false;
+            inval(getCaretRect());
+        }
+    }
     return true;
 }
 
-bool Root::notifyChangeCaretPos(const Point & pt)
+bool Root::notifyChangeCaretPos(View * n, const Point & pt)
 {
-    //delegate_ ? delegate_->changeCaretPos(this, pt) : 0;
+    if (n && n == focus_.current() && caret_ani_)
+    {
+        if (caret_loc_ != pt)
+        {
+            Rect caret = getCaretRect();
+            caret_loc_ = pt;
+            if (caret_show_)
+            {
+                focus_caret_display_ = true;
+                caret.join(getCaretRect());
+                inval(caret);
+            }
+        }
+    }
     return true;
 }
 
-bool Root::notifyCreateCaret(Caret caret, const Size & size)
+bool Root::notifyChangeCaretSize(View * n, const Size & size)
 {
-    //delegate_ ? delegate_->createCaret(this ,caret, size) : 0;
+    if (n && n == focus_.current() && caret_ani_)
+    {
+        if (caret_size_ != size)
+        {
+            Rect caret = getCaretRect();
+            caret_size_ = size;
+            if (caret_show_)
+            {
+                focus_caret_display_ = true;
+                caret.join(getCaretRect());
+                inval(caret);
+            }
+        }
+    }
+    return true;
+}
+
+bool Root::notifyCreateCaret(View * n)
+{
+    if (n && n == focus_.current())
+    {
+        assert(caret_ani_ == nullptr);
+        if (caret_ani_)
+            destroyCaret();
+        //创建一个光标
+        caret_ani_ = new Animation(this, 400, -1);
+        caret_ani_->bind(BONES_CLASS_CALLBACK_3(&Root::onCaretRun, this));
+        caret_ani_->bind(Animation::kStop,
+            BONES_CLASS_CALLBACK_2(&Root::onCaretStop, this));
+        caret_ani_->bind(Animation::kStart,
+            BONES_CLASS_CALLBACK_2(&Root::onCaretStart, this));
+
+        Core::GetAnimationManager()->add(caret_ani_);
+        //光标闪烁暂停
+        Core::GetAnimationManager()->pause(caret_ani_);
+    }
+    return true;
+}
+
+bool Root::notifyDestroyCaret(View * n)
+{//任何view都可以销毁光标 以便 写控件的时候偷懒
+    //但是标准的写法还是应该create和destroy对应
+    //如果光标存在则移除光标
+    if (caret_ani_)
+    {
+        Core::GetAnimationManager()->remove(caret_ani_, false);
+        caret_ani_->release();
+        caret_ani_ = nullptr;
+    }
     return true;
 }
 
@@ -361,6 +493,45 @@ void Root::adjustPixmap()
         }            
     }
 }
+
+
+Rect Root::getCaretRect()
+{
+    return Rect::MakeXYWH(caret_loc_.x(), caret_loc_.y(), 
+        caret_size_.width(), caret_size_.height());
+
+}
+
+void Root::onCaretRun(Animation * sender, View * target, float progress)
+{//光标启用后 会自动闪烁
+    caret_display_ = !caret_display_;
+    if (focus_caret_display_)
+    {
+        focus_caret_display_ = false;
+        caret_display_ = true;
+    }
+    inval(getCaretRect());
+}
+
+void Root::onCaretStop(Animation * sender, View * target)
+{//销毁光标
+    Rect rect = getCaretRect();
+    caret_loc_.set(0, 0);
+    caret_size_.set(0, 0);
+    caret_show_ = false;
+    caret_display_ = false;
+    inval(rect);
+}
+
+void Root::onCaretStart(Animation * sender, View * target)
+{
+    caret_loc_.set(0, 0);
+    caret_size_.set(0, 0);
+    caret_show_ = false;
+    caret_display_ = false;
+}
+
+
 
 BONES_CSS_TABLE_BEGIN(Root, View)
 BONES_CSS_SET_FUNC("color", &Root::setColor)

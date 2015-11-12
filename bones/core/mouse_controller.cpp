@@ -132,8 +132,9 @@ void MouseController::shiftOver(View * n)
             MouseEvent me(kET_MOUSE_LEAVE, kMB_NONE, over_.get(), empty, empty, 0);
             dispatcher.run(me, old_path);
         }
+        root_->restoreCursor();
         over_ = target;
-        root_->setCursor(::LoadImage(NULL, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_SHARED));
+
         if (over_)
         {
             Point empty;

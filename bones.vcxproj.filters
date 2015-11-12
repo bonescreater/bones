@@ -105,9 +105,6 @@
     <ClCompile Include="bones\core\css_utils.cpp">
       <Filter>core\base\css</Filter>
     </ClCompile>
-    <ClCompile Include="bones\core\res_manager.cpp">
-      <Filter>core\base\css</Filter>
-    </ClCompile>
     <ClCompile Include="bones\core\css_manager.cpp">
       <Filter>core\base\css</Filter>
     </ClCompile>
@@ -146,6 +143,9 @@
     </ClCompile>
     <ClCompile Include="bones\lua_input.cpp">
       <Filter>lua\proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\res_manager.cpp">
+      <Filter>core\base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -271,9 +271,6 @@
     <ClInclude Include="bones\core\css_utils.h">
       <Filter>core\base\css</Filter>
     </ClInclude>
-    <ClInclude Include="bones\core\res_manager.h">
-      <Filter>core\base\css</Filter>
-    </ClInclude>
     <ClInclude Include="bones\core\css_manager.h">
       <Filter>core\base\css</Filter>
     </ClInclude>
@@ -315,6 +312,9 @@
     </ClInclude>
     <ClInclude Include="bones\lua_input.h">
       <Filter>lua\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\res_manager.h">
+      <Filter>core\base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

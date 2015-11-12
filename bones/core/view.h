@@ -149,7 +149,11 @@ public:
 
     void setCaretPos(const Point & pt);
 
-    void createCaret(Caret caret, const Size & size);
+    void setCaretSize(const Size & size);
+
+    void createCaret();
+
+    void destroyCaret();
 
     virtual bool isGroupFocusTraversable() const;
 
@@ -174,6 +178,9 @@ protected:
     virtual bool onHitTest(const Point & pt);
 
     virtual void onDraw(SkCanvas & canvas, const Rect & inval, float opacity);
+
+    virtual void onDrawCaret(SkCanvas & canvas, const Rect & inval, 
+                             const Size & size, float opacity);
 
     virtual void onSizeChanging(Size & size);
 
@@ -243,9 +250,13 @@ protected:
 
     virtual bool notifyShowCaret(View * n, bool show);
 
-    virtual bool notifyChangeCaretPos(const Point & pt);
+    virtual bool notifyChangeCaretPos(View * n, const Point & pt);
 
-    virtual bool notifyCreateCaret(Caret caret, const Size & size);
+    virtual bool notifyChangeCaretSize(View * n, const Size & size);
+
+    virtual bool notifyCreateCaret(View * n);
+
+    virtual bool notifyDestroyCaret(View * n);
 private:
     void insertFocusSblings(View * v, int index);
 
@@ -300,7 +311,7 @@ protected:
 
     float opacity_;
     friend class EventDispatcher;
-    friend class RootView;
+    friend class Root;
 };
 
 }

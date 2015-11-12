@@ -548,18 +548,35 @@ bool View::notifyShowCaret(View * n, bool show)
     return true;
 }
 
-bool View::notifyChangeCaretPos(const Point & pt)
+bool View::notifyChangeCaretPos(View * n, const Point & pt)
 {
     if (parent_)
-        return parent_->notifyChangeCaretPos(Point::Make(loc_.x() + pt.x(), loc_.y() + pt.y()));
-        
+    {
+        Point p = pt;
+        p.offset(loc_);
+        return parent_->notifyChangeCaretPos(n, p);
+    }     
     return true;
 }
 
-bool View::notifyCreateCaret(Caret caret, const Size & size)
+bool View::notifyChangeCaretSize(View * n, const Size & size)
 {
     if (parent_)
-        return parent_->notifyCreateCaret(caret, size);
+        return parent_->notifyChangeCaretSize(n, size);
+    return true;
+}
+
+bool View::notifyCreateCaret(View * n)
+{
+    if (parent_)
+        return parent_->notifyCreateCaret(n);
+    return true;
+}
+
+bool View::notifyDestroyCaret(View * n)
+{
+    if (parent_)
+        return parent_->notifyDestroyCaret(n);
     return true;
 }
 
@@ -624,6 +641,12 @@ bool View::onHitTest(const Point & pt)
 
 void View::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
 {
+    ;
+}
+
+void View::onDrawCaret(SkCanvas & canvas, const Rect & inval, 
+                       const Size & size, float opacity)
+{//光标绘制
     ;
 }
 
@@ -855,12 +878,22 @@ void View::showCaret(bool show)
 
 void View::setCaretPos(const Point & pt)
 {
-    notifyChangeCaretPos(pt);
+    notifyChangeCaretPos(this, pt);
 }
 
-void View::createCaret(Caret caret, const Size & size)
+void View::setCaretSize(const Size & size)
 {
-    notifyCreateCaret(caret, size);
+    notifyChangeCaretSize(this, size);
+}
+
+void View::createCaret()
+{
+    notifyCreateCaret(this);
+}
+
+void View::destroyCaret()
+{
+    notifyDestroyCaret(this);
 }
 
 bool View::isGroupFocusTraversable() const

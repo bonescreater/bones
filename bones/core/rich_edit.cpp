@@ -317,15 +317,16 @@ public:
     //@cmember Create the caret
     virtual BOOL TxCreateCaret(HBITMAP hbmp, INT xWidth, INT yHeight) override
     {
-        rich_ ? rich_->createCaret(hbmp,
-            Size::Make(static_cast<Scalar>(xWidth), 
-            static_cast<Scalar>(yHeight))):0;
+        assert(0);
+        //rich_ ? rich_->createCaret(Size::Make(static_cast<Scalar>(xWidth), 
+        //    static_cast<Scalar>(yHeight))):0;
         return TRUE;
     }
 
     //@cmember Show the caret
     virtual BOOL TxShowCaret(BOOL fShow) override
     {
+        assert(0);
         rich_ ? rich_->showCaret(!!fShow) : 0;
         return TRUE;
     }
@@ -333,6 +334,7 @@ public:
     //@cmember Set the caret position
     virtual BOOL TxSetCaretPos(INT x, INT y) override
     {
+        assert(0);
         rich_ ? rich_->setCaretPos(
             Point::Make(static_cast<Scalar>(x), 
                         static_cast<Scalar>(y))) : 0;

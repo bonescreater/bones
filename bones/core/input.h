@@ -17,13 +17,6 @@ public:
     {
 
     };
-private:
-    enum Status
-    {
-        kNormal,//显示光标
-        kSelect,//选中块有效 显示选中块 不显示光标
-        kIME,//IME状态下 显示光标 但光标只在IME的composition中移动
-    };
 public:
     Input();
 
@@ -43,8 +36,6 @@ public:
 
     const char * getClassName() const override;
 protected:
-    void onMouseEnter(MouseEvent & e) override;
-
     void onMouseLeave(MouseEvent & e) override;
 
     void onMouseMove(MouseEvent & e) override;
@@ -62,16 +53,21 @@ protected:
     void onKeyUp(KeyEvent & e) override;
 
     void onChar(KeyEvent & e) override;
+
+    void onSizeChanged() override;
+
+    void onPositionChanged() override;
 protected:
     DelegateBase * delegate() override;
 
     void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 
+    void onDrawCaret(SkCanvas & canvas, const Rect & inval,
+                     const Size & size, float opacity) override;
+
     void drawBackground(SkCanvas & canvas, float opcatiy);
 
-    void drawText(SkCanvas & canvas, float opacity);
-
-    void drawCaret(SkCanvas & canvas, float opacity);
+    void drawText(SkCanvas & canvas, float opacity); 
 private:
     void adjustContentWidthsCache();
 
@@ -87,8 +83,6 @@ private:
     
     void moveContentCaret(bool right);
 
-    void resetCaret();
-
     Scalar getOffsetOfContent(int index);
 
     void moveContentCaretTo(int index);
@@ -99,31 +93,44 @@ private:
 
     bool isInSelection(int index);
 
-    void updateCaretPos();
+    void updateCaretPos(int caret);
 
     Scalar mapToScroll(Scalar x);
+
+    Scalar mapToViewPort(Scalar x);
 
     void setMaxScroll();
 
     void scroll(Scalar delta);
+
+    int getIndexByOffset(Scalar x);
+
+    int checkIndex(int index);
+
+    Size getCaretSize();
+
+    Point getCaretPoint();
 private:
     Delegate * delegate_;
     Scalar max_scroll_;//文本滚动支持
     Scalar current_scroll_;
-    std::wstring content_;
-    std::wstring composition_;//IME中的组合字符串
+
+    std::wstring content_;//包含composition
+    int composition_start_;//composition 起始索引
+    int composition_length_;//composition 长度
+
     Color color_;//字体颜色
     SkShader * shader_;
     Font font_;//字体
+    //缓存宽度
     std::vector<Scalar> content_widths_;
-    Scalar caret_left_;//光标位置
-    Status status_;
+    int caret_;//光标索引
     //选中块处理
     int select_begin_;
-    int select_end_;
+    
     wchar_t password_;
     bool pw_valid;
-    bool display_caret_;//是否显示光标
+    bool left_down_;//左键是否在input中按下
 };
 
 }
