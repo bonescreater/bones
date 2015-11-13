@@ -36,6 +36,18 @@ public:
 
         virtual void changeCursor(Root * sender, Cursor cursor) = 0;
     };
+private:
+    struct DirtyRect
+    {
+        enum Flag
+        {
+            kNone = 0,
+            kView = 1 << 0,
+            kCaret = 1 << 1,
+        };
+        int flag_;
+        Rect rect;
+    };
 public:
     Root();
 
@@ -73,6 +85,8 @@ public:
 
     void restoreCursor();
 
+    void update();
+
     bool isVisible() const override;
 
     Root * getRoot() override;
@@ -109,7 +123,9 @@ protected:
 
     virtual bool notifyDestroyCaret(View * n) override;
 private:
-    void drawCaret(SkCanvas & canvas, const Rect & inval);
+    void drawCaret(SkCanvas & canvas);
+
+    void drawView(SkCanvas & canvas, const Rect & inval);
 
     Rect getCaretRect();
 
@@ -118,6 +134,10 @@ private:
     void onCaretStop(Animation * sender, View * target);
 
     void onCaretStart(Animation * sender, View * target);
+
+    void invalView(const Rect & inval);
+
+    void invalCaret();
 protected:
     DelegateBase * delegate() override;
 private:
@@ -133,18 +153,20 @@ private:
     MouseController mouse_;
     AcceleratorManager accelerators_;
     Surface back_buffer_;
-    SkBaseDevice * device_;
-    Rect dirty_;
+    Surface view_buffer_;
+    SkBaseDevice * view_device_;
     bool has_focus_;
     void * bits_;
     size_t pitch_;
     Color color_;
+    DirtyRect dirty_;
+    DirtyRect wait_dirty_;
     //caret support
     Point caret_loc_;
     Size caret_size_;
     bool caret_show_;
     bool caret_display_;
-    bool focus_caret_display_;//强制显示光标 为false 则按照caret_display显示
+    bool force_caret_display_;//强制显示光标 为false 则按照caret_display显示
     Animation * caret_ani_;
     friend class MouseController;
 };

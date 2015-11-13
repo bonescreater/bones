@@ -171,7 +171,6 @@ private:
     Delegate * delegate_;
     //存放所有的view 
     std::map<RefPtr<View>, NodeAttrs> ob2node_;
-    std::vector<RefPtr<Root>> roots_;
     //模块的描述
     Module main_module_;
     std::map<std::string, Module> modules_;

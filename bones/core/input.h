@@ -62,7 +62,7 @@ protected:
 
     void onDraw(SkCanvas & canvas, const Rect & inval, float opacity) override;
 
-    void onDrawCaret(SkCanvas & canvas, const Rect & inval,
+    void onDrawCaret(SkCanvas & canvas,
                      const Size & size, float opacity) override;
 
     void drawBackground(SkCanvas & canvas, float opcatiy);

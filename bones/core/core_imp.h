@@ -15,6 +15,7 @@ class AnimationManager;
 class CSSManager;
 class ResManager;
 class XMLController;
+class RootManager;
 class Point;
 
 
@@ -53,6 +54,8 @@ public:
     static CSSManager * GetCSSManager();
 
     static ResManager * GetResManager();
+
+    static RootManager * GetRootManager();
 
     static XMLController * GetXMLController();
 

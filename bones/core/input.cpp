@@ -359,7 +359,7 @@ void Input::drawText(SkCanvas & canvas, float opacity)
     }
 }
 
-void Input::onDrawCaret(SkCanvas & canvas, const Rect & inval,
+void Input::onDrawCaret(SkCanvas & canvas,
     const Size & size, float opacity)
 {
     SkPaint paint;

@@ -179,7 +179,7 @@ protected:
 
     virtual void onDraw(SkCanvas & canvas, const Rect & inval, float opacity);
 
-    virtual void onDrawCaret(SkCanvas & canvas, const Rect & inval, 
+    virtual void onDrawCaret(SkCanvas & canvas, 
                              const Size & size, float opacity);
 
     virtual void onSizeChanging(Size & size);

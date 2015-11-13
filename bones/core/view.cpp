@@ -644,7 +644,7 @@ void View::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
     ;
 }
 
-void View::onDrawCaret(SkCanvas & canvas, const Rect & inval, 
+void View::onDrawCaret(SkCanvas & canvas, 
                        const Size & size, float opacity)
 {//光标绘制
     ;

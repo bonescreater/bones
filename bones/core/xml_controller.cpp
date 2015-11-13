@@ -17,6 +17,7 @@
 #include "css_manager.h"
 #include "res_manager.h"
 #include "animation_manager.h"
+#include "root_manager.h"
 
 #include <fstream>
 
@@ -154,9 +155,11 @@ View * XMLController::getViewByID(View * ob, const char * id)
 
     if (!ob)
     {
-        for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
+        auto roots = Core::GetRootManager();
+        int count = static_cast<int>(roots->getRootCount());
+        for (auto i = 0; i < count; ++i)
         {
-            auto target = getViewByID(iter->get(), id);
+            auto target = getViewByID(roots->getRoot(i), id);
             if (target)
                 return target;
         }
@@ -223,21 +226,9 @@ void XMLController::clean(View * v)
     
     notifyDestroy(v);
 
-    RefPtr<View> rv;
-    rv.reset(v);
     recursiveClear(v);
-    if (kClassRoot == rv->getClassName())
-    {
-        for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
-        {
-            if ((*iter).get() != v)
-                continue;
-            //NativeEvent n = { WM_MOUSELEAVE, 0, 0, 0 };
-            //(*iter)->handleMouse(n);
-            roots_.erase(iter);
-            break;
-        }
-    }
+    if (kClassRoot == v->getClassName())
+        Core::GetRootManager()->remove(static_cast<Root *>(v));
     //删除xml中的节点
     //rapidxml并不会释放node的内存所以 删除xml节点没意义了
 }
@@ -426,8 +417,11 @@ XMLNode XMLController::getHead(const XMLDocument & doc)
 
 void XMLController::notifyCreate()
 {//过程中不要clean
-    for (auto iter = roots_.rbegin(); iter != roots_.rend(); ++iter)
-        notifyCreate(iter->get());
+    auto roots = Core::GetRootManager();
+    int count = static_cast<int>(roots->getRootCount());
+    for (auto i = count - 1; i >= 0; --i)
+        notifyCreate(roots->getRoot(i));
+
 }
 
 void XMLController::notifyCreate(View * ob)
@@ -447,8 +441,10 @@ void XMLController::notifyCreate(View * ob)
 
 void XMLController::notifyPrepare()
 {
-    for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
-        notifyPrepare(iter->get());
+    auto roots = Core::GetRootManager();
+    int count = static_cast<int>(roots->getRootCount());
+    for (auto i = 0; i < count; ++i)
+        notifyPrepare(roots->getRoot(i));
 }
 
 void XMLController::notifyPrepare(View * ob)
@@ -468,8 +464,10 @@ void XMLController::notifyPrepare(View * ob)
 
 void XMLController::notifyDestroy()
 {
-    for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
-        notifyDestroy(iter->get());
+    auto roots = Core::GetRootManager();
+    int count = static_cast<int>(roots->getRootCount());
+    for (auto i = 0; i < count; ++i)
+        notifyDestroy(roots->getRoot(i));
 }
 
 void XMLController::notifyDestroy(View * ob)
@@ -492,8 +490,10 @@ void XMLController::notifyDestroy(View * ob)
 
 void XMLController::applyClass()
 {
-    for (auto iter = roots_.begin(); iter != roots_.end(); ++iter)
-        applyClass(iter->get());
+    auto roots = Core::GetRootManager();
+    int count = static_cast<int>(roots->getRootCount());
+    for (auto i = 0; i < count; ++i)
+        applyClass(roots->getRoot(i));
 }
 
 void XMLController::applyClass(View * ob)
@@ -521,20 +521,15 @@ void XMLController::applyClass(View * ob)
 
 void XMLController::clear()
 {
-
     //删除节点父子结构
-    for (auto iter = roots_.rbegin(); iter != roots_.rend(); ++iter)
-    {
-        recursiveClear(iter->get());
+    auto roots = Core::GetRootManager();
+    int count = static_cast<int>(roots->getRootCount());
+    for (auto i = count - 1; i >= 0; --i)
+        recursiveClear(roots->getRoot(i));
 
-        //(*iter)->recursiveDetachChildren();
-        //NativeEvent n = { WM_MOUSELEAVE, 0, 0, 0 };
-        //(*iter)->handleMouse(n);
-    }
     assert(ob2node_.empty());
     ob2node_.clear();
-    roots_.clear();
-
+    Core::GetRootManager()->remove();
     modules_.clear();
     main_module_.clean();   
     Core::GetCSSManager()->clean();
@@ -676,7 +671,7 @@ bool XMLController::handleRoot(XMLNode node, View * parent_ob, View ** ob)
 
     auto v = AdoptRef(new Root);
     saveNode(v.get(), node);
-    roots_.push_back(v);
+    Core::GetRootManager()->add(v.get());
     if (ob)
         *ob = v.get();
     return v != nullptr;

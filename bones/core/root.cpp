@@ -19,18 +19,18 @@ namespace bones
 {
 
 Root::Root()
-:mouse_(this), focus_(this), device_(nullptr), delegate_(nullptr),
-widget_(NULL), color_(0), 
+:mouse_(this), focus_(this), view_device_(nullptr), delegate_(nullptr),
+widget_(NULL), color_(0), has_focus_(false), bits_(nullptr), pitch_(0),
 caret_show_(false), caret_display_(false), caret_ani_(nullptr),
-focus_caret_display_(false)
+force_caret_display_(false)
 {
     
 }
 
 Root::~Root()
 {
-    if (device_)
-        device_->unref();
+    if (view_device_)
+        view_device_->unref();
 }
 
 void Root::setDelegate(Delegate * delegate)
@@ -195,6 +195,22 @@ void Root::restoreCursor()
     setCursor(Core::GetResManager()->getCursor("arrow"));
 }
 
+void Root::update()
+{//root 空闲例程用来提交无效区
+    if (DirtyRect::kNone == wait_dirty_.flag_)
+        return;
+    if (DirtyRect::kView & wait_dirty_.flag_)
+        dirty_.flag_ |= DirtyRect::kView;
+    if (DirtyRect::kCaret & wait_dirty_.flag_)
+        dirty_.flag_ |= DirtyRect::kCaret;
+    //合并无效区
+    dirty_.rect.join(wait_dirty_.rect);
+    wait_dirty_.flag_ = DirtyRect::kNone;
+    wait_dirty_.rect.setEmpty();
+
+    delegate_ ? delegate_->invalidRect(this, dirty_.rect) : 0;
+}
+
 bool Root::isVisible() const
 {
     return visible();
@@ -217,41 +233,55 @@ void Root::draw()
     if (!isDirty())
         return;
 
-    Rect rect(dirty_);
-    dirty_.setEmpty();
-    //无交集
+    DirtyRect backup(dirty_);
+    dirty_.flag_ = DirtyRect::kNone;
+    dirty_.rect.setEmpty();
+
     Rect local_bounds;
     getLocalBounds(local_bounds);
-
-    if (!rect.intersect(local_bounds))
+    //与root 无交集
+    if (!backup.rect.intersect(local_bounds))
         return;
 
-    if (rect.isEmpty())
+    if (backup.rect.isEmpty())
+        return;
+    //与root 有交集准备绘制
+    //看位图是否已经准备好
+    if (!back_buffer_.isValid() || !view_buffer_.isValid())
+        return;
+    if (!view_device_)
         return;
 
-    if (!back_buffer_.isValid())
-        return;
-    if (!device_)
-        return;
-    SkCanvas canvas(device_);
-    View::draw(canvas, rect, 1.0f);
-    //绘制光标
-    drawCaret(canvas, rect);
+    SkCanvas view_canvas(view_device_);
+    if (backup.flag_ & DirtyRect::kView)
+        drawView(view_canvas, backup.rect);    
+
+    //将view的位图绘制到backbuffer上
+    SkCanvas canvas(Helper::ToSkBitmap(back_buffer_));
+    SkPaint paint;
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    canvas.drawBitmap(Helper::ToSkBitmap(view_buffer_), 0, 0, &paint);
+
+    //因为backbuffer已经被刷新了 所以将caret当前的状态绘制上去就行了
+    drawCaret(canvas);
 }
 
-void Root::drawCaret(SkCanvas & canvas, const Rect & inval)
-{
-    if (!caret_display_ && !focus_caret_display_)//光标不显示
-        return;
-    if (focus_caret_display_)
-        focus_caret_display_ = false;
+void Root::drawView(SkCanvas & canvas, const Rect & inval)
+{//根据无效区进行绘制
+    View::draw(canvas, inval, 1.0f);
+}
 
-    //无效区跟光标有交集
-    Rect caret = getCaretRect();
-    if (!caret.intersect(inval))
+void Root::drawCaret(SkCanvas & canvas)
+{
+    if (!caret_display_ && !force_caret_display_)//光标不显示
         return;
+    if (force_caret_display_)
+        force_caret_display_ = false;
+  
+    Rect caret = getCaretRect();
     if (caret.isEmpty())
         return;
+    //无效区跟光标有交集
     View * focus = focus_.current();
     if (focus)
     {
@@ -269,7 +299,7 @@ void Root::drawCaret(SkCanvas & canvas, const Rect & inval)
         canvas.translate(caret.left(), caret.top());
         //只有当前焦点才能绘制光标焦点切换同样会销毁旧光标
         if (focus)
-            focus->onDrawCaret(canvas, caret, caret_size_, opacity);
+            focus->onDrawCaret(canvas, Size::Make(caret.width(), caret.height()), opacity);
         canvas.restoreToCount(count);
     }
 
@@ -277,12 +307,12 @@ void Root::drawCaret(SkCanvas & canvas, const Rect & inval)
 
 const Rect & Root::getDirtyRect() const
 {
-    return dirty_;
+    return dirty_.rect;
 }
 
 bool Root::isDirty() const
 {
-    return !dirty_.isEmpty();
+    return (DirtyRect::kNone != dirty_.flag_) && (!dirty_.rect.isEmpty());
 }
 
 const Surface & Root::getBackBuffer() const
@@ -318,11 +348,7 @@ void Root::onPositionChanged()
 
 bool Root::notifyInval(const Rect & inval)
 {
-    if (!inval.isEmpty())
-    {
-        dirty_.join(inval);
-        delegate_ ? delegate_->invalidRect(this, inval) : 0;
-    }
+    invalView(inval);
     return true;
 }
 
@@ -364,7 +390,7 @@ bool Root::notifyChangeCursor(View * n, Cursor cursor)
 }
 //caret打算自绘
 bool Root::notifyShowCaret(View * n, bool show)
-{//只有当前焦点
+{//只有当前焦点才可以对caret进行操作
     if (n && n == focus_.current() && caret_show_ != show && caret_ani_)
     {
         caret_show_ = show;
@@ -376,7 +402,8 @@ bool Root::notifyShowCaret(View * n, bool show)
         {//暂停定时器 隐藏光标显示
             Core::GetAnimationManager()->pause(caret_ani_);
             caret_display_ = false;
-            inval(getCaretRect());
+            force_caret_display_ = false;
+            invalCaret();
         }
     }
     return true;
@@ -388,13 +415,14 @@ bool Root::notifyChangeCaretPos(View * n, const Point & pt)
     {
         if (caret_loc_ != pt)
         {
-            Rect caret = getCaretRect();
+            if (caret_show_)
+                invalCaret();
+
             caret_loc_ = pt;
             if (caret_show_)
             {
-                focus_caret_display_ = true;
-                caret.join(getCaretRect());
-                inval(caret);
+                force_caret_display_ = true;
+                invalCaret();
             }
         }
     }
@@ -407,13 +435,14 @@ bool Root::notifyChangeCaretSize(View * n, const Size & size)
     {
         if (caret_size_ != size)
         {
-            Rect caret = getCaretRect();
+            if (caret_show_)
+                invalCaret();
+
             caret_size_ = size;
             if (caret_show_)
             {
-                focus_caret_display_ = true;
-                caret.join(getCaretRect());
-                inval(caret);
+                force_caret_display_ = true;
+                invalCaret();
             }
         }
     }
@@ -475,17 +504,17 @@ void Root::adjustPixmap()
     int h = static_cast<int>(getHeight());
     if (w != back_buffer_.getWidth() || h != back_buffer_.getHeight())
     {
-        if (device_)
-        {
-            device_->unref();
-            device_ = nullptr;
-        }
         back_buffer_.unlock();
         back_buffer_.free();
-        if (w && h)
+        if (view_device_)
+            view_device_->unref();
+        view_buffer_.free();
+
+        if (w > 0 && h > 0)
         {
             back_buffer_.allocate(w, h);
-            device_ = Device::Create(back_buffer_);
+            view_buffer_.allocate(w, h);
+            view_device_ = Device::Create(view_buffer_);
             Pixmap::LockRec lr;
             back_buffer_.lock(lr);
             bits_ = lr.bits;
@@ -505,22 +534,21 @@ Rect Root::getCaretRect()
 void Root::onCaretRun(Animation * sender, View * target, float progress)
 {//光标启用后 会自动闪烁
     caret_display_ = !caret_display_;
-    if (focus_caret_display_)
+    if (force_caret_display_)
     {
-        focus_caret_display_ = false;
+        force_caret_display_ = false;
         caret_display_ = true;
     }
-    inval(getCaretRect());
+    invalCaret();;
 }
 
 void Root::onCaretStop(Animation * sender, View * target)
 {//销毁光标
-    Rect rect = getCaretRect();
+    invalCaret();
     caret_loc_.set(0, 0);
     caret_size_.set(0, 0);
     caret_show_ = false;
     caret_display_ = false;
-    inval(rect);
 }
 
 void Root::onCaretStart(Animation * sender, View * target)
@@ -531,6 +559,22 @@ void Root::onCaretStart(Animation * sender, View * target)
     caret_display_ = false;
 }
 
+void Root::invalView(const Rect & inval)
+{
+    if (inval.isEmpty())
+        return;
+    wait_dirty_.flag_ |= DirtyRect::kView;
+    wait_dirty_.rect.join(inval);
+}
+
+void Root::invalCaret()
+{
+    auto rect = getCaretRect();
+    if (rect.isEmpty())
+        return;
+    wait_dirty_.flag_ |= DirtyRect::kCaret;
+    wait_dirty_.rect.join(rect);
+}
 
 
 BONES_CSS_TABLE_BEGIN(Root, View)

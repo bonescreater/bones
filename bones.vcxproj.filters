@@ -147,6 +147,9 @@
     <ClCompile Include="bones\core\res_manager.cpp">
       <Filter>core\base</Filter>
     </ClCompile>
+    <ClCompile Include="bones\core\root_manager.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
@@ -314,6 +317,9 @@
       <Filter>lua\proxy</Filter>
     </ClInclude>
     <ClInclude Include="bones\core\res_manager.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\root_manager.h">
       <Filter>core\base</Filter>
     </ClInclude>
   </ItemGroup>

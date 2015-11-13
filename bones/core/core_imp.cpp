@@ -3,6 +3,8 @@
 #include "animation_manager.h"
 #include "css_manager.h"
 #include "res_manager.h"
+#include "root_manager.h"
+
 #include "xml_controller.h"
 #include "point.h"
 
@@ -42,6 +44,8 @@ static CSSManager * css = nullptr;
 
 static ResManager * res = nullptr;
 
+static RootManager * roots = nullptr;
+
 static XMLController * xml = nullptr;
 
 static bool cef_enable = false;
@@ -61,6 +65,8 @@ bool Core::StartUp(const Config & config)
     if (bret)
         bret = !!(res = new ResManager);
     if (bret)
+        bret = !!(roots = new RootManager);
+    if (bret)
     {
         cef_enable = config.cef_enable;
         bret = WebView::StartUp(config.cef_locate);
@@ -75,10 +81,13 @@ void Core::ShutDown()
 {
     if (xml)
         delete xml;
+    xml = nullptr;
 
     WebView::ShutDown();
 
-    xml = nullptr;
+    if (roots)
+        delete roots;
+    roots = nullptr;
 
     if (res)
         delete res;
@@ -111,6 +120,7 @@ void Core::Update()
         current = frame_count;
     }
     WebView::Update();
+    roots->update();
 }
 
 bool Core::CEFEnable()
@@ -136,6 +146,11 @@ CSSManager * Core::GetCSSManager()
 ResManager * Core::GetResManager()
 {
     return res;
+}
+
+RootManager * Core::GetRootManager()
+{
+    return roots;
 }
 
 XMLController * Core::GetXMLController()
