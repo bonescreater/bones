@@ -36,6 +36,8 @@ public:
 
     const char * getClassName() const override;
 protected:
+    void onMouseEnter(MouseEvent & e) override;
+
     void onMouseLeave(MouseEvent & e) override;
 
     void onMouseMove(MouseEvent & e) override;

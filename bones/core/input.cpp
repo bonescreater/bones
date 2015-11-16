@@ -104,6 +104,17 @@ Input::DelegateBase * Input::delegate()
     return delegate_;
 }
 
+void Input::onMouseEnter(MouseEvent & e)
+{
+    Area::onMouseEnter(e);
+    if (e.canceled())
+        return;
+
+    if (Event::kTarget != e.phase())
+        return;
+    setCursor(kIbeam);
+}
+
 void Input::onMouseLeave(MouseEvent & e)
 {
     Area::onMouseLeave(e);
@@ -114,6 +125,7 @@ void Input::onMouseLeave(MouseEvent & e)
         return;
 
     left_down_ = false;
+    setCursor(kArrow);
     inval();
 }
 
@@ -525,6 +537,7 @@ void Input::switchToSelect(int begin, int end)
     caret_  = checkIndex(end);
     updateCaretPos(caret_);
     showCaret(false);
+    setCursor(kArrow);
 }
 
 void Input::switchToNormal(int index)
@@ -533,6 +546,7 @@ void Input::switchToNormal(int index)
     select_begin_ = caret_ = checkIndex(index);
     updateCaretPos(caret_);
     showCaret(true);
+    setCursor(kIbeam);
 }
 
 bool Input::isInSelection(int index)

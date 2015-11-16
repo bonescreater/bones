@@ -22,7 +22,6 @@ extern const char * kClassWebView;
 extern const char * kClassScroller;
 
 typedef float Scalar;
-typedef HANDLE Cursor;
 typedef HWND Widget;
 
 #define BONES_CLASS_CALLBACK_0(__selector__, __target__, ...) std::bind(__selector__, __target__, ##__VA_ARGS__)

@@ -162,10 +162,10 @@ void LuaRoot::invalidRect(Root * sender, const Rect & rect)
     lua_pop(l, 2);
 }
 
-void LuaRoot::changeCursor(Root * sender, Cursor cursor)
+void LuaRoot::changeCursor(Root * sender, View::Cursor cursor)
 {
     bool stop = false;
-    notify_ ? notify_->changeCursor(this, cursor, stop) : 0;
+    notify_ ? notify_->changeCursor(this, static_cast<BonesCursor>(cursor), stop) : 0;
     if (stop)
         return;
     //(self, cursor)

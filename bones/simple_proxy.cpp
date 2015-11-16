@@ -209,22 +209,10 @@ void ResourceManager::addPixmap(const char * key, BonesPixmap pm)
     Core::GetResManager()->addPixmap(key, *Utils::ToPixmap(pm));
 }
 
-void ResourceManager::addCursor(const char * key, BonesCursor cursor)
-{
-    IF_NULL_RETURN(key);
-    Core::GetResManager()->addCursor(key, cursor);
-}
-
 BonesPixmap ResourceManager::getPixmap(const char * key)
 {
     IF_NULL_RETURN(key) nullptr;
     return Utils::ToBonesPixmap(Core::GetResManager()->getPixmap(key));
-}
-
-BonesCursor ResourceManager::getCursor(const char * key)
-{
-    IF_NULL_RETURN(key) NULL;
-    return Core::GetResManager()->getCursor(key);
 }
 
 void ResourceManager::clean()

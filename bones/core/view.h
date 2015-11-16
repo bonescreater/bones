@@ -20,6 +20,28 @@ class View : public Ref, public AcceleratorTarget
 {
 public:
     typedef std::vector<View *> Views;
+    //光标预定义
+    enum Cursor
+    {
+        kArrow,
+        kIbeam,
+        kWait,
+        kCross,
+        kUpArrow,
+        kSize,
+        kIcon,
+        kSizeNWSE,
+        kSizeNESW,
+        kSizeWE,
+        kSizeNS,
+        kSizeAll,
+        kNo,
+        kHand,
+        kAppStarting,
+        kHelp,
+        
+        kCustom,
+    };
 private:
     struct Flag
     {

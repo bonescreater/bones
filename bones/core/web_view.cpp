@@ -257,8 +257,9 @@ public:
         CursorType type,
         const CefCursorInfo & custom_cursor_info) override
     {
-        if (!skip_cursor_)
-            web_view_ ? web_view_->setCursor(cursor) : 0;
+        assert(0);
+        //if (!skip_cursor_)
+        //    web_view_ ? web_view_->setCursor(type) : 0;
     }
 protected:
     CefRefPtr<CefFrame> mainFrame()

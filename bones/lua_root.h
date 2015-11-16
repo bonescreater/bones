@@ -45,7 +45,7 @@ public:
 
     void invalidRect(Root * sender, const Rect & rect) override;
 
-    void changeCursor(Root * sender, Cursor cursor) override;
+    void changeCursor(Root * sender, View::Cursor cursor) override;
 
     LUA_HANDLER(Root);
 };

@@ -29,20 +29,7 @@
   <body>
     <root id ="main" class="main">
       <notify name ="onCreate" module ="shape" func ="onCreate"></notify>
-      
-      <!--滚动list-->
-      <shape class="list">
-        <tabctrl></tabctrl>
-        <!--list ctrl 就是scroller 注册scroller通知-->
-        <listctrl></listctrl>
-        <!--垂直滚动条-->
-        <scrollbar></scrollbar>
-        
-        <notify name ="onCreate" module ="shape" func ="onListCreate"></notify>
-        <notify name ="onSizeChanged" module ="shape" func ="onListSizeChanged"></notify>
-
-      </shape>
-      <!--<input class ="input"></input>-->
+      <input class ="input"></input>
     </root>
   </body>
 </bones>

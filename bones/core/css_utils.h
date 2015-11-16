@@ -3,6 +3,7 @@
 
 #include "core.h"
 #include "css_types.h"
+#include "view.h"
 
 namespace bones
 {
@@ -33,7 +34,7 @@ public:
 
     static Point CSSStrToPX(const CSSString & x, const CSSString & y);
 
-    static Cursor CSSStrToCursor(const CSSString & str);
+    static View::Cursor CSSStrToCursor(const CSSString & str);
 
     static Pixmap * CSSStrToPixmap(const CSSString & str);
 

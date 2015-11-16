@@ -64,7 +64,7 @@ bool BSPanel::Uninitialize()
 }
 
 BSPanel::BSPanel() :track_mouse_(false), ex_style_(0), hwnd_(NULL),
-root_(nullptr), cursor_(NULL), dc_(NULL)
+root_(nullptr), cursor_(kBonesArrow), dc_(NULL)
 {
     ;
 }
@@ -174,7 +174,6 @@ void BSPanel::layeredDraw()
 
 LRESULT BSPanel::handleCreate(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    cursor_ = ::LoadCursor(NULL, IDC_ARROW);
     ex_style_ = ::GetWindowLongPtr(hwnd_, GWL_EXSTYLE);
     dc_ = ::CreateCompatibleDC(NULL);
     return 0;
@@ -195,7 +194,39 @@ LRESULT BSPanel::handleSetCursor(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (HTCLIENT == LOWORD(lParam))
     {
-        ::SetCursor((HCURSOR)cursor_);
+        auto wc = IDC_ARROW;
+        if (cursor_ == kBonesIbeam)
+            wc = IDC_IBEAM;
+        else if (cursor_ == kBonesWait)
+            wc = IDC_WAIT;
+        else if (cursor_ == kBonesCross)
+            wc = IDC_CROSS;
+        else if (cursor_ == kBonesUpArrow)
+            wc = IDC_UPARROW;
+        else if (cursor_ == kBonesSize)
+            wc = IDC_SIZE;
+        else if (cursor_ == kBonesIcon)
+            wc = IDC_ICON;
+        else if (cursor_ == kBonesSizeNWSE)
+            wc = IDC_SIZENWSE;
+        else if (cursor_ == kBonesSizeNESW)
+            wc = IDC_SIZENESW;
+        else if (cursor_ == kBonesSizeWE)
+            wc = IDC_SIZEWE;
+        else if (cursor_ == kBonesSizeNS)
+            wc = IDC_SIZENS;
+        else if (cursor_ == kBonesSizeAll)
+            wc = IDC_SIZEALL;
+        else if (cursor_ == kBonesNo)
+            wc = IDC_NO;
+        else if (cursor_ == kBonesHand)
+            wc = IDC_HAND;
+        else if (cursor_ == kBonesAppStarting)
+            wc = IDC_APPSTARTING;
+        else if (cursor_ == kBonesHelp)
+            wc = IDC_HELP;
+
+        ::SetCursor((HCURSOR)::LoadImage(NULL, wc, IMAGE_CURSOR, 0, 0, LR_SHARED));
         return TRUE;
     }
     return defProcessEvent(uMsg, wParam, lParam);

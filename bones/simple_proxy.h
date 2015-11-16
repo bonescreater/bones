@@ -87,11 +87,7 @@ class ResourceManager : public BonesResourceManager
 public:
     void addPixmap(const char * key, BonesPixmap pm) override;
 
-    void addCursor(const char * key, BonesCursor cursor) override;
-
     BonesPixmap getPixmap(const char * key) override;
-
-    BonesCursor getCursor(const char * key) override;
 
     void clean() override;
 };

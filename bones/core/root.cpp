@@ -193,7 +193,7 @@ void Root::restoreCaret()
 
 void Root::restoreCursor()
 {
-    notifyChangeCursor(mouse_.over(), Core::GetResManager()->getCursor("arrow"));
+    notifyChangeCursor(mouse_.over(), kArrow);
 }
 
 void Root::update()

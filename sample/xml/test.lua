@@ -3,9 +3,9 @@ local mod = {}
 
 --self代表root标签
 function mod.onCreate(self)
-    self:setOpacity(0.5)
---    local input = self:getChildAt(0)
---    input:setContent("aaaaabbb")
+    --self:setOpacity(0.5)
+    local input = self:getChildAt(0)
+    input:setContent("aaaaabbb")
 end
 
 --点击tab页产生的事件

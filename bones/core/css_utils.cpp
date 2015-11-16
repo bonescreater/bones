@@ -150,9 +150,40 @@ Color CSSUtils::CSSStrToColor(const CSSString & str)
     return value;
 }
 
-Cursor CSSUtils::CSSStrToCursor(const CSSString & str)
+View::Cursor CSSUtils::CSSStrToCursor(const CSSString & str)
 {
-    return Core::GetResManager()->getCursor(std::string(str.begin, str.length).data());
+    View::Cursor cursor = View::kArrow;
+    if (str == "ibeam")
+        cursor = View::kIbeam;
+    else if (str == "wait")
+        cursor = View::kWait;
+    else if (str == "cross")
+        cursor = View::kCross;
+    else if (str == "up-arrow")
+        cursor = View::kUpArrow;
+    else if (str == "size")
+        cursor = View::kSize;
+    else if (str == "icon")
+        cursor = View::kIcon;
+    else if (str == "size-nwse")
+        cursor = View::kSizeNWSE;
+    else if (str == "size-nesw")
+        cursor = View::kSizeNESW;
+    else if (str == "size-we")
+        cursor = View::kSizeWE;
+    else if (str == "size-ns")
+        cursor = View::kSizeNS;
+    else if (str == "size-all")
+        cursor = View::kSizeAll;
+    else if (str == "no")
+        cursor = View::kNo;
+    else if (str == "hand")
+        cursor = View::kHand;
+    else if (str == "app-starting")
+        cursor = View::kAppStarting;
+    else if (str == "help")
+        cursor = View::kHelp;
+    return cursor;
 }
 
 Pixmap * CSSUtils::CSSStrToPixmap(const CSSString & str)

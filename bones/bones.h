@@ -75,7 +75,6 @@ BONES_API(BonesCore *) BonesGetCore();
 
 //基础类型声明
 typedef float BonesScalar;
-typedef HANDLE BonesCursor;
 typedef HWND BonesWidget;
 typedef void * BonesShader;
 typedef void * BonesPath;
@@ -715,6 +714,29 @@ public:
         virtual void onWheel(T * sender, BonesWheelEvent & e, bool & stop) = 0;
     };
 }; 
+/*!bones光标样式*/
+enum BonesCursor
+{
+    kBonesArrow,
+    kBonesIbeam,
+    kBonesWait,
+    kBonesCross,
+    kBonesUpArrow,
+    kBonesSize,
+    kBonesIcon,
+    kBonesSizeNWSE,
+    kBonesSizeNESW,
+    kBonesSizeWE,
+    kBonesSizeNS,
+    kBonesSizeAll,
+    kBonesNo,
+    kBonesHand,
+    kBonesAppStarting,
+    kBonesHelp,
+
+    kBonesCustom,
+};
+
 /*!root 标签提供了与native window 交互的接口*/
 class BonesRoot : public BonesHandler<BonesRoot>
 {
@@ -1296,11 +1318,7 @@ class BonesResourceManager
 public:
     virtual void addPixmap(const char * key, BonesPixmap pm) = 0;
 
-    virtual void addCursor(const char * key, BonesCursor cursor) = 0;
-
     virtual BonesPixmap getPixmap(const char * key) = 0;
-
-    virtual BonesCursor getCursor(const char * key) = 0;
 
     virtual void clean() = 0;
 };
