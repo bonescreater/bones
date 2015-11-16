@@ -24,7 +24,8 @@ widget_(NULL), color_(0), has_focus_(false), bits_(nullptr), pitch_(0),
 caret_show_(false), caret_display_(false), caret_ani_(nullptr),
 force_caret_display_(false)
 {
-    
+    dirty_.flag_ = DirtyRect::kNone;
+    wait_dirty_.flag_ = DirtyRect::kNone;
 }
 
 Root::~Root()
@@ -192,7 +193,7 @@ void Root::restoreCaret()
 
 void Root::restoreCursor()
 {
-    setCursor(Core::GetResManager()->getCursor("arrow"));
+    notifyChangeCursor(mouse_.over(), Core::GetResManager()->getCursor("arrow"));
 }
 
 void Root::update()
@@ -384,8 +385,9 @@ bool Root::notifySetFocus(View * n)
 }
 
 bool Root::notifyChangeCursor(View * n, Cursor cursor)
-{
-    delegate_ ? delegate_->changeCursor(this, cursor) : 0;
+{//只有当前over的指针可以修改cursor
+    if (n && n == mouse_.over())
+        delegate_ ? delegate_->changeCursor(this, cursor) : 0;
     return true;
 }
 //caret打算自绘

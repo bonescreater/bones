@@ -454,7 +454,9 @@ void Input::removeCharAtCaret()
         content_.erase(caret_ - 1, 1);
         adjustContentWidthsCache();
         setMaxScroll();
+
         updateCaretPos(caret_ - 1);
+        select_begin_ = caret_;
     }         
 }
 
@@ -470,6 +472,7 @@ void Input::moveContentCaret(bool right)
         caret = checkIndex(begin - 1);
 
     updateCaretPos(caret);
+    select_begin_ = caret_;
 }
 
 Scalar Input::getOffsetOfContent(int index)
