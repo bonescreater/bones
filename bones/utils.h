@@ -3,6 +3,7 @@
 
 #include "bones.h"
 #include "lua.hpp"
+#include "core/event.h"
 
 class SkPath;
 class SkShader;
@@ -37,6 +38,8 @@ public:
     static BonesColor ToBonesColor(lua_Integer i);
 
     static int ToInt(lua_Number i);
+
+    static void ToEMForMouse(BonesRoot::MouseMessage msg, EventType & type, MouseButton & mb);
 };
 }
 

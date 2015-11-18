@@ -3,7 +3,11 @@
 #include "lua_check.h"
 #include "core/root.h"
 #include "core/helper.h"
+#include "core/event.h"
+
 #include "script_parser.h"
+#include "utils.h"
+
 namespace bones
 {
 
@@ -83,34 +87,65 @@ void LuaRoot::getBackBuffer(const void * & data, size_t & pitch) const
     object_->getBackBuffer(data, pitch);
 }
 
-bool LuaRoot::handleMouse(UINT msg, WPARAM wparam, LPARAM lparam)
+bool LuaRoot::sendMouse(MouseMessage msg, const BonesPoint & pt, int flags)
 {
-    NativeEvent e = { msg, wparam, lparam, 0 };
-    return object_->handleMouse(e);
+    EventType type = kET_COUNT;
+    MouseButton mb = kMB_NONE;
+    Point p = { pt.x, pt.y };
+    Utils::ToEMForMouse(msg, type, mb);
+    MouseEvent e(type, mb, object_.get(), p, p, flags);
+    return object_->sendMouse(e);
 }
 
-bool LuaRoot::handleKey(UINT msg, WPARAM wparam, LPARAM lparam)
+bool LuaRoot::sendKey(KeyMessage msg, int32_t vk, uint32_t states, int flags)
 {
-    NativeEvent e = { msg, wparam, lparam, 0 };
-    return object_->handleKey(e);
+    EventType type = kET_COUNT;
+    if (kKeyDown == msg || kSysKeyDown == msg)
+        type = kET_KEY_DOWN;
+    else if (kKeyUp == msg || kSysKeyUp == msg)
+        type = kET_KEY_UP;
+    else if (kChar == msg || kSysChar == msg)
+        type = kET_CHAR;
+    else
+        return false;
+    bool system = (BonesRoot::kSysChar == msg) || (BonesRoot::kSysKeyDown == msg) || 
+        (BonesRoot::kSysKeyUp == msg);
+    KeyEvent ke(type, object_.get(), (KeyboardCode)vk, *(KeyState *)(&states), 
+        system, flags);
+    return object_->sendKey(ke);
 }
 
-bool LuaRoot::handleFocus(UINT msg, WPARAM wparam, LPARAM lparam)
+bool LuaRoot::sendWheel(int dx, int dy, const BonesPoint & pt, int flags)
 {
-    NativeEvent e = { msg, wparam, lparam, 0 };
-    return object_->handleFocus(e);
+    Point p = { pt.x, pt.y };
+    WheelEvent we(kET_MOUSE_WHEEL, object_.get(), dx, dy, p, p, flags);
+    return object_->sendWheel(we);
 }
 
-bool LuaRoot::handleComposition(UINT msg, WPARAM wparam, LPARAM lparam)
+bool LuaRoot::sendFocus(bool focus)
 {
-    NativeEvent e = { msg, wparam, lparam, 0 };
-    return object_->handleComposition(e);
+    return object_->sendFocus(focus);
 }
 
-bool LuaRoot::handleWheel(UINT msg, WPARAM wparam, LPARAM lparam)
+bool LuaRoot::sendComposition(IMEMessage msg, const IMEInfo * info)
 {
-    NativeEvent e = { msg, wparam, lparam, 0 };
-    return object_->handleWheel(e);
+    //NativeEvent e = { msg, wparam, lparam, 0 };
+    EventType type = kET_COUNT;
+    if (BonesRoot::kCompositionStart == msg)
+        type = kET_COMPOSITION_START;
+    else if (BonesRoot::kCompositionUpdate == msg)
+        type = kET_COMPOSITION_UPDATE;
+    else if (BonesRoot::kCompositionEnd == msg)
+        type = kET_COMPOSITION_END;
+    else
+        return false;
+
+    CompositionEvent e(type, object_.get(),
+        info ? info->index : 0,
+        info ? info->dbcs : 0,
+        info ? info->str : nullptr,
+        info ? info->cursor : 0);
+    return object_->sendComposition(e);
 }
 
 void LuaRoot::requestFocus(Root * sender)

@@ -37,6 +37,111 @@ static HMODULE GetModuleFromAddress(void * address)
     GetModuleHandleEx(flags, (LPCWSTR)address, &module);
     return module;
 }
+//from cef osr
+static int ToFlagsForKeyEvent(WPARAM wparam, LPARAM lparam)
+{
+    int flags = BonesRoot::kMFNone;
+    if (::GetKeyState(VK_SHIFT) < 0)
+        flags |= BonesRoot::kMFShiftDown;
+    if (::GetKeyState(VK_CONTROL) < 0)
+        flags |= BonesRoot::kMFControlDown;
+    if (::GetKeyState(VK_MENU) < 0)
+        flags |= BonesRoot::kMFAltDown;
+    // Low bit set from GetKeyState indicates "toggled".
+    if (::GetKeyState(VK_NUMLOCK) & 1)
+        flags |= BonesRoot::kMFNumLockOn;
+    if (::GetKeyState(VK_CAPITAL) & 1)
+        flags |= BonesRoot::kMFCapsLockOn;
+
+    switch (wparam) {
+    case VK_RETURN:
+        if ((lparam >> 16) & KF_EXTENDED)
+            flags |= BonesRoot::kMFIsKeyPad;
+        break;
+    case VK_INSERT:
+    case VK_DELETE:
+    case VK_HOME:
+    case VK_END:
+    case VK_PRIOR:
+    case VK_NEXT:
+    case VK_UP:
+    case VK_DOWN:
+    case VK_LEFT:
+    case VK_RIGHT:
+        if (!((lparam >> 16) & KF_EXTENDED))
+            flags |= BonesRoot::kMFIsKeyPad;
+        break;
+    case VK_NUMLOCK:
+    case VK_NUMPAD0:
+    case VK_NUMPAD1:
+    case VK_NUMPAD2:
+    case VK_NUMPAD3:
+    case VK_NUMPAD4:
+    case VK_NUMPAD5:
+    case VK_NUMPAD6:
+    case VK_NUMPAD7:
+    case VK_NUMPAD8:
+    case VK_NUMPAD9:
+    case VK_DIVIDE:
+    case VK_MULTIPLY:
+    case VK_SUBTRACT:
+    case VK_ADD:
+    case VK_DECIMAL:
+    case VK_CLEAR:
+        flags |= BonesRoot::kMFIsKeyPad;
+        break;
+    case VK_SHIFT:
+        if (::GetKeyState(VK_LSHIFT))
+            flags |= BonesRoot::kMFIsLeft;
+        else if (::GetKeyState(VK_RSHIFT))
+            flags |= BonesRoot::kMFIsRight;
+        break;
+    case VK_CONTROL:
+        if (::GetKeyState(VK_LCONTROL))
+            flags |= BonesRoot::kMFIsLeft;
+        else if (::GetKeyState(VK_RCONTROL))
+            flags |= BonesRoot::kMFIsRight;
+        break;
+    case VK_MENU:
+        if (::GetKeyState(VK_LMENU))
+            flags |= BonesRoot::kMFIsLeft;
+        else if (::GetKeyState(VK_RMENU))
+            flags |= BonesRoot::kMFIsRight;
+        break;
+    case VK_LWIN:
+        flags |= BonesRoot::kMFIsLeft;
+        break;
+    case VK_RWIN:
+        flags |= BonesRoot::kMFIsRight;
+        break;
+    }
+    return flags;
+}
+
+static int ToFlagsForMouseEvent()
+{
+    int flags = BonesRoot::kMFNone;;
+    if (::GetKeyState(VK_SHIFT) < 0)
+        flags |= BonesRoot::kMFShiftDown;
+    if (::GetKeyState(VK_CONTROL) < 0)
+        flags |= BonesRoot::kMFControlDown;
+    if (::GetKeyState(VK_MENU) < 0)
+        flags |= BonesRoot::kMFAltDown;
+
+    if (::GetKeyState(VK_LBUTTON) < 0)
+        flags |= BonesRoot::kMFLeftMouseDown;
+    if (::GetKeyState(VK_RBUTTON) < 0)
+        flags |= BonesRoot::kMFRightMouseDowm;
+    if (::GetKeyState(VK_MBUTTON) < 0)
+        flags |= BonesRoot::kMFMiddleMouseDown;
+
+    // Low bit set from GetKeyState indicates "toggled".
+    if (::GetKeyState(VK_NUMLOCK) & 1)
+        flags |= BonesRoot::kMFNumLockOn;
+    if (::GetKeyState(VK_CAPITAL) & 1)
+        flags |= BonesRoot::kMFCapsLockOn;
+    return flags;
+}
 
 bool BSPanel::Initialize()
 {
@@ -234,14 +339,72 @@ LRESULT BSPanel::handleSetCursor(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT BSPanel::handleKey(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    root_->handleKey(uMsg, wParam, lParam);
+    BonesRoot::KeyMessage km;
+    if (WM_CHAR == uMsg)
+        km = BonesRoot::kChar;
+    else if (WM_SYSCHAR == uMsg)
+        km = BonesRoot::kSysChar;
+    else if (WM_KEYDOWN == uMsg)
+        km = BonesRoot::kKeyDown;
+    else if (WM_SYSKEYDOWN == uMsg)
+        km = BonesRoot::kSysKeyDown;
+    else if (WM_KEYUP == uMsg)
+        km = BonesRoot::kKeyUp;
+    else if (WM_SYSKEYUP == uMsg)
+        km = BonesRoot::kSysKeyUp;
+    else
+        return 0;
+
+    root_->sendKey(km, wParam, lParam, ToFlagsForKeyEvent(wParam, lParam));
     return 0;
 }
 
 LRESULT BSPanel::handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    BonesRoot::IMEMessage m;
+    BonesRoot::IMEInfo info = { 0 };
+    if (WM_IME_STARTCOMPOSITION == uMsg)
+        m = BonesRoot::kCompositionStart;
+    else if (WM_IME_COMPOSITION == uMsg)
+    {
+        m = BonesRoot::kCompositionUpdate;
+        info.dbcs = wParam;
+        HIMC imc = ::ImmGetContext(hwnd_);
+        if (imc)
+        {
+            info.index = lParam;
+            if (lParam & GCS_RESULTSTR)
+            {
+                void * str = nullptr;
+                auto size = ImmGetCompositionString(imc, GCS_RESULTSTR, str, 0);
+                str = new wchar_t[size + 1];
+                ImmGetCompositionString(imc, GCS_RESULTSTR, str, size + 2);
+                info.str = static_cast<wchar_t *>(str);
+            }
+            else if (lParam & GCS_COMPSTR)
+            {
+                void * str = nullptr;
+                auto size = ImmGetCompositionString(imc, GCS_COMPSTR, str, 0);
+                str = new wchar_t[size + 1];
+                ImmGetCompositionString(imc, GCS_COMPSTR, str, size + 2);
+                info.str = static_cast<wchar_t *>(str);
+                if (lParam & GCS_CURSORPOS)
+                    info.cursor = ImmGetCompositionString(imc, GCS_CURSORPOS, NULL, 0);
+            }
+            ::ImmReleaseContext(hwnd_, imc);
+        }
+
+    }     
+    else if (WM_IME_ENDCOMPOSITION == uMsg)
+        m = BonesRoot::kCompositionEnd;
+    else
+        return 0;
     //cef osr 目前不支持ime 临时通过返回值来处理
-    if (!root_->handleComposition(uMsg, wParam, lParam))
+    bool handle = root_->sendComposition(m, BonesRoot::kCompositionUpdate == m ? &info : nullptr);
+    if (info.str)
+        delete info.str;
+
+    if (!handle)
         return defProcessEvent(uMsg, wParam, lParam);
     return 0;
 }
@@ -259,7 +422,7 @@ LRESULT BSPanel::handlePositionChanges(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT BSPanel::handleFocus(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    root_->handleFocus(uMsg, wParam, lParam);
+    root_->sendFocus(uMsg == WM_SETFOCUS);
     return 0;
 }
 
@@ -291,7 +454,10 @@ LRESULT BSPanel::handleMouse(UINT uMsg, WPARAM wParam, LPARAM lParam)
         pt.x = GET_X_LPARAM(lParam);
         pt.y = GET_Y_LPARAM(lParam);
         ::ScreenToClient(hwnd_, &pt);
-        root_->handleWheel(uMsg, wParam, MAKELPARAM(pt.x, pt.y));
+        auto delta = GET_WHEEL_DELTA_WPARAM(wParam);
+        BonesPoint p = { static_cast<BonesScalar>(pt.x), static_cast<BonesScalar>(pt.y) };
+        root_->sendWheel(WM_MOUSEHWHEEL == uMsg ? delta : 0, 
+            WM_MOUSEWHEEL == uMsg ? delta : 0, p, ToFlagsForMouseEvent());
         return 0;
     }
     switch (uMsg)
@@ -306,7 +472,48 @@ LRESULT BSPanel::handleMouse(UINT uMsg, WPARAM wParam, LPARAM lParam)
         track_mouse_ = false;
         break;
     }
-    root_->handleMouse(uMsg, wParam, lParam);
+    BonesRoot::MouseMessage mm;
+    switch (uMsg)
+    {
+    case WM_MOUSEMOVE:
+        mm = BonesRoot::kMouseMove;
+        break;
+    case WM_LBUTTONDBLCLK:
+        mm = BonesRoot::kLButtonDClick;
+        break;
+    case WM_LBUTTONDOWN:
+        mm = BonesRoot::kLButtonDown;
+        break;
+    case WM_LBUTTONUP:
+        mm = BonesRoot::kLButtonUp;
+        break;
+    case WM_RBUTTONDBLCLK:
+        mm = BonesRoot::kRButtonDClick;
+        break;
+    case WM_RBUTTONDOWN:
+        mm = BonesRoot::kRButtonDown;
+        break;
+    case WM_RBUTTONUP:
+        mm = BonesRoot::kRButtonUp;
+        break;
+    case WM_MBUTTONDOWN:
+        mm = BonesRoot::kMButtonDown;
+        break;
+    case WM_MBUTTONUP:
+        mm = BonesRoot::kMButtonUp;
+        break;
+    case WM_MBUTTONDBLCLK:
+        mm = BonesRoot::kMButtonDClick;
+        break;
+    case WM_MOUSELEAVE:
+        mm = BonesRoot::kMouseLeave;
+        break;
+    default:
+        return 0;
+    }
+    BonesPoint p = { static_cast<BonesScalar>(GET_X_LPARAM(lParam)),
+        static_cast<BonesScalar>(GET_Y_LPARAM(lParam)) };
+    root_->sendMouse(mm, p, ToFlagsForMouseEvent());
     return 0;
 }
 

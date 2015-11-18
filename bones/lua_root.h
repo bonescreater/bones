@@ -29,17 +29,17 @@ public:
 
     HBITMAP getBackBuffer() const override;
 
-    void getBackBuffer(const void * & data, size_t & pitch) const;
+    void getBackBuffer(const void * & data, size_t & pitch) const override;
 
-    bool handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    bool sendMouse(MouseMessage msg, const BonesPoint & pt, int flags) override;
 
-    bool handleKey(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    bool sendKey(KeyMessage msg, int32_t vk, uint32_t states, int flags) override;
 
-    bool handleFocus(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    bool sendWheel(int dx, int dy, const BonesPoint & pt, int flags) override;
 
-    bool handleComposition(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    bool sendFocus(bool focus) override;
 
-    bool handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    bool sendComposition(IMEMessage msg, const IMEInfo * info) override;
 
     void requestFocus(Root * sender) override;
 

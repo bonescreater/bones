@@ -6,7 +6,7 @@ namespace bones
 
 Event::Event() 
 :type_(kET_COUNT), phase_(kCapturing), path_(nullptr),
-bubbles_(true), cancelable_(true), canceled_(false), propagation_(true), user_data_(nullptr)
+bubbles_(true), cancelable_(true), canceled_(false), propagation_(true)
 {
 
 }
@@ -43,16 +43,6 @@ EventType Event::type() const
 Event::Phase Event::phase() const
 {
     return phase_;
-}
-
-void Event::setUserData(void * ud)
-{
-    user_data_ = ud;
-}
-
-void * Event::getUserData() const
-{
-    return user_data_;
 }
 
 void Event::attach(const EventDispatcher::Path * path)
@@ -280,10 +270,37 @@ CompositionEvent * CompositionEvent::From(Event & e)
     return nullptr;
 }
 
-CompositionEvent::CompositionEvent(EventType type, View * target)
+CompositionEvent::CompositionEvent(EventType type, View * target,
+    long index, unsigned int dbcs,
+    const wchar_t * str,
+    long cursor)
 {
     type_ = type;
     target_.reset(target);
+    index_ = index;
+    dbcs_ = dbcs;
+    str_ = str;
+    cursor_ = cursor;
+}
+
+long CompositionEvent::index() const
+{
+    return index_;
+}
+
+unsigned int CompositionEvent::dbcs() const
+{
+    return dbcs_;
+}
+
+const wchar_t * CompositionEvent::str() const
+{
+    return str_;
+}
+
+long CompositionEvent::cursor() const
+{
+    return cursor_;
 }
 
 }

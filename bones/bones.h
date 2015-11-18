@@ -766,6 +766,72 @@ public:
         */
         virtual void changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop) = 0;
     };
+    enum MouseMessage
+    {
+        kMouseMove,
+        kLButtonDown,
+        kLButtonUp,
+        kLButtonDClick,
+        kRButtonDown,
+        kRButtonUp,
+        kRButtonDClick,
+        kMButtonDown,
+        kMButtonUp,
+        kMButtonDClick,    
+        kMouseLeave,
+    };
+
+    enum KeyMessage
+    {
+        kKeyDown,
+        kChar,
+        kKeyUp,
+        kSysKeyDown,
+        kSysChar,
+        kSysKeyUp,
+    };
+
+    //equal EventFlags in core/event.h
+    enum MessageFlag
+    {
+        kMFNone = 0,       // Used to denote no flags explicitly
+        kMFCapsLockOn = 1 << 0,
+        kMFShiftDown = 1 << 1,
+        kMFControlDown = 1 << 2,
+        kMFAltDown = 1 << 3,
+        kMFLeftMouseDown = 1 << 4,
+        kMFMiddleMouseDown = 1 << 5,
+        kMFRightMouseDowm = 1 << 6,
+        kMFCommandDown = 1 << 7,  // GUI Key (e.g. Command on OS X keyboards,
+        // Search on Chromebook keyboards,
+        // Windows on MS-oriented keyboards)
+        kMFNumLockOn = 1 << 8,
+        kMFIsKeyPad = 1 << 9,
+        kMFIsLeft = 1 << 10,
+        kMFIsRight = 1 << 11,
+    };
+    //IME
+    enum IMEMessage
+    {
+        kCompositionStart,
+        kCompositionUpdate,
+        kCompositionEnd,
+    };
+    //equal WINDOWS define
+    enum IMEIndex
+    {
+        kResultStr = GCS_RESULTSTR,
+        kCompStr = GCS_COMPSTR,
+        kCursorPos = GCS_CURSORPOS,
+    };
+
+    struct IMEInfo
+    {
+        long index;
+        unsigned int dbcs;
+        const wchar_t * str;
+        long cursor;
+    };
     /*!设置root的颜色
     @param[in] color root的颜色
     */
@@ -798,25 +864,25 @@ public:
     /*!传递mouse消息
     @return 通常返回true
     */
-    virtual bool handleMouse(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    virtual bool sendMouse(MouseMessage msg, const BonesPoint & pt, int flags) = 0;
     /*!传递key消息
     @return 通常返回true
     */
-    virtual bool handleKey(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    virtual bool sendKey(KeyMessage msg, int32_t vk, uint32_t states, int flags) = 0;
+    /*!传递wheel消息
+    @return 通常返回true
+    */
+    virtual bool sendWheel(int dx, int dy, const BonesPoint & pt, int flags) = 0;
     /*!传递focus消息
     @return 通常返回true
     */
-    virtual bool handleFocus(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    virtual bool sendFocus(bool focus) = 0;
     /*!传递ime消息
     @return 返回false则需要自己处理
     @note 由于webview使用的cef浏览器 暂时没有找到处理IME的接口
     所以返回false时需要自己处理 通常是调用DefWindowProc
     */
-    virtual bool handleComposition(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
-    /*!传递wheel消息
-    @return 通常返回true
-    */
-    virtual bool handleWheel(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+    virtual bool sendComposition(IMEMessage msg, const IMEInfo * info) = 0;
     /*!设置鼠标事件回调
     @param[in] phase 事件阶段 仅监听指定阶段的事件
     @param[in] lis 事件监听接口

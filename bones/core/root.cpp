@@ -50,57 +50,28 @@ void Root::attachTo(Widget widget)
     widget_ = widget;
 }
 
-bool Root::handleMouse(NativeEvent & e)
+bool Root::sendMouse(MouseEvent & e)
 {
-    int flags = Helper::ToFlagsForMouseEvent();
-
-    //暂时不管XBUTTON
-    EventType et = kET_COUNT;
-    MouseButton mb = kMB_NONE;
-
-    Helper::ToEMForMouse(e.msg, et, mb);
-    if (kET_COUNT == et)
-    {
-        BLG_VERBOSE << "Temporarily not supported: " << e.msg;
-        return true;
-    }
-    auto & lparam = e.lparam;
-    Point p(static_cast<Scalar>(GET_X_LPARAM(lparam)),
-        static_cast<Scalar>(GET_Y_LPARAM(lparam)));
-    MouseEvent me(et, mb, this, p, p, flags);
-    me.setUserData(&e);
-    mouse_.handleEvent(me);
+    if (e.target() != this)
+        return false;
+    mouse_.handleEvent(e);
     return true;
 }
 
-bool Root::handleKey(NativeEvent & e)
+bool Root::sendKey(KeyEvent & e)
 {
     //处理键盘事件
-    EventType type = kET_COUNT;
-    auto & msg = e.msg;
-    if (WM_CHAR == msg || WM_SYSCHAR == msg)
-        type = kET_CHAR;
-    else if (WM_KEYDOWN == msg || WM_SYSKEYDOWN == msg)
-        type = kET_KEY_DOWN;
-    else if (WM_KEYUP == msg || WM_SYSKEYUP == msg)
-        type = kET_KEY_UP;
-    else
+    if (e.target() != this)
         return true;
 
-    bool system = (msg == WM_SYSCHAR) || (msg == WM_SYSKEYDOWN) || (msg == WM_SYSKEYUP);
-    auto flags = Helper::ToFlagsForKeyEvent(e.wparam, e.lparam);
     bool handle = false;
-
-    View * focus = focus_.current();
-    KeyEvent ke(type, focus, (KeyboardCode)e.wparam, *(KeyState *)(&e.lparam),
-                system, flags);
-    ke.setUserData(&e);
-    if (kET_CHAR != type)
+    View * fv = focus_.current();
+    KeyEvent ke(e.type(), fv, e.key(), e.state(), e.system(), e.getFlags());
+    if (kET_CHAR != ke.type())
     {//非字符
-
         bool skip = false;        
-        if (focus)
-            skip = focus->skipDefaultKeyEventProcessing(ke);
+        if (fv)
+            skip = fv->skipDefaultKeyEventProcessing(ke);
         //焦点管理器会询问是否skip
         if (!skip)
         {//skip == false;
@@ -110,74 +81,43 @@ bool Root::handleKey(NativeEvent & e)
                 handle = accelerators_.process(Accelerator::make(ke));
         }
     }
-    if (!handle && focus)
+    if (!handle && fv)
     {//都不处理
-        KeyEvent ke(type, focus, (KeyboardCode)e.wparam, *(KeyState *)(&e.lparam),
-            system, flags);
         EventDispatcher::Push(ke);
         handle = true;
     }
     return true;
+    
 }
 
-bool Root::handleFocus(NativeEvent & e)
+bool Root::sendFocus(bool focus)
 {
-    auto & msg = e.msg;
-    if (msg == WM_SETFOCUS)
-    {
-        has_focus_ = true;
-    }
-    else if (msg == WM_KILLFOCUS)
-    {
-        has_focus_ = false;
-        //失去焦点 将内部焦点移除
+    has_focus_ = focus;
+    if (!has_focus_)//失去焦点 将内部焦点移除
         focus_.shift(nullptr);
-    }
+
     return true;
 }
 
-bool Root::handleComposition(NativeEvent & e)
+bool Root::sendComposition(CompositionEvent &e)
 {
+    if (e.target() != this)
+        return false;
+
     View * focus = focus_.current();
     if (!focus)
         return true;
-    auto & msg = e.msg;
-    EventType type = kET_COUNT;
-    if (WM_IME_STARTCOMPOSITION == msg)
-        type = kET_COMPOSITION_START;
-    else if (WM_IME_COMPOSITION == msg)
-        type = kET_COMPOSITION_UPDATE;
-    else if (WM_IME_ENDCOMPOSITION == msg)
-        type = kET_COMPOSITION_END;
-    else
-        return true;
 
-    CompositionEvent ce(type, focus);
-    ce.setUserData(&e);
-    EventDispatcher::Push(ce);
-
+    EventDispatcher::Push(e);
     return ( kClassWebView != focus->getClassName() && kClassInput != focus->getClassName())
-        || msg != WM_IME_COMPOSITION;
+        || e.type() != kET_COMPOSITION_UPDATE;
 }
 
-bool Root::handleWheel(NativeEvent & e)
+bool Root::sendWheel(WheelEvent & e)
 {
-    int flags = Helper::ToFlagsForMouseEvent();
-    auto & msg = e.msg;
-    if (WM_MOUSEWHEEL == msg || WM_MOUSEHWHEEL == msg)
-    {
-        auto type = kET_MOUSE_WHEEL;
-        auto delta = GET_WHEEL_DELTA_WPARAM(e.wparam);
-        Point p(static_cast<Scalar>(GET_X_LPARAM(e.lparam)), 
-                static_cast<Scalar>(GET_Y_LPARAM(e.lparam)));
-
-        WheelEvent we(type, this, WM_MOUSEHWHEEL == msg ? delta : 0,
-            WM_MOUSEWHEEL == msg ? delta : 0, p, p, flags);
-
-        //wheelEvent和mouseEvent分发逻辑一致
-        we.setUserData(&e);
-        mouse_.handleWheel(we);
-    }
+    if (e.target() != this)
+        return false;
+    mouse_.handleWheel(e);
     return true;
 }
 
@@ -273,8 +213,8 @@ void Root::drawView(SkCanvas & canvas, const Rect & inval)
 }
 
 void Root::drawCaret(SkCanvas & canvas)
-{
-    if (!caret_display_ && !force_caret_display_)//光标不显示
+{//光标只在root有焦点的情况下才绘制 避免root失去焦点后 进行焦点切换
+    if (!caret_display_ && !force_caret_display_ && has_focus_)//光标不显示
         return;
     if (force_caret_display_)
         force_caret_display_ = false;

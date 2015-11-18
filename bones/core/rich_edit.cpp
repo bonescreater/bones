@@ -923,9 +923,8 @@ void RichEdit::onCompositionStart(CompositionEvent & e)
     if (Event::kTarget != e.phase())
         return;
     ime_ = true;
-    auto native = (NativeEvent *)e.getUserData();
-    if (native)
-        host_->services_->TxSendMessage(native->msg, native->wparam, native->lparam, 0);
+
+    host_->services_->TxSendMessage(WM_IME_STARTCOMPOSITION, 0, 0, 0);
 }
 
 void RichEdit::onCompositionUpdate(CompositionEvent & e)
@@ -935,9 +934,8 @@ void RichEdit::onCompositionUpdate(CompositionEvent & e)
 
     if (Event::kTarget != e.phase())
         return;
-    auto native = (NativeEvent *)e.getUserData();
-    if (native)
-        host_->services_->TxSendMessage(native->msg, native->wparam, native->lparam, 0);
+
+    host_->services_->TxSendMessage(WM_IME_COMPOSITION, e.dbcs(), e.index(), 0);
 }
 
 void RichEdit::onCompositionEnd(CompositionEvent & e)
@@ -948,9 +946,7 @@ void RichEdit::onCompositionEnd(CompositionEvent & e)
     if (Event::kTarget != e.phase())
         return;
     ime_ = false;
-    auto native = (NativeEvent *)e.getUserData();
-    if (native)
-        host_->services_->TxSendMessage(native->msg, native->wparam, native->lparam, 0);
+    host_->services_->TxSendMessage(WM_IME_ENDCOMPOSITION, 0, 0, 0);
 }
 
 bool RichEdit::skipDefaultKeyEventProcessing(const KeyEvent & ke)

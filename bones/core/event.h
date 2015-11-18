@@ -86,10 +86,6 @@ public:
 
     Phase phase() const;
 
-    void setUserData(void * ud);
-
-    void * getUserData() const;
-
     void attach(const EventDispatcher::Path * path);
 
     const EventDispatcher::Path * getPath() const;
@@ -103,7 +99,6 @@ protected:
     bool cancelable_;
     bool canceled_;
     bool propagation_;
-    void * user_data_;
     const EventDispatcher::Path * path_;
 };
 
@@ -251,7 +246,23 @@ class CompositionEvent : public Event
 public:
     static CompositionEvent * From(Event & e);
 
-    CompositionEvent(EventType type, View * target);
+    CompositionEvent(EventType type, View * target, 
+        long index, unsigned int dbcs, 
+        const wchar_t * str,
+        long cursor);
+
+    long index() const;
+
+    unsigned int dbcs() const;
+
+    const wchar_t * str() const;
+
+    long cursor() const;
+private:
+    long index_;
+    unsigned int dbcs_;
+    const wchar_t * str_;
+    long cursor_;
 };
 
 }

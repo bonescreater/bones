@@ -14,14 +14,6 @@ class SkBaseDevice;
 namespace bones
 {
 
-struct NativeEvent
-{
-    UINT msg;
-    WPARAM wparam;
-    LPARAM lparam;
-    LRESULT result;
-};
-
 class Animation;
 
 class Root : public Area<Root>
@@ -69,15 +61,15 @@ public:
 
     void getBackBuffer(const void * & bits, size_t & pitch) const;
 
-    bool handleMouse(NativeEvent & e);
+    bool sendMouse(MouseEvent & e);
 
-    bool handleKey(NativeEvent & e);
+    bool sendKey(KeyEvent & e);
 
-    bool handleFocus(NativeEvent & e);
+    bool sendWheel(WheelEvent & e);
 
-    bool handleComposition(NativeEvent & e);
+    bool sendFocus(bool focus);
 
-    bool handleWheel(NativeEvent & e);
+    bool sendComposition(CompositionEvent & e);
 
     Widget getWidget();
 

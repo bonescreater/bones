@@ -62,12 +62,6 @@ public:
     static UINT ToMsgForMouse(EventType type, MouseButton button);
 
     static LPARAM ToKeyStateForKey(const KeyState & state);
-
-    static int ToFlagsForKeyEvent(WPARAM wparam, LPARAM lparam);
-
-    static int ToFlagsForMouseEvent();
-
-    static void ToEMForMouse(UINT msg, EventType & type, MouseButton & mb);
 };
 
 }

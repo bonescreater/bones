@@ -81,7 +81,6 @@ void MouseController::handleEvent(MouseEvent & e)
     {
         MouseEvent me(e.type(), e.button(), target, target->mapToLocal(e.getLoc()),
             e.getLoc(), e.getFlags());
-        me.setUserData(e.getUserData());
         EventDispatcher::Push(me);
     }
         
