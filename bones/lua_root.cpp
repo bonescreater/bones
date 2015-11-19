@@ -87,17 +87,17 @@ void LuaRoot::getBackBuffer(const void * & data, size_t & pitch) const
     object_->getBackBuffer(data, pitch);
 }
 
-bool LuaRoot::sendMouse(MouseMessage msg, const BonesPoint & pt, int flags)
+void LuaRoot::sendMouse(MouseMessage msg, const BonesPoint & pt, int flags)
 {
     EventType type = kET_COUNT;
     MouseButton mb = kMB_NONE;
     Point p = { pt.x, pt.y };
     Utils::ToEMForMouse(msg, type, mb);
     MouseEvent e(type, mb, object_.get(), p, p, flags);
-    return object_->sendMouse(e);
+    object_->sendMouse(e);
 }
 
-bool LuaRoot::sendKey(KeyMessage msg, int32_t vk, uint32_t states, int flags)
+void LuaRoot::sendKey(KeyMessage msg, int32_t vk, uint32_t states, int flags)
 {
     EventType type = kET_COUNT;
     if (kKeyDown == msg || kSysKeyDown == msg)
@@ -107,24 +107,24 @@ bool LuaRoot::sendKey(KeyMessage msg, int32_t vk, uint32_t states, int flags)
     else if (kChar == msg || kSysChar == msg)
         type = kET_CHAR;
     else
-        return false;
+        return;
     bool system = (BonesRoot::kSysChar == msg) || (BonesRoot::kSysKeyDown == msg) || 
         (BonesRoot::kSysKeyUp == msg);
     KeyEvent ke(type, object_.get(), (KeyboardCode)vk, *(KeyState *)(&states), 
         system, flags);
-    return object_->sendKey(ke);
+    object_->sendKey(ke);
 }
 
-bool LuaRoot::sendWheel(int dx, int dy, const BonesPoint & pt, int flags)
+void LuaRoot::sendWheel(int dx, int dy, const BonesPoint & pt, int flags)
 {
     Point p = { pt.x, pt.y };
     WheelEvent we(kET_MOUSE_WHEEL, object_.get(), dx, dy, p, p, flags);
-    return object_->sendWheel(we);
+    object_->sendWheel(we);
 }
 
-bool LuaRoot::sendFocus(bool focus)
+void LuaRoot::sendFocus(bool focus)
 {
-    return object_->sendFocus(focus);
+    object_->sendFocus(focus);
 }
 
 bool LuaRoot::sendComposition(IMEMessage msg, const IMEInfo * info)

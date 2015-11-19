@@ -862,21 +862,17 @@ public:
     */
     virtual void getBackBuffer(const void * & data, size_t & pitch) const = 0;
     /*!传递mouse消息
-    @return 通常返回true
     */
-    virtual bool sendMouse(MouseMessage msg, const BonesPoint & pt, int flags) = 0;
+    virtual void sendMouse(MouseMessage msg, const BonesPoint & pt, int flags) = 0;
     /*!传递key消息
-    @return 通常返回true
     */
-    virtual bool sendKey(KeyMessage msg, int32_t vk, uint32_t states, int flags) = 0;
+    virtual void sendKey(KeyMessage msg, int32_t vk, uint32_t states, int flags) = 0;
     /*!传递wheel消息
-    @return 通常返回true
     */
-    virtual bool sendWheel(int dx, int dy, const BonesPoint & pt, int flags) = 0;
+    virtual void sendWheel(int dx, int dy, const BonesPoint & pt, int flags) = 0;
     /*!传递focus消息
-    @return 通常返回true
     */
-    virtual bool sendFocus(bool focus) = 0;
+    virtual void sendFocus(bool focus) = 0;
     /*!传递ime消息
     @return 返回false则需要自己处理
     @note 由于webview使用的cef浏览器 暂时没有找到处理IME的接口

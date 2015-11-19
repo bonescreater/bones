@@ -244,6 +244,13 @@ private:
 class CompositionEvent : public Event
 {
 public:
+    enum Index
+    {
+        kResultStr = GCS_RESULTSTR,
+        kCompStr = GCS_COMPSTR,
+        kCursorPos = GCS_CURSORPOS,
+    };
+
     static CompositionEvent * From(Event & e);
 
     CompositionEvent(EventType type, View * target, 

@@ -277,7 +277,7 @@ void Input::onChar(KeyEvent & e)
         }
         if (is_printable)
         {
-            insertCharAtCaret(value);
+            insertTextAtCaret(&value, 1);
             inval();
         }
 
@@ -294,6 +294,34 @@ void Input::onSizeChanged()
 void Input::onPositionChanged()
 {//自己的位置改变后 如果caret正在闪烁也要修正到正确的位置
     updateCaretPos(caret_);
+}
+
+void Input::onCompositionStart(CompositionEvent & e)
+{
+    ;
+}
+
+void Input::onCompositionUpdate(CompositionEvent & e)
+{
+    auto index = e.index();
+    if (CompositionEvent::kResultStr & index)
+    {
+        auto str = e.str();
+        if (str)
+        {
+            insertTextAtCaret(str, wcslen(str));
+            inval();
+        }
+    }
+    else if (CompositionEvent::kCompStr & index)
+    {
+
+    }
+}
+
+void Input::onCompositionEnd(CompositionEvent & e)
+{
+    ;
 }
 
 void Input::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
@@ -414,32 +442,46 @@ void Input::ToSkPaint(SkPaint & paint) const
     paint.setShader(shader_);
 }
 
-void Input::insertCharAtCaret(wchar_t ch)
-{//在光标处插入一个字符
+void Input::insertTextAtCaret(const wchar_t * str, size_t len)
+{//在光标处插入字符串
     if (caret_ != select_begin_)
     {//先删除选中块的内容
         removeSelection();
         assert(select_begin_ == caret_);
     }
-    //现在开始插入字符
-    content_.insert(caret_, 1, ch);
+    //现在开始插入一组字符
+    content_.insert(caret_, str, len);
     adjustContentWidthsCache();
     setMaxScroll();
     //光标右移
-    moveContentCaret(true);
+    for (size_t i = 0; i < len; ++i)
+        moveContentCaret(true);
     //强制显示光标
     switchToNormal(caret_);
+}
+
+void Input::removeTextAtCaret(size_t len)
+{//光标前移删除字符串
+    //光标在最前面无法删除字符
+    if (caret_ <= 0)
+        return;
+
+    if (caret_ < static_cast<int>(len))
+        len = caret_;
+    auto caret = caret_ - len;
+    content_.erase(caret, len);
+    adjustContentWidthsCache();
+    setMaxScroll();
+    updateCaretPos(caret);
+    switchToNormal(caret);
 }
 
 void Input::removeTextAtCaret()
 {
     if (caret_ != select_begin_)
-    {
-        removeSelection();
-        switchToNormal(caret_);
-    }       
+        removeSelection();      
     else
-        removeCharAtCaret();
+        removeTextAtCaret(1);
 }
 
 void Input::removeSelection()
@@ -450,26 +492,11 @@ void Input::removeSelection()
         auto end = select_begin_ > caret_ ? select_begin_ : caret_;
         //移动光标到选中块的右端
         updateCaretPos(end);
-
         //循环删除字符直到 光标移动到了begin处
-        while (caret_ > begin)
-            removeCharAtCaret();   
+        removeTextAtCaret(caret_ - begin);
     }
     else
         assert(0);
-}
-
-void Input::removeCharAtCaret()
-{
-    if (caret_ > 0)
-    {
-        content_.erase(caret_ - 1, 1);
-        adjustContentWidthsCache();
-        setMaxScroll();
-
-        updateCaretPos(caret_ - 1);
-        select_begin_ = caret_;
-    }         
 }
 
 void Input::moveContentCaret(bool right)

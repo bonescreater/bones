@@ -59,6 +59,12 @@ protected:
     void onSizeChanged() override;
 
     void onPositionChanged() override;
+
+    void onCompositionStart(CompositionEvent & e) override;
+
+    void onCompositionUpdate(CompositionEvent & e) override;
+
+    void onCompositionEnd(CompositionEvent & e) override;
 protected:
     DelegateBase * delegate() override;
 
@@ -75,14 +81,14 @@ private:
 
     void ToSkPaint(SkPaint & paint) const;
 
-    void insertCharAtCaret(wchar_t value);
+    void insertTextAtCaret(const wchar_t * str, size_t len);
+    //光标前移删除字符串
+    void removeTextAtCaret(size_t len);
 
     void removeTextAtCaret();
 
     void removeSelection();
 
-    void removeCharAtCaret();
-    
     void moveContentCaret(bool right);
 
     Scalar getOffsetOfContent(int index);

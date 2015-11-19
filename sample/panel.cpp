@@ -373,24 +373,25 @@ LRESULT BSPanel::handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (imc)
         {
             info.index = lParam;
+            wchar_t * str = nullptr;
             if (lParam & GCS_RESULTSTR)
             {
-                void * str = nullptr;
                 auto size = ImmGetCompositionString(imc, GCS_RESULTSTR, str, 0);
-                str = new wchar_t[size + 1];
+                str = new wchar_t [size / 2 + 1];
                 ImmGetCompositionString(imc, GCS_RESULTSTR, str, size + 2);
-                info.str = static_cast<wchar_t *>(str);
+                str[size / 2] = 0;                        
             }
             else if (lParam & GCS_COMPSTR)
-            {
-                void * str = nullptr;
-                auto size = ImmGetCompositionString(imc, GCS_COMPSTR, str, 0);
-                str = new wchar_t[size + 1];
-                ImmGetCompositionString(imc, GCS_COMPSTR, str, size + 2);
-                info.str = static_cast<wchar_t *>(str);
+            {  
                 if (lParam & GCS_CURSORPOS)
                     info.cursor = ImmGetCompositionString(imc, GCS_CURSORPOS, NULL, 0);
+
+                auto size = ImmGetCompositionString(imc, GCS_COMPSTR, str, 0);
+                str = new wchar_t[size / 2 + 1];
+                ImmGetCompositionString(imc, GCS_COMPSTR, str, size + 2);
+                str[size / 2] = 0;
             }
+            info.str = str;
             ::ImmReleaseContext(hwnd_, imc);
         }
 

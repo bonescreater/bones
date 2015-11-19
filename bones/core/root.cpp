@@ -50,19 +50,18 @@ void Root::attachTo(Widget widget)
     widget_ = widget;
 }
 
-bool Root::sendMouse(MouseEvent & e)
+void Root::sendMouse(MouseEvent & e)
 {
     if (e.target() != this)
-        return false;
+        return;
     mouse_.handleEvent(e);
-    return true;
 }
 
-bool Root::sendKey(KeyEvent & e)
+void Root::sendKey(KeyEvent & e)
 {
     //处理键盘事件
     if (e.target() != this)
-        return true;
+        return;
 
     bool handle = false;
     View * fv = focus_.current();
@@ -86,17 +85,14 @@ bool Root::sendKey(KeyEvent & e)
         EventDispatcher::Push(ke);
         handle = true;
     }
-    return true;
     
 }
 
-bool Root::sendFocus(bool focus)
+void Root::sendFocus(bool focus)
 {
     has_focus_ = focus;
     if (!has_focus_)//失去焦点 将内部焦点移除
         focus_.shift(nullptr);
-
-    return true;
 }
 
 bool Root::sendComposition(CompositionEvent &e)
@@ -107,18 +103,17 @@ bool Root::sendComposition(CompositionEvent &e)
     View * focus = focus_.current();
     if (!focus)
         return true;
-
-    EventDispatcher::Push(e);
-    return ( kClassWebView != focus->getClassName() && kClassInput != focus->getClassName())
+    CompositionEvent ce(e.type(), focus, e.index(), e.dbcs(), e.str(), e.cursor());
+    EventDispatcher::Push(ce);
+    return ( kClassWebView != focus->getClassName())
         || e.type() != kET_COMPOSITION_UPDATE;
 }
 
-bool Root::sendWheel(WheelEvent & e)
+void Root::sendWheel(WheelEvent & e)
 {
     if (e.target() != this)
-        return false;
+        return;
     mouse_.handleWheel(e);
-    return true;
 }
 
 Widget Root::getWidget()

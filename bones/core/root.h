@@ -61,13 +61,13 @@ public:
 
     void getBackBuffer(const void * & bits, size_t & pitch) const;
 
-    bool sendMouse(MouseEvent & e);
+    void sendMouse(MouseEvent & e);
 
-    bool sendKey(KeyEvent & e);
+    void sendKey(KeyEvent & e);
 
-    bool sendWheel(WheelEvent & e);
+    void sendWheel(WheelEvent & e);
 
-    bool sendFocus(bool focus);
+    void sendFocus(bool focus);
 
     bool sendComposition(CompositionEvent & e);
 

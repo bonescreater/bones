@@ -31,13 +31,13 @@ public:
 
     void getBackBuffer(const void * & data, size_t & pitch) const override;
 
-    bool sendMouse(MouseMessage msg, const BonesPoint & pt, int flags) override;
+    void sendMouse(MouseMessage msg, const BonesPoint & pt, int flags) override;
 
-    bool sendKey(KeyMessage msg, int32_t vk, uint32_t states, int flags) override;
+    void sendKey(KeyMessage msg, int32_t vk, uint32_t states, int flags) override;
 
-    bool sendWheel(int dx, int dy, const BonesPoint & pt, int flags) override;
+    void sendWheel(int dx, int dy, const BonesPoint & pt, int flags) override;
 
-    bool sendFocus(bool focus) override;
+    void sendFocus(bool focus) override;
 
     bool sendComposition(IMEMessage msg, const IMEInfo * info) override;
 
