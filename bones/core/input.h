@@ -17,6 +17,12 @@ public:
     {
 
     };
+private:
+    enum Status
+    {
+        kNormal,
+        kSelect,
+    };
 public:
     Input();
 
@@ -76,24 +82,26 @@ protected:
     void drawBackground(SkCanvas & canvas, float opcatiy);
 
     void drawText(SkCanvas & canvas, float opacity); 
+
+    void drawCompositionUnderline(SkCanvas & canvas, float opacity);
 private:
     void adjustContentWidthsCache();
 
     void ToSkPaint(SkPaint & paint) const;
 
+    void insertText(const wchar_t * str, size_t len);
+
     void insertTextAtCaret(const wchar_t * str, size_t len);
     //光标前移删除字符串
     void removeTextAtCaret(size_t len);
 
-    void removeTextAtCaret();
+    void removeText();
 
     void removeSelection();
 
-    void moveContentCaret(bool right);
+    void moveCaret(bool right);
 
     Scalar getOffsetOfContent(int index);
-
-    void moveContentCaretTo(int index);
 
     void switchToSelect(int begin, int end);
 
@@ -135,7 +143,7 @@ private:
     int caret_;//光标索引
     //选中块处理
     int select_begin_;
-    
+    Status status_;
     wchar_t password_;
     bool pw_valid;
     bool left_down_;//左键是否在input中按下

@@ -71,7 +71,7 @@ void MouseController::handleEvent(MouseEvent & e)
     if (kET_MOUSE_DOWN == e.type())
     {
         //鼠标按下则发生焦点切换事件
-        root_->focus_.shift(target);
+        root_->shiftFocus(target);
         //如果是左键按下 自动capture
         if (e.isLeftMouse())
             shiftCapture(target);

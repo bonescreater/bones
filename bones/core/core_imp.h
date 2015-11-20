@@ -84,6 +84,8 @@ public:
 
     static void destroyEffect(SkPathEffect * effect);
 
+    static SkPathEffect * getDashEffectCache();
+
 };
 
 }

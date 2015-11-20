@@ -41,6 +41,9 @@ public:
 
     void requestFocus(BonesRoot * sender, bool & stop) override;
 
+    void shiftFocus(BonesRoot * sender, BonesObject * prev, 
+        BonesObject * current, bool & stop)  override;
+
     void invalidRect(BonesRoot * sender, const BonesRect & rect, bool & stop) override;
 
     void changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop) override;
@@ -83,6 +86,7 @@ private:
     bool track_mouse_;
     BonesCursor cursor_;
     uint64_t ex_style_;
+    bool ime_start_;
 private:
     friend LRESULT CALLBACK BSPanelProc(HWND hWnd,
                                         UINT uMsg,

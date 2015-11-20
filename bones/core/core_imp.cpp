@@ -52,6 +52,7 @@ static bool cef_enable = false;
 
 static bool aa_enable = false;
 
+static SkPathEffect * dash_effect_cache_ = nullptr;
 
 bool Core::StartUp(const Config & config)
 {
@@ -73,12 +74,18 @@ bool Core::StartUp(const Config & config)
     }
     if (bret)
         bret = !!(xml = new XMLController);
-
+    //创建一个默认的dasheffect
+    if (!dash_effect_cache_)
+        dash_effect_cache_ = createDashEffect(0, 0, 0);
     return bret;
 }
 
 void Core::ShutDown()
 {
+    if (dash_effect_cache_)
+        destroyEffect(dash_effect_cache_);
+    dash_effect_cache_ = nullptr;
+
     if (xml)
         delete xml;
     xml = nullptr;
@@ -209,6 +216,11 @@ void Core::destroyEffect(SkPathEffect * effect)
 {
     if (effect)
         effect->unref();
+}
+
+SkPathEffect * Core::getDashEffectCache()
+{
+    return dash_effect_cache_;
 }
 
 }

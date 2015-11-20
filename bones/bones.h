@@ -753,6 +753,9 @@ public:
         @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
         */
         virtual void requestFocus(BonesRoot * sender, bool & stop) = 0;
+
+        virtual void shiftFocus(BonesRoot * sender, BonesObject * prev, 
+                                BonesObject * current, bool & stop) = 0;
         /*!root需要重绘
         @param[in] sender 标签
         @param[in] rect 需要重绘的区域

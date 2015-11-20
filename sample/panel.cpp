@@ -2,6 +2,7 @@
 #include <windowsx.h>
 #include "utils.h"
 #include <assert.h>
+#include <vector>
 
 static const wchar_t * kClassName = L"BSPanel";
 
@@ -169,7 +170,7 @@ bool BSPanel::Uninitialize()
 }
 
 BSPanel::BSPanel() :track_mouse_(false), ex_style_(0), hwnd_(NULL),
-root_(nullptr), cursor_(kBonesArrow), dc_(NULL)
+root_(nullptr), cursor_(kBonesArrow), dc_(NULL), ime_start_(false)
 {
     ;
 }
@@ -363,8 +364,13 @@ LRESULT BSPanel::handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     BonesRoot::IMEMessage m;
     BonesRoot::IMEInfo info = { 0 };
+    std::vector<wchar_t> str;
+    str.resize(1);
     if (WM_IME_STARTCOMPOSITION == uMsg)
+    {
+        ime_start_ = true;
         m = BonesRoot::kCompositionStart;
+    }
     else if (WM_IME_COMPOSITION == uMsg)
     {
         m = BonesRoot::kCompositionUpdate;
@@ -373,12 +379,11 @@ LRESULT BSPanel::handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (imc)
         {
             info.index = lParam;
-            wchar_t * str = nullptr;
             if (lParam & GCS_RESULTSTR)
             {
-                auto size = ImmGetCompositionString(imc, GCS_RESULTSTR, str, 0);
-                str = new wchar_t [size / 2 + 1];
-                ImmGetCompositionString(imc, GCS_RESULTSTR, str, size + 2);
+                auto size = ImmGetCompositionString(imc, GCS_RESULTSTR, &str[0], 0);
+                str.resize(size / 2 + 1);
+                ImmGetCompositionString(imc, GCS_RESULTSTR, &str[0], size + 2);
                 str[size / 2] = 0;                        
             }
             else if (lParam & GCS_COMPSTR)
@@ -386,26 +391,25 @@ LRESULT BSPanel::handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (lParam & GCS_CURSORPOS)
                     info.cursor = ImmGetCompositionString(imc, GCS_CURSORPOS, NULL, 0);
 
-                auto size = ImmGetCompositionString(imc, GCS_COMPSTR, str, 0);
-                str = new wchar_t[size / 2 + 1];
-                ImmGetCompositionString(imc, GCS_COMPSTR, str, size + 2);
+                auto size = ImmGetCompositionString(imc, GCS_COMPSTR, &str[0], 0);
+                str.resize(size / 2 + 1);
+                ImmGetCompositionString(imc, GCS_COMPSTR, &str[0], size + 2);
                 str[size / 2] = 0;
             }
-            info.str = str;
+            info.str = &str[0];
             ::ImmReleaseContext(hwnd_, imc);
         }
 
     }     
     else if (WM_IME_ENDCOMPOSITION == uMsg)
+    {
         m = BonesRoot::kCompositionEnd;
+        ime_start_ = false;
+    }
     else
         return 0;
     //cef osr 目前不支持ime 临时通过返回值来处理
-    bool handle = root_->sendComposition(m, BonesRoot::kCompositionUpdate == m ? &info : nullptr);
-    if (info.str)
-        delete info.str;
-
-    if (!handle)
+    if (!root_->sendComposition(m, BonesRoot::kCompositionUpdate == m ? &info : nullptr))
         return defProcessEvent(uMsg, wParam, lParam);
     return 0;
 }
@@ -626,6 +630,19 @@ void BSPanel::requestFocus(BonesRoot * sender, bool & stop)
 {
     ::SetFocus(hwnd_);
     stop = true;
+}
+
+void BSPanel::shiftFocus(BonesRoot * sender, BonesObject * prev,
+    BonesObject * current, bool & stop)
+{
+    if (!ime_start_)
+        return;
+    auto imc = ImmGetContext(hwnd_);
+    if (imc)
+    {
+        ImmNotifyIME(imc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
+        ImmReleaseContext(hwnd_, imc);
+    }
 }
 
 void BSPanel::invalidRect(BonesRoot * sender, const BonesRect & rect, bool & stop)

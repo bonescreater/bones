@@ -43,6 +43,8 @@ public:
 
     void requestFocus(Root * sender) override;
 
+    void shiftFocus(Root * sender, View * prev, View * current) override;
+
     void invalidRect(Root * sender, const Rect & rect) override;
 
     void changeCursor(Root * sender, View::Cursor cursor) override;

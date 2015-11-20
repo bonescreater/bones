@@ -24,9 +24,11 @@ public:
     public:
         virtual void requestFocus(Root * sender) = 0;
 
+        virtual void shiftFocus(Root * sender, View * prev, View * current) = 0;
+
         virtual void invalidRect(Root * sender, const Rect & rect) = 0;
 
-        virtual void changeCursor(Root * sender, Cursor cursor) = 0;
+        virtual void changeCursor(Root * sender, Cursor cursor) = 0;   
     };
 private:
     struct DirtyRect
@@ -76,6 +78,8 @@ public:
     void restoreCaret();
 
     void restoreCursor();
+
+    void shiftFocus(View * focus);
 
     void update();
 
@@ -160,7 +164,7 @@ private:
     bool caret_display_;
     bool force_caret_display_;//强制显示光标 为false 则按照caret_display显示
     Animation * caret_ani_;
-    friend class MouseController;
+    //friend class MouseController;
 };
 
 

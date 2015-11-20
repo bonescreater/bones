@@ -2,7 +2,7 @@
 #include "helper.h"
 #include "SkShader.h"
 #include "SkCanvas.h"
-
+#include "core_imp.h"
 
 namespace bones
 {
@@ -11,7 +11,7 @@ Input::Input()
 :delegate_(nullptr), max_scroll_(0), current_scroll_(0),
 composition_start_(0), composition_length_(0),
 caret_(0), color_(BONES_RGB_BLACK), shader_(nullptr),
-select_begin_(0),
+select_begin_(0), status_(kNormal),
 password_(L'*'), pw_valid(false),
 left_down_(false)
 {
@@ -207,6 +207,7 @@ void Input::onFocus(FocusEvent & e)
     createCaret();
     setCaretSize(getCaretSize());
     switchToSelect(0, content_.size());
+    inval();
 }
 
 void Input::onBlur(FocusEvent & e)
@@ -217,8 +218,12 @@ void Input::onBlur(FocusEvent & e)
 
     if (Event::kTarget != e.phase())
         return;
+    //在有组合字符串的情况下失去焦点 则组合字符串为结果字符串
+    switchToNormal(composition_start_ + composition_length_);
+    //composition_start_ = composition_length_ = 0;
 
     destroyCaret();
+    inval();
 }
 
 void Input::onKeyDown(KeyEvent & e)
@@ -232,15 +237,15 @@ void Input::onKeyDown(KeyEvent & e)
     switch (e.key())
     {
     case kVKEY_BACK:
-        removeTextAtCaret();
+        removeText();
         inval();
         break;
     case kVKEY_LEFT:
-        moveContentCaret(false);
+        moveCaret(false);
         inval();
         break;
     case kVKEY_RIGHT:
-        moveContentCaret(true);
+        moveCaret(true);
         inval();
         break;
     }
@@ -277,7 +282,7 @@ void Input::onChar(KeyEvent & e)
         }
         if (is_printable)
         {
-            insertTextAtCaret(&value, 1);
+            insertText(&value, 1);
             inval();
         }
 
@@ -303,20 +308,42 @@ void Input::onCompositionStart(CompositionEvent & e)
 
 void Input::onCompositionUpdate(CompositionEvent & e)
 {
+    //有选中块删除选中块的内容
+    if (kSelect == status_)
+        removeSelection();
+    assert(kNormal == status_);
+    if (kNormal != status_)
+        return;
+
+    if (composition_length_)
+    {//有旧的组合字符串要先删除
+        updateCaretPos(composition_start_ + composition_length_);
+        removeTextAtCaret(composition_length_);
+        composition_start_ = composition_length_ = 0;
+    }
+
     auto index = e.index();
     if (CompositionEvent::kResultStr & index)
+    {//插入结果字符串
+        auto str = e.str();
+        if (str)
+            insertTextAtCaret(str, wcslen(str));
+    }
+    else if (CompositionEvent::kCompStr & index)
     {
         auto str = e.str();
         if (str)
         {
-            insertTextAtCaret(str, wcslen(str));
-            inval();
-        }
+            //插入组合字符串
+            composition_start_ = caret_;
+            composition_length_ = wcslen(str);
+            insertTextAtCaret(str, composition_length_);
+            //更新光标位置
+            if (CompositionEvent::kCursorPos & index)
+                updateCaretPos(composition_start_ + e.cursor());
+        }       
     }
-    else if (CompositionEvent::kCompStr & index)
-    {
-
-    }
+    inval();
 }
 
 void Input::onCompositionEnd(CompositionEvent & e)
@@ -334,11 +361,15 @@ void Input::onDraw(SkCanvas & canvas, const Rect & inval, float opacity)
     canvas.translate(current_scroll_, 0);
     drawBackground(canvas, opacity);
     drawText(canvas, opacity);
+    drawCompositionUnderline(canvas, opacity);
 }
 
 void Input::drawBackground(SkCanvas & canvas, float opacity)
 {
     //无选中块
+    if (kSelect != status_)
+        return;
+
     if (caret_ == select_begin_)
         return;
 
@@ -374,7 +405,7 @@ void Input::drawText(SkCanvas & canvas, float opacity)
     Scalar text_height = fm.fBottom - fm.fTop;
     Scalar baseline = getHeight() / 2 - text_height / 2 - fm.fTop;
 
-    for (size_t i = 0; i < content_.size(); ++i)
+    for (int i = 0; i < static_cast<int>(content_.size()); ++i)
     {
         wchar_t ch = content_[i];
         if (pw_valid)
@@ -397,6 +428,31 @@ void Input::drawText(SkCanvas & canvas, float opacity)
         left += content_widths_[i];
 
     }
+}
+
+void Input::drawCompositionUnderline(SkCanvas & canvas, float opacity)
+{
+    //没有组合字符串
+    if (composition_start_ < 0 || composition_length_ <= 0)
+        return;
+    auto cstart = composition_start_;
+    auto cend = composition_start_ + composition_length_;
+
+    Scalar start = getOffsetOfContent(cstart);
+    Scalar end = getOffsetOfContent(cend);
+
+    SkPaint paint;
+    ToSkPaint(paint);
+    paint.setAlpha(ClampAlpha(opacity, ColorGetA(color_)));
+    SkPaint::FontMetrics fm;
+    paint.getFontMetrics(&fm);
+    Scalar text_height = fm.fBottom - fm.fTop;
+    Scalar baseline = getHeight() / 2 - text_height / 2 - fm.fTop;
+    Scalar underline = getHeight() / 2 + text_height / 2;
+    if (fm.hasUnderlinePosition(&underline))
+        underline += baseline;
+    paint.setPathEffect(Core::getDashEffectCache());
+    canvas.drawLine(start, underline, end, underline, paint);
 }
 
 void Input::onDrawCaret(SkCanvas & canvas,
@@ -442,26 +498,36 @@ void Input::ToSkPaint(SkPaint & paint) const
     paint.setShader(shader_);
 }
 
+void Input::insertText(const wchar_t * str, size_t len)
+{
+    if (kSelect == status_)//先删除选中块的内容
+        removeSelection();
+
+    insertTextAtCaret(str, len);
+}
+
 void Input::insertTextAtCaret(const wchar_t * str, size_t len)
 {//在光标处插入字符串
-    if (caret_ != select_begin_)
-    {//先删除选中块的内容
-        removeSelection();
-        assert(select_begin_ == caret_);
-    }
+    assert(kNormal == status_);
+    if (kNormal != status_)
+        return;
     //现在开始插入一组字符
-    content_.insert(caret_, str, len);
-    adjustContentWidthsCache();
-    setMaxScroll();
-    //光标右移
-    for (size_t i = 0; i < len; ++i)
-        moveContentCaret(true);
-    //强制显示光标
-    switchToNormal(caret_);
+    if (str && len)
+    {
+        content_.insert(caret_, str, len);
+        adjustContentWidthsCache();
+        setMaxScroll();
+        //光标更新位置右移
+        updateCaretPos(caret_ + len);
+        select_begin_ = caret_;
+    }
 }
 
 void Input::removeTextAtCaret(size_t len)
 {//光标前移删除字符串
+    assert(kNormal == status_);
+    if (kNormal != status_)
+        return;
     //光标在最前面无法删除字符
     if (caret_ <= 0)
         return;
@@ -473,33 +539,34 @@ void Input::removeTextAtCaret(size_t len)
     adjustContentWidthsCache();
     setMaxScroll();
     updateCaretPos(caret);
-    switchToNormal(caret);
+    select_begin_ = caret_;
 }
 
-void Input::removeTextAtCaret()
+void Input::removeText()
 {
-    if (caret_ != select_begin_)
+    if (kSelect == status_)
         removeSelection();      
     else
         removeTextAtCaret(1);
+
+    assert(kNormal == status_);
 }
 
 void Input::removeSelection()
 {
-    if (caret_ != select_begin_)
-    {
-        auto begin = select_begin_ < caret_ ? select_begin_ : caret_;
-        auto end = select_begin_ > caret_ ? select_begin_ : caret_;
-        //移动光标到选中块的右端
-        updateCaretPos(end);
-        //循环删除字符直到 光标移动到了begin处
+    assert(kSelect == status_);
+    if (kSelect != status_)
+        return;
+
+    auto begin = select_begin_ < caret_ ? select_begin_ : caret_;
+    auto end = select_begin_ > caret_ ? select_begin_ : caret_;
+    //移动光标到选中块的右端
+    switchToNormal(end);
+    if (begin < caret_)//循环删除字符直到 光标移动到了begin处
         removeTextAtCaret(caret_ - begin);
-    }
-    else
-        assert(0);
 }
 
-void Input::moveContentCaret(bool right)
+void Input::moveCaret(bool right)
 {
     int caret = 0;
 
@@ -510,8 +577,7 @@ void Input::moveContentCaret(bool right)
     else
         caret = checkIndex(begin - 1);
 
-    updateCaretPos(caret);
-    select_begin_ = caret_;
+    switchToNormal(caret);
 }
 
 Scalar Input::getOffsetOfContent(int index)
@@ -560,6 +626,9 @@ Point Input::getCaretPoint()
 
 void Input::switchToSelect(int begin, int end)
 {//隐藏光标
+    status_ = kSelect;
+    //移除composition
+    composition_start_ = composition_length_ = 0;
     select_begin_ = checkIndex(begin);
     caret_  = checkIndex(end);
     updateCaretPos(caret_);
@@ -569,6 +638,9 @@ void Input::switchToSelect(int begin, int end)
 
 void Input::switchToNormal(int index)
 {//显示光标
+    status_ = kNormal;
+    //移除composition
+    composition_start_ = composition_length_ = 0;
     //更新光标后要保证光标在可显示区域内
     select_begin_ = caret_ = checkIndex(index);
     updateCaretPos(caret_);

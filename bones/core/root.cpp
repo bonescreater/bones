@@ -131,6 +131,19 @@ void Root::restoreCursor()
     notifyChangeCursor(mouse_.over(), kArrow);
 }
 
+void Root::shiftFocus(View * focus)
+{
+    RefPtr<View> prev;
+    RefPtr<View> current;
+
+    prev.reset(focus_.current());
+    focus_.shift(focus);
+    current.reset(focus_.current());
+    //焦点切换成功
+    if (prev != current)
+        delegate_ ? delegate_->shiftFocus(this, prev.get(), current.get()) : 0;
+}
+
 void Root::update()
 {//root 空闲例程用来提交无效区
     if (DirtyRect::kNone == wait_dirty_.flag_)

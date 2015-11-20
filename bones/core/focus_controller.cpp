@@ -63,9 +63,11 @@ void FocusController::shiftIfNecessary()
 
 void FocusController::shift(View * n)
 {
+    if (n == root_)
+        n = nullptr;
     //当view不可接受焦点时 不切换焦点
     //为了在滚动条上点击时 不切换编辑框的焦点这样编辑框继续显示光标
-    if (!n || !n->isFocusable())
+    if (n && !n->isFocusable())
         return;
     //View * tmp = n;
     //while (tmp)
@@ -74,8 +76,6 @@ void FocusController::shift(View * n)
     //        break;
     //    tmp = tmp->parent();
     //}
-    if (n == root_)
-        n = nullptr;
     setFocusWithReason(n, kDirectChange);
 }
 

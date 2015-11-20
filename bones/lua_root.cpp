@@ -14,6 +14,7 @@ namespace bones
 static const char * kMetaTableRoot = "__mt_root";
 
 static const char * kMethodRequestFocus = "requestFocus";
+static const char * kMethodShiftFocus = "shiftFocus";
 static const char * kMethodInvalidRect = "invalidRect";
 static const char * kMethodChangeCursor = "changeCursor";
 
@@ -166,6 +167,35 @@ void LuaRoot::requestFocus(Root * sender)
         lua_pushnil(l);
         lua_copy(l, -4, -1);
         LuaContext::SafeLOPCall(l, 1, 0);
+    }
+
+    lua_pop(l, 2);
+}
+
+void LuaRoot::shiftFocus(Root * sender, View * prev, View * current)
+{
+    bool stop = false;
+    BonesObject * bo_prev = GetCoreInstance()->getObject(prev);
+    BonesObject * bo_current = GetCoreInstance()->getObject(current);
+
+    notify_ ? notify_->shiftFocus(this, bo_prev, bo_current, stop) : 0;
+    if (stop)
+        return;
+
+    //post to script
+    //(self)
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, this);
+    lua_getfield(l, -1, kNotifyOrder);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, kMethodShiftFocus);
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        LuaContext::GetLOFromCO(l, bo_prev);
+        LuaContext::GetLOFromCO(l, bo_current);
+        LuaContext::SafeLOPCall(l, 3, 0);
     }
 
     lua_pop(l, 2);
