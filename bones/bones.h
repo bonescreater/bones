@@ -734,6 +734,7 @@ enum BonesCursor
     kBonesAppStarting,
     kBonesHelp,
 
+    kBonesHandle,
     kBonesCustom,
 };
 
@@ -767,7 +768,9 @@ public:
         @param[in] cursor 新的鼠标样式
         @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
         */
-        virtual void changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop) = 0;
+        virtual void changeCursor(BonesRoot * sender, BonesCursor cursor, void * content, bool & stop) = 0;
+
+        virtual void changeCaretPos(BonesRoot * sender, const BonesPoint & point, bool &stop) = 0;
     };
     enum MouseMessage
     {

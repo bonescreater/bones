@@ -45,9 +45,11 @@ public:
 
     void shiftFocus(Root * sender, View * prev, View * current) override;
 
+    void changeCaretPos(Root * sender, const Point & pt) override;
+
     void invalidRect(Root * sender, const Rect & rect) override;
 
-    void changeCursor(Root * sender, View::Cursor cursor) override;
+    void changeCursor(Root * sender, View::Cursor cursor, void * content) override;
 
     LUA_HANDLER(Root);
 };

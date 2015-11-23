@@ -39,7 +39,8 @@ public:
         kHand,
         kAppStarting,
         kHelp,
-        
+
+        kHandle,//光标句柄
         kCustom,
     };
 private:
@@ -165,7 +166,7 @@ public:
 
     void requestTop();
 
-    void setCursor(Cursor cursor);
+    void setCursor(Cursor cursor, void * content = nullptr);
 
     void showCaret(bool show);
 
@@ -268,7 +269,7 @@ protected:
 
     virtual bool notifyUnregAccelerator(View * n, const Accelerator & accelerator);
 
-    virtual bool notifyChangeCursor(View * n, Cursor cursor);
+    virtual bool notifyChangeCursor(View * n, Cursor cursor, void * content);
 
     virtual bool notifyShowCaret(View * n, bool show);
 

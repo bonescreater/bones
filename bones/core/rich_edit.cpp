@@ -317,28 +317,33 @@ public:
     //@cmember Create the caret
     virtual BOOL TxCreateCaret(HBITMAP hbmp, INT xWidth, INT yHeight) override
     {
-        assert(0);
-        //rich_ ? rich_->createCaret(Size::Make(static_cast<Scalar>(xWidth), 
-        //    static_cast<Scalar>(yHeight))):0;
-        return TRUE;
+        auto wg = widget();
+        if (wg)
+            return ::CreateCaret(wg, hbmp, xWidth, yHeight);
+        return FALSE;
     }
 
     //@cmember Show the caret
     virtual BOOL TxShowCaret(BOOL fShow) override
     {
-        assert(0);
-        rich_ ? rich_->showCaret(!!fShow) : 0;
-        return TRUE;
+        auto wg = widget();
+        if (wg)
+        {
+            if (fShow)
+                return ::ShowCaret(wg);
+            else
+                return ::HideCaret(wg);
+        }         
+        return FALSE;
     }
 
     //@cmember Set the caret position
     virtual BOOL TxSetCaretPos(INT x, INT y) override
     {
-        assert(0);
-        rich_ ? rich_->setCaretPos(
-            Point::Make(static_cast<Scalar>(x), 
-                        static_cast<Scalar>(y))) : 0;
-        return TRUE;
+        auto wg = widget();
+        if (wg)
+            return ::SetCaretPos(x, y);
+        return FALSE;
     }
 
     //@cmember Create a timer with the specified timeout
@@ -383,8 +388,7 @@ public:
     //@cmember Establish a new cursor shape
     virtual void TxSetCursor(HCURSOR hcur, BOOL fText) override
     {
-        assert(0);
-        //rich_ ? rich_->setCursor(hcur) : 0;
+        rich_ ? rich_->setCursor(View::kHandle, hcur) : 0;
     }
 
     //@cmember Converts screen coordinates of a specified point to the client coordinates
@@ -959,7 +963,7 @@ void RichEdit::preprocessSurface(Pixmap & render, Pixmap & update)
     //GDI 在TxDraw里有文字抗锯齿 抗锯齿的像素来源于背景
     //所以在背景透明的情况下 从画布中读取背景像素用于抗锯齿
     //如果此时画布中的背景也是半透明 会导致 文字周边有阴影 
-    //GDI暂时无法解决 等WIN8 WIN10流行后 换用TxDrawD2D应该可以解决掉这个问题
+    //GDI暂时无法解决
     if (host_->bg_opaque_)
         return;
     Pixmap::LockRec sr;

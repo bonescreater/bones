@@ -300,6 +300,12 @@ LRESULT BSPanel::handleSetCursor(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (HTCLIENT == LOWORD(lParam))
     {
+        if (kBonesHandle == cursor_)
+        {
+            ::SetCursor((HCURSOR)cursor_content_);
+            return TRUE;
+        }
+
         auto wc = IDC_ARROW;
         if (cursor_ == kBonesIbeam)
             wc = IDC_IBEAM;
@@ -643,6 +649,7 @@ void BSPanel::shiftFocus(BonesRoot * sender, BonesObject * prev,
         ImmNotifyIME(imc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
         ImmReleaseContext(hwnd_, imc);
     }
+    assert(!ime_start_);
 }
 
 void BSPanel::invalidRect(BonesRoot * sender, const BonesRect & rect, bool & stop)
@@ -654,13 +661,31 @@ void BSPanel::invalidRect(BonesRoot * sender, const BonesRect & rect, bool & sto
     stop = true;
 }
 
-void BSPanel::changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop)
+void BSPanel::changeCursor(BonesRoot * sender, BonesCursor cursor, 
+    void * content, bool & stop)
 {
-    if (cursor_ != cursor)
+    cursor_ = cursor;
+    cursor_content_ = content;
+
+    stop = true;
+}
+
+void BSPanel::changeCaretPos(BonesRoot * sender, const BonesPoint & point, bool &stop)
+{
+    if (ime_start_)
     {
-        cursor_ = cursor;
-        //PostMessage(hwnd(), WM_SETCURSOR, 0, HTCLIENT);
-    } 
+        auto imc = ImmGetContext(hwnd_);
+        if (imc)
+        {
+            COMPOSITIONFORM composition;
+            composition.dwStyle = CFS_POINT;
+            composition.ptCurrentPos.x = static_cast<LONG>(point.x);
+            composition.ptCurrentPos.y = static_cast<LONG>(point.y);
+            ImmSetCompositionWindow(imc, &composition);
+
+            ImmReleaseContext(hwnd_, imc);
+        }
+    }
     stop = true;
 }
 

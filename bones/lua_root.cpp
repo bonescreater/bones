@@ -17,6 +17,7 @@ static const char * kMethodRequestFocus = "requestFocus";
 static const char * kMethodShiftFocus = "shiftFocus";
 static const char * kMethodInvalidRect = "invalidRect";
 static const char * kMethodChangeCursor = "changeCursor";
+static const char * kMethodChangeCaretPos = "changeCaretPos";
 
 //(self, color)
 static int SetColor(lua_State * l)
@@ -201,6 +202,33 @@ void LuaRoot::shiftFocus(Root * sender, View * prev, View * current)
     lua_pop(l, 2);
 }
 
+void LuaRoot::changeCaretPos(Root * sender, const Point & pt)
+{
+    bool stop = false;
+    BonesPoint bp = { pt.x(), pt.y() };
+    notify_ ? notify_->changeCaretPos(this, bp, stop) : 0;
+    if (stop)
+        return;
+
+    //post to script
+    //(self)
+    auto l = LuaContext::State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaContext::GetLOFromCO(l, this);
+    lua_getfield(l, -1, kNotifyOrder);
+    if (lua_istable(l, -1))
+    {
+        lua_getfield(l, -1, kMethodChangeCaretPos);
+        lua_pushnil(l);
+        lua_copy(l, -4, -1);
+        lua_pushnumber(l, bp.x);
+        lua_pushnumber(l, bp.y);
+        LuaContext::SafeLOPCall(l, 3, 0);
+    }
+
+    lua_pop(l, 2);
+}
+
 void LuaRoot::invalidRect(Root * sender, const Rect & rect)
 {
     bool stop = false;
@@ -227,10 +255,11 @@ void LuaRoot::invalidRect(Root * sender, const Rect & rect)
     lua_pop(l, 2);
 }
 
-void LuaRoot::changeCursor(Root * sender, View::Cursor cursor)
+void LuaRoot::changeCursor(Root * sender, View::Cursor cursor, void * content)
 {
     bool stop = false;
-    notify_ ? notify_->changeCursor(this, static_cast<BonesCursor>(cursor), stop) : 0;
+    notify_ ? notify_->changeCursor(this, 
+        static_cast<BonesCursor>(cursor), content, stop) : 0;
     if (stop)
         return;
     //(self, cursor)
@@ -244,7 +273,8 @@ void LuaRoot::changeCursor(Root * sender, View::Cursor cursor)
         lua_pushnil(l);
         lua_copy(l, -4, -1);
         lua_pushinteger(l, (lua_Integer)cursor);
-        LuaContext::SafeLOPCall(l, 2, 0);
+        lua_pushlightuserdata(l, content);
+        LuaContext::SafeLOPCall(l, 3, 0);
     }
     lua_pop(l, 2);
 }

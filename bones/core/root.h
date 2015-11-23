@@ -28,7 +28,9 @@ public:
 
         virtual void invalidRect(Root * sender, const Rect & rect) = 0;
 
-        virtual void changeCursor(Root * sender, Cursor cursor) = 0;   
+        virtual void changeCursor(Root * sender, Cursor cursor, void * content) = 0;   
+
+        virtual void changeCaretPos(Root * sender, const Point & pt) = 0;
     };
 private:
     struct DirtyRect
@@ -107,7 +109,7 @@ protected:
 
     virtual bool notifySetFocus(View * n) override;
 
-    virtual bool notifyChangeCursor(View * n, Cursor cursor) override;
+    virtual bool notifyChangeCursor(View * n, Cursor cursor, void * content) override;
 
     virtual bool notifyShowCaret(View * n, bool show) override;
 

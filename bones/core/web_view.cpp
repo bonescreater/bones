@@ -11,7 +11,6 @@
 
 namespace bones
 {
-
 class Browser : public CefClient,
                 public CefLifeSpanHandler,
                 public CefRenderHandler,
@@ -24,8 +23,53 @@ class Browser : public CefClient,
     if (!host)\
         return \
 
+    View::Cursor ToBonesCursor(CursorType cef_cursor)
+    {
+        View::Cursor cursor = View::kArrow;
+        if (CT_CROSS == cef_cursor)
+            cursor = View::kCross;
+        else if (CT_HAND == cef_cursor)
+            cursor = View::kHand;
+        else if (CT_IBEAM == cef_cursor)
+            cursor = View::kIbeam;
+        else if (CT_WAIT == cef_cursor)
+            cursor = View::kWait;
+        else if (CT_HELP == cef_cursor)
+            cursor = View::kHelp;
+        else if (CT_EASTRESIZE == cef_cursor)
+            cursor = View::kSizeWE;
+        else if (CT_NORTHRESIZE == cef_cursor)
+            cursor = View::kSizeNS;
+        else if (CT_NORTHEASTRESIZE == cef_cursor)
+            cursor = View::kSizeNESW;
+        else if (CT_NORTHWESTRESIZE == cef_cursor)
+            cursor = View::kSizeNWSE;
+        else if (CT_SOUTHRESIZE == cef_cursor)
+            cursor = View::kSizeNS;
+        else if (CT_SOUTHEASTRESIZE == cef_cursor)
+            cursor = View::kSizeNWSE;
+        else if (CT_SOUTHWESTRESIZE == cef_cursor)
+            cursor = View::kSizeNESW;
+        else if (CT_WESTRESIZE == cef_cursor)
+            cursor = View::kSizeWE;
+        else if (CT_NORTHSOUTHRESIZE == cef_cursor)
+            cursor = View::kSizeNS;
+        else if (CT_EASTWESTRESIZE == cef_cursor)
+            cursor = View::kSizeWE;
+        else if (CT_NORTHEASTSOUTHWESTRESIZE == cef_cursor)
+            cursor = View::kSizeNESW;
+        else if (CT_NORTHWESTSOUTHEASTRESIZE == cef_cursor)
+            cursor = View::kSizeNWSE;
+        else if (CT_NONE == cef_cursor)
+            cursor = View::kNo;
+        else if (CT_CUSTOM == cef_cursor)
+            cursor = View::kHandle;
+
+        return cursor;
+
+    }
 public:
-    Browser() :skip_cursor_(true)
+    Browser()
     {
         ;
     }
@@ -145,12 +189,6 @@ public:
 
     void sendMouseMoveEvent(MouseEvent & e, bool leave)
     {//cef cursor是异步的 可能在我们鼠标已经离开webview后 webview还会发送鼠标样式
-     //需要忽略掉
-        if (leave)
-            skip_cursor_ = true;
-        else
-            skip_cursor_ = false;
-
         CHECK_CEF_BROWSER_HOST;
         host->SendMouseMoveEvent(ToCefMouseEvent(e), leave);
 
@@ -256,10 +294,10 @@ public:
         CefCursorHandle cursor,
         CursorType type,
         const CefCursorInfo & custom_cursor_info) override
-    {
-        assert(0);
-        //if (!skip_cursor_)
-        //    web_view_ ? web_view_->setCursor(type) : 0;
+    {//先简单转换下 webview的光标样式
+
+        auto vc = ToBonesCursor(type);
+        web_view_ ? web_view_->setCursor(vc, View::kHandle == vc ? cursor : nullptr) : 0;
     }
 protected:
     CefRefPtr<CefFrame> mainFrame()
@@ -283,7 +321,6 @@ private:
     CefRefPtr<CefBrowser> browser_;
     WebView * web_view_;
     Pixmap pixmap_;
-    bool skip_cursor_;
     IMPLEMENT_REFCOUNTING(Browser);
     friend class WebView;
 };

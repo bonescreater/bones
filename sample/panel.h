@@ -46,7 +46,9 @@ public:
 
     void invalidRect(BonesRoot * sender, const BonesRect & rect, bool & stop) override;
 
-    void changeCursor(BonesRoot * sender, BonesCursor cursor, bool & stop) override;
+    void changeCursor(BonesRoot * sender, BonesCursor cursor, void * content, bool & stop) override;
+
+    void changeCaretPos(BonesRoot * sender, const BonesPoint & point, bool &stop) override;
 
     void onSizeChanged(BonesRoot * sender, const BonesSize & size, bool & stop) override;
 
@@ -85,6 +87,7 @@ private:
     BonesRoot * root_;
     bool track_mouse_;
     BonesCursor cursor_;
+    void * cursor_content_;
     uint64_t ex_style_;
     bool ime_start_;
 private:

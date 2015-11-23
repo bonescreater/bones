@@ -11,7 +11,7 @@ Input::Input()
 :delegate_(nullptr), max_scroll_(0), current_scroll_(0),
 composition_start_(0), composition_length_(0),
 caret_(0), color_(BONES_RGB_BLACK), shader_(nullptr),
-select_begin_(0), status_(kNormal),
+select_begin_(0), status_(kSelect),
 password_(L'*'), pw_valid(false),
 left_down_(false)
 {

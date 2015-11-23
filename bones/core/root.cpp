@@ -128,7 +128,7 @@ void Root::restoreCaret()
 
 void Root::restoreCursor()
 {
-    notifyChangeCursor(mouse_.over(), kArrow);
+    notifyChangeCursor(mouse_.over(), kArrow, nullptr);
 }
 
 void Root::shiftFocus(View * focus)
@@ -332,10 +332,10 @@ bool Root::notifySetFocus(View * n)
     return true;
 }
 
-bool Root::notifyChangeCursor(View * n, Cursor cursor)
+bool Root::notifyChangeCursor(View * n, Cursor cursor, void * content)
 {//只有当前over的指针可以修改cursor
     if (n && n == mouse_.over())
-        delegate_ ? delegate_->changeCursor(this, cursor) : 0;
+        delegate_ ? delegate_->changeCursor(this, cursor, content) : 0;
     return true;
 }
 //caret打算自绘
@@ -374,6 +374,7 @@ bool Root::notifyChangeCaretPos(View * n, const Point & pt)
                 force_caret_display_ = true;
                 invalCaret();
             }
+            delegate_ ? delegate_->changeCaretPos(this, caret_loc_):0;
         }
     }
     return true;
