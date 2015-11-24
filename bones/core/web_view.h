@@ -66,6 +66,8 @@ protected:
 
     void onChar(KeyEvent & e) override;
 
+    void onCompositionUpdate(CompositionEvent & e) override;
+
     bool skipDefaultKeyEventProcessing(const KeyEvent & ke) override;
 private:
     void adjustPixmap();

@@ -884,7 +884,7 @@ public:
     @note 由于webview使用的cef浏览器 暂时没有找到处理IME的接口
     所以返回false时需要自己处理 通常是调用DefWindowProc
     */
-    virtual bool sendComposition(IMEMessage msg, const IMEInfo * info) = 0;
+    virtual void sendComposition(IMEMessage msg, const IMEInfo * info) = 0;
     /*!设置鼠标事件回调
     @param[in] phase 事件阶段 仅监听指定阶段的事件
     @param[in] lis 事件监听接口

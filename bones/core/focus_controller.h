@@ -33,6 +33,10 @@ public:
     void shiftIfNecessary();
 
     void shift(View * n);
+
+    void setFocus(bool focus);
+
+    bool hasFocus() const;
 private:
     bool isTabTraversalKeyEvent(const KeyEvent & ke);
 
@@ -46,6 +50,8 @@ private:
 
     void clearFocusIfNecessary();
 
+    void setFocus(View * view);
+
     void setFocusWithReason(View * view, FocusChangeReason reason);
 
     bool isFocusable(View * v);
@@ -53,6 +59,8 @@ private:
     bool isFocusableCandidate(View * v, int skip_group_id);
 
     View * findSelectedForGroup(View * v);
+
+    void setWaitFocus(View * wait);
 private:
     View * findNextFocusable(View * start, bool reverse);
 
@@ -73,6 +81,8 @@ private:
     Root * root_;
     RefPtr<View> current_;
     RefPtr<View> stored_;
+    RefPtr<View> wait_focus_;
+    bool has_focus_;
     FocusChangeReason reason_;
     bool arrow_key_traversal_enabled_;
 };

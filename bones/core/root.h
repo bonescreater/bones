@@ -73,7 +73,7 @@ public:
 
     void sendFocus(bool focus);
 
-    bool sendComposition(CompositionEvent & e);
+    void sendComposition(CompositionEvent & e);
 
     Widget getWidget();
 
@@ -153,7 +153,6 @@ private:
     Surface back_buffer_;
     Surface view_buffer_;
     SkBaseDevice * view_device_;
-    bool has_focus_;
     void * bits_;
     size_t pitch_;
     Color color_;

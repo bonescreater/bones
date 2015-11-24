@@ -546,6 +546,24 @@ void WebView::onChar(KeyEvent & e)
         browser_->sendKeyEvent(e);
 }
 
+void WebView::onCompositionUpdate(CompositionEvent & e)
+{
+    auto index = e.index();
+    if (CompositionEvent::kResultStr & index)
+    {//插入结果字符串
+        auto str = e.str();
+        if (!str)
+            return;
+        for (size_t i = 0; i < wcslen(str); ++i)
+        {
+            KeyState state;
+            state.state = 0;
+            KeyEvent ke(kET_CHAR, this, static_cast<KeyboardCode>(str[i]), state, false, 0);
+            onChar(ke);
+        }
+    }
+}
+
 bool WebView::skipDefaultKeyEventProcessing(const KeyEvent & e)
 {//调用到这个函数时 必然当前焦点是webview
     return false;

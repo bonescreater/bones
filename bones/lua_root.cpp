@@ -129,7 +129,7 @@ void LuaRoot::sendFocus(bool focus)
     object_->sendFocus(focus);
 }
 
-bool LuaRoot::sendComposition(IMEMessage msg, const IMEInfo * info)
+void LuaRoot::sendComposition(IMEMessage msg, const IMEInfo * info)
 {
     //NativeEvent e = { msg, wparam, lparam, 0 };
     EventType type = kET_COUNT;
@@ -140,14 +140,14 @@ bool LuaRoot::sendComposition(IMEMessage msg, const IMEInfo * info)
     else if (BonesRoot::kCompositionEnd == msg)
         type = kET_COMPOSITION_END;
     else
-        return false;
+        return;
 
     CompositionEvent e(type, object_.get(),
         info ? info->index : 0,
         info ? info->dbcs : 0,
         info ? info->str : nullptr,
         info ? info->cursor : 0);
-    return object_->sendComposition(e);
+    object_->sendComposition(e);
 }
 
 void LuaRoot::requestFocus(Root * sender)

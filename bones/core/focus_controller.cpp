@@ -10,7 +10,7 @@ namespace bones
 
 FocusController::FocusController(Root * root)
 :root_(root), arrow_key_traversal_enabled_(false),
-reason_(kTraversal)
+reason_(kTraversal), has_focus_(false)
 {
 
 }
@@ -18,6 +18,27 @@ reason_(kTraversal)
 FocusController::~FocusController()
 {
     ;
+}
+
+void FocusController::setFocus(bool focus)
+{
+    has_focus_ = focus;
+    if (has_focus_)
+    {
+        auto v = wait_focus_.get();
+        wait_focus_.reset();
+        setFocus(v);
+    }
+    else
+    {//root失去焦点 则将保存当前焦点
+        setWaitFocus(current());
+        setFocus(nullptr);
+    }
+}
+
+bool FocusController::hasFocus() const
+{
+    return has_focus_;
 }
 
 bool FocusController::handleKeyEvent(const KeyEvent & ke)
@@ -51,8 +72,14 @@ bool FocusController::handleKeyEvent(const KeyEvent & ke)
 
 void FocusController::removed(View * n)
 {
-    if (n && n->contains(current_.get()))
-        setFocusWithReason(nullptr, kTraversal);
+    if (n)
+    {
+        if (n->contains(wait_focus_.get()))
+            wait_focus_.reset();
+        if (n->contains(current_.get()))
+            setFocusWithReason(nullptr, kTraversal);
+    }
+     
 }
 
 void FocusController::shiftIfNecessary()
@@ -63,20 +90,13 @@ void FocusController::shiftIfNecessary()
 
 void FocusController::shift(View * n)
 {
-    if (n == root_)
-        n = nullptr;
-    //当view不可接受焦点时 不切换焦点
-    //为了在滚动条上点击时 不切换编辑框的焦点这样编辑框继续显示光标
-    if (n && !n->isFocusable())
+    if (!has_focus_)
+    {//root没有获得焦点 将需要获得焦点的view 简单保存起来
+        setWaitFocus(n);
         return;
-    //View * tmp = n;
-    //while (tmp)
-    //{
-    //    if (tmp->isFocusable())
-    //        break;
-    //    tmp = tmp->parent();
-    //}
-    setFocusWithReason(n, kDirectChange);
+    }
+    else
+        setFocus(n);
 }
 
 View * FocusController::current() const
@@ -146,6 +166,24 @@ void FocusController::clearFocusIfNecessary()
         setFocusWithReason(nullptr, kTraversal);
 }
 
+void FocusController::setFocus(View * view)
+{
+    if (view == root_)
+        view = nullptr;
+    //当view不可接受焦点时 不切换焦点
+    //为了在滚动条上点击时 不切换编辑框的焦点这样编辑框继续显示光标
+    if (view && !view->isFocusable())
+        return;
+    //View * tmp = n;
+    //while (tmp)
+    //{
+    //    if (tmp->isFocusable())
+    //        break;
+    //    tmp = tmp->parent();
+    //}
+    setFocusWithReason(view, kDirectChange);
+}
+
 void FocusController::setFocusWithReason(View * view, FocusChangeReason reason)
 {
     if (current_.get() == view)
@@ -200,6 +238,13 @@ View * FocusController::findSelectedForGroup(View * v)
         return selected;
 
     return v;
+}
+
+void FocusController::setWaitFocus(View * wait)
+{//root不能作为focus
+    if (root_ == wait)
+        wait = nullptr;
+    wait_focus_.reset(wait);
 }
 
 bool FocusController::processArrowKeyTraversal(const KeyEvent & ke)

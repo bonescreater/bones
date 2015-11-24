@@ -20,7 +20,7 @@ namespace bones
 
 Root::Root()
 :mouse_(this), focus_(this), view_device_(nullptr), delegate_(nullptr),
-widget_(NULL), color_(0), has_focus_(false), bits_(nullptr), pitch_(0),
+widget_(NULL), color_(0), bits_(nullptr), pitch_(0),
 caret_show_(false), caret_display_(false), caret_ani_(nullptr),
 force_caret_display_(false)
 {
@@ -90,23 +90,21 @@ void Root::sendKey(KeyEvent & e)
 
 void Root::sendFocus(bool focus)
 {
-    has_focus_ = focus;
-    if (!has_focus_)//失去焦点 将内部焦点移除
-        focus_.shift(nullptr);
+    focus_.setFocus(focus);
 }
 
-bool Root::sendComposition(CompositionEvent &e)
+void Root::sendComposition(CompositionEvent &e)
 {
     if (e.target() != this)
-        return false;
+        return;
 
     View * focus = focus_.current();
     if (!focus)
-        return true;
+        return;
     CompositionEvent ce(e.type(), focus, e.index(), e.dbcs(), e.str(), e.cursor());
     EventDispatcher::Push(ce);
-    return ( kClassWebView != focus->getClassName())
-        || e.type() != kET_COMPOSITION_UPDATE;
+    //return ( kClassWebView != focus->getClassName())
+    //    || e.type() != kET_COMPOSITION_UPDATE;
 }
 
 void Root::sendWheel(WheelEvent & e)
@@ -222,7 +220,7 @@ void Root::drawView(SkCanvas & canvas, const Rect & inval)
 
 void Root::drawCaret(SkCanvas & canvas)
 {//光标只在root有焦点的情况下才绘制 避免root失去焦点后 进行焦点切换
-    if (!caret_display_ && !force_caret_display_ && has_focus_)//光标不显示
+    if (!caret_display_ && !force_caret_display_)//光标不显示
         return;
     if (force_caret_display_)
         force_caret_display_ = false;
@@ -324,11 +322,9 @@ bool Root::notifyVisibleChanged(View * n)
 
 bool Root::notifySetFocus(View * n)
 {
-    if (!has_focus_)
+    if (!focus_.hasFocus())
         delegate_ ? delegate_->requestFocus(this) : 0;
-
-    if (has_focus_)
-        focus_.shift(n);
+    focus_.shift(n);
     return true;
 }
 

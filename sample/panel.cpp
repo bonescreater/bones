@@ -415,8 +415,9 @@ LRESULT BSPanel::handleIME(UINT uMsg, WPARAM wParam, LPARAM lParam)
     else
         return 0;
     //cef osr 目前不支持ime 临时通过返回值来处理
-    if (!root_->sendComposition(m, BonesRoot::kCompositionUpdate == m ? &info : nullptr))
-        return defProcessEvent(uMsg, wParam, lParam);
+    root_->sendComposition(m, BonesRoot::kCompositionUpdate == m ? &info : nullptr);
+    //if (!root_->sendComposition(m, BonesRoot::kCompositionUpdate == m ? &info : nullptr))
+        //return defProcessEvent(uMsg, wParam, lParam);
     return 0;
 }
 

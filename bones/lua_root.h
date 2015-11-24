@@ -39,7 +39,7 @@ public:
 
     void sendFocus(bool focus) override;
 
-    bool sendComposition(IMEMessage msg, const IMEInfo * info) override;
+    void sendComposition(IMEMessage msg, const IMEInfo * info) override;
 
     void requestFocus(Root * sender) override;
 
