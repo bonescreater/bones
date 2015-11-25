@@ -388,7 +388,7 @@ public:
     //@cmember Establish a new cursor shape
     virtual void TxSetCursor(HCURSOR hcur, BOOL fText) override
     {
-        rich_ ? rich_->setCursor(View::kHandle, hcur) : 0;
+        rich_ ? rich_->setCursor(View::kNative, hcur) : 0;
     }
 
     //@cmember Converts screen coordinates of a specified point to the client coordinates

@@ -300,7 +300,7 @@ LRESULT BSPanel::handleSetCursor(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (HTCLIENT == LOWORD(lParam))
     {
-        if (kBonesHandle == cursor_)
+        if (kBonesNative == cursor_)
         {
             ::SetCursor((HCURSOR)cursor_content_);
             return TRUE;

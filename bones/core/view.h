@@ -40,7 +40,7 @@ public:
         kAppStarting,
         kHelp,
 
-        kHandle,//光标句柄
+        kNative,//光标句柄
         kCustom,
     };
 private:

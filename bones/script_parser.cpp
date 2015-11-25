@@ -162,6 +162,9 @@ void ScriptParser::cleanObject(BonesObject * bo)
     if (!bo)
         return;
     Core::GetXMLController()->clean(getObject(bo));
+#ifdef _DEBUG
+    lua_gc(LuaContext::State(), LUA_GCCOLLECT, 0);
+#endif
 }
 
 BonesResourceManager * ScriptParser::getResourceManager()

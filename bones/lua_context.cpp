@@ -669,8 +669,8 @@ void LuaContext::GetLOFromCO(lua_State * l, void * co)
     lua_gettable(l, -2);
     lua_copy(l, -1, -3);
     lua_pop(l, 2);
-    if (!lua_istable(l, -1))
-        BLG_ERROR << co << "::GetLOFromCO failed\n";
+    if (!lua_istable(l, -1) && co)
+        BLG_ERROR << co << "::GetLOFromCO failed";
 }
 
 static int GetCObject(lua_State * l)

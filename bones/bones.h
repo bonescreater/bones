@@ -717,7 +717,7 @@ public:
 /*!bones光标样式*/
 enum BonesCursor
 {
-    kBonesArrow,
+    kBonesArrow,//!< IDC_XXX content 为空
     kBonesIbeam,
     kBonesWait,
     kBonesCross,
@@ -734,8 +734,8 @@ enum BonesCursor
     kBonesAppStarting,
     kBonesHelp,
 
-    kBonesHandle,
-    kBonesCustom,
+    kBonesNative,//!<content 为HANDLE
+    kBonesCustom,//!<content 为自定义
 };
 
 /*!root 标签提供了与native window 交互的接口*/
@@ -749,27 +749,38 @@ public:
     class NotifyListener : public BonesHandler::NotifyListener
     {
     public:
-        /*!内部标签需要获取焦点
-        @param[in] sender 标签
+        /*!需要获取焦点
+        @param[in] sender root标签
         @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
         */
         virtual void requestFocus(BonesRoot * sender, bool & stop) = 0;
-
+        /*!焦点切换
+        @param[in] sender root标签
+        @param[in] prev 切换焦点后失去焦点的标签 可以为空
+        @param[in] current 切换焦点后获取焦点的标签 可以为空
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        */
         virtual void shiftFocus(BonesRoot * sender, BonesObject * prev, 
                                 BonesObject * current, bool & stop) = 0;
         /*!root需要重绘
-        @param[in] sender 标签
+        @param[in] sender root标签
         @param[in] rect 需要重绘的区域
         @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
         */
         virtual void invalidRect(BonesRoot * sender, const BonesRect & rect, bool & stop) = 0;
         /*!root鼠标样式改变
-        @param[in] sender 标签
+        @param[in] sender root标签
         @param[in] cursor 新的鼠标样式
+        @param[in] content cursor为kBonesNative时 content为HANDLE
         @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
         */
         virtual void changeCursor(BonesRoot * sender, BonesCursor cursor, void * content, bool & stop) = 0;
-
+        /*!root光标位置改变
+        @param[in] sender root标签
+        @param[in] point 光标的位置
+        @param[out] stop 是否将通知传递到脚本层处理 true则不传递 false传递
+        @note root内部自绘了光标 所以光标位置改变时不需要调用api来设置窗口光标的位置
+        */
         virtual void changeCaretPos(BonesRoot * sender, const BonesPoint & point, bool &stop) = 0;
     };
     enum MouseMessage
@@ -867,22 +878,17 @@ public:
     @note 位图的尺寸即为root的尺寸,位图像素为预乘后的像素
     */
     virtual void getBackBuffer(const void * & data, size_t & pitch) const = 0;
-    /*!传递mouse消息
-    */
+    /*!传递mouse消息*/
     virtual void sendMouse(MouseMessage msg, const BonesPoint & pt, int flags) = 0;
-    /*!传递key消息
-    */
+    /*!传递key消息*/
     virtual void sendKey(KeyMessage msg, int32_t vk, uint32_t states, int flags) = 0;
-    /*!传递wheel消息
-    */
+    /*!传递wheel消息*/
     virtual void sendWheel(int dx, int dy, const BonesPoint & pt, int flags) = 0;
-    /*!传递focus消息
-    */
+    /*!传递focus消息*/
     virtual void sendFocus(bool focus) = 0;
     /*!传递ime消息
-    @return 返回false则需要自己处理
-    @note 由于webview使用的cef浏览器 暂时没有找到处理IME的接口
-    所以返回false时需要自己处理 通常是调用DefWindowProc
+    @note 通常IME窗口会跟随光标位置改变而改变，可以通过root的光标位置回调来处理
+    webview所使用的cef没找到IME的相关处理以及光标通知所以在webview中IME窗口的位置无法跟随光标
     */
     virtual void sendComposition(IMEMessage msg, const IMEInfo * info) = 0;
     /*!设置鼠标事件回调

@@ -63,7 +63,7 @@ class Browser : public CefClient,
         else if (CT_NONE == cef_cursor)
             cursor = View::kNo;
         else if (CT_CUSTOM == cef_cursor)
-            cursor = View::kHandle;
+            cursor = View::kNative;
 
         return cursor;
 
@@ -297,7 +297,7 @@ public:
     {//先简单转换下 webview的光标样式
 
         auto vc = ToBonesCursor(type);
-        web_view_ ? web_view_->setCursor(vc, View::kHandle == vc ? cursor : nullptr) : 0;
+        web_view_ ? web_view_->setCursor(vc, View::kNative == vc ? cursor : nullptr) : 0;
     }
 protected:
     CefRefPtr<CefFrame> mainFrame()
