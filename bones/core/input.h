@@ -41,6 +41,10 @@ public:
     void setDelegate(Delegate * delegate);
 
     const char * getClassName() const override;
+    
+    void moveCaret(int index);
+
+    void select(int start, int end);
 protected:
     void onMouseEnter(MouseEvent & e) override;
 
@@ -145,7 +149,7 @@ private:
     int select_begin_;
     Status status_;
     wchar_t password_;
-    bool pw_valid;
+    bool pw_valid_;
     bool left_down_;//左键是否在input中按下
 };
 

@@ -4,8 +4,11 @@ local mod = {}
 --self代表root标签
 function mod.onCreate(self)
     --self:setOpacity(0.5)
-    local input = self:getChildAt(0)
-    input:setContent("aaaaabbb")
+    local input1 = self:getChildAt(0)
+    input1:setContent("aaaaabbb")
+    local input2 = self:getChildAt(1)
+    input2:setContent("我哈哈哈")
+    input2:moveCaret(3)
 end
 
 --点击tab页产生的事件

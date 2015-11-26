@@ -15,20 +15,24 @@
       <Project>{ec5bd0c9-c2a7-4eaa-a6f8-e74ff9e79b9f}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="bones\gtest\src\gtest-all.cc" />
+    <ClCompile Include="bones\gtest\src\gtest_main.cc" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6AC0EE58-B2CD-4490-8147-89020B15F518}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>bones_core</RootNamespace>
+    <RootNamespace>unittest</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -59,11 +63,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)rapidxml;$(ProjectDir)skia\include\core;$(ProjectDir)skia\include\config;$(ProjectDir)skia\include\images;$(ProjectDir)skia\include\effects;$(ProjectDir)skia\include\utils;$(ProjectDir)skia\include\ports;$(ProjectDir)skia\include\utils\win;$(ProjectDir)cef3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)bones\gtest\include;$(ProjectDir)\bones\gtest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -76,11 +80,11 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)rapidxml;$(ProjectDir)skia\include\core;$(ProjectDir)skia\include\config;$(ProjectDir)skia\include\images;$(ProjectDir)skia\include\effects;$(ProjectDir)skia\include\utils;$(ProjectDir)skia\include\ports;$(ProjectDir)skia\include\utils\win;$(ProjectDir)cef3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)bones\gtest\include;$(ProjectDir)\bones\gtest;$(ProjectDir)rapidxml;$(ProjectDir)skia\include\core;$(ProjectDir)skia\include\config;$(ProjectDir)skia\include\images;$(ProjectDir)skia\include\effects;$(ProjectDir)skia\include\utils;$(ProjectDir)skia\include\ports;$(ProjectDir)skia\include\utils\win;$(ProjectDir)cef3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>

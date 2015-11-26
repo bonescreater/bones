@@ -13,6 +13,9 @@ static const char * kMetaTableText = "__mt_input";
 static const char * kMethodSetFont = "setFont";
 static const char * kMethodSetColor = "setColor";
 static const char * kMethodSetContent = "setContent";
+static const char * kMethodSetPassword = "setPassword";
+static const char * kMethodMoveCaret = "moveCaret";
+static const char * kMethodSelect = "select";
 
 static int SetFont(lua_State * l)
 {
@@ -70,6 +73,49 @@ static int SetContent(lua_State * l)
     return 0;
 }
 
+static int SetPassword(lua_State * l)
+{
+    lua_settop(l, 3);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaInput * input = static_cast<LuaInput *>(
+        LuaContext::CallGetCObject(l));
+    if (input)
+    {
+        wchar_t pw = 0;
+        auto str = lua_tostring(l, 3);
+        if (str && strlen(str) > 0)
+            pw = str[0];      
+        input->setPassword(!!lua_toboolean(l, 2), pw);
+    }
+    return 0;
+}
+
+static int MoveCaret(lua_State * l)
+{
+    lua_settop(l, 2);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaInput * input = static_cast<LuaInput *>(
+        LuaContext::CallGetCObject(l));
+    if (input)
+        input->moveCaret(Utils::ToInt(lua_tonumber(l, 2)));
+    return 0;
+}
+
+static int Select(lua_State * l)
+{
+    lua_settop(l, 3);
+    lua_pushnil(l);
+    lua_copy(l, 1, -1);
+    LuaInput * input = static_cast<LuaInput *>(
+        LuaContext::CallGetCObject(l));
+    if (input)
+        input->select(Utils::ToInt(lua_tonumber(l, 2)),
+                      Utils::ToInt(lua_tonumber(l, 3)));
+    return 0;
+}
+
 LuaInput::LuaInput(Input * ob)
     :LuaObject(ob)
 {
@@ -89,6 +135,15 @@ void LuaInput::createMetaTable(lua_State * l)
 
         lua_pushcfunction(l, &SetContent);
         lua_setfield(l, -2, kMethodSetContent);
+
+        lua_pushcfunction(l, &SetPassword);
+        lua_setfield(l, -2, kMethodSetPassword);
+
+        lua_pushcfunction(l, &MoveCaret);
+        lua_setfield(l, -2, kMethodMoveCaret);
+
+        lua_pushcfunction(l, &Select);
+        lua_setfield(l, -2, kMethodSelect);
     }
 }
 
@@ -115,6 +170,16 @@ void LuaInput::setContent(const wchar_t * str)
 void LuaInput::setPassword(bool pw, wchar_t password)
 {
     object_->setPassword(pw, password);
+}
+
+void LuaInput::moveCaret(int index)
+{
+    object_->moveCaret(index);
+}
+
+void LuaInput::select(int start, int end)
+{
+    object_->select(start, end);
 }
 
 }

@@ -19,9 +19,14 @@
       loc:20px 20px;
       size:918px 378px;
       }
-      .input
+      .input1
       {
       loc:20px 20px;
+      size:200px 50px;
+      }
+      .input2
+      {
+      loc:250px 20px;
       size:200px 50px;
       }
     </style>
@@ -29,7 +34,8 @@
   <body>
     <root id ="main" class="main">
       <notify name ="onCreate" module ="shape" func ="onCreate"></notify>
-      <input class ="input"></input>
+      <input class ="input1"></input>
+      <input class ="input2"></input>
     </root>
   </body>
 </bones>

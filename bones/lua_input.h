@@ -25,6 +25,10 @@ public:
 
     void setPassword(bool pw, wchar_t password) override;
 
+    void moveCaret(int index) override;
+    
+    void select(int start, int end) override;
+
     LUA_HANDLER(Input);
 };
 

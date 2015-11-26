@@ -80,7 +80,6 @@ private:
 private:
     Root * root_;
     RefPtr<View> current_;
-    RefPtr<View> stored_;
     RefPtr<View> wait_focus_;
     bool has_focus_;
     FocusChangeReason reason_;

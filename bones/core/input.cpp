@@ -12,7 +12,7 @@ Input::Input()
 composition_start_(0), composition_length_(0),
 caret_(0), color_(BONES_RGB_BLACK), shader_(nullptr),
 select_begin_(0), status_(kSelect),
-password_(L'*'), pw_valid(false),
+password_(L'*'), pw_valid_(false),
 left_down_(false)
 {
 
@@ -80,7 +80,7 @@ void Input::set(const wchar_t * text)
 
 void Input::setPassword(bool pw, wchar_t password)
 {
-    pw_valid = pw;
+    pw_valid_ = pw;
     password_ = password;
     adjustContentWidthsCache();
     //更新最大可滚动范围
@@ -97,6 +97,18 @@ void Input::setDelegate(Delegate * delegate)
 const char * Input::getClassName() const
 {
     return kClassInput;
+}
+
+void Input::moveCaret(int index)
+{
+    switchToNormal(index);
+    inval();
+}
+
+void Input::select(int start, int end)
+{
+    switchToSelect(start, end);
+    inval();
 }
 
 Input::DelegateBase * Input::delegate()
@@ -206,7 +218,10 @@ void Input::onFocus(FocusEvent & e)
         return;
     createCaret();
     setCaretSize(getCaretSize());
-    switchToSelect(0, content_.size());
+    updateCaretPos(caret_);
+    if (kNormal == status_)
+        showCaret(true);
+
     inval();
 }
 
@@ -219,8 +234,8 @@ void Input::onBlur(FocusEvent & e)
     if (Event::kTarget != e.phase())
         return;
     //在有组合字符串的情况下失去焦点 则组合字符串为结果字符串
-    switchToNormal(composition_start_ + composition_length_);
-    //composition_start_ = composition_length_ = 0;
+    //switchToNormal(composition_start_ + composition_length_);
+    composition_start_ = composition_length_ = 0;
 
     destroyCaret();
     inval();
@@ -408,7 +423,7 @@ void Input::drawText(SkCanvas & canvas, float opacity)
     for (int i = 0; i < static_cast<int>(content_.size()); ++i)
     {
         wchar_t ch = content_[i];
-        if (pw_valid)
+        if (pw_valid_)
             ch = password_;
 
         if (caret_ != select_begin_ && isInSelection(i))
@@ -477,7 +492,7 @@ void Input::adjustContentWidthsCache()
         SkPaint paint;
         ToSkPaint(paint);
         //auto m = paint.measureText(&content_[0], sizeof(content_[0]) * size);
-        if (pw_valid)
+        if (pw_valid_)
         {//密码有效 则测量 密码字符串的宽
             std::wstring tmp;
             tmp.resize(size, password_);
@@ -630,8 +645,7 @@ void Input::switchToSelect(int begin, int end)
     //移除composition
     composition_start_ = composition_length_ = 0;
     select_begin_ = checkIndex(begin);
-    caret_  = checkIndex(end);
-    updateCaretPos(caret_);
+    updateCaretPos(checkIndex(end));
     showCaret(false);
     setCursor(kArrow);
 }
@@ -642,8 +656,8 @@ void Input::switchToNormal(int index)
     //移除composition
     composition_start_ = composition_length_ = 0;
     //更新光标后要保证光标在可显示区域内
-    select_begin_ = caret_ = checkIndex(index);
-    updateCaretPos(caret_);
+    updateCaretPos(checkIndex(index));
+    select_begin_ = caret_;
     showCaret(true);
     setCursor(kIbeam);
 }

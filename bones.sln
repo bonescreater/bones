@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rapidxml", "rapidxml", "{B4
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcef_dll_wrapper", "libcef_dll_wrapper.vcxproj", "{A9D6DC71-C0DC-4549-AEA0-3B15B44E86A9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "unittest", "unittest.vcxproj", "{6AC0EE58-B2CD-4490-8147-89020B15F518}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -63,6 +65,12 @@ Global
 		{A9D6DC71-C0DC-4549-AEA0-3B15B44E86A9}.Release|Win32.Build.0 = Release|Win32
 		{A9D6DC71-C0DC-4549-AEA0-3B15B44E86A9}.Release|x64.ActiveCfg = Release|x64
 		{A9D6DC71-C0DC-4549-AEA0-3B15B44E86A9}.Release|x64.Build.0 = Release|x64
+		{6AC0EE58-B2CD-4490-8147-89020B15F518}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6AC0EE58-B2CD-4490-8147-89020B15F518}.Debug|Win32.Build.0 = Debug|Win32
+		{6AC0EE58-B2CD-4490-8147-89020B15F518}.Debug|x64.ActiveCfg = Debug|Win32
+		{6AC0EE58-B2CD-4490-8147-89020B15F518}.Release|Win32.ActiveCfg = Release|Win32
+		{6AC0EE58-B2CD-4490-8147-89020B15F518}.Release|Win32.Build.0 = Release|Win32
+		{6AC0EE58-B2CD-4490-8147-89020B15F518}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

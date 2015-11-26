@@ -1243,6 +1243,16 @@ public:
     @param[in] password 密码字符，pw为true是有效
     */
     virtual void setPassword(bool pw, wchar_t password) = 0;
+    /*!移动光标到指定字符前
+    @param[in] index 字符索引
+    @note 只有在标签获取焦点时才能显示出光标
+    */
+    virtual void moveCaret(int index) = 0;
+    /*!选中文本
+    @param[in] start 起始字符索引
+    @param[in] end 终止字符索引
+    */
+    virtual void select(int start, int end) = 0;
     /*!设置鼠标事件回调
     @param[in] phase 事件阶段 仅监听指定阶段的事件
     @param[in] lis 事件监听接口
