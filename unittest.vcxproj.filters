@@ -3,5 +3,234 @@
   <ItemGroup>
     <ClCompile Include="bones\gtest\src\gtest_main.cc" />
     <ClCompile Include="bones\gtest\src\gtest-all.cc" />
+    <ClCompile Include="bones\core\focus_controller_unittest.cpp" />
+    <ClCompile Include="bones\core\focus_controller.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\ref.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\view.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\accelerator.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\accelerator_manager.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\animation.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\animation_manager.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\core_imp.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\css_manager.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\css_utils.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\device.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\encoding.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\event.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\event_dispatcher.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\font.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\helper.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\image.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\input.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\logging.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\mouse_controller.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\pixmap.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\point.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\rect.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\res_manager.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\rich_edit.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\root.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\root_manager.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\scroller.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\shape.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\size.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\text.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\xml.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\xml_controller.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\web_view.cpp">
+      <Filter>bones</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\core_imp_unittest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="bones">
+      <UniqueIdentifier>{a6ad51ac-7bdd-4682-8ed9-e3b447ab1f85}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bones\core\accelerator.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\accelerator_manager.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\animation.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\animation_manager.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\area.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\color.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\core.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\core_imp.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\css_manager.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\css_types.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\css_utils.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\device.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\encoding.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\event.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\event_dispatcher.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\focus_controller.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\font.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\helper.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\image.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\input.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\keyboard_codes.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\logging.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\mouse_controller.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\pixmap.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\point.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\rect.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\ref.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\res_manager.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\rich_edit.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\root.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\root_manager.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\scroller.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\shape.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\size.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\text.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\view.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\xml.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\xml_controller.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\web_view.h">
+      <Filter>bones</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\env_unittest.h" />
   </ItemGroup>
 </Project>

@@ -8,6 +8,8 @@
 
 #include <Windows.h>
 
+//gtest单元测试
+#include "../gtest/include/gtest/gtest_prod.h"
 
 namespace bones
 {

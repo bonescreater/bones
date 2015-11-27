@@ -86,6 +86,9 @@ public:
 
     static SkPathEffect * getDashEffectCache();
 
+    FRIEND_TEST(CoreUnitTest, CheckConstructor);
+    FRIEND_TEST(CoreUnitTest, Completeness);
+
 };
 
 }

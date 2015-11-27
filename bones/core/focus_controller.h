@@ -84,6 +84,9 @@ private:
     bool has_focus_;
     FocusChangeReason reason_;
     bool arrow_key_traversal_enabled_;
+
+    FRIEND_TEST(FocusControllerUnitTest, CheckConstructor);
+    FRIEND_TEST(FocusControllerUnitTest, CanAccessPrivateMembers);
 };
 
 }
