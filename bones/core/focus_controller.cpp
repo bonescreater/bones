@@ -26,8 +26,8 @@ void FocusController::setFocus(bool focus)
     if (has_focus_)
     {
         auto v = wait_focus_.get();
-        wait_focus_.reset();
         setFocus(v);
+        wait_focus_.reset();
     }
     else
     {//root失去焦点 则将保存当前焦点
@@ -43,6 +43,10 @@ bool FocusController::hasFocus() const
 
 bool FocusController::handleKeyEvent(const KeyEvent & ke)
 {
+    //如果focuscontroller没有获得焦点直接返回
+    if (!hasFocus())
+        return false;
+
     auto key_code = ke.key();
 
     if (kET_KEY_DOWN != ke.type())
@@ -299,7 +303,8 @@ View * FocusController::findNextFocusable(View * start, bool reverse)
         newly = findNextFocusable(start, check_start, true, true, start_group);
     else
     {
-        bool can_go_down = !isFocusable(start);
+        //如果当前焦点View不能焦点的话 我觉得应该是往兄弟上找 而不是往子上找
+        bool can_go_down = /*!isFocusable(start)*/false;
         newly = findPrevFocusable(start, check_start, true, can_go_down, start_group);
     }
 
@@ -380,7 +385,7 @@ View * FocusController::findPrevFocusable(View * start,
         {
             int index = static_cast<int>(start->getChildCount()) - 1;
             auto v = findPrevFocusable(
-                start->getFirstChild(),
+                start->getChildAt(index),
                 true, false, true, skip_group_id);
             if (v)
                 return v;

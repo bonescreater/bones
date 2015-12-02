@@ -86,7 +86,8 @@ private:
     bool arrow_key_traversal_enabled_;
 
     FRIEND_TEST(FocusControllerUnitTest, CheckConstructor);
-    FRIEND_TEST(FocusControllerUnitTest, CanAccessPrivateMembers);
+    FRIEND_TEST(FocusControllerUnitTest, Shift);
+    FRIEND_TEST(FocusControllerUnitTest, KeyShift);
 };
 
 }
