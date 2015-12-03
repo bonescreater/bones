@@ -187,6 +187,8 @@ public:
     virtual bool isFocusable() const;
 
     virtual bool isClip() const;
+
+    virtual bool isMouseable() const;
     //快捷键处理
     bool process(const Accelerator & accelerator) override;
 

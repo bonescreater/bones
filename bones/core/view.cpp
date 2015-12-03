@@ -181,6 +181,11 @@ bool View::isFocusable() const
     return focusable() && isVisible();
 }
 
+bool View::isMouseable() const
+{
+    return mouseable() && isVisible();
+}
+
 bool View::isClip() const
 {
     return clip();

@@ -3,7 +3,6 @@
   <ItemGroup>
     <ClCompile Include="bones\gtest\src\gtest_main.cc" />
     <ClCompile Include="bones\gtest\src\gtest-all.cc" />
-    <ClCompile Include="bones\core\focus_controller_unittest.cpp" />
     <ClCompile Include="bones\core\focus_controller.cpp">
       <Filter>bones</Filter>
     </ClCompile>
@@ -106,11 +105,22 @@
     <ClCompile Include="bones\core\web_view.cpp">
       <Filter>bones</Filter>
     </ClCompile>
-    <ClCompile Include="bones\core\core_imp_unittest.cpp" />
+    <ClCompile Include="bones\core\core_imp_unittest.cpp">
+      <Filter>unittest</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\focus_controller_unittest.cpp">
+      <Filter>unittest</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\mouse_controller_unittest.cpp">
+      <Filter>unittest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="bones">
       <UniqueIdentifier>{a6ad51ac-7bdd-4682-8ed9-e3b447ab1f85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="unittest">
+      <UniqueIdentifier>{5a75ef8f-4d62-46fe-ac97-da037094d78d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

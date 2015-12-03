@@ -39,6 +39,7 @@
     <ClCompile Include="bones\core\input.cpp" />
     <ClCompile Include="bones\core\logging.cpp" />
     <ClCompile Include="bones\core\mouse_controller.cpp" />
+    <ClCompile Include="bones\core\mouse_controller_unittest.cpp" />
     <ClCompile Include="bones\core\pixmap.cpp" />
     <ClCompile Include="bones\core\point.cpp" />
     <ClCompile Include="bones\core\rect.cpp" />

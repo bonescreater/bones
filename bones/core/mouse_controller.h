@@ -33,11 +33,16 @@ private:
     void shiftCapture(View * n);
 
     void shiftOver(View * n);
+
+    void clearIfNecessary();
 private:
     Root * root_;
     RefPtr<View> over_;
     RefPtr<View> capture_;
     Point last_mouse_point_;
+
+    FRIEND_TEST(MouseControllerUnitTest, CheckConstructor);
+    FRIEND_TEST(MouseControllerUnitTest, Shift);
 };
 
 

@@ -178,6 +178,9 @@ void FocusController::setFocus(View * view)
     //为了在滚动条上点击时 不切换编辑框的焦点这样编辑框继续显示光标
     if (view && !view->isFocusable())
         return;
+    if (view && !root_->contains(view))
+        return;
+
     //View * tmp = n;
     //while (tmp)
     //{

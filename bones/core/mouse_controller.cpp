@@ -28,8 +28,12 @@ void MouseController::removed(View * n)
 
 void MouseController::shiftIfNecessary()
 {
-    if (capture_ && !capture_->isVisible())
+    if (capture_ &&
+        (!capture_->isMouseable() || !root_->contains(capture_.get())))
         shiftCapture(nullptr);
+    if (over_ &&
+        (!over_->isMouseable() || !root_->contains(over_.get())))
+        shiftOver(nullptr);
 
     auto target = getTargetByPos(last_mouse_point_, false);
     if ((target != over_.get()))
@@ -44,6 +48,7 @@ void MouseController::shiftIfNecessary()
 
 void MouseController::handleEvent(MouseEvent & e)
 {
+    clearIfNecessary();
     if ( e.type() < kET_MOUSE_ENTER || e.type() > kET_MOUSE_LEAVE) 
         return;
 
@@ -96,6 +101,8 @@ void MouseController::handleEvent(MouseEvent & e)
 
 void MouseController::handleWheel(WheelEvent & e)
 {//滚动是忽略capture
+    clearIfNecessary();
+
     View * target = e.target();
     if (target == root_)
         target = getTargetByPos(e.getLoc(), true);
@@ -172,5 +179,14 @@ View * MouseController::over() const
     return over_.get();
 }
 
+void MouseController::clearIfNecessary()
+{
+    if (capture_ && 
+        (!capture_->isMouseable() || !root_->contains(capture_.get())))
+        shiftCapture(nullptr);
+    if (over_ && 
+        (!over_->isMouseable() || !root_->contains(over_.get())))
+        shiftOver(nullptr);
+}
 
 }
