@@ -114,6 +114,9 @@
     <ClCompile Include="bones\core\mouse_controller_unittest.cpp">
       <Filter>unittest</Filter>
     </ClCompile>
+    <ClCompile Include="bones\core\view_unittest.cpp">
+      <Filter>unittest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="bones">

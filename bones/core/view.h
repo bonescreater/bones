@@ -49,7 +49,6 @@ private:
         uint32_t visible : 1;
         uint32_t focusable : 1;
         uint32_t mouseable : 1;//true则接收target鼠标事件
-        uint32_t clip : 1;//true 则子孙全部限制在自己的范围之内
     };
 public:
     View();
@@ -88,8 +87,6 @@ public:
 
     Scalar getHeight() const;
 
-    void setClip(bool clip);
-
     void setVisible(bool visible);
 
     void setFocusable(bool focusable);
@@ -101,8 +98,6 @@ public:
     bool focusable() const;
 
     bool mouseable() const;
-
-    bool clip() const;
 
     void inval();
 
@@ -185,8 +180,6 @@ public:
     virtual bool isVisible() const;
 
     virtual bool isFocusable() const;
-
-    virtual bool isClip() const;
 
     virtual bool isMouseable() const;
     //快捷键处理
@@ -331,12 +324,13 @@ protected:
 
     RefPtr<View> next_focusable_;
     RefPtr<View> prev_focusable_;
-    int tag_;
     int group_id_;
 
     float opacity_;
     friend class EventDispatcher;
     friend class Root;
+
+    FRIEND_TEST(ViewUnitTest, CheckConstructor);
 };
 
 }

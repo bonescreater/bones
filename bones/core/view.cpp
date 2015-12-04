@@ -7,14 +7,11 @@
 
 namespace bones
 {
-static int kInvalidTag = -1;
-
-View::View() :tag_(kInvalidTag), group_id_(-1), children_count_(0), opacity_(1.0f)
+View::View() :group_id_(-1), children_count_(0), opacity_(1.0f)
 {
     
     flag_.focusable = true;
     flag_.visible = true;
-    flag_.clip = true;
     flag_.mouseable = true;
 }
 
@@ -126,11 +123,6 @@ Scalar View::getHeight() const
     return size_.height();
 }
 
-void View::setClip(bool clip)
-{
-    flag_.clip = clip;
-}
-
 void View::setVisible(bool vis)
 {
     if (vis != visible())
@@ -166,11 +158,6 @@ bool View::mouseable() const
     return flag_.mouseable;
 }
 
-bool View::clip() const
-{
-    return flag_.clip;
-}
-
 bool View::isVisible() const
 {
     return visible() && parent_ ? parent_->visible() : false;
@@ -184,11 +171,6 @@ bool View::isFocusable() const
 bool View::isMouseable() const
 {
     return mouseable() && isVisible();
-}
-
-bool View::isClip() const
-{
-    return clip();
 }
 
 bool View::process(const Accelerator & accelerator)
@@ -233,7 +215,13 @@ void View::attachChildToBack(View * child)
 
 void View::attachChildAt(View * child, size_t index)
 {
-    if (!child || child == this)
+    if (!child)
+        return;
+    //child 不能是自己或者自己的父
+    if (child->contains(this))
+        return;
+    //child不能已经添加到父链表上
+    if (child->parent() == this)
         return;
 
     //超出范围
@@ -256,9 +244,9 @@ void View::attachChildAt(View * child, size_t index)
         ch->prev_sibling_ = old->prev_sibling_;
         old->prev_sibling_->next_sibling_ = ch;
         old->prev_sibling_ = ch;
-
+        //环形链表
         if (0 == index)
-            first_child_ = ch;
+            first_child_ = ch;      
     }
     else
     {
@@ -590,7 +578,6 @@ void View::draw(SkCanvas & canvas, const Rect & inval, float opacity)
     if (!visible() || inval.isEmpty())
         return;
 
-    bool c = clip();
     //无效区与自己有交集才绘制自己
     Rect local_bounds;
     getLocalBounds(local_bounds);
@@ -599,45 +586,30 @@ void View::draw(SkCanvas & canvas, const Rect & inval, float opacity)
     float self_opacity = opacity > opacity_ ? opacity_ : opacity;
 
     if (intersect_bounds.intersect(inval) && !intersect_bounds.isEmpty())
-    {
+    {//跟自己有交集 则先绘制自己 再绘制子
         //绘制自己的时候 不能超出矩形
         auto count = canvas.save();
         canvas.clipRect(Helper::ToSkRect(intersect_bounds));
-
         onDraw(canvas, intersect_bounds, self_opacity);
         canvas.restoreToCount(count);
-    }
-    else if (c)
-    {//无交集 且自己是裁剪子的 必然跟子孙无交集直接返回
-        return;
-    }
-    //准备绘制子
-
-    //自己是裁剪子的 所有的子是不能超出自己范围的
-    int count = 0;
-    if (c)
-    {
+        //子不能超出父
         count = canvas.save();
         canvas.clipRect(Helper::ToSkRect(local_bounds));
-    }
+        auto child = getFirstChild();
+        while (child)
+        {
+            Rect child_inval(inval);
+            child_inval.offset(-child->getLeft(), -child->getTop());
+            auto child_count = canvas.save();
+            canvas.translate(child->getLeft(), child->getTop());
+            child->draw(canvas, child_inval, self_opacity);
+            canvas.restoreToCount(child_count);
 
-    auto child = getFirstChild();
-    while (child)
-    {
-        Rect child_inval(inval);
-        child_inval.offset(-child->getLeft(), -child->getTop());
-        auto child_count = canvas.save();
-        canvas.translate(child->getLeft(), child->getTop());
-        child->draw(canvas, child_inval, self_opacity);
-        canvas.restoreToCount(child_count);
-
-        child = child->getNextSibling();
-    }
-    if (c)
+            child = child->getNextSibling();
+        }
         canvas.restoreToCount(count);
+    }
 }
-
-
 
 bool View::onHitTest(const Point & pt)
 {
@@ -787,7 +759,7 @@ View * View::hitTest(const Point & pt)
         return nullptr;
     //clip 且 pt不在自身范围内
     bool contain = contains(pt);
-    if (clip() && !contain)
+    if (!contain)
         return nullptr;
 
     View * target = nullptr;

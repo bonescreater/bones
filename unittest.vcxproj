@@ -53,6 +53,7 @@
     <ClCompile Include="bones\core\size.cpp" />
     <ClCompile Include="bones\core\text.cpp" />
     <ClCompile Include="bones\core\view.cpp" />
+    <ClCompile Include="bones\core\view_unittest.cpp" />
     <ClCompile Include="bones\core\web_view.cpp" />
     <ClCompile Include="bones\core\xml.cpp" />
     <ClCompile Include="bones\core\xml_controller.cpp" />
