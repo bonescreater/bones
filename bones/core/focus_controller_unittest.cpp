@@ -19,7 +19,7 @@ TEST(FocusControllerUnitTest, CheckConstructor)
     root->release();
 }
 
-TEST(FocusControllerUnitTest, Shift)
+TEST(FocusControllerUnitTest, DirectShift)
 {
     Root * root = new Root;
 
@@ -62,49 +62,87 @@ TEST(FocusControllerUnitTest, Shift)
     root->release();
 }
 
-TEST(FocusControllerUnitTest, KeyShift)
+class FocusControllerUnitTestBase : public testing::Test
 {
-    Root * root = new Root;
+protected:
+    virtual void SetUp() override
+    {
+        root = new Root;
 
-    View * v1 = new View;
-    View * v2 = new View;
-    View * v3 = new View;
-    v3->setFocusable(false);
+        v1 = new View;
+        v2 = new View;
+        v3 = new View;
+        v3->setFocusable(false);
 
-    View * v4 = new View;
+        v4 = new View;
 
-    View * v11 = new View;
-    View * v12 = new View;
-    View * v111 = new View;
-    v111->setFocusable(false);
-    View * v31 = new View;
-    View * v41 = new View;
-    View * v42 = new View;
-    v41->setFocusable(false);
+        v11 = new View;
+        v12 = new View;
+        v111 = new View;
+        v111->setFocusable(false);
+        v31 = new View;
+        v41 = new View;
+        v42 = new View;
+        v41->setFocusable(false);
 
-    root->attachChildToBack(v1);
-    root->attachChildToBack(v2);
-    root->attachChildToBack(v3);
-    root->attachChildToBack(v4);
-    v1->attachChildToBack(v11);
-    v1->attachChildToBack(v12);
-    v11->attachChildToBack(v111);
-    v3->attachChildToBack(v31);
-    v4->attachChildToBack(v41);
-    v4->attachChildToBack(v42);
+        root->attachChildToBack(v1);
+        root->attachChildToBack(v2);
+        root->attachChildToBack(v3);
+        root->attachChildToBack(v4);
+        v1->attachChildToBack(v11);
+        v1->attachChildToBack(v12);
+        v11->attachChildToBack(v111);
+        v3->attachChildToBack(v31);
+        v4->attachChildToBack(v41);
+        v4->attachChildToBack(v42);
+    }
+
+    virtual void TearDown() override
+    {
+        root->recursiveDetachChildren();
+        v31->release();
+        v41->release();
+        v42->release();
+
+        v11->release();
+        v12->release();
+        v111->release();
+
+        v1->release();
+        v2->release();
+        v3->release();
+        v4->release();
+
+        root->release();
+    }
+protected:
+    Root * root;
+
+    View * v1;
+    View * v2;
+    View * v3;
+    View * v4;
+
+    View * v11;
+    View * v12;
+    View * v111;
+    View * v31;
+    View * v41;
+    View * v42;
+};
+
+TEST_F(FocusControllerUnitTestBase, KeyTabShift)
+{
     KeyState state;
     state.state = 0;
     KeyEvent tab(kET_KEY_DOWN, root, kVKEY_TAB, state, false, 0);
-    KeyEvent shift_tab(kET_KEY_DOWN, root, kVKEY_TAB, state, false, kEF_SHIFT_DOWN);
-
     FocusController fc(root);
     EXPECT_EQ(nullptr, fc.current());
-    fc.handleKeyEvent(tab);
+    EXPECT_FALSE(fc.handleKeyEvent(tab));
     EXPECT_EQ(nullptr, fc.current());
 
     fc.setFocus(true);
     fc.shift(v2);
-    //tab
     EXPECT_EQ(v2, fc.current());
     fc.handleKeyEvent(tab);
     EXPECT_EQ(v31, fc.current());
@@ -120,7 +158,21 @@ TEST(FocusControllerUnitTest, KeyShift)
     EXPECT_EQ(v12, fc.current());
     fc.handleKeyEvent(tab);
     EXPECT_EQ(v2, fc.current());
-    //shift_tab
+}
+
+TEST_F(FocusControllerUnitTestBase, KeyShiftTabShift)
+{
+    KeyState state;
+    state.state = 0;
+    KeyEvent shift_tab(kET_KEY_DOWN, root, kVKEY_TAB, state, false, kEF_SHIFT_DOWN);
+    FocusController fc(root);
+    EXPECT_EQ(nullptr, fc.current());
+    EXPECT_FALSE(fc.handleKeyEvent(shift_tab));
+    EXPECT_EQ(nullptr, fc.current());
+
+    fc.setFocus(true);
+    fc.shift(v2);
+    EXPECT_EQ(v2, fc.current());
     fc.handleKeyEvent(shift_tab);
     EXPECT_EQ(v12, fc.current());
     fc.handleKeyEvent(shift_tab);
@@ -135,17 +187,36 @@ TEST(FocusControllerUnitTest, KeyShift)
     EXPECT_EQ(v31, fc.current());
     fc.handleKeyEvent(shift_tab);
     EXPECT_EQ(v2, fc.current());
-    //处理意外情况 
-    //current实际上不能接收焦点 
+}
+
+TEST_F(FocusControllerUnitTestBase, KeyShiftUnexpected)
+{
+    KeyState state;
+    state.state = 0;
+    KeyEvent shift_tab(kET_KEY_DOWN, root, kVKEY_TAB, state, false, kEF_SHIFT_DOWN);
+    KeyEvent tab(kET_KEY_DOWN, root, kVKEY_TAB, state, false, 0);
+    FocusController fc(root);
+    EXPECT_EQ(nullptr, fc.current());
+    EXPECT_FALSE(fc.handleKeyEvent(shift_tab));
+    EXPECT_EQ(nullptr, fc.current());
+
+    fc.setFocus(true);
+    fc.shift(v2);
+    EXPECT_EQ(v2, fc.current());
+
+    //处理意外情况   
     fc.shift(v4);
+    //current实际上不能接收焦点 
     v4->setFocusable(false);
     fc.handleKeyEvent(shift_tab);
+
     EXPECT_EQ(v31, fc.current());
     fc.handleKeyEvent(tab);
     EXPECT_EQ(v42, fc.current());
     fc.handleKeyEvent(tab);
     EXPECT_EQ(v1, fc.current());
     v4->setFocusable(true);
+
     //当前焦点已经从root上摘除 那么焦点从头开始
     fc.shift(v4);
     EXPECT_EQ(v4, fc.current());
@@ -157,22 +228,6 @@ TEST(FocusControllerUnitTest, KeyShift)
     EXPECT_EQ(v1, fc.current());
     fc.handleKeyEvent(tab);
     EXPECT_EQ(v11, fc.current());
-
-    root->recursiveDetachChildren();
-    v31->release();
-    v41->release();
-    v42->release();
-
-    v11->release();
-    v12->release();
-    v111->release();
-
-    v1->release();
-    v2->release();
-    v3->release();
-    v4->release();
-
-    root->release();
 }
 
 }

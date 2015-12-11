@@ -95,20 +95,86 @@ TEST(ViewUnitTest, Completeness)
     r->release();
 }
 
-TEST(ViewUnitTest, Children)
+class ViewUnitTestBase : public testing::Test
 {
-    auto v = new View;
-    auto v1 = new View;
-    auto v11 = new View;
-    auto v12 = new View;
-    auto v111 = new View;
+protected:
+    virtual void SetUp() override
+    {
+        v = new View;
+        v1 = new View;
+        v11 = new View;
+        v12 = new View;
+        v111 = new View;
 
-    auto v2 = new View;
-    auto v3 = new View;
-    auto v31 = new View;
-    auto v32 = new View;
-    auto v321 = new View;
+        v2 = new View;
+        v3 = new View;
+        v31 = new View;
+        v32 = new View;
+        v321 = new View;
+    }
 
+    virtual void TearDown() override
+    {
+        v->recursiveDetachChildren();
+
+        EXPECT_EQ(1, v->getRefCount());
+        v->release();
+        EXPECT_EQ(1, v1->getRefCount());
+        v1->release();
+        EXPECT_EQ(1, v11->getRefCount());
+        v11->release();
+        EXPECT_EQ(1, v12->getRefCount());
+        v12->release();
+        EXPECT_EQ(1, v111->getRefCount());
+        v111->release();
+        EXPECT_EQ(1, v2->getRefCount());
+        v2->release();
+        EXPECT_EQ(1, v3->getRefCount());
+        v3->release();
+        EXPECT_EQ(1, v31->getRefCount());
+        v31->release();
+        EXPECT_EQ(1, v32->getRefCount());
+        v32->release();
+        EXPECT_EQ(1, v321->getRefCount());
+        v321->release();
+    }
+protected:
+    View * v = new View;
+    View * v1 = new View;
+    View * v11 = new View;
+    View * v12 = new View;
+    View * v111 = new View;
+
+    View * v2 = new View;
+    View * v3 = new View;
+    View * v31 = new View;
+    View * v32 = new View;
+    View * v321 = new View;
+};
+
+TEST_F(ViewUnitTestBase, RecursiveDetach)
+{
+    v->attachChildToBack(v1);
+    v->attachChildToBack(v2);
+    v->attachChildToBack(v3);
+
+    v1->attachChildToBack(v11);
+    v1->attachChildToBack(v12);
+    v11->attachChildToBack(v111);
+    v3->attachChildToBack(v31);
+    v3->attachChildToBack(v32);
+    v32->attachChildToBack(v321);
+    v->recursiveDetachChildren();
+
+    EXPECT_EQ(0, v->getChildCount());
+    EXPECT_EQ(0, v1->getChildCount());
+    EXPECT_EQ(0, v11->getChildCount());
+    EXPECT_EQ(0, v3->getChildCount());
+    EXPECT_EQ(0, v32->getChildCount());
+}
+
+TEST_F(ViewUnitTestBase, AttachBack)
+{
     v->attachChildToBack(v1);
     v->attachChildToBack(v2);
     v->attachChildToBack(v3);
@@ -128,13 +194,20 @@ TEST(ViewUnitTest, Children)
     EXPECT_EQ(v1, v->getChildAt(0));
     EXPECT_EQ(v2, v->getChildAt(1));
     EXPECT_EQ(nullptr, v->getChildAt(1000));
-
+    //添加已经在子链表上的child 不变
     v->attachChildToBack(v1);
     EXPECT_EQ(3, v->getChildCount());
     EXPECT_EQ(v1, v->getFirstChild());
     EXPECT_EQ(v3, v->getLastChild());
     v->attachChildToBack(nullptr);
     EXPECT_EQ(3, v->getChildCount());
+}
+
+TEST_F(ViewUnitTestBase, DetachFromParent)
+{
+    v->attachChildToBack(v1);
+    v->attachChildToBack(v2);
+    v->attachChildToBack(v3);
 
     v2->detachFromParent();
     EXPECT_EQ(2, v->getChildCount());
@@ -145,7 +218,25 @@ TEST(ViewUnitTest, Children)
     v3->detachFromParent();
     EXPECT_EQ(nullptr, v->getFirstChild());
     EXPECT_EQ(nullptr, v->getLastChild());
+}
 
+TEST_F(ViewUnitTestBase, DetachChild)
+{
+    v->attachChildToBack(v1);
+    v->attachChildToBack(v2);
+    v->attachChildToBack(v3);
+
+    v->detachChild(v3);
+    EXPECT_EQ(v2, v->getLastChild());
+
+    v->detachChildren();
+    EXPECT_EQ(0, v->getChildCount());
+    EXPECT_EQ(nullptr, v->getFirstChild());
+    EXPECT_EQ(nullptr, v->getLastChild());
+}
+
+TEST_F(ViewUnitTestBase, AttachFront)
+{
     v->attachChildToFront(v3);
     v->attachChildToFront(v2);
     v->attachChildToFront(v1);
@@ -164,14 +255,10 @@ TEST(ViewUnitTest, Children)
     EXPECT_EQ(v3, v->getLastChild());
     v->attachChildToFront(nullptr);
     EXPECT_EQ(3, v->getChildCount());
+}
 
-    v->detachChild(v3);
-    EXPECT_EQ(v2, v->getLastChild());
-
-    v->detachChildren();
-    EXPECT_EQ(0, v->getChildCount());
-    EXPECT_EQ(nullptr, v->getFirstChild());
-    EXPECT_EQ(nullptr, v->getLastChild());
+TEST_F(ViewUnitTestBase, AttachChildAt)
+{
     v->attachChildAt(v1, 5);
     EXPECT_EQ(0, v->getChildCount());
 
@@ -187,6 +274,13 @@ TEST(ViewUnitTest, Children)
     EXPECT_EQ(v2, v3->getPrevSibling());
     EXPECT_EQ(v1, v2->getPrevSibling());
     EXPECT_EQ(nullptr, v1->getPrevSibling());
+}
+
+TEST_F(ViewUnitTestBase, Hittest)
+{
+    v->attachChildToBack(v1);
+    v->attachChildToBack(v2);
+    v->attachChildToBack(v3);
 
     v1->attachChildToBack(v11);
     v1->attachChildToBack(v12);
@@ -203,25 +297,9 @@ TEST(ViewUnitTest, Children)
     EXPECT_EQ(v12, v->hitTest(Point::Make(3, 3)));
     v12->setMouseable(false);
     EXPECT_EQ(v11, v->hitTest(Point::Make(3, 3)));
-
-    v->recursiveDetachChildren();
-    EXPECT_EQ(0, v->getChildCount());
-    EXPECT_EQ(0, v1->getChildCount());
-    EXPECT_EQ(0, v11->getChildCount());
-    EXPECT_EQ(0, v3->getChildCount());
-    EXPECT_EQ(0, v32->getChildCount());
-
-    v->release();
-    v1->release();
-    v11->release();
-    v12->release();
-    v111->release();
-    v2->release();
-    v3->release();
-    v31->release();
-    v32->release();
-    v321->release();
-
 }
+
+
+
 
 }
