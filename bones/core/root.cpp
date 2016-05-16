@@ -454,7 +454,11 @@ void Root::adjustPixmap()
         back_buffer_.unlock();
         back_buffer_.free();
         if (view_device_)
+        {
             view_device_->unref();
+            view_device_ = nullptr;
+        }
+            
         view_buffer_.free();
 
         if (w > 0 && h > 0)
