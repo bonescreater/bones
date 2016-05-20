@@ -1,8 +1,8 @@
 ﻿#include "bones.h"
-#include "script_parser.h"
-#include "lua_context.h"
 #include "core/core_imp.h"
 #include "core/font.h"
+
+#include "binding/script_context.h"
 
 static const wchar_t * third =
 L"skia unknown\n"
@@ -86,34 +86,34 @@ const char * kStrCapturing = "capturing";
 const char * kStrTarget = "target";
 const char * kStrBubbling = "bubbling";
 
-const char * ToEventPhaseStr(BonesEvent::Phase phase)
-{
-    if (BonesEvent::kCapturing == phase)
-        return kStrCapturing;
-    if (BonesEvent::kBubbling == phase)
-        return kStrBubbling;
-    if (BonesEvent::kTarget == phase)
-        return kStrTarget;
-    return "";
-}
+//const char * ToEventPhaseStr(BonesEvent::Phase phase)
+//{
+//    if (BonesEvent::kCapturing == phase)
+//        return kStrCapturing;
+//    if (BonesEvent::kBubbling == phase)
+//        return kStrBubbling;
+//    if (BonesEvent::kTarget == phase)
+//        return kStrTarget;
+//    return "";
+//}
 
-Font ToFont(const BonesFont & font)
-{
-    Font ft;
-    ft.setFamily(font.family);
-    ft.setSize(font.size);
-    uint32_t style = Font::kNormal;
-    if (font.bold)
-        style |= Font::kBold;
-    if (font.italic)
-        style |= Font::kItalic;
-    if (font.underline)
-        style |= Font::kUnderline;
-    if (font.strike)
-        style |= Font::kStrikeOut;
-    ft.setStyle(style);
-    return ft;
-}
+//Font ToFont(const BonesFont & font)
+//{
+//    Font ft;
+//    ft.setFamily(font.family);
+//    ft.setSize(font.size);
+//    uint32_t style = Font::kNormal;
+//    if (font.bold)
+//        style |= Font::kBold;
+//    if (font.italic)
+//        style |= Font::kItalic;
+//    if (font.underline)
+//        style |= Font::kUnderline;
+//    if (font.strike)
+//        style |= Font::kStrikeOut;
+//    ft.setStyle(style);
+//    return ft;
+//}
 
 int EventStack::event_stack_count = 0;
 
@@ -137,105 +137,63 @@ int EventStack::getCount() const
 
 }
 
-BONES_API(BonesCore *) BonesStartUp(const BonesConfig & config)
-{
-    using namespace bones;
-    Core::Config cc;
-    cc.log_file = L".\\bones_dll.log";
-    cc.log_level = Log::kNone;
-    if (BonesConfig::kError == config.log_level)
-        cc.log_level = Log::kError;
-    else if (BonesConfig::kVerbose == config.log_level)
-        cc.log_level = Log::kVerbose;
-    cc.aa_enable = config.aa_enable;
-    cc.cef_enable = config.cef_enable;
-    cc.cef_locate = config.cef_locate;
-    bool bret = Core::StartUp(cc);
-    if (bret)
-        bret = LuaContext::StartUp();
-    if (bret)
-        core = new ScriptParser;
+//BONES_API(BonesCore *) BonesStartUp(const BonesConfig & config)
+//{
+//    using namespace bones;
+//    Core::Config cc;
+//    cc.log_file = L".\\bones_dll.log";
+//    cc.log_level = Log::kNone;
+//    if (BonesConfig::kError == config.log_level)
+//        cc.log_level = Log::kError;
+//    else if (BonesConfig::kVerbose == config.log_level)
+//        cc.log_level = Log::kVerbose;
+//    cc.aa_enable = config.aa_enable;
+//    cc.cef_enable = config.cef_enable;
+//    cc.cef_locate = config.cef_locate;
+//    bool bret = Core::StartUp(cc);
+//    if (bret)
+//        bret = LuaContext::StartUp();
+//    if (bret)
+//        core = new ScriptParser;
+//
+//    return core;
+//}
+//
+//BONES_API(void) BonesShutDown()
+//{
+//    using namespace bones;
+//    if (core)
+//        delete core;
+//    core = nullptr;
+//    LuaContext::ShutDown();
+//    Core::ShutDown();
+//}
+//
+//BONES_API(void) BonesUpdate()
+//{
+//    using namespace bones;
+//    Core::Update();
+//}
+//
+//BONES_API(BonesCore *) BonesGetCore()
+//{
+//    return bones::GetCoreInstance();
+//}
 
-    return core;
+
+BONES_API(BonesContext *) BonesContextNew(const BonesConfig & config)
+{
+    return new bones::ScriptContext;
 }
 
-BONES_API(void) BonesShutDown()
+BONES_API(void) BonesContextTerm(BonesContext * ctx)
 {
-    using namespace bones;
-    if (core)
-        delete core;
-    core = nullptr;
-    LuaContext::ShutDown();
-    Core::ShutDown();
-}
+    if (!ctx)
+        return;
 
-BONES_API(void) BonesUpdate()
-{
-    using namespace bones;
-    Core::Update();
-}
-
-BONES_API(BonesCore *) BonesGetCore()
-{
-    return bones::GetCoreInstance();
+    delete static_cast<bones::ScriptContext *>(ctx);
 }
 
 
 
-
-//BONES_API_EXPORT(bones::Pixmap *)BonesDecodePixmap(const void * data, int len)
-//{
-//    using namespace bones;
-//    Pixmap pm;
-//    Pixmap * ret = nullptr;
-//    if (data && len)
-//        pm.decode(data, len);
-//    if (pm.isValid())
-//        ret = new Pixmap(pm);
-//
-//
-//    return ret;
-//}
-//
-//BONES_API_EXPORT(void)BonesFreePixmap(bones::Pixmap * pm)
-//{
-//    using namespace bones;
-//    if (pm)
-//        delete pm;
-//}
-//
-//BONES_API_EXPORT(bones::Ref *) BonesGetCObjectByID(const char * id)
-//{
-//    using namespace bones;
-//    return ScriptParser::Get()->getRefByID(id);
-//}
-//
-//
-//BONES_API_EXPORT(void) BonesRegScriptCallback(bones::Ref * co, 
-//                                              const char * event_name, 
-//                                              bones::ScriptCallBack cb, 
-//                                              void * userdata)
-//{
-//    using namespace bones;
-//    ScriptParser::Get()->regScriptCallback(co, event_name, cb, userdata);
-//}
-//
-//BONES_API_EXPORT(void) BonesUnregScriptCallback(bones::Ref * co,
-//                                                const char * event_name)
-//{
-//    using namespace bones;
-//    ScriptParser::Get()->unregScriptCallback(co, event_name);
-//}
-//
-//BONES_API_EXPORT(void)BonesApplyCSS(bones::Ref * co, const char * css)
-//{
-//    using namespace bones;
-//    Core::GetCSSManager()->applyCSS(co, css);
-//}
-//
-//BONES_API_EXPORT(void)BonesApplyClass(bones::Ref * co, const char * class_name)
-//{
-//    using namespace bones;
-//    Core::GetCSSManager()->applyClass(co, class_name);
-//}
 

@@ -1,7 +1,6 @@
-﻿#ifndef BONES_LUA_CHECK_H_
-#define BONES_LUA_CHECK_H_
+﻿#ifndef BONES_BINDING_LUA_CHECK_H_
+#define BONES_BINDING_LUA_CHECK_H_
 
-#include "bones.h"
 #include "lua.hpp"
 namespace bones
 {

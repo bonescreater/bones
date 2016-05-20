@@ -5,9 +5,6 @@
     <ClCompile Include="bones\script_parser.cpp">
       <Filter>lua</Filter>
     </ClCompile>
-    <ClCompile Include="bones\lua_check.cpp">
-      <Filter>lua</Filter>
-    </ClCompile>
     <ClCompile Include="bones\lua_context.cpp">
       <Filter>lua</Filter>
     </ClCompile>
@@ -150,13 +147,22 @@
     <ClCompile Include="bones\core\root_manager.cpp">
       <Filter>core\base</Filter>
     </ClCompile>
+    <ClCompile Include="bones\binding\script_context.cpp">
+      <Filter>binding</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\binding\path_proxy.cpp">
+      <Filter>binding</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\binding\lua_check.cpp">
+      <Filter>binding</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\binding\lua_utils.cpp">
+      <Filter>binding</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
     <ClInclude Include="bones\script_parser.h">
-      <Filter>lua</Filter>
-    </ClInclude>
-    <ClInclude Include="bones\lua_check.h">
       <Filter>lua</Filter>
     </ClInclude>
     <ClInclude Include="bones\lua_context.h">
@@ -322,6 +328,18 @@
     <ClInclude Include="bones\core\root_manager.h">
       <Filter>core\base</Filter>
     </ClInclude>
+    <ClInclude Include="bones\binding\script_context.h">
+      <Filter>binding</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\binding\path_proxy.h">
+      <Filter>binding</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\binding\lua_check.h">
+      <Filter>binding</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\binding\lua_utils.h">
+      <Filter>binding</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="lua">
@@ -359,6 +377,9 @@
     </Filter>
     <Filter Include="core\bone\naked">
       <UniqueIdentifier>{4d3cd88a-f6da-4371-8ad7-012242853d1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="binding">
+      <UniqueIdentifier>{4148f676-6d3f-4bf8-b177-85c1e73d7335}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
