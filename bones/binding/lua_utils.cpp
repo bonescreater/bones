@@ -1,5 +1,6 @@
 ﻿#include "lua_utils.h"
-#include "core/logging.h"
+#include <assert.h>
+#include "helper/logging.h"
 
 namespace bones
 {
@@ -13,11 +14,47 @@ static const char * kStrY = "y";
 static const char * kStrWidth = "width";
 static const char * kStrHeight = "height";
 
+static const char * kStrContext = "bones";
+
 #define ASSERT_RETURN {assert(0);  return;}
 
-Scalar LuaUtils::ToScalar(lua_Number t)
+void LuaUtils::PushContext(lua_State * l)
 {
-    return static_cast<Scalar>(t);
+    lua_getglobal(l, kStrContext);
+    assert(lua_istable(l, -1));
+}
+
+void LuaUtils::PopContext(lua_State * l)
+{
+    assert(lua_istable(l, -1));
+    lua_pop(l, 1);
+}
+
+void LuaUtils::CreateContext(lua_State * l)
+{
+    lua_newtable(l);
+    lua_setglobal(l, kStrContext);
+}
+
+void LuaUtils::DestroyContext(lua_State * l)
+{
+    lua_pushnil(l);
+    lua_setglobal(l, kStrContext);
+}
+
+inline BonesScalar LuaUtils::ToScalar(lua_Number t)
+{
+    return static_cast<BonesScalar>(t);
+}
+
+inline BonesColor LuaUtils::ToColor(lua_Integer t)
+{
+    return static_cast<BonesColor>(t);
+}
+
+inline int LuaUtils::ToInt(lua_Integer t)
+{
+    return static_cast<int>(t);
 }
 
 int LuaUtils::SafePCall(lua_State * l, int nargs)
@@ -42,129 +79,199 @@ int LuaUtils::SafePCall(lua_State * l, int nargs)
     return lua_gettop(l) - top;
 }
 
-void LuaUtils::PushRect(lua_State * l, Scalar left, Scalar top, Scalar right, Scalar bottom)
+void LuaUtils::PushRect(lua_State * l, const BonesRect & r)
 {
     lua_newtable(l);
-    lua_pushnumber(l, left);
+    lua_pushnumber(l, r.left);
     lua_setfield(l, -2, kStrLeft);
-    lua_pushnumber(l, top);
+    lua_pushnumber(l, r.top);
     lua_setfield(l, -2, kStrTop);
-    lua_pushnumber(l, right);
+    lua_pushnumber(l, r.right);
     lua_setfield(l, -2, kStrRight);
-    lua_pushnumber(l, bottom);
+    lua_pushnumber(l, r.bottom);
     lua_setfield(l, -2, kStrBottom);
 }
 
-void LuaUtils::GetRect(lua_State * l, Scalar & left, Scalar & top, Scalar & right, Scalar & bottom)
+void LuaUtils::GetRect(lua_State * l, int idx, BonesRect & r)
 {
-    left = top = right = bottom = 0;
-    if (!lua_istable(l, -1))
+    r.left = r.top = r.right = r.bottom = 0;
+    if (!lua_istable(l, idx))
         ASSERT_RETURN;
 
-    lua_getfield(l, -1, kStrLeft);
-    left = ToScalar(lua_tonumber(l, -1));
+    lua_getfield(l, idx, kStrLeft);
+    r.left = ToScalar(lua_tonumber(l, -1));
     lua_pop(l, 1);
-    lua_getfield(l, -1, kStrTop);
-    top = ToScalar(lua_tonumber(l, -1));
+    lua_getfield(l, idx, kStrTop);
+    r.top = ToScalar(lua_tonumber(l, -1));
     lua_pop(l, 1);
-    lua_getfield(l, -1, kStrRight);
-    right = ToScalar(lua_tonumber(l, -1));
+    lua_getfield(l, idx, kStrRight);
+    r.right = ToScalar(lua_tonumber(l, -1));
     lua_pop(l, 1);
-    lua_getfield(l, -1, kStrBottom);
-    bottom = ToScalar(lua_tonumber(l, -1));
+    lua_getfield(l, idx, kStrBottom);
+    r.bottom = ToScalar(lua_tonumber(l, -1));
     lua_pop(l, 1);
 }
 
-void LuaUtils::PopRect(lua_State * l, Scalar & left, Scalar & top, Scalar & right, Scalar & bottom)
+void LuaUtils::PopRect(lua_State * l, BonesRect & r)
 {
-    GetRect(l, left, top, right, bottom);
+    GetRect(l, -1, r);
     lua_pop(l, 1);
 }
 
-void LuaUtils::PushPoint(lua_State * l, Scalar x, Scalar y)
+void LuaUtils::PushPoint(lua_State * l, const BonesPoint & pt)
 {
     lua_newtable(l);
-    lua_pushnumber(l, x);
+    lua_pushnumber(l, pt.x);
     lua_setfield(l, -2, kStrX);
-    lua_pushnumber(l, y);
+    lua_pushnumber(l, pt.y);
     lua_setfield(l, -2, kStrY);
 }
 
-void LuaUtils::GetPoint(lua_State * l, Scalar & x, Scalar & y)
+void LuaUtils::GetPoint(lua_State * l, int idx, BonesPoint & pt)
 {
-    x = y = 0;
-    if (!lua_istable(l, -1))
+    pt.x = pt.y = 0;
+    if (!lua_istable(l, idx))
         ASSERT_RETURN;
-    lua_getfield(l, -1, kStrX);
-    x = ToScalar(lua_tonumber(l, -1));
+    lua_getfield(l, idx, kStrX);
+    pt.x = ToScalar(lua_tonumber(l, -1));
     lua_pop(l, 1);
-    lua_getfield(l, -2, kStrY);
-    y = ToScalar(lua_tonumber(l, -1));
+    lua_getfield(l, idx, kStrY);
+    pt.y = ToScalar(lua_tonumber(l, -1));
     lua_pop(l, 1);
 }
 
-void LuaUtils::PopPoint(lua_State * l, Scalar & x, Scalar & y)
+void LuaUtils::PopPoint(lua_State * l, BonesPoint & pt)
 {
-    GetPoint(l, x, y);
+    GetPoint(l, -1, pt);
     lua_pop(l, 1);
 }
 
-void LuaUtils::PushSize(lua_State * l, Scalar w, Scalar h)
+void LuaUtils::PushSize(lua_State * l, const BonesSize & se)
 {
     lua_newtable(l);
-    lua_pushnumber(l, w);
+    lua_pushnumber(l, se.width);
     lua_setfield(l, -2, kStrWidth);
-    lua_pushnumber(l, h);
+    lua_pushnumber(l, se.height);
     lua_setfield(l, -2, kStrHeight);
 }
 
-void LuaUtils::GetSize(lua_State * l, Scalar & w, Scalar & h)
+void LuaUtils::GetSize(lua_State * l, int idx, BonesSize & se)
 {
-    w = h = 0;
-    if (!lua_istable(l, -1))
+    se.width = se.height = 0;
+    if (!lua_istable(l, idx))
         ASSERT_RETURN;
-    lua_getfield(l, -1, kStrWidth);
-    w = ToScalar(lua_tonumber(l, -1));
+    lua_getfield(l, idx, kStrWidth);
+    se.width = ToScalar(lua_tonumber(l, -1));
     lua_pop(l, 1);
-    lua_getfield(l, -1, kStrHeight);
-    h = ToScalar(lua_tonumber(l, -1));
+    lua_getfield(l, idx, kStrHeight);
+    se.height = ToScalar(lua_tonumber(l, -1));
     lua_pop(l, 1);
 }
 
-void LuaUtils::PopSize(lua_State * l, Scalar & w, Scalar & h)
+void LuaUtils::PopSize(lua_State * l, BonesSize & se)
 {
-    GetSize(l, w, h);
+    GetSize(l, -1, se);
     lua_pop(l, 1);
 }
 
-void LuaUtils::PushColorMatrix(lua_State * l, Scalar * cm, size_t len)
+void LuaUtils::PushColorMatrix(lua_State * l, BonesScalar * cm, int len)
 {
     lua_newtable(l);
-    for (size_t i = 0; i < len; ++i)
+    if (cm && len)
     {
-        lua_pushinteger(l, i + 1);
-        lua_pushnumber(l, cm[i]);
-        lua_settable(l, -2);
+        for (int i = 0; i < len; ++i)
+        {
+            lua_pushnumber(l, cm[i]);
+            lua_seti(l, -2, i + 1);
+        }
     }
 }
 
-void LuaUtils::GetColorMatrix(lua_State * l, Scalar * cm, size_t len)
+void LuaUtils::GetColorMatrix(lua_State * l, int idx, BonesScalar * cm, int len)
 {
     memset(cm, 0, sizeof(*cm) * len);
-    if (!lua_istable(l, -1) || len < kColorMatrxSize)
+    if (!lua_istable(l, idx) || len < kColorMatrxSize)
         ASSERT_RETURN;
-    for (size_t i = 0; i < len; ++i)
+    for (int i = 0; i < len; ++i)
     {
-        lua_pushinteger(l, i + 1);
-        lua_gettable(l, -2);
+        lua_geti(l, idx, i + 1);
         cm[i] = ToScalar(lua_tonumber(l, -1));
         lua_pop(l, 1);
     }
 }
 
-void LuaUtils::PopColorMatrix(lua_State * l, Scalar * cm, size_t len)
+void LuaUtils::PopColorMatrix(lua_State * l, BonesScalar * cm, int len)
 {
-    GetColorMatrix(l, cm, len);
+    GetColorMatrix(l, -1, cm, len);
+    lua_pop(l, 1);
+}
+
+
+void LuaUtils::PushColorArray(lua_State * l, const BonesColor * colors, int len)
+{
+    lua_newtable(l);
+    if (colors && len)
+    {
+        for (int i = 0; i < len; ++i)
+        {
+            lua_pushinteger(l, colors[i]);
+            lua_seti(l, -2, i + 1);
+        }
+    }
+}
+
+void LuaUtils::GetColorArray(lua_State * l, int idx, BonesColor * colors, int len)
+{
+    if (nullptr == colors || 0 == len)
+        return;
+    memset(colors, 0, sizeof(*colors) * len);
+    if (!lua_istable(l, idx))
+        ASSERT_RETURN;
+    for (int i = 0; i < len; i++)
+    {
+        lua_geti(l, idx, i + 1);
+        colors[i] = ToColor(lua_tointeger(l, -1));
+        lua_pop(l, 1);
+    }
+}
+
+void LuaUtils::PopColorArray(lua_State * l, BonesColor * colors, int len)
+{
+    GetColorArray(l, -1, colors, len);
+    lua_pop(l, 1);
+}
+
+void LuaUtils::PushScalarArray(lua_State * l, const BonesScalar * scalars, int len)
+{
+    lua_newtable(l);
+    if (scalars && len)
+    {
+        for (int i = 0; i < len; ++i)
+        {
+            lua_pushnumber(l, scalars[i]);
+            lua_seti(l, -2, i + 1);
+        }
+    }
+}
+
+void LuaUtils::GetScalarArray(lua_State * l, int idx, BonesScalar * scalars, int len)
+{
+    if (nullptr == scalars || 0 == len)
+        return;
+    memset(scalars, 0, sizeof(*scalars) * len);
+    if (!lua_istable(l, idx))
+        ASSERT_RETURN;
+    for (int i = 0; i < len; i++)
+    {
+        lua_geti(l, idx, i + 1);
+        scalars[i] = ToScalar(lua_tonumber(l, -1));
+        lua_pop(l, 1);
+    }
+}
+
+void LuaUtils::PopScalarArray(lua_State * l, BonesScalar * scalars, int len)
+{
+    GetScalarArray(l, -1, scalars, len);
     lua_pop(l, 1);
 }
 

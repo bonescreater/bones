@@ -1447,19 +1447,20 @@ public:
     };
 
 public:
+    /*
+    @mode = "clamp" "repeat" "mirror"
+    */
     virtual BonesShader createLinearGradient(
         const BonesPoint & begin,
         const BonesPoint & end,
-        TileMode mode,
-        size_t count, BonesColor * color,
-        BonesScalar * pos) = 0;
+        int count, BonesColor * color,
+        BonesScalar * pos, const char * mode) = 0;
 
     virtual BonesShader createRadialGradient(
         const BonesPoint & center,
         BonesScalar radius,
-        TileMode mode,
-        size_t count, BonesColor * color,
-        float * pos) = 0;
+        int count, BonesColor * color,
+        float * pos, const char * mode) = 0;
 
     virtual void release(BonesShader shader) = 0;
 };
@@ -1582,7 +1583,7 @@ class BonesContext
 public:
     virtual BonesPathProxy * getPathProxy() = 0;
     
-    //virtual BonesShaderProxy * getShaderProxy() = 0;
+    virtual BonesShaderProxy * getShaderProxy() = 0;
     //
     //virtual BonesPixmapProxy * getPixmapProxy() = 0;
 

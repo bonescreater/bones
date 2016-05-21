@@ -1,5 +1,6 @@
 ﻿#include "lua_check.h"
-#include "core/logging.h"
+#include "helper/logging.h"
+#include <assert.h>
 
 namespace bones
 {

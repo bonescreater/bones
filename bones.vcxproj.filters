@@ -75,9 +75,6 @@
     <ClCompile Include="bones\core\helper.cpp">
       <Filter>core\base</Filter>
     </ClCompile>
-    <ClCompile Include="bones\core\logging.cpp">
-      <Filter>core\base</Filter>
-    </ClCompile>
     <ClCompile Include="bones\core\mouse_controller.cpp">
       <Filter>core\base</Filter>
     </ClCompile>
@@ -150,14 +147,20 @@
     <ClCompile Include="bones\binding\script_context.cpp">
       <Filter>binding</Filter>
     </ClCompile>
-    <ClCompile Include="bones\binding\path_proxy.cpp">
-      <Filter>binding</Filter>
-    </ClCompile>
     <ClCompile Include="bones\binding\lua_check.cpp">
       <Filter>binding</Filter>
     </ClCompile>
     <ClCompile Include="bones\binding\lua_utils.cpp">
       <Filter>binding</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\helper\logging.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\binding\path_proxy.cpp">
+      <Filter>binding\proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\binding\shader_proxy.cpp">
+      <Filter>binding\proxy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -250,9 +253,6 @@
     <ClInclude Include="bones\core\keyboard_codes.h">
       <Filter>core\base</Filter>
     </ClInclude>
-    <ClInclude Include="bones\core\logging.h">
-      <Filter>core\base</Filter>
-    </ClInclude>
     <ClInclude Include="bones\core\mouse_controller.h">
       <Filter>core\base</Filter>
     </ClInclude>
@@ -331,14 +331,20 @@
     <ClInclude Include="bones\binding\script_context.h">
       <Filter>binding</Filter>
     </ClInclude>
-    <ClInclude Include="bones\binding\path_proxy.h">
-      <Filter>binding</Filter>
-    </ClInclude>
     <ClInclude Include="bones\binding\lua_check.h">
       <Filter>binding</Filter>
     </ClInclude>
     <ClInclude Include="bones\binding\lua_utils.h">
       <Filter>binding</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\helper\logging.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\binding\path_proxy.h">
+      <Filter>binding\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\binding\shader_proxy.h">
+      <Filter>binding\proxy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -380,6 +386,12 @@
     </Filter>
     <Filter Include="binding">
       <UniqueIdentifier>{4148f676-6d3f-4bf8-b177-85c1e73d7335}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="helper">
+      <UniqueIdentifier>{196baa10-64c5-41f7-941b-d623d39c1c31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="binding\proxy">
+      <UniqueIdentifier>{e7e05d7a-0967-41f8-b74f-343cdbc90ff1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

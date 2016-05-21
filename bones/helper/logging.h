@@ -1,7 +1,6 @@
-﻿#ifndef BONES_CORE_LOGGING_H_
-#define BONES_CORE_LOGGING_H_
+﻿#ifndef BONES_HELPER_LOGGING_H_
+#define BONES_HELPER_LOGGING_H_
 
-#include "core.h"
 #include <fstream>
 
 namespace bones

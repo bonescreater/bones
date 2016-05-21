@@ -93,6 +93,7 @@
     <ClCompile Include="bones\binding\lua_utils.cpp" />
     <ClCompile Include="bones\binding\path_proxy.cpp" />
     <ClCompile Include="bones\binding\script_context.cpp" />
+    <ClCompile Include="bones\binding\shader_proxy.cpp" />
     <ClCompile Include="bones\bones.cpp" />
     <ClCompile Include="bones\core\accelerator.cpp" />
     <ClCompile Include="bones\core\accelerator_manager.cpp" />
@@ -110,7 +111,6 @@
     <ClCompile Include="bones\core\helper.cpp" />
     <ClCompile Include="bones\core\image.cpp" />
     <ClCompile Include="bones\core\input.cpp" />
-    <ClCompile Include="bones\core\logging.cpp" />
     <ClCompile Include="bones\core\mouse_controller.cpp" />
     <ClCompile Include="bones\core\pixmap.cpp" />
     <ClCompile Include="bones\core\point.cpp" />
@@ -128,6 +128,7 @@
     <ClCompile Include="bones\core\web_view.cpp" />
     <ClCompile Include="bones\core\xml.cpp" />
     <ClCompile Include="bones\core\xml_controller.cpp" />
+    <ClCompile Include="bones\helper\logging.cpp" />
     <ClCompile Include="bones\lua_animation.cpp" />
     <ClCompile Include="bones\lua_image.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
@@ -177,6 +178,7 @@
     <ClInclude Include="bones\binding\lua_utils.h" />
     <ClInclude Include="bones\binding\path_proxy.h" />
     <ClInclude Include="bones\binding\script_context.h" />
+    <ClInclude Include="bones\binding\shader_proxy.h" />
     <ClInclude Include="bones\bones.h" />
     <ClInclude Include="bones\bones_internal.h" />
     <ClInclude Include="bones\core\accelerator.h" />
@@ -200,7 +202,6 @@
     <ClInclude Include="bones\core\image.h" />
     <ClInclude Include="bones\core\input.h" />
     <ClInclude Include="bones\core\keyboard_codes.h" />
-    <ClInclude Include="bones\core\logging.h" />
     <ClInclude Include="bones\core\mouse_controller.h" />
     <ClInclude Include="bones\core\pixmap.h" />
     <ClInclude Include="bones\core\point.h" />
@@ -218,6 +219,7 @@
     <ClInclude Include="bones\core\web_view.h" />
     <ClInclude Include="bones\core\xml.h" />
     <ClInclude Include="bones\core\xml_controller.h" />
+    <ClInclude Include="bones\helper\logging.h" />
     <ClInclude Include="bones\lua_animation.h" />
     <ClInclude Include="bones\lua_handler.h" />
     <ClInclude Include="bones\lua_input.h" />

@@ -1,44 +1,44 @@
 ﻿#ifndef BONES_BINDING_PATH_PROXY_H_
 #define BONES_BINDING_PATH_PROXY_H_
 
-#include "core/core.h"
+#include "bones.h"
 #include "lua.hpp"
 
 namespace bones
 {
 
-class PathProxy
+class PathProxy : public BonesPathProxy
 {
-    typedef void * Path;
 public:
     PathProxy(lua_State * s);
 
     ~PathProxy();
+public:
+    //pathproxy
+    BonesPath create() override;
 
-    Path create();
+    void moveTo(BonesPath path, const BonesPoint & p) override;
 
-    void moveTo(Path path, Scalar px, Scalar py);
+    void lineTo(BonesPath path, const BonesPoint & p) override;
 
-    void lineTo(Path path, Scalar px, Scalar py);
+    void quadTo(BonesPath path, const BonesPoint & p1,
+        const BonesPoint & p2) override;
 
-    void quadTo(Path path, Scalar p1x, Scalar p1y,
-                Scalar p2x, Scalar p2y);
+    void conicTo(BonesPath path, const BonesPoint & p1,
+        const BonesPoint & p2, BonesScalar w) override;
 
-    void conicTo(Path path, Scalar p1x, Scalar p1y,
-        Scalar p2x, Scalar p2y, Scalar w);
+    void cubicTo(BonesPath path, const BonesPoint & p1,
+        const BonesPoint & p2, const BonesPoint & p3) override;
 
-    void cubicTo(Path path, Scalar p1x, Scalar p1y,
-        Scalar p2x, Scalar p2y, Scalar p3x, Scalar p3y);
+    void arcTo(BonesPath path, const BonesRect & oval,
+        BonesScalar startAngle, BonesScalar sweepAngle) override;
 
-    void arcTo(Path path, Scalar l, Scalar t, Scalar r, Scalar b,
-        Scalar startAngle, Scalar sweepAngle);
+    void arcTo(BonesPath path, const BonesPoint & p1,
+        const BonesPoint & p2, BonesScalar radius) override;
 
-    void arcTo(Path path, Scalar p1x, Scalar p1y,
-        Scalar p2x, Scalar p2y, Scalar radius);
+    void close(BonesPath path) override;
 
-    void close(Path path);
-
-    void release(Path path);
+    void release(BonesPath path) override;
 private:
     lua_State * state_;
 };
