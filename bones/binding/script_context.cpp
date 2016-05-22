@@ -2,6 +2,7 @@
 #include "path_proxy.h"
 #include "shader_proxy.h"
 #include "lua_utils.h"
+#include <assert.h>
 
 namespace bones
 {
@@ -9,7 +10,7 @@ namespace bones
 ScriptContext::ScriptContext()
 {
     InitState();
-    path_proxy_ = new PathProxy(state_);
+    path_proxy_ = new PathProxy(this);
     shader_proxy_ = new ShaderProxy(state_);
 }
 
@@ -18,6 +19,12 @@ ScriptContext::~ScriptContext()
     delete shader_proxy_;
     delete path_proxy_;
     FiniState();
+}
+
+lua_State * ScriptContext::State()
+{
+    assert(state_);
+    return state_;
 }
 
 BonesPathProxy * ScriptContext::getPathProxy()

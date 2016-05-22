@@ -346,6 +346,9 @@
     <ClInclude Include="bones\binding\shader_proxy.h">
       <Filter>binding\proxy</Filter>
     </ClInclude>
+    <ClInclude Include="bones\binding\engine_context.h">
+      <Filter>binding</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="lua">

@@ -1,4 +1,6 @@
 ﻿#include "lua_utils.h"
+#include "lua_check.h"
+
 #include <assert.h>
 #include "helper/logging.h"
 
@@ -273,6 +275,64 @@ void LuaUtils::PopScalarArray(lua_State * l, BonesScalar * scalars, int len)
 {
     GetScalarArray(l, -1, scalars, len);
     lua_pop(l, 1);
+}
+
+static const char * kMethodGetCObject = "_getCObject_";
+
+static int GetCObject(lua_State * l)
+{
+    lua_settop(l, 1);
+    lua_pushnil(l);
+    lua_pushlightuserdata(l, lua_touserdata(l, lua_upvalueindex(1)));
+
+    return 1;
+}
+
+void LuaUtils::SetFieldCObject(lua_State *l, void * co)
+{
+    if (lua_istable(l, -1))
+    {
+        lua_pushstring(l, kMethodGetCObject);
+        lua_pushlightuserdata(l, co);
+        lua_pushcclosure(l, &GetCObject, 1);
+        lua_settable(l, -3);
+    }
+}
+
+void * LuaUtils::GetFieldCObject(lua_State * l)
+{
+    LUA_STACK_AUTO_CHECK_COUNT(l, 1);
+    assert(lua_istable(l, -1));
+    if (!lua_istable(l, -1))
+    {
+        lua_pushnil(l);
+        return nullptr;
+    }
+
+    lua_getfield(l, -1, kMethodGetCObject);
+    assert(lua_isfunction(l, -1));
+    if (!lua_isfunction(l, -1))
+        return nullptr;
+    lua_pushnil(l);
+    lua_copy(l, -3, -1);
+    auto ret = SafePCall(l, 1);
+    assert(1 == ret);
+    void * ud = lua_touserdata(l, -1);
+    assert(ud);
+    return ud;
+}
+
+static const char * kMethodIndex = "__index";
+static const char * kMethodGC = "__gc";
+
+void LuaUtils::CreateMetaTable(lua_State * l, const char * mt, lua_CFunction gc)
+{
+    luaL_newmetatable(l, mt);
+    lua_pushnil(l);
+    lua_copy(l, -2, -1);
+    lua_setfield(l, -2, kMethodIndex);
+    lua_pushcfunction(l, gc);
+    lua_setfield(l, -2, kMethodGC);
 }
 
 }

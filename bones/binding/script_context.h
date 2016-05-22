@@ -2,7 +2,7 @@
 #define BONES_BINDING_SCRIPT_CONTEXT_H_
 
 #include "bones.h"
-#include "lua.hpp"
+#include "engine_context.h"
 
 namespace bones
 {
@@ -10,12 +10,14 @@ namespace bones
 class PathProxy;
 class ShaderProxy;
 
-class ScriptContext : public BonesContext
+class ScriptContext : public BonesContext, public EngineContext
 {
 public:
     ScriptContext();
 
     ~ScriptContext();
+
+    lua_State * State() override;
 
     BonesPathProxy * getPathProxy() override;
 

@@ -3,11 +3,14 @@
 #include "lua_check.h"
 #include "helper\logging.h"
 #include "SkPath.h"
+#include <assert.h>
 
 namespace bones
 {
 
 static const char * kProxy = "PathProxy";
+static const char * kPath = "_path_";
+static const char * kMetaTable = "_mt_path_";
 
 static const char * kMethodCreate = "create";
 static const char * kMethodMoveTo = "moveTo";
@@ -19,16 +22,66 @@ static const char * kMethodArcTo = "arcTo";
 static const char * kMethodClose = "close";
 static const char * kMethodRelease = "release";
 
-static inline SkPath * Cast(void * path)
+class Path : public BonesPath
 {
-    return static_cast<SkPath *>(path);
+public:
+    Path(EngineContext * ctx);
+
+    virtual ~Path();
+
+    void moveTo(const BonesPoint & p) override;
+
+    void lineTo(const BonesPoint & p) override;
+
+    void quadTo(const BonesPoint & p1,
+        const BonesPoint & p2) override;
+
+    void conicTo(const BonesPoint & p1,
+        const BonesPoint & p2, BonesScalar w) override;
+
+    void cubicTo(const BonesPoint & p1,
+        const BonesPoint & p2, const BonesPoint & p3) override;
+
+    void arcTo(const BonesRect & oval,
+        BonesScalar startAngle, BonesScalar sweepAngle) override;
+
+    void arcTo(const BonesPoint & p1,
+        const BonesPoint & p2, BonesScalar radius) override;
+
+    void close() override;
+public:
+    //methods only script call;
+    void scriptMoveTo(const BonesPoint & p);
+
+    void scriptLineTo(const BonesPoint & p);
+
+    void scriptQuadTo(const BonesPoint & p1,
+        const BonesPoint & p2);
+
+    void scriptConicTo(const BonesPoint & p1,
+        const BonesPoint & p2, BonesScalar w);
+
+    void scriptCubicTo(const BonesPoint & p1,
+        const BonesPoint & p2, const BonesPoint & p3);
+
+    void scriptArcTo(const BonesRect & oval,
+        BonesScalar startAngle, BonesScalar sweepAngle);
+
+    void scriptArcTo(const BonesPoint & p1,
+        const BonesPoint & p2, BonesScalar radius);
+
+    void scriptClose();
+private:
+    SkPath * path_;
+    EngineContext * ctx_;
+};
+
+static inline Path * Cast(void * path)
+{
+    return static_cast<Path *>(*(void **)path);
 }
 
-static int Create(lua_State * l)
-{
-    lua_pushlightuserdata(l, new SkPath);
-    return 1;
-}
+
 //path, x, y
 static int MoveTo(lua_State * l)
 {
@@ -37,9 +90,13 @@ static int MoveTo(lua_State * l)
     {
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->moveTo(
+        {
+            BonesPoint pt = { 
                 LuaUtils::ToScalar(lua_tonumber(l, 2)),
-                LuaUtils::ToScalar(lua_tonumber(l, 3)));
+                LuaUtils::ToScalar(lua_tonumber(l, 3)) };
+            path->scriptMoveTo(pt);
+        }
+
     }
     else if ( 2 == count)
     {// so utils
@@ -47,7 +104,7 @@ static int MoveTo(lua_State * l)
         LuaUtils::GetPoint(l, -1, pt);
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->moveTo(pt.x, pt.y);
+            path->scriptMoveTo(pt);
     }
     else
         BLG_ERROR << "path." << kMethodMoveTo << " error";
@@ -61,9 +118,13 @@ static int LineTo(lua_State * l)
     {
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->lineTo(
+        {
+            BonesPoint pt = {
                 LuaUtils::ToScalar(lua_tonumber(l, 2)),
-                LuaUtils::ToScalar(lua_tonumber(l, 3)));
+                LuaUtils::ToScalar(lua_tonumber(l, 3)) };
+            path->scriptLineTo(pt);
+        }
+
     }
     else if (2 == count)
     {
@@ -71,7 +132,7 @@ static int LineTo(lua_State * l)
         LuaUtils::GetPoint(l, -1, pt);
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->lineTo(pt.x, pt.y);
+            path->scriptLineTo(pt);
     }
     else
         BLG_ERROR << "path." << kMethodLineTo << " error";
@@ -81,27 +142,30 @@ static int LineTo(lua_State * l)
 static int QuadTo(lua_State * l)
 {
     auto count = lua_gettop(l);
+
     if (5 == count)
     {
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
         {
-            path->quadTo(
+            BonesPoint p1 = {
                 LuaUtils::ToScalar(lua_tonumber(l, 2)),
-                LuaUtils::ToScalar(lua_tonumber(l, 3)),
+                LuaUtils::ToScalar(lua_tonumber(l, 3)) };
+            BonesPoint p2 = { 
                 LuaUtils::ToScalar(lua_tonumber(l, 4)),
-                LuaUtils::ToScalar(lua_tonumber(l, 5)));
+                LuaUtils::ToScalar(lua_tonumber(l, 5)) };
+            path->scriptQuadTo(p1, p2);
         }
     }
     else if (3 == count)
     {
         BonesPoint p2;
-        LuaUtils::PopPoint(l, p2);
         BonesPoint p1;
+        LuaUtils::PopPoint(l, p2);
         LuaUtils::PopPoint(l, p1);
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->quadTo(p1.x, p1.y, p2.x, p2.y);
+            path->scriptQuadTo(p1, p2);
     }
     else
         BLG_ERROR << "path." << kMethodQuadTo << " error";
@@ -115,12 +179,17 @@ static int ConicTo(lua_State * l)
     {
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->conicTo(
+        {
+            BonesPoint p1 = {
                 LuaUtils::ToScalar(lua_tonumber(l, 2)),
-                LuaUtils::ToScalar(lua_tonumber(l, 3)),
+                LuaUtils::ToScalar(lua_tonumber(l, 3)) };
+            BonesPoint p2 = {
                 LuaUtils::ToScalar(lua_tonumber(l, 4)),
-                LuaUtils::ToScalar(lua_tonumber(l, 5)),
+                LuaUtils::ToScalar(lua_tonumber(l, 5)) };
+            path->scriptConicTo(p1, p2,
                 LuaUtils::ToScalar(lua_tonumber(l, 6)));
+        }
+
     }
     else if (4 == count)
     {
@@ -132,7 +201,7 @@ static int ConicTo(lua_State * l)
         LuaUtils::PopPoint(l, p1);
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->conicTo(p1.x, p1.y, p2.x, p2.y, w);
+            path->scriptConicTo(p1, p2, w);
     }
     else
         BLG_ERROR << "path." << kMethodConicTo << " error";
@@ -146,13 +215,18 @@ static int CubicTo(lua_State * l)
     {
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->cubicTo(
+        {
+            BonesPoint p1 = {
                 LuaUtils::ToScalar(lua_tonumber(l, 2)),
-                LuaUtils::ToScalar(lua_tonumber(l, 3)),
+                LuaUtils::ToScalar(lua_tonumber(l, 3)) };
+            BonesPoint p2 = {
                 LuaUtils::ToScalar(lua_tonumber(l, 4)),
-                LuaUtils::ToScalar(lua_tonumber(l, 5)),
+                LuaUtils::ToScalar(lua_tonumber(l, 5)) };
+            BonesPoint p3 = {
                 LuaUtils::ToScalar(lua_tonumber(l, 6)),
-                LuaUtils::ToScalar(lua_tonumber(l, 7)));
+                LuaUtils::ToScalar(lua_tonumber(l, 7)) };
+            path->scriptCubicTo(p1, p2, p3);
+        }            
     }
     else if (4 == count)
     {
@@ -164,7 +238,7 @@ static int CubicTo(lua_State * l)
         LuaUtils::PopPoint(l, p1);
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->cubicTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+            path->scriptCubicTo(p1, p2, p3);
     }
     else
         BLG_ERROR << "path." << kMethodCubicTo << " error";
@@ -178,15 +252,16 @@ static int ArcTo(lua_State * l)
     {
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->arcTo(
-                SkRect::MakeLTRB(
-                    LuaUtils::ToScalar(lua_tonumber(l, 2)), 
-                    LuaUtils::ToScalar(lua_tonumber(l, 3)), 
-                    LuaUtils::ToScalar(lua_tonumber(l, 4)), 
-                    LuaUtils::ToScalar(lua_tonumber(l, 5))),
-                    LuaUtils::ToScalar(lua_tonumber(l, 6)), 
-                    LuaUtils::ToScalar(lua_tonumber(l, 7)), 
-                    false);
+        {
+            BonesRect r = { 
+                LuaUtils::ToScalar(lua_tonumber(l, 2)),
+                LuaUtils::ToScalar(lua_tonumber(l, 3)),
+                LuaUtils::ToScalar(lua_tonumber(l, 4)),
+                LuaUtils::ToScalar(lua_tonumber(l, 5)) };
+            path->scriptArcTo(r,
+                LuaUtils::ToScalar(lua_tonumber(l, 6)),
+                LuaUtils::ToScalar(lua_tonumber(l, 7)));
+        }
     }
     else if (4 == count)
     {
@@ -199,9 +274,7 @@ static int ArcTo(lua_State * l)
             LuaUtils::PopRect(l, r);
             auto path = Cast(lua_touserdata(l, 1));
             if (path)
-                path->arcTo(
-                SkRect::MakeLTRB(r.left, r.top, r.right, r.bottom),
-                start, sweep, false);
+                path->scriptArcTo(r, start, sweep);
         }
         else
         {
@@ -213,7 +286,7 @@ static int ArcTo(lua_State * l)
             LuaUtils::PopPoint(l, p1);
             auto path = Cast(lua_touserdata(l, 1));
             if (path)
-                path->arcTo(p1.x, p1.y, p2.x, p2.y, radius);
+                path->scriptArcTo(p1, p2, radius);
         }
 
     }
@@ -233,195 +306,252 @@ static int Close(lua_State * l)
     return 0;
 }
 
-static int Release(lua_State * l)
+
+static int GC(lua_State * l)
 {
-    if (lua_gettop(l) == 1)
+    int count = lua_gettop(l);
+    if (count == 1)
     {
-        auto path = Cast(lua_touserdata(l, 1));
-        if (path)
-            delete path;
+        auto ptr_path = (void **)lua_touserdata(l, 1);
+        if (ptr_path)
+        {
+            auto path = static_cast<Path *>(*ptr_path);
+            if (path)
+                delete path;
+        }
     }
     return 0;
 }
 
-PathProxy::PathProxy(lua_State * s)
+static int Create(lua_State * l)
 {
-    state_ = s;
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_newtable(state_);
+    LuaUtils::PushContext(l);
 
-    lua_pushcfunction(state_, &Create);
-    lua_setfield(state_, -2, kMethodCreate);
-    lua_pushcfunction(state_, &MoveTo);
-    lua_setfield(state_, -2, kMethodMoveTo);
-    lua_pushcfunction(state_, &LineTo);
-    lua_setfield(state_, -2, kMethodLineTo);
-    lua_pushcfunction(state_, &QuadTo);
-    lua_setfield(state_, -2, kMethodQuadTo);
-    lua_pushcfunction(state_, &ConicTo);
-    lua_setfield(state_, -2, kMethodConicTo);
-    lua_pushcfunction(state_, &CubicTo);
-    lua_setfield(state_, -2, kMethodCubicTo);
-    lua_pushcfunction(state_, &ArcTo);
-    lua_setfield(state_, -2, kMethodArcTo);
-    lua_pushcfunction(state_, &Close);
-    lua_setfield(state_, -2, kMethodClose);
-    lua_pushcfunction(state_, &Release);
-    lua_setfield(state_, -2, kMethodRelease);
+    lua_getfield(l, -1, kProxy);
+    auto proxy_ = static_cast<PathProxy *>(LuaUtils::GetFieldCObject(l));
+    lua_pop(l, 1);
+    lua_getfield(l, -1, kPath);
 
-    lua_setfield(state_, -2, kProxy);
-    LuaUtils::PopContext(state_);
+    auto path = new Path(proxy_->ctx());
+    lua_pushlightuserdata(l, path);
+    auto ptr_path = (void **)lua_newuserdata(l, sizeof(Path *));
+    *ptr_path = path;
+    //set metatable
+    luaL_getmetatable(l, kMetaTable);
+    if (!lua_istable(l, -1))
+    {
+        lua_pop(l, 1);
+        LuaUtils::CreateMetaTable(l, kMetaTable, &GC);
+
+        lua_pushcfunction(l, &MoveTo);
+        lua_setfield(l, -2, kMethodMoveTo);
+        lua_pushcfunction(l, &LineTo);
+        lua_setfield(l, -2, kMethodLineTo);
+        lua_pushcfunction(l, &QuadTo);
+        lua_setfield(l, -2, kMethodQuadTo);
+        lua_pushcfunction(l, &ConicTo);
+        lua_setfield(l, -2, kMethodConicTo);
+        lua_pushcfunction(l, &CubicTo);
+        lua_setfield(l, -2, kMethodCubicTo);
+        lua_pushcfunction(l, &ArcTo);
+        lua_setfield(l, -2, kMethodArcTo);
+        lua_pushcfunction(l, &Close);
+        lua_setfield(l, -2, kMethodClose);
+
+    }
+    lua_setmetatable(l, -2);
+
+    lua_settable(l, -3);
+
+    lua_pop(l, 2);
+
+    LuaUtils::PopContext(l);
+
+    lua_pushlightuserdata(l, path);
+    return 1;
+}
+
+static int Release(lua_State * l)
+{
+    if (lua_gettop(l) == 1)
+    {
+        LuaUtils::PushContext(l);
+        lua_getfield(l, -1, kProxy);
+        lua_getfield(l, -1, kPath);
+
+        lua_pushnil(l);
+        lua_copy(l, 1, -1);
+        lua_pushnil(l);
+        lua_settable(l, -3);
+        lua_pop(l, 2);
+        LuaUtils::PopContext(l);
+    }
+    return 0;
+}
+
+PathProxy::PathProxy(EngineContext * ctx)
+{
+    ctx_ = ctx;
+    auto l = ctx_->State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaUtils::PushContext(l);
+    lua_newtable(l);
+    LuaUtils::SetFieldCObject(l, this);
+
+    lua_pushcfunction(l, &Create);
+    lua_setfield(l, -2, kMethodCreate);
+    lua_pushcfunction(l, &Release);
+    lua_setfield(l, -2, kMethodRelease);
+    //store path
+    lua_newtable(l);
+    lua_setfield(l, -2, kPath);
+
+    lua_setfield(l, -2, kProxy);
+    LuaUtils::PopContext(l);
 }
 
 PathProxy::~PathProxy()
 {
-    LuaUtils::PushContext(state_);
-    lua_pushnil(state_);
-    lua_setfield(state_, -2, kProxy);
-    LuaUtils::PopContext(state_);
+    auto l = ctx_->State();
+    LuaUtils::PushContext(l);
+    //remove path table
+    lua_getfield(l, -1, kProxy);
+    lua_pushnil(l);
+    lua_setfield(l, -2, kPath);
+    lua_pop(l, 1);
+    //remvoe proxy table
+    lua_pushnil(l);
+    lua_setfield(l, -2, kProxy);
+    LuaUtils::PopContext(l);
 }
 
-BonesPath PathProxy::create()
+BonesPath * PathProxy::create()
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodCreate);
-    auto count = LuaUtils::SafePCall(state_, 0);
-    auto path = lua_touserdata(state_, -1);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
-    return path;
+    auto l = ctx_->State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaUtils::PushContext(l);
+    lua_getfield(l, -1, kProxy);
+    lua_getfield(l, -1, kMethodCreate);
+    auto count = LuaUtils::SafePCall(l, 0);
+    auto path = lua_touserdata(l, -1);
+    lua_pop(l, count + 1);
+    LuaUtils::PopContext(l);
+    return static_cast<BonesPath *>(path);
 }
 
-void PathProxy::moveTo(BonesPath path, const BonesPoint & p)
+void PathProxy::release(BonesPath * path)
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodMoveTo);
-    lua_pushlightuserdata(state_, path);
-    LuaUtils::PushPoint(state_, p);
-    auto count = LuaUtils::SafePCall(state_, 2);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
+    auto l = ctx_->State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaUtils::PushContext(l);
+    lua_getfield(l, -1, kProxy);
+    lua_getfield(l, -1, kMethodRelease);
+    lua_pushlightuserdata(l, path);
+    auto count = LuaUtils::SafePCall(l, 1);
+    lua_pop(l, count + 1);
+    LuaUtils::PopContext(l);
 }
 
-void PathProxy::lineTo(BonesPath path, const BonesPoint & p)
+Path::Path(EngineContext * ctx)
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodLineTo);
-    lua_pushlightuserdata(state_, path);
-    LuaUtils::PushPoint(state_, p);
-    auto count = LuaUtils::SafePCall(state_, 2);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
+    ctx_ = ctx;
+    path_ = new SkPath;
 }
 
-void PathProxy::quadTo(BonesPath path, const BonesPoint & p1,
+Path::~Path()
+{
+    delete path_;
+}
+
+void Path::moveTo(const BonesPoint & p)
+{
+    scriptMoveTo(p);
+}
+
+void Path::lineTo(const BonesPoint & p)
+{
+    scriptLineTo(p);
+}
+
+void Path::quadTo(const BonesPoint & p1,
     const BonesPoint & p2)
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodQuadTo);
-    lua_pushlightuserdata(state_, path);
-    LuaUtils::PushPoint(state_, p1);
-    LuaUtils::PushPoint(state_, p2);
-    auto count = LuaUtils::SafePCall(state_, 3);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
+    scriptQuadTo(p1, p2);
 }
 
-void PathProxy::conicTo(BonesPath path, const BonesPoint & p1,
+void Path::conicTo(const BonesPoint & p1,
     const BonesPoint & p2, BonesScalar w)
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodConicTo);
-    lua_pushlightuserdata(state_, path);
-    LuaUtils::PushPoint(state_, p1);
-    LuaUtils::PushPoint(state_, p2);
-    lua_pushnumber(state_, w);
-    auto count = LuaUtils::SafePCall(state_, 4);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
+    scriptConicTo(p1, p2, w);
 }
 
-void PathProxy::cubicTo(BonesPath path, const BonesPoint & p1,
+void Path::cubicTo(const BonesPoint & p1,
     const BonesPoint & p2, const BonesPoint & p3)
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodCubicTo);
-    lua_pushlightuserdata(state_, path);
-    LuaUtils::PushPoint(state_, p1);
-    LuaUtils::PushPoint(state_, p2);
-    LuaUtils::PushPoint(state_, p3);
-    auto count = LuaUtils::SafePCall(state_, 4);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
+    scriptCubicTo(p1, p2, p3);
 }
 
-void PathProxy::arcTo(BonesPath path, const BonesRect & oval,
+void Path::arcTo(const BonesRect & oval,
     BonesScalar startAngle, BonesScalar sweepAngle)
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodArcTo);
-    lua_pushlightuserdata(state_, path);
-    LuaUtils::PushRect(state_, oval);
-    lua_pushnumber(state_, startAngle);
-    lua_pushnumber(state_, sweepAngle);
-    auto count = LuaUtils::SafePCall(state_, 4);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
+    scriptArcTo(oval, startAngle, sweepAngle);
 }
 
-void PathProxy::arcTo(BonesPath path, const BonesPoint & p1,
+void Path::arcTo(const BonesPoint & p1,
     const BonesPoint & p2, BonesScalar radius)
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodArcTo);
-    lua_pushlightuserdata(state_, path);
-    LuaUtils::PushPoint(state_, p1);
-    LuaUtils::PushPoint(state_, p2);
-    lua_pushnumber(state_, radius);
-    auto count = LuaUtils::SafePCall(state_, 4);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
+    scriptArcTo(p1, p2, radius);
 }
 
-void PathProxy::close(BonesPath path)
+void Path::close()
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodClose);
-    lua_pushlightuserdata(state_, path);
-    auto count = LuaUtils::SafePCall(state_, 1);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
+    scriptClose();
 }
 
-void PathProxy::release(BonesPath path)
+void Path::scriptMoveTo(const BonesPoint & p)
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodRelease);
-    lua_pushlightuserdata(state_, path);
-    auto count = LuaUtils::SafePCall(state_, 1);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
+    path_->moveTo(p.x, p.y);
+}
+
+void Path::scriptLineTo(const BonesPoint & p)
+{
+    path_->lineTo(p.x, p.y);
+}
+
+void Path::scriptQuadTo(const BonesPoint & p1,
+    const BonesPoint & p2)
+{
+    path_->quadTo(p1.x, p1.y, p2.x, p2.y);
+}
+
+void Path::scriptConicTo(const BonesPoint & p1,
+    const BonesPoint & p2, BonesScalar w)
+{
+    path_->conicTo(p1.x, p1.y, p2.x, p2.y, w);
+}
+
+void Path::scriptCubicTo(const BonesPoint & p1,
+    const BonesPoint & p2, const BonesPoint & p3)
+{
+    path_->cubicTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+}
+
+void Path::scriptArcTo(const BonesRect & oval,
+    BonesScalar startAngle, BonesScalar sweepAngle)
+{
+    path_->arcTo(SkRect::MakeLTRB(oval.left, oval.top, oval.top, oval.bottom),
+        startAngle, sweepAngle, false);
+}
+
+void Path::scriptArcTo(const BonesPoint & p1,
+    const BonesPoint & p2, BonesScalar radius)
+{
+    path_->arcTo(p1.x, p1.y, p2.x, p2.y, radius);
+}
+
+void Path::scriptClose()
+{
+    path_->close();
 }
 
 }

@@ -76,8 +76,6 @@ struct BonesConfig
 ////基础类型声明
 typedef float BonesScalar;
 //typedef HWND BonesWidget;
-typedef void * BonesShader;
-typedef void * BonesPath;
 typedef void * BonesPixmap;
 //
 /*!矩形描述*/
@@ -1407,35 +1405,40 @@ typedef uint32_t BonesPMColor;
 //    virtual void clean() = 0;
 //};
 /*!path封装*/
+class BonesPath
+{
+public:
+    virtual void moveTo(const BonesPoint & p) = 0;
+
+    virtual void lineTo(const BonesPoint & p) = 0;
+
+    virtual void quadTo(const BonesPoint & p1,
+        const BonesPoint & p2) = 0;
+
+    virtual void conicTo(const BonesPoint & p1,
+        const BonesPoint & p2, BonesScalar w) = 0;
+
+    virtual void cubicTo(const BonesPoint & p1,
+        const BonesPoint & p2, const BonesPoint & p3) = 0;
+
+    virtual void arcTo(const BonesRect & oval,
+        BonesScalar startAngle, BonesScalar sweepAngle) = 0;
+
+    virtual void arcTo(const BonesPoint & p1,
+        const BonesPoint & p2, BonesScalar radius) = 0;
+
+    virtual void close() = 0;
+};
+
 class BonesPathProxy
 {
 public:
-    virtual BonesPath create() = 0;
-    
-    virtual void moveTo(BonesPath path, const BonesPoint & p) = 0;
+    virtual BonesPath * create() = 0;
 
-    virtual void lineTo(BonesPath path, const BonesPoint & p) = 0;
-
-    virtual void quadTo(BonesPath path, const BonesPoint & p1, 
-                        const BonesPoint & p2) = 0;
-
-    virtual void conicTo(BonesPath path, const BonesPoint & p1, 
-                         const BonesPoint & p2, BonesScalar w) = 0;
-
-    virtual void cubicTo(BonesPath path, const BonesPoint & p1, 
-                         const BonesPoint & p2, const BonesPoint & p3) = 0;
-
-    virtual void arcTo(BonesPath path, const BonesRect & oval, 
-                       BonesScalar startAngle, BonesScalar sweepAngle) = 0;
-
-    virtual void arcTo(BonesPath path, const BonesPoint & p1, 
-                       const BonesPoint & p2, BonesScalar radius) = 0;
-
-    virtual void close(BonesPath path) = 0;
-
-    virtual void release(BonesPath path) = 0;
+    virtual void release(BonesPath * path) = 0;
 };
 /*!shader 封装*/
+typedef void * BonesShader;
 class BonesShaderProxy
 {
 public:

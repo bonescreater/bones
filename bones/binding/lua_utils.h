@@ -68,6 +68,12 @@ public:
     static void GetScalarArray(lua_State * l, int idx, BonesScalar * scalars, int len);
 
     static void PopScalarArray(lua_State * l, BonesScalar * scalars, int len);
+
+    static void SetFieldCObject(lua_State *l, void * co);
+
+    static void * GetFieldCObject(lua_State * l);
+
+    static void CreateMetaTable(lua_State * l, const char * mt, lua_CFunction gc);
 };
 
 
