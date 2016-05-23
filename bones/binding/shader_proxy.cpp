@@ -121,30 +121,32 @@ static int Release(lua_State * l)
 }
 
 
-ShaderProxy::ShaderProxy(lua_State * s)
+ShaderProxy::ShaderProxy(EngineContext & ctx)
 {
-    state_ = s;
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_newtable(state_);
+    ctx_ = &ctx;
+    auto l = ctx_->State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaUtils::PushContext(l);
+    lua_newtable(l);
 
-    lua_pushcfunction(state_, &CreateLinearGradient);
-    lua_setfield(state_, -2, kMethodCreateLinearGradient);
-    lua_pushcfunction(state_, &CreateRadialGradient);
-    lua_setfield(state_, -2, kMethodCreateRadialGradient);
-    lua_pushcfunction(state_, &Release);
-    lua_setfield(state_, -2, kMethodRelease);
+    lua_pushcfunction(l, &CreateLinearGradient);
+    lua_setfield(l, -2, kMethodCreateLinearGradient);
+    lua_pushcfunction(l, &CreateRadialGradient);
+    lua_setfield(l, -2, kMethodCreateRadialGradient);
+    lua_pushcfunction(l, &Release);
+    lua_setfield(l, -2, kMethodRelease);
 
-    lua_setfield(state_, -2, kProxy);
-    LuaUtils::PopContext(state_);
+    lua_setfield(l, -2, kProxy);
+    LuaUtils::PopContext(l);
 }
 
 ShaderProxy::~ShaderProxy()
 {
-    LuaUtils::PushContext(state_);
-    lua_pushnil(state_);
-    lua_setfield(state_, -2, kProxy);
-    LuaUtils::PopContext(state_);
+    auto l = ctx_->State();
+    LuaUtils::PushContext(l);
+    lua_pushnil(l);
+    lua_setfield(l, -2, kProxy);
+    LuaUtils::PopContext(l);
 }
 
 BonesShader ShaderProxy::createLinearGradient(
@@ -153,20 +155,21 @@ BonesShader ShaderProxy::createLinearGradient(
     int len, BonesColor * color,
     BonesScalar * pos, const char * mode)
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodCreateLinearGradient);
-    LuaUtils::PushPoint(state_, begin);
-    LuaUtils::PushPoint(state_, end);
-    LuaUtils::PushColorArray(state_, color, len);
-    LuaUtils::PushScalarArray(state_, pos, len);
-    lua_pushstring(state_, nullptr == mode ? "":mode);
+    auto l = ctx_->State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaUtils::PushContext(l);
+    lua_getfield(l, -1, kProxy);
+    lua_getfield(l, -1, kMethodCreateLinearGradient);
+    LuaUtils::PushPoint(l, begin);
+    LuaUtils::PushPoint(l, end);
+    LuaUtils::PushColorArray(l, color, len);
+    LuaUtils::PushScalarArray(l, pos, len);
+    lua_pushstring(l, nullptr == mode ? "" : mode);
 
-    auto count = LuaUtils::SafePCall(state_, 5);
-    auto shader = lua_touserdata(state_, -1);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
+    auto count = LuaUtils::SafePCall(l, 5);
+    auto shader = lua_touserdata(l, -1);
+    lua_pop(l, count + 1);
+    LuaUtils::PopContext(l);
     return shader;
 }
 
@@ -176,33 +179,35 @@ BonesShader ShaderProxy::createRadialGradient(
     int len, BonesColor * color,
     float * pos, const char * mode)
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodCreateRadialGradient);
-    LuaUtils::PushPoint(state_, center);
-    lua_pushnumber(state_, radius);
-    LuaUtils::PushColorArray(state_, color, len);
-    LuaUtils::PushScalarArray(state_, pos, len);
-    lua_pushstring(state_, nullptr == mode ? "": mode);
+    auto l = ctx_->State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaUtils::PushContext(l);
+    lua_getfield(l, -1, kProxy);
+    lua_getfield(l, -1, kMethodCreateRadialGradient);
+    LuaUtils::PushPoint(l, center);
+    lua_pushnumber(l, radius);
+    LuaUtils::PushColorArray(l, color, len);
+    LuaUtils::PushScalarArray(l, pos, len);
+    lua_pushstring(l, nullptr == mode ? "" : mode);
 
-    auto count = LuaUtils::SafePCall(state_, 5);
-    auto shader = lua_touserdata(state_, -1);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
+    auto count = LuaUtils::SafePCall(l, 5);
+    auto shader = lua_touserdata(l, -1);
+    lua_pop(l, count + 1);
+    LuaUtils::PopContext(l);
     return shader;
 }
 
 void ShaderProxy::release(BonesShader shader)
 {
-    LUA_STACK_AUTO_CHECK(state_);
-    LuaUtils::PushContext(state_);
-    lua_getfield(state_, -1, kProxy);
-    lua_getfield(state_, -1, kMethodRelease);
-    lua_pushlightuserdata(state_, shader);
-    auto count = LuaUtils::SafePCall(state_, 1);
-    lua_pop(state_, count + 1);
-    LuaUtils::PopContext(state_);
+    auto l = ctx_->State();
+    LUA_STACK_AUTO_CHECK(l);
+    LuaUtils::PushContext(l);
+    lua_getfield(l, -1, kProxy);
+    lua_getfield(l, -1, kMethodRelease);
+    lua_pushlightuserdata(l, shader);
+    auto count = LuaUtils::SafePCall(l, 1);
+    lua_pop(l, count + 1);
+    LuaUtils::PopContext(l);
 }
 
 }

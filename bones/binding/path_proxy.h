@@ -9,7 +9,7 @@ namespace bones
 class PathProxy : public BonesPathProxy
 {
 public:
-    PathProxy(EngineContext * ctx);
+    PathProxy(EngineContext & ctx);
 
     ~PathProxy();
 public:
@@ -18,7 +18,7 @@ public:
 
     void release(BonesPath * path) override;
 public:
-    EngineContext * ctx();
+    EngineContext & ctx();
 private:
     EngineContext * ctx_;
 };

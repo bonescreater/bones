@@ -9,6 +9,7 @@ namespace bones
 
 class PathProxy;
 class ShaderProxy;
+class PixmapProxy;
 
 class ScriptContext : public BonesContext, public EngineContext
 {
@@ -38,6 +39,7 @@ private:
     lua_State * state_;
     PathProxy * path_proxy_;
     ShaderProxy * shader_proxy_;
+    PixmapProxy * pixmap_proxy_;
 };
 
 }

@@ -76,7 +76,6 @@ struct BonesConfig
 ////基础类型声明
 typedef float BonesScalar;
 //typedef HWND BonesWidget;
-typedef void * BonesPixmap;
 //
 /*!矩形描述*/
 typedef struct
@@ -86,12 +85,28 @@ typedef struct
     BonesScalar right;
     BonesScalar bottom;
 }BonesRect;
+
+typedef struct
+{
+    int left;
+    int top;
+    int right;
+    int bottom;
+}BonesIRect;
+
 /*!尺寸描述*/
 typedef struct
 {
     BonesScalar width;
     BonesScalar height;
 }BonesSize;
+
+typedef struct
+{
+    int width;
+    int height;
+}BonesISize;
+
 /*!点描述*/
 typedef struct
 {
@@ -1468,62 +1483,66 @@ public:
     virtual void release(BonesShader shader) = 0;
 };
 /*!pixmap封装*/
-class BonesPixmapProxy
+class BonesPixmap
 {
 public:
     struct LockRec
     {
         void * bits;//!<内存首地址
         size_t pitch;//!<每一行的字节数
-        BonesRect subset;//!<位图在内存中的矩形区域
+        BonesIRect subset;//!<位图在内存中的矩形区域
     };
-public:
-    virtual BonesPixmap create() = 0;
     /*!分配一块内存位图
     @param[in] width 位图宽
     @param[in] height 位图高
     @return 成功返回true否则返回false
     */
-    virtual bool alloc(BonesPixmap pm, int width, int height) = 0;
+    virtual bool alloc(const BonesISize & size) = 0;
     /*!解码图片
     @param[in] data 图片内存首地址
     @param[in] len 图片内存大小
     @note 内部使用wic解码 支持png bmp等格式
     */
-    virtual bool decode(BonesPixmap pm, const void * data, size_t len) = 0;
+    virtual bool decode(const void * data, size_t len) = 0;
     /*!得到位图宽
     @return 位图宽
     */
-    virtual int getWidth(BonesPixmap pm) const = 0;
+    virtual int getWidth() const = 0;
     /*!得到位图高
     @return 位图高
     */
-    virtual int getHeight(BonesPixmap pm) const = 0;
+    virtual int getHeight() const = 0;
     /*!锁住位图
     @param[out] rec 返回位图信息
     @return 成功返回true 失败返回false
     @warning 必须和unlock成对使用
     */
-    virtual bool lock(BonesPixmap pm, LockRec & rec) = 0;
+    virtual bool lock(LockRec & rec) = 0;
     /*!解锁位图
     */
-    virtual void unlock(BonesPixmap pm) = 0;
+    virtual void unlock() = 0;
     /*!用指定颜色填充位图
     @param[in] color 填充位图的颜色
     */
-    virtual void erase(BonesPixmap pm, BonesColor color) = 0;
+    virtual void erase(BonesColor color) = 0;
     /*!裁剪子位图
     @param[out] dst 存放裁剪后的子位图
     @param[in] subset 子位图的矩形区域
     */
-    virtual void extractSubset(BonesPixmap dst, BonesPixmap src, const BonesRect & subset) = 0;
+    virtual void extractSubset(BonesPixmap *dst, const BonesIRect & subset) = 0;
     /*!指定位置的像素是否透明
     @param[in] x 位图x方向的偏移
     @param[in] y 位图y方向的偏移
     */
-    virtual bool isTransparent(BonesPixmap pm, int x, int y) = 0;
+    virtual bool isTransparent(int x, int y) = 0;
+};
 
-    virtual void release(BonesPixmap pm) = 0;
+class BonesPixmapProxy
+{
+public:
+    virtual BonesPixmap * create() = 0;
+
+    virtual void release(BonesPixmap * pm) = 0;
 };
 
 
@@ -1584,11 +1603,13 @@ BONES_API(void) BonesContextTerm(BonesContext * ctx);
 class BonesContext
 {
 public:
+    //virtual BonesResourceManager * getResourceManager() = 0;
+
     virtual BonesPathProxy * getPathProxy() = 0;
     
     virtual BonesShaderProxy * getShaderProxy() = 0;
-    //
-    //virtual BonesPixmapProxy * getPixmapProxy() = 0;
+
+    virtual BonesPixmapProxy * getPixmapProxy() = 0;
 
     virtual bool loadXMLString(const char * data) = 0;
 

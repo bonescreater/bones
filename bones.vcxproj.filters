@@ -162,6 +162,9 @@
     <ClCompile Include="bones\binding\shader_proxy.cpp">
       <Filter>binding\proxy</Filter>
     </ClCompile>
+    <ClCompile Include="bones\binding\pixmap_proxy.cpp">
+      <Filter>binding\proxy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
@@ -348,6 +351,9 @@
     </ClInclude>
     <ClInclude Include="bones\binding\engine_context.h">
       <Filter>binding</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\binding\pixmap_proxy.h">
+      <Filter>binding\proxy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

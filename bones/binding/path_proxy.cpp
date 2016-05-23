@@ -1,7 +1,7 @@
 ﻿#include "path_proxy.h"
 #include "lua_utils.h"
 #include "lua_check.h"
-#include "helper\logging.h"
+#include "helper/logging.h"
 #include "SkPath.h"
 #include <assert.h>
 
@@ -25,7 +25,7 @@ static const char * kMethodRelease = "release";
 class Path : public BonesPath
 {
 public:
-    Path(EngineContext * ctx);
+    Path(EngineContext & ctx);
 
     virtual ~Path();
 
@@ -51,26 +51,26 @@ public:
     void close() override;
 public:
     //methods only script call;
-    void scriptMoveTo(const BonesPoint & p);
+    void invokeMoveTo(const BonesPoint & p);
 
-    void scriptLineTo(const BonesPoint & p);
+    void invokeLineTo(const BonesPoint & p);
 
-    void scriptQuadTo(const BonesPoint & p1,
+    void invokeQuadTo(const BonesPoint & p1,
         const BonesPoint & p2);
 
-    void scriptConicTo(const BonesPoint & p1,
+    void invokeConicTo(const BonesPoint & p1,
         const BonesPoint & p2, BonesScalar w);
 
-    void scriptCubicTo(const BonesPoint & p1,
+    void invokeCubicTo(const BonesPoint & p1,
         const BonesPoint & p2, const BonesPoint & p3);
 
-    void scriptArcTo(const BonesRect & oval,
+    void invokeArcTo(const BonesRect & oval,
         BonesScalar startAngle, BonesScalar sweepAngle);
 
-    void scriptArcTo(const BonesPoint & p1,
+    void invokeArcTo(const BonesPoint & p1,
         const BonesPoint & p2, BonesScalar radius);
 
-    void scriptClose();
+    void invokeClose();
 private:
     SkPath * path_;
     EngineContext * ctx_;
@@ -78,7 +78,7 @@ private:
 
 static inline Path * Cast(void * path)
 {
-    return static_cast<Path *>(*(void **)path);
+    return static_cast<Path *>(static_cast<BonesPath *>(*(void **)path));
 }
 
 
@@ -94,7 +94,7 @@ static int MoveTo(lua_State * l)
             BonesPoint pt = { 
                 LuaUtils::ToScalar(lua_tonumber(l, 2)),
                 LuaUtils::ToScalar(lua_tonumber(l, 3)) };
-            path->scriptMoveTo(pt);
+            path->invokeMoveTo(pt);
         }
 
     }
@@ -104,7 +104,7 @@ static int MoveTo(lua_State * l)
         LuaUtils::GetPoint(l, -1, pt);
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->scriptMoveTo(pt);
+            path->invokeMoveTo(pt);
     }
     else
         BLG_ERROR << "path." << kMethodMoveTo << " error";
@@ -122,7 +122,7 @@ static int LineTo(lua_State * l)
             BonesPoint pt = {
                 LuaUtils::ToScalar(lua_tonumber(l, 2)),
                 LuaUtils::ToScalar(lua_tonumber(l, 3)) };
-            path->scriptLineTo(pt);
+            path->invokeLineTo(pt);
         }
 
     }
@@ -132,7 +132,7 @@ static int LineTo(lua_State * l)
         LuaUtils::GetPoint(l, -1, pt);
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->scriptLineTo(pt);
+            path->invokeLineTo(pt);
     }
     else
         BLG_ERROR << "path." << kMethodLineTo << " error";
@@ -154,7 +154,7 @@ static int QuadTo(lua_State * l)
             BonesPoint p2 = { 
                 LuaUtils::ToScalar(lua_tonumber(l, 4)),
                 LuaUtils::ToScalar(lua_tonumber(l, 5)) };
-            path->scriptQuadTo(p1, p2);
+            path->invokeQuadTo(p1, p2);
         }
     }
     else if (3 == count)
@@ -165,7 +165,7 @@ static int QuadTo(lua_State * l)
         LuaUtils::PopPoint(l, p1);
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->scriptQuadTo(p1, p2);
+            path->invokeQuadTo(p1, p2);
     }
     else
         BLG_ERROR << "path." << kMethodQuadTo << " error";
@@ -186,7 +186,7 @@ static int ConicTo(lua_State * l)
             BonesPoint p2 = {
                 LuaUtils::ToScalar(lua_tonumber(l, 4)),
                 LuaUtils::ToScalar(lua_tonumber(l, 5)) };
-            path->scriptConicTo(p1, p2,
+            path->invokeConicTo(p1, p2,
                 LuaUtils::ToScalar(lua_tonumber(l, 6)));
         }
 
@@ -201,7 +201,7 @@ static int ConicTo(lua_State * l)
         LuaUtils::PopPoint(l, p1);
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->scriptConicTo(p1, p2, w);
+            path->invokeConicTo(p1, p2, w);
     }
     else
         BLG_ERROR << "path." << kMethodConicTo << " error";
@@ -225,7 +225,7 @@ static int CubicTo(lua_State * l)
             BonesPoint p3 = {
                 LuaUtils::ToScalar(lua_tonumber(l, 6)),
                 LuaUtils::ToScalar(lua_tonumber(l, 7)) };
-            path->scriptCubicTo(p1, p2, p3);
+            path->invokeCubicTo(p1, p2, p3);
         }            
     }
     else if (4 == count)
@@ -238,7 +238,7 @@ static int CubicTo(lua_State * l)
         LuaUtils::PopPoint(l, p1);
         auto path = Cast(lua_touserdata(l, 1));
         if (path)
-            path->scriptCubicTo(p1, p2, p3);
+            path->invokeCubicTo(p1, p2, p3);
     }
     else
         BLG_ERROR << "path." << kMethodCubicTo << " error";
@@ -258,7 +258,7 @@ static int ArcTo(lua_State * l)
                 LuaUtils::ToScalar(lua_tonumber(l, 3)),
                 LuaUtils::ToScalar(lua_tonumber(l, 4)),
                 LuaUtils::ToScalar(lua_tonumber(l, 5)) };
-            path->scriptArcTo(r,
+            path->invokeArcTo(r,
                 LuaUtils::ToScalar(lua_tonumber(l, 6)),
                 LuaUtils::ToScalar(lua_tonumber(l, 7)));
         }
@@ -274,7 +274,7 @@ static int ArcTo(lua_State * l)
             LuaUtils::PopRect(l, r);
             auto path = Cast(lua_touserdata(l, 1));
             if (path)
-                path->scriptArcTo(r, start, sweep);
+                path->invokeArcTo(r, start, sweep);
         }
         else
         {
@@ -286,7 +286,7 @@ static int ArcTo(lua_State * l)
             LuaUtils::PopPoint(l, p1);
             auto path = Cast(lua_touserdata(l, 1));
             if (path)
-                path->scriptArcTo(p1, p2, radius);
+                path->invokeArcTo(p1, p2, radius);
         }
 
     }
@@ -312,13 +312,9 @@ static int GC(lua_State * l)
     int count = lua_gettop(l);
     if (count == 1)
     {
-        auto ptr_path = (void **)lua_touserdata(l, 1);
-        if (ptr_path)
-        {
-            auto path = static_cast<Path *>(*ptr_path);
-            if (path)
-                delete path;
-        }
+        auto path = Cast(lua_touserdata(l, 1));
+        if (path)
+            delete path;
     }
     return 0;
 }
@@ -328,14 +324,9 @@ static int Create(lua_State * l)
     LuaUtils::PushContext(l);
 
     lua_getfield(l, -1, kProxy);
-    auto proxy_ = static_cast<PathProxy *>(LuaUtils::GetFieldCObject(l));
+    auto proxy = static_cast<PathProxy *>(LuaUtils::GetFieldCObject(l));
     lua_pop(l, 1);
     lua_getfield(l, -1, kPath);
-
-    auto path = new Path(proxy_->ctx());
-    lua_pushlightuserdata(l, path);
-    auto ptr_path = (void **)lua_newuserdata(l, sizeof(Path *));
-    *ptr_path = path;
     //set metatable
     luaL_getmetatable(l, kMetaTable);
     if (!lua_istable(l, -1))
@@ -361,6 +352,10 @@ static int Create(lua_State * l)
     }
     lua_setmetatable(l, -2);
 
+    BonesPath * path = new Path(proxy->ctx());
+    lua_pushlightuserdata(l, path);
+    auto ptr_path = (void **)lua_newuserdata(l, sizeof(BonesPath *));
+    *ptr_path = path;
     lua_settable(l, -3);
 
     lua_pop(l, 2);
@@ -389,9 +384,9 @@ static int Release(lua_State * l)
     return 0;
 }
 
-PathProxy::PathProxy(EngineContext * ctx)
+PathProxy::PathProxy(EngineContext & ctx)
 {
-    ctx_ = ctx;
+    ctx_ = &ctx;
     auto l = ctx_->State();
     LUA_STACK_AUTO_CHECK(l);
     LuaUtils::PushContext(l);
@@ -452,9 +447,14 @@ void PathProxy::release(BonesPath * path)
     LuaUtils::PopContext(l);
 }
 
-Path::Path(EngineContext * ctx)
+EngineContext & PathProxy::ctx()
 {
-    ctx_ = ctx;
+    return *ctx_;
+}
+
+Path::Path(EngineContext & ctx)
+{
+    ctx_ = &ctx;
     path_ = new SkPath;
 }
 
@@ -465,91 +465,91 @@ Path::~Path()
 
 void Path::moveTo(const BonesPoint & p)
 {
-    scriptMoveTo(p);
+    invokeMoveTo(p);
 }
 
 void Path::lineTo(const BonesPoint & p)
 {
-    scriptLineTo(p);
+    invokeLineTo(p);
 }
 
 void Path::quadTo(const BonesPoint & p1,
     const BonesPoint & p2)
 {
-    scriptQuadTo(p1, p2);
+    invokeQuadTo(p1, p2);
 }
 
 void Path::conicTo(const BonesPoint & p1,
     const BonesPoint & p2, BonesScalar w)
 {
-    scriptConicTo(p1, p2, w);
+    invokeConicTo(p1, p2, w);
 }
 
 void Path::cubicTo(const BonesPoint & p1,
     const BonesPoint & p2, const BonesPoint & p3)
 {
-    scriptCubicTo(p1, p2, p3);
+    invokeCubicTo(p1, p2, p3);
 }
 
 void Path::arcTo(const BonesRect & oval,
     BonesScalar startAngle, BonesScalar sweepAngle)
 {
-    scriptArcTo(oval, startAngle, sweepAngle);
+    invokeArcTo(oval, startAngle, sweepAngle);
 }
 
 void Path::arcTo(const BonesPoint & p1,
     const BonesPoint & p2, BonesScalar radius)
 {
-    scriptArcTo(p1, p2, radius);
+    invokeArcTo(p1, p2, radius);
 }
 
 void Path::close()
 {
-    scriptClose();
+    invokeClose();
 }
 
-void Path::scriptMoveTo(const BonesPoint & p)
+void Path::invokeMoveTo(const BonesPoint & p)
 {
     path_->moveTo(p.x, p.y);
 }
 
-void Path::scriptLineTo(const BonesPoint & p)
+void Path::invokeLineTo(const BonesPoint & p)
 {
     path_->lineTo(p.x, p.y);
 }
 
-void Path::scriptQuadTo(const BonesPoint & p1,
+void Path::invokeQuadTo(const BonesPoint & p1,
     const BonesPoint & p2)
 {
     path_->quadTo(p1.x, p1.y, p2.x, p2.y);
 }
 
-void Path::scriptConicTo(const BonesPoint & p1,
+void Path::invokeConicTo(const BonesPoint & p1,
     const BonesPoint & p2, BonesScalar w)
 {
     path_->conicTo(p1.x, p1.y, p2.x, p2.y, w);
 }
 
-void Path::scriptCubicTo(const BonesPoint & p1,
+void Path::invokeCubicTo(const BonesPoint & p1,
     const BonesPoint & p2, const BonesPoint & p3)
 {
     path_->cubicTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
 }
 
-void Path::scriptArcTo(const BonesRect & oval,
+void Path::invokeArcTo(const BonesRect & oval,
     BonesScalar startAngle, BonesScalar sweepAngle)
 {
     path_->arcTo(SkRect::MakeLTRB(oval.left, oval.top, oval.top, oval.bottom),
         startAngle, sweepAngle, false);
 }
 
-void Path::scriptArcTo(const BonesPoint & p1,
+void Path::invokeArcTo(const BonesPoint & p1,
     const BonesPoint & p2, BonesScalar radius)
 {
     path_->arcTo(p1.x, p1.y, p2.x, p2.y, radius);
 }
 
-void Path::scriptClose()
+void Path::invokeClose()
 {
     path_->close();
 }

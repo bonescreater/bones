@@ -2,7 +2,7 @@
 #define BONES_BINDING_SHADER_PROXY_H_
 
 #include "bones.h"
-#include "lua.hpp"
+#include "engine_context.h"
 
 namespace bones
 {
@@ -10,7 +10,7 @@ namespace bones
 class ShaderProxy : public BonesShaderProxy
 {
 public:
-    ShaderProxy(lua_State * s);
+    ShaderProxy(EngineContext & ctx);
 
     ~ShaderProxy();
 public:
@@ -28,7 +28,7 @@ public:
 
     void release(BonesShader shader) override;
 private:
-    lua_State * state_;
+    EngineContext * ctx_;
 };
 
 

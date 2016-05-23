@@ -1,6 +1,8 @@
 ﻿#include "script_context.h"
 #include "path_proxy.h"
 #include "shader_proxy.h"
+#include "pixmap_proxy.h"
+
 #include "lua_utils.h"
 #include <assert.h>
 
@@ -10,12 +12,14 @@ namespace bones
 ScriptContext::ScriptContext()
 {
     InitState();
-    path_proxy_ = new PathProxy(this);
-    shader_proxy_ = new ShaderProxy(state_);
+    path_proxy_ = new PathProxy(*this);
+    shader_proxy_ = new ShaderProxy(*this);
+    pixmap_proxy_ = new PixmapProxy(*this);
 }
 
 ScriptContext::~ScriptContext()
 {
+    delete pixmap_proxy_;
     delete shader_proxy_;
     delete path_proxy_;
     FiniState();

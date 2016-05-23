@@ -92,6 +92,7 @@
     <ClCompile Include="bones\binding\lua_check.cpp" />
     <ClCompile Include="bones\binding\lua_utils.cpp" />
     <ClCompile Include="bones\binding\path_proxy.cpp" />
+    <ClCompile Include="bones\binding\pixmap_proxy.cpp" />
     <ClCompile Include="bones\binding\script_context.cpp" />
     <ClCompile Include="bones\binding\shader_proxy.cpp" />
     <ClCompile Include="bones\bones.cpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="bones\binding\lua_check.h" />
     <ClInclude Include="bones\binding\lua_utils.h" />
     <ClInclude Include="bones\binding\path_proxy.h" />
+    <ClInclude Include="bones\binding\pixmap_proxy.h" />
     <ClInclude Include="bones\binding\script_context.h" />
     <ClInclude Include="bones\binding\shader_proxy.h" />
     <ClInclude Include="bones\bones.h" />
