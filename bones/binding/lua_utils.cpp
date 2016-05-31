@@ -20,6 +20,16 @@ static const char * kStrContext = "bones";
 
 #define ASSERT_RETURN {assert(0);  return;}
 
+static inline BonesScalar ScalarFromLuaStack(lua_State * l, int idx)
+{
+    return LuaUtils::ToScalar(lua_tonumber(l, idx));
+}
+
+static inline int IntFromLuaStack(lua_State * l, int idx)
+{
+    return LuaUtils::ToInt(lua_tointeger(l, idx));
+}
+
 void LuaUtils::PushContext(lua_State * l)
 {
     lua_getglobal(l, kStrContext);
@@ -81,42 +91,70 @@ int LuaUtils::SafePCall(lua_State * l, int nargs)
     return lua_gettop(l) - top;
 }
 
-void LuaUtils::PushRect(lua_State * l, const BonesRect & r)
+template<class T, class F>
+void TPushRect(lua_State * l, T r, F func)
 {
     lua_newtable(l);
-    lua_pushnumber(l, r.left);
+    func(l, r.left);
     lua_setfield(l, -2, kStrLeft);
-    lua_pushnumber(l, r.top);
+    func(l, r.top);
     lua_setfield(l, -2, kStrTop);
-    lua_pushnumber(l, r.right);
+    func(l, r.right);
     lua_setfield(l, -2, kStrRight);
-    lua_pushnumber(l, r.bottom);
+    func(l, r.bottom);
     lua_setfield(l, -2, kStrBottom);
 }
 
-void LuaUtils::GetRect(lua_State * l, int idx, BonesRect & r)
+template<class T, class F>
+void TGetRect(lua_State * l, int idx, T r, F func)
 {
     r.left = r.top = r.right = r.bottom = 0;
     if (!lua_istable(l, idx))
         ASSERT_RETURN;
 
     lua_getfield(l, idx, kStrLeft);
-    r.left = ToScalar(lua_tonumber(l, -1));
+    r.left = func(l, -1);
     lua_pop(l, 1);
     lua_getfield(l, idx, kStrTop);
-    r.top = ToScalar(lua_tonumber(l, -1));
+    r.top = func(l, -1);
     lua_pop(l, 1);
     lua_getfield(l, idx, kStrRight);
-    r.right = ToScalar(lua_tonumber(l, -1));
+    r.right = func(l, -1);
     lua_pop(l, 1);
     lua_getfield(l, idx, kStrBottom);
-    r.bottom = ToScalar(lua_tonumber(l, -1));
+    r.bottom = func(l, -1);
     lua_pop(l, 1);
+}
+
+void LuaUtils::PushRect(lua_State * l, const BonesRect & r)
+{
+    TPushRect(l, r, lua_pushnumber);
+}
+
+void LuaUtils::GetRect(lua_State * l, int idx, BonesRect & r)
+{
+    TGetRect(l, idx, r, ScalarFromLuaStack);
 }
 
 void LuaUtils::PopRect(lua_State * l, BonesRect & r)
 {
     GetRect(l, -1, r);
+    lua_pop(l, 1);
+}
+
+void LuaUtils::PushIRect(lua_State * l, const BonesIRect & r)
+{
+    TPushRect(l, r, lua_pushinteger);
+}
+
+void LuaUtils::GetIRect(lua_State * l, int idx, BonesIRect & r)
+{
+    TGetRect(l, idx, r, IntFromLuaStack);
+}
+
+void LuaUtils::PopIRect(lua_State * l, BonesIRect & r)
+{
+    GetIRect(l, -1, r);
     lua_pop(l, 1);
 }
 
@@ -148,31 +186,59 @@ void LuaUtils::PopPoint(lua_State * l, BonesPoint & pt)
     lua_pop(l, 1);
 }
 
-void LuaUtils::PushSize(lua_State * l, const BonesSize & se)
+template<class T, class F>
+void TPushSize(lua_State * l, T se, F func)
 {
     lua_newtable(l);
-    lua_pushnumber(l, se.width);
+    func(l, se.width);
     lua_setfield(l, -2, kStrWidth);
-    lua_pushnumber(l, se.height);
+    func(l, se.height);
     lua_setfield(l, -2, kStrHeight);
 }
 
-void LuaUtils::GetSize(lua_State * l, int idx, BonesSize & se)
+template<class T, class F>
+void TGetSize(lua_State * l, int idx, T se, F func)
 {
     se.width = se.height = 0;
     if (!lua_istable(l, idx))
         ASSERT_RETURN;
     lua_getfield(l, idx, kStrWidth);
-    se.width = ToScalar(lua_tonumber(l, -1));
+    se.width = func(l, -1);
     lua_pop(l, 1);
     lua_getfield(l, idx, kStrHeight);
-    se.height = ToScalar(lua_tonumber(l, -1));
+    se.height = func(l, -1);
     lua_pop(l, 1);
+}
+
+void LuaUtils::PushSize(lua_State * l, const BonesSize & se)
+{
+    TPushSize(l, se, lua_pushnumber);
+}
+
+void LuaUtils::GetSize(lua_State * l, int idx, BonesSize & se)
+{
+    TGetSize(l, idx, se, ScalarFromLuaStack);
 }
 
 void LuaUtils::PopSize(lua_State * l, BonesSize & se)
 {
     GetSize(l, -1, se);
+    lua_pop(l, 1);
+}
+
+void LuaUtils::PushISize(lua_State * l, const BonesISize & se)
+{
+    TPushSize(l, se, lua_pushinteger);
+}
+
+void LuaUtils::GetISize(lua_State * l, int idx, BonesISize & se)
+{
+    TGetSize(l, idx, se, IntFromLuaStack);
+}
+
+void LuaUtils::PopISize(lua_State * l, BonesISize & se)
+{
+    GetISize(l, -1, se);
     lua_pop(l, 1);
 }
 

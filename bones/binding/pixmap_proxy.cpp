@@ -6,6 +6,7 @@
 #include <assert.h>
 #include "core/color.h"
 #include "SkRect.h"
+#include "SkImageDecoder.h"
 
 namespace bones
 {
@@ -41,13 +42,13 @@ public:
 
     int getHeight() const override;
 
-    bool lock(LockRec & rec) override;
+    void lock() override;
 
     void unlock() override;
 
     void erase(BonesColor color) override;
 
-    void extractSubset(BonesPixmap *dst, const BonesIRect & subset) override;
+    bool extractSubset(BonesPixmap & dst, const BonesIRect & subset) override;
 
     bool isTransparent(int x, int y) override;
 
@@ -60,13 +61,13 @@ public:
 
     int invokeGetHeight() const;
 
-    bool invokeLock(LockRec & rec);
+    void invokeLock();
 
     void invokeUnlock();
 
     void invokeErase(BonesColor color);
 
-    void invokeExtractSubset(BonesPixmap *dst, const BonesIRect & subset);
+    bool invokeExtractSubset(BonesPixmap &dst, const BonesIRect & subset);
 
     bool invokeIsTransparent(int x, int y);
 
@@ -86,7 +87,7 @@ static int Alloc(lua_State * l)
     auto count = lua_gettop(l);
     bool ret = false;
     if (3 == count)
-    {
+    {//self, w, h
         BonesISize size = { 
             LuaUtils::ToInt(lua_tointeger(l, 2)),
             LuaUtils::ToInt(lua_tointeger(l, 3)) };
@@ -95,8 +96,12 @@ static int Alloc(lua_State * l)
             ret = bm->invokeAlloc(size);            
     }
     else if (2 == count)
-    {
-        ;
+    {//self, table
+        BonesISize size;
+        LuaUtils::GetISize(l, 2, size);
+        auto bm = Cast(lua_touserdata(l, 1));
+        if (bm)
+            ret = bm->invokeAlloc(size);
     }
     
     lua_pushboolean(l, ret);
@@ -109,7 +114,7 @@ static int Decode(lua_State * l)
     auto count = lua_gettop(l);
     bool ret = false;
     if (3 == count)
-    {
+    {//self, data, len
         auto bm = Cast(lua_touserdata(l, 1));
         if (bm)
             ret = bm->invokeDecode(
@@ -117,7 +122,7 @@ static int Decode(lua_State * l)
             static_cast<size_t>(LuaUtils::ToInt(lua_tointeger(l, 3))));
     }
     else if (2 == count)
-    {
+    {//self, lstr
         size_t len = 0;
         auto data = lua_tolstring(l, 2, &len);
         auto bm = Cast(lua_touserdata(l, 1));
@@ -133,7 +138,7 @@ static int GetWidth(lua_State * l)
 {
     int value = 0;
     if (1 == lua_gettop(l))
-    {
+    {//self
         auto bm = Cast(lua_touserdata(l, 1));
         if (bm)
             value = bm->invokeGetWidth();
@@ -146,7 +151,7 @@ static int GetHeight(lua_State * l)
 {
     int value = 0;
     if (1 == lua_gettop(l))
-    {
+    {//self
         auto bm = Cast(lua_touserdata(l, 1));
         if (bm)
             value = bm->invokeGetHeight();
@@ -157,7 +162,13 @@ static int GetHeight(lua_State * l)
 
 static int Lock(lua_State * l)
 {
-
+    if (1 == lua_gettop(l))
+    {
+        auto bm = Cast(lua_touserdata(l, 1));
+        if (bm)
+            bm->lock();
+    }
+    return 0;
 }
 
 static int Unlock(lua_State * l)
@@ -184,7 +195,31 @@ static int Erase(lua_State * l)
 
 static int ExtractSubset(lua_State * l)
 {
+    bool ret = false;
+    if (3 == lua_gettop(l))
+    {//self, dst, table
+        auto bm = Cast(lua_touserdata(l, 1));
+        auto dst = Cast(lua_touserdata(l, 2));
+        BonesIRect iret;
+        LuaUtils::GetIRect(l, 3, iret);
+        if (bm && dst)
+            ret = bm->invokeExtractSubset(*dst, iret);
+    }
+    else if (6 == lua_gettop(l))
+    {//self, dst, left, top, right, bottom
+        BonesIRect iret;
+        iret.bottom = LuaUtils::ToInt(lua_tointeger(l, 6));
+        iret.right = LuaUtils::ToInt(lua_tointeger(l, 5));
+        iret.top = LuaUtils::ToInt(lua_tointeger(l, 4));
+        iret.left = LuaUtils::ToInt(lua_tointeger(l, 3));
+        auto bm = Cast(lua_touserdata(l, 1));
+        auto dst = Cast(lua_touserdata(l, 2));
+        if (bm && dst)
+            ret = bm->invokeExtractSubset(*dst, iret);
+    }
 
+    lua_pushboolean(l, ret);
+    return 1;
 }
 
 static int IsTransparent(lua_State * l)
@@ -373,9 +408,9 @@ int Bitmap::getHeight() const
     return invokeGetHeight();
 }
 
-bool Bitmap::lock(LockRec & rec)
+void Bitmap::lock()
 {
-    return invokeLock(rec);
+    invokeLock();
 }
 
 void Bitmap::unlock()
@@ -388,9 +423,9 @@ void Bitmap::erase(BonesColor color)
     invokeErase(color);
 }
 
-void Bitmap::extractSubset(BonesPixmap *dst, const BonesIRect & subset)
+bool Bitmap::extractSubset(BonesPixmap & dst, const BonesIRect & subset)
 {
-    invokeExtractSubset(dst, subset);
+    return invokeExtractSubset(dst, subset);
 }
 
 bool Bitmap::isTransparent(int x, int y)
@@ -401,12 +436,20 @@ bool Bitmap::isTransparent(int x, int y)
 
 bool Bitmap::invokeAlloc(const BonesISize & size)
 {
-    return bitmap_.allocN32Pixels(size.width, size.height, false);
+    if (0 >= size.width || 0 >= size.height)
+        return false;
+
+    return bitmap_.allocConfigPixels(SkBitmap::kARGB_8888_Config,
+        size.width, size.height, false);
 }
 
 bool Bitmap::invokeDecode(const void * data, size_t len)
 {
-    ;
+    if (!data || 0 == len)
+        return false;
+    return SkImageDecoder::DecodeMemory(data, len, &bitmap_, 
+        SkBitmap::kARGB_8888_Config, 
+        SkImageDecoder::kDecodePixels_Mode);
 }
 
 int Bitmap::invokeGetWidth() const
@@ -419,9 +462,9 @@ int Bitmap::invokeGetHeight() const
     return bitmap_.height();
 }
 
-bool Bitmap::invokeLock(LockRec & rec)
+void Bitmap::invokeLock()
 {
-    ;
+    bitmap_.lockPixels();
 }
 
 void Bitmap::invokeUnlock()
@@ -434,16 +477,14 @@ void Bitmap::invokeErase(BonesColor color)
     bitmap_.eraseColor(color);
 }
 
-void Bitmap::invokeExtractSubset(BonesPixmap *dst, const BonesIRect & subset)
+bool Bitmap::invokeExtractSubset(BonesPixmap &dst, const BonesIRect & subset)
 {
-    if (!dst)
-        return;
     SkBitmap bm;
     SkIRect isubset = SkIRect::MakeLTRB(
         subset.left, subset.top,
         subset.right, subset.bottom);
     
-    bitmap_.extractSubset(&(static_cast<Bitmap *>(dst)->GetBitmap()), isubset);
+    return bitmap_.extractSubset(&(static_cast<Bitmap *>(&dst)->GetBitmap()), isubset);
 }
 
 bool Bitmap::invokeIsTransparent(int x, int y)

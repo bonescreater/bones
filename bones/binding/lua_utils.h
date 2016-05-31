@@ -31,6 +31,13 @@ public:
     static void GetRect(lua_State * l, int idx, BonesRect & r);
 
     static void PopRect(lua_State * l, BonesRect & r);
+
+    static void PushIRect(lua_State * l, const BonesIRect & r);
+
+    static void GetIRect(lua_State * l, int idx, BonesIRect & r);
+
+    static void PopIRect(lua_State * l, BonesIRect & r);
+
     //create table point
     static void PushPoint(lua_State * l, const BonesPoint & pt);
 
@@ -44,6 +51,12 @@ public:
     static void GetSize(lua_State * l, int idx, BonesSize & se);
 
     static void PopSize(lua_State * l, BonesSize & se);
+
+    static void PushISize(lua_State * l, const BonesISize & se);
+
+    static void GetISize(lua_State * l, int idx, BonesISize & se);
+
+    static void PopISize(lua_State * l, BonesISize & se);
 
     //create table colormatrix
     static const int kColorMatrxSize = 20;

@@ -1486,12 +1486,6 @@ public:
 class BonesPixmap
 {
 public:
-    struct LockRec
-    {
-        void * bits;//!<内存首地址
-        size_t pitch;//!<每一行的字节数
-        BonesIRect subset;//!<位图在内存中的矩形区域
-    };
     /*!分配一块内存位图
     @param[in] width 位图宽
     @param[in] height 位图高
@@ -1513,11 +1507,9 @@ public:
     */
     virtual int getHeight() const = 0;
     /*!锁住位图
-    @param[out] rec 返回位图信息
-    @return 成功返回true 失败返回false
     @warning 必须和unlock成对使用
     */
-    virtual bool lock(LockRec & rec) = 0;
+    virtual void lock() = 0;
     /*!解锁位图
     */
     virtual void unlock() = 0;
@@ -1529,7 +1521,7 @@ public:
     @param[out] dst 存放裁剪后的子位图
     @param[in] subset 子位图的矩形区域
     */
-    virtual void extractSubset(BonesPixmap *dst, const BonesIRect & subset) = 0;
+    virtual bool extractSubset(BonesPixmap & dst, const BonesIRect & subset) = 0;
     /*!指定位置的像素是否透明
     @param[in] x 位图x方向的偏移
     @param[in] y 位图y方向的偏移
