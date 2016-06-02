@@ -50,7 +50,9 @@ public:
 
     void close() override;
 public:
-    void GetLuaMetaTable(lua_State * l);
+    static Path * CreateLuaNewUserData(lua_State * l, EngineContext & ctx);
+
+    static Path * Cast(lua_State *l, int idx);
 public:
     //methods only script call;
     void invokeMoveTo(const BonesPoint & p);
@@ -78,21 +80,13 @@ private:
     EngineContext * ctx_;
 };
 
-static inline Path * Cast(void * path)
-{
-    if (!path)
-        return nullptr;
-    return static_cast<Path *>(static_cast<BonesPath *>(*(void **)path));
-}
-
-
 //path, x, y
 static int MoveTo(lua_State * l)
 {
     auto count = lua_gettop(l);
     if (3 == count)
     {
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
         {
             BonesPoint pt = { 
@@ -106,7 +100,7 @@ static int MoveTo(lua_State * l)
     {// so utils
         BonesPoint pt;
         LuaUtils::GetPoint(l, -1, pt);
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
             path->invokeMoveTo(pt);
     }
@@ -120,7 +114,7 @@ static int LineTo(lua_State * l)
     auto count = lua_gettop(l);
     if (3 == count)
     {
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
         {
             BonesPoint pt = {
@@ -134,7 +128,7 @@ static int LineTo(lua_State * l)
     {
         BonesPoint pt;
         LuaUtils::GetPoint(l, -1, pt);
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
             path->invokeLineTo(pt);
     }
@@ -149,7 +143,7 @@ static int QuadTo(lua_State * l)
 
     if (5 == count)
     {
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
         {
             BonesPoint p1 = {
@@ -167,7 +161,7 @@ static int QuadTo(lua_State * l)
         BonesPoint p1;
         LuaUtils::PopPoint(l, p2);
         LuaUtils::PopPoint(l, p1);
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
             path->invokeQuadTo(p1, p2);
     }
@@ -181,7 +175,7 @@ static int ConicTo(lua_State * l)
     auto count = lua_gettop(l);
     if (6 == count)
     {
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
         {
             BonesPoint p1 = {
@@ -203,7 +197,7 @@ static int ConicTo(lua_State * l)
         LuaUtils::PopPoint(l, p2);
         BonesPoint p1;
         LuaUtils::PopPoint(l, p1);
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
             path->invokeConicTo(p1, p2, w);
     }
@@ -217,7 +211,7 @@ static int CubicTo(lua_State * l)
     auto count = lua_gettop(l);
     if (7 == count)
     {
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
         {
             BonesPoint p1 = {
@@ -240,7 +234,7 @@ static int CubicTo(lua_State * l)
         LuaUtils::PopPoint(l, p2);
         BonesPoint p1;
         LuaUtils::PopPoint(l, p1);
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
             path->invokeCubicTo(p1, p2, p3);
     }
@@ -254,7 +248,7 @@ static int ArcTo(lua_State * l)
     auto count = lua_gettop(l);
     if (7 == count)
     {
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
         {
             BonesRect r = { 
@@ -276,7 +270,7 @@ static int ArcTo(lua_State * l)
             lua_pop(l, 2);
             BonesRect r; 
             LuaUtils::PopRect(l, r);
-            auto path = Cast(lua_touserdata(l, 1));
+            auto path = Path::Cast(l, 1);
             if (path)
                 path->invokeArcTo(r, start, sweep);
         }
@@ -288,7 +282,7 @@ static int ArcTo(lua_State * l)
             LuaUtils::PopPoint(l, p2);
             BonesPoint p1;
             LuaUtils::PopPoint(l, p1);
-            auto path = Cast(lua_touserdata(l, 1));
+            auto path = Path::Cast(l, 1);
             if (path)
                 path->invokeArcTo(p1, p2, radius);
         }
@@ -303,7 +297,7 @@ static int Close(lua_State * l)
 {
     if (lua_gettop(l) == 1)
     {
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
             path->close();
     }
@@ -316,7 +310,7 @@ static int GC(lua_State * l)
     int count = lua_gettop(l);
     if (count == 1)
     {
-        auto path = Cast(lua_touserdata(l, 1));
+        auto path = Path::Cast(l, 1);
         if (path)
             delete path;
     }
@@ -333,15 +327,11 @@ static int Create(lua_State * l)
     auto proxy = static_cast<PathProxy *>(LuaUtils::GetFieldCObject(l));
     lua_pop(l, 1);
     lua_getfield(l, -1, kPath);
-    auto path = new Path(proxy->ctx());
-    BonesPath * bpath = path;
-    lua_pushlightuserdata(l, bpath);
-    auto ptr_path = (void **)lua_newuserdata(l, sizeof(BonesPath *));
-    *ptr_path = bpath;
-    lua_copy(l, -1, 1);
-    //set metatable
-    path->GetLuaMetaTable(l);
-    lua_setmetatable(l, -2);
+    lua_pushnil(l);
+    BonesPath * path = Path::CreateLuaNewUserData(l, proxy->ctx());
+    lua_pushlightuserdata(l, path);
+    lua_copy(l, -1, -3);
+    lua_pop(l, 1);
 
     lua_settable(l, -3);
 
@@ -355,7 +345,7 @@ static int Release(lua_State * l)
 {
     if (lua_gettop(l) == 1)
     {//self (new_ud)
-        void * lightud = Cast(lua_touserdata(l, 1));
+        BonesPath * lightud = Path::Cast(l, 1);
         LuaUtils::PushContext(l);
         lua_getfield(l, -1, kProxy);
         lua_getfield(l, -1, kPath);
@@ -413,7 +403,7 @@ BonesPath * PathProxy::create()
     lua_getfield(l, -1, kProxy);
     lua_getfield(l, -1, kMethodCreate);
     auto count = LuaUtils::SafePCall(l, 0);
-    auto path = Cast(lua_touserdata(l, -1));
+    auto path = Path::Cast(l, -1);
     lua_pop(l, count + 1);
     LuaUtils::PopContext(l);
     return path;
@@ -502,7 +492,7 @@ void Path::close()
     invokeClose();
 }
 
-void Path::GetLuaMetaTable(lua_State * l)
+static void GetLuaMetaTable(lua_State * l)
 {
     luaL_getmetatable(l, kMetaTable);
     if (!lua_istable(l, -1))
@@ -526,6 +516,24 @@ void Path::GetLuaMetaTable(lua_State * l)
         lua_setfield(l, -2, kMethodClose);
 
     }
+}
+
+Path * Path::CreateLuaNewUserData(lua_State * l, EngineContext & ctx)
+{
+    Path * path = new Path(ctx);
+    auto ptr_path = (void **)lua_newuserdata(l, sizeof(BonesPath *));
+    *ptr_path = static_cast<BonesPath *>(path);
+    GetLuaMetaTable(l);
+    lua_setmetatable(l, -2);
+    return path;
+}
+
+Path * Path::Cast(lua_State *l, int idx)
+{
+    auto path = lua_touserdata(l, idx);
+    if (!path)
+        return nullptr;
+    return static_cast<Path *>(static_cast<BonesPath *>(*(void **)path));
 }
 
 void Path::invokeMoveTo(const BonesPoint & p)

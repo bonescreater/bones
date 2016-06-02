@@ -13,13 +13,6 @@ static const char * kPath = "_pixmap_";
 static const char * kMethodCreate = "create";
 static const char * kMethodRelease = "release";
 
-static inline Bitmap * Cast(void * path)
-{
-    if (!path)
-        return nullptr;
-    return static_cast<Bitmap *>(static_cast<BonesPixmap *>(*(void **)path));
-}
-
 static int Create(lua_State * l)
 {
     lua_pushnil(l);
@@ -28,14 +21,12 @@ static int Create(lua_State * l)
     auto proxy = static_cast<PixmapProxy *>(LuaUtils::GetFieldCObject(l));
     lua_pop(l, 1);
     lua_getfield(l, -1, kPath);
-    auto bm = new Bitmap(proxy->ctx());
-    lua_pushlightuserdata(l, static_cast<BonesPixmap *>(bm));
-    auto ptr_bm = (void **)lua_newuserdata(l, sizeof(BonesPixmap *));
-    *ptr_bm = bm;
-    lua_copy(l, -1, 1);
-    //set user data's metatable 
-    bm->GetLuaMetaTable(l);
-    lua_setmetatable(l, -2);
+    lua_pushnil(l);
+
+    BonesPixmap * bm = Bitmap::CreateLuaNewUserData(l, proxy->ctx());
+    lua_pushlightuserdata(l, bm);
+    lua_copy(l, -1, -3);
+    lua_pop(l, 1);
 
     lua_settable(l, -3);
     lua_pop(l, 2);
@@ -48,7 +39,7 @@ static int Release(lua_State * l)
 {
     if (lua_gettop(l) == 1)
     {//self(new_ud)
-        void * lightud = Cast(lua_touserdata(l, 1));
+        BonesPixmap * lightud = Bitmap::Cast(l, 1);
         LuaUtils::PushContext(l);
         lua_getfield(l, -1, kProxy);
         lua_getfield(l, -1, kPath);
@@ -106,7 +97,7 @@ BonesPixmap * PixmapProxy::create()
     lua_getfield(l, -1, kProxy);
     lua_getfield(l, -1, kMethodCreate);
     auto count = LuaUtils::SafePCall(l, 0);
-    auto path = Cast(lua_touserdata(l, -1));
+    auto path = Bitmap::Cast(l, -1);
     lua_pop(l, count + 1);
     LuaUtils::PopContext(l);
     return path;

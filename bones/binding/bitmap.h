@@ -37,7 +37,9 @@ public:
 
     bool isValid()   const override;
 public:
-    void GetLuaMetaTable(lua_State * l);
+    static Bitmap * CreateLuaNewUserData(lua_State * l, EngineContext & ctx);
+
+    static Bitmap * Cast(lua_State *l, int idx);
 public:
     bool invokeAlloc(const BonesISize & size);
 

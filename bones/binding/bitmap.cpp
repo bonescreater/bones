@@ -20,13 +20,6 @@ static const char * kMethodExtractSubset = "extractSubset";
 static const char * kMethodIsTransparent = "isTransparent";
 static const char * kMethodIsValid = "isValid";
 
-static inline Bitmap * Cast(void * path)
-{
-    if (!path)
-        return nullptr;
-    return static_cast<Bitmap *>(static_cast<BonesPixmap *>(*(void **)path));
-}
-
 static int Alloc(lua_State * l)
 {
     auto count = lua_gettop(l);
@@ -36,7 +29,7 @@ static int Alloc(lua_State * l)
         BonesISize size = {
             LuaUtils::IntFromInteger(l, 2),
             LuaUtils::IntFromInteger(l, 3) };
-        auto bm = Cast(lua_touserdata(l, 1));
+        auto bm = Bitmap::Cast(l, 1);
         if (bm)
             ret = bm->invokeAlloc(size);
     }
@@ -44,7 +37,7 @@ static int Alloc(lua_State * l)
     {//self, table
         BonesISize size;
         LuaUtils::GetISize(l, 2, size);
-        auto bm = Cast(lua_touserdata(l, 1));
+        auto bm = Bitmap::Cast(l, 1);
         if (bm)
             ret = bm->invokeAlloc(size);
     }
@@ -60,7 +53,7 @@ static int Decode(lua_State * l)
     bool ret = false;
     if (3 == count)
     {//self, data, len
-        auto bm = Cast(lua_touserdata(l, 1));
+        auto bm = Bitmap::Cast(l, 1);
         if (bm)
             ret = bm->invokeDecode(
             lua_tostring(l, 2),
@@ -70,7 +63,7 @@ static int Decode(lua_State * l)
     {//self, lstr
         size_t len = 0;
         auto data = lua_tolstring(l, 2, &len);
-        auto bm = Cast(lua_touserdata(l, 1));
+        auto bm = Bitmap::Cast(l, 1);
         if (bm)
             ret = bm->invokeDecode(data, len);
     }
@@ -84,7 +77,7 @@ static int GetWidth(lua_State * l)
     int value = 0;
     if (1 == lua_gettop(l))
     {//self
-        auto bm = Cast(lua_touserdata(l, 1));
+        auto bm = Bitmap::Cast(l, 1);
         if (bm)
             value = bm->invokeGetWidth();
     }
@@ -97,7 +90,7 @@ static int GetHeight(lua_State * l)
     int value = 0;
     if (1 == lua_gettop(l))
     {//self
-        auto bm = Cast(lua_touserdata(l, 1));
+        auto bm = Bitmap::Cast(l, 1);
         if (bm)
             value = bm->invokeGetHeight();
     }
@@ -109,7 +102,7 @@ static int Lock(lua_State * l)
 {
     if (1 == lua_gettop(l))
     {
-        auto bm = Cast(lua_touserdata(l, 1));
+        auto bm = Bitmap::Cast(l, 1);
         if (bm)
             bm->lock();
     }
@@ -120,7 +113,7 @@ static int Unlock(lua_State * l)
 {
     if (1 == lua_gettop(l))
     {
-        auto bm = Cast(lua_touserdata(l, 1));
+        auto bm = Bitmap::Cast(l, 1);
         if (bm)
             bm->invokeUnlock();
     }
@@ -131,7 +124,7 @@ static int Erase(lua_State * l)
 {
     if (2 == lua_gettop(l))
     {
-        auto bm = Cast(lua_touserdata(l, 1));
+        auto bm = Bitmap::Cast(l, 1);
         if (bm)
             bm->invokeErase(LuaUtils::ToColor(lua_tointeger(l, 2)));
     }
@@ -143,8 +136,8 @@ static int ExtractSubset(lua_State * l)
     bool ret = false;
     if (3 == lua_gettop(l))
     {//self, dst, table
-        auto bm = Cast(lua_touserdata(l, 1));
-        auto dst = Cast(lua_touserdata(l, 2));
+        auto bm = Bitmap::Cast(l, 1);
+        auto dst = Bitmap::Cast(l, 2);
         BonesIRect iret;
         LuaUtils::GetIRect(l, 3, iret);
         if (bm && dst)
@@ -157,8 +150,8 @@ static int ExtractSubset(lua_State * l)
         iret.right = LuaUtils::IntFromInteger(l, 5);
         iret.top = LuaUtils::IntFromInteger(l, 4);
         iret.left = LuaUtils::IntFromInteger(l, 3);
-        auto bm = Cast(lua_touserdata(l, 1));
-        auto dst = Cast(lua_touserdata(l, 2));
+        auto bm = Bitmap::Cast(l, 1);
+        auto dst = Bitmap::Cast(l, 2);
         if (bm && dst)
             ret = bm->invokeExtractSubset(*dst, iret);
     }
@@ -172,7 +165,7 @@ static int IsTransparent(lua_State * l)
     bool bret = false;
     if (3 == lua_gettop(l))
     {
-        auto bm = Cast(lua_touserdata(l, 1));
+        auto bm = Bitmap::Cast(l, 1);
         if (bm)
             bret = bm->invokeIsTransparent(
             LuaUtils::IntFromInteger(l, 2),
@@ -188,7 +181,7 @@ static int IsValid(lua_State * l)
 
     if (1 == lua_gettop(l))
     {
-        auto bm = Cast(lua_touserdata(l, 1));
+        auto bm = Bitmap::Cast(l, 1);
         if (bm)
             bret = bm->invokeIsValid();
     }
@@ -200,7 +193,7 @@ static int GC(lua_State *l)
     int count = lua_gettop(l);
     if (count == 1)
     {
-        auto bm = Cast(lua_touserdata(l, 1));
+        auto bm = Bitmap::Cast(l, 1);
         if (bm)
             delete bm;
     }
@@ -268,7 +261,7 @@ bool Bitmap::isValid()  const
     return invokeIsValid();
 }
 
-void Bitmap::GetLuaMetaTable(lua_State * l)
+static void GetLuaMetaTable(lua_State * l)
 {
     luaL_getmetatable(l, kMetaTable);
     if (!lua_istable(l, -1))
@@ -296,6 +289,24 @@ void Bitmap::GetLuaMetaTable(lua_State * l)
         lua_pushcfunction(l, IsValid);
         lua_setfield(l, -2, kMethodIsValid);
     }
+}
+
+Bitmap * Bitmap::CreateLuaNewUserData(lua_State * l, EngineContext & ctx)
+{
+    Bitmap * bm = new Bitmap(ctx);
+    auto ptr_bm = (void **)lua_newuserdata(l, sizeof(BonesPixmap *));
+    *ptr_bm = static_cast<BonesPixmap *>(bm);
+    GetLuaMetaTable(l);
+    lua_setmetatable(l, -2);
+    return bm;
+}
+
+Bitmap * Bitmap::Cast(lua_State *l, int idx)
+{
+    auto path = lua_touserdata(l, idx);
+    if (!path)
+        return nullptr;
+    return static_cast<Bitmap *>(static_cast<BonesPixmap *>(*(void **)path));
 }
 
 bool Bitmap::invokeAlloc(const BonesISize & size)
