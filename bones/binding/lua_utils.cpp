@@ -20,16 +20,6 @@ static const char * kStrContext = "bones";
 
 #define ASSERT_RETURN {assert(0);  return;}
 
-static inline BonesScalar ScalarFromLuaStack(lua_State * l, int idx)
-{
-    return LuaUtils::ToScalar(lua_tonumber(l, idx));
-}
-
-static inline int IntFromLuaStack(lua_State * l, int idx)
-{
-    return LuaUtils::ToInt(lua_tointeger(l, idx));
-}
-
 void LuaUtils::PushContext(lua_State * l)
 {
     lua_getglobal(l, kStrContext);
@@ -54,9 +44,9 @@ void LuaUtils::DestroyContext(lua_State * l)
     lua_setglobal(l, kStrContext);
 }
 
-inline BonesScalar LuaUtils::ToScalar(lua_Number t)
+inline BonesScalar LuaUtils::ScalarFromNumber(lua_State * l, int idx)
 {
-    return static_cast<BonesScalar>(t);
+    return static_cast<BonesScalar>(lua_tonumber(l, idx));
 }
 
 inline BonesColor LuaUtils::ToColor(lua_Integer t)
@@ -64,9 +54,15 @@ inline BonesColor LuaUtils::ToColor(lua_Integer t)
     return static_cast<BonesColor>(t);
 }
 
-inline int LuaUtils::ToInt(lua_Integer t)
+inline int LuaUtils::IntFromInteger(lua_State * l, int idx)
 {
-    return static_cast<int>(t);
+    return static_cast<int>(lua_tointeger(l, idx));
+}
+
+
+inline int LuaUtils::IntFromLen(lua_State * l, int idx)
+{
+    return static_cast<int>(luaL_len(l, idx));
 }
 
 int LuaUtils::SafePCall(lua_State * l, int nargs)
@@ -133,7 +129,7 @@ void LuaUtils::PushRect(lua_State * l, const BonesRect & r)
 
 void LuaUtils::GetRect(lua_State * l, int idx, BonesRect & r)
 {
-    TGetRect(l, idx, r, ScalarFromLuaStack);
+    TGetRect(l, idx, r, ScalarFromNumber);
 }
 
 void LuaUtils::PopRect(lua_State * l, BonesRect & r)
@@ -149,7 +145,7 @@ void LuaUtils::PushIRect(lua_State * l, const BonesIRect & r)
 
 void LuaUtils::GetIRect(lua_State * l, int idx, BonesIRect & r)
 {
-    TGetRect(l, idx, r, IntFromLuaStack);
+    TGetRect(l, idx, r, IntFromInteger);
 }
 
 void LuaUtils::PopIRect(lua_State * l, BonesIRect & r)
@@ -173,10 +169,10 @@ void LuaUtils::GetPoint(lua_State * l, int idx, BonesPoint & pt)
     if (!lua_istable(l, idx))
         ASSERT_RETURN;
     lua_getfield(l, idx, kStrX);
-    pt.x = ToScalar(lua_tonumber(l, -1));
+    pt.x = ScalarFromNumber(l, -1);
     lua_pop(l, 1);
     lua_getfield(l, idx, kStrY);
-    pt.y = ToScalar(lua_tonumber(l, -1));
+    pt.y = ScalarFromNumber(l, -1);
     lua_pop(l, 1);
 }
 
@@ -217,7 +213,7 @@ void LuaUtils::PushSize(lua_State * l, const BonesSize & se)
 
 void LuaUtils::GetSize(lua_State * l, int idx, BonesSize & se)
 {
-    TGetSize(l, idx, se, ScalarFromLuaStack);
+    TGetSize(l, idx, se, ScalarFromNumber);
 }
 
 void LuaUtils::PopSize(lua_State * l, BonesSize & se)
@@ -233,7 +229,7 @@ void LuaUtils::PushISize(lua_State * l, const BonesISize & se)
 
 void LuaUtils::GetISize(lua_State * l, int idx, BonesISize & se)
 {
-    TGetSize(l, idx, se, IntFromLuaStack);
+    TGetSize(l, idx, se, IntFromInteger);
 }
 
 void LuaUtils::PopISize(lua_State * l, BonesISize & se)
@@ -263,7 +259,7 @@ void LuaUtils::GetColorMatrix(lua_State * l, int idx, BonesScalar * cm, int len)
     for (int i = 0; i < len; ++i)
     {
         lua_geti(l, idx, i + 1);
-        cm[i] = ToScalar(lua_tonumber(l, -1));
+        cm[i] = ScalarFromNumber(l, -1);
         lua_pop(l, 1);
     }
 }
@@ -332,7 +328,7 @@ void LuaUtils::GetScalarArray(lua_State * l, int idx, BonesScalar * scalars, int
     for (int i = 0; i < len; i++)
     {
         lua_geti(l, idx, i + 1);
-        scalars[i] = ToScalar(lua_tonumber(l, -1));
+        scalars[i] = ScalarFromNumber(l, -1);
         lua_pop(l, 1);
     }
 }

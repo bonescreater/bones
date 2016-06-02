@@ -165,6 +165,12 @@
     <ClCompile Include="bones\binding\pixmap_proxy.cpp">
       <Filter>binding\proxy</Filter>
     </ClCompile>
+    <ClCompile Include="bones\binding\resource_proxy.cpp">
+      <Filter>binding\proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\binding\bitmap.cpp">
+      <Filter>binding\proxy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
@@ -353,6 +359,12 @@
       <Filter>binding</Filter>
     </ClInclude>
     <ClInclude Include="bones\binding\pixmap_proxy.h">
+      <Filter>binding\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\binding\resource_proxy.h">
+      <Filter>binding\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\binding\bitmap.h">
       <Filter>binding\proxy</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,6 +2,7 @@
 #include "path_proxy.h"
 #include "shader_proxy.h"
 #include "pixmap_proxy.h"
+#include "resource_proxy.h"
 
 #include "lua_utils.h"
 #include <assert.h>
@@ -15,10 +16,12 @@ ScriptContext::ScriptContext()
     path_proxy_ = new PathProxy(*this);
     shader_proxy_ = new ShaderProxy(*this);
     pixmap_proxy_ = new PixmapProxy(*this);
+    resource_proxy_ = new ResourceProxy(*this);
 }
 
 ScriptContext::~ScriptContext()
 {
+    delete resource_proxy_;
     delete pixmap_proxy_;
     delete shader_proxy_;
     delete path_proxy_;
@@ -31,6 +34,11 @@ lua_State * ScriptContext::State()
     return state_;
 }
 
+BonesResourceProxy * ScriptContext::getResourceProxy()
+{
+    return resource_proxy_;
+}
+
 BonesPathProxy * ScriptContext::getPathProxy()
 {
     return path_proxy_;
@@ -39,6 +47,11 @@ BonesPathProxy * ScriptContext::getPathProxy()
 BonesShaderProxy * ScriptContext::getShaderProxy()
 {
     return shader_proxy_;
+}
+
+BonesPixmapProxy * ScriptContext::getPixmapProxy()
+{
+    return pixmap_proxy_;
 }
 
 bool ScriptContext::loadXMLString(const char * data)

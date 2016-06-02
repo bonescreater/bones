@@ -1410,15 +1410,6 @@ typedef uint32_t BonesPMColor;
 //    virtual void setListener(NotifyListener * lis) = 0;
 //};
 //
-//class BonesResourceManager
-//{
-//public:
-//    virtual void addPixmap(const char * key, BonesPixmap pm) = 0;
-//
-//    virtual BonesPixmap getPixmap(const char * key) = 0;
-//
-//    virtual void clean() = 0;
-//};
 /*!path封装*/
 class BonesPath
 {
@@ -1525,8 +1516,13 @@ public:
     /*!指定位置的像素是否透明
     @param[in] x 位图x方向的偏移
     @param[in] y 位图y方向的偏移
+    @return true透明 
     */
     virtual bool isTransparent(int x, int y) = 0;
+    /*!位图是否可用
+    @return true可用
+    */
+    virtual bool isValid()  const = 0;
 };
 
 class BonesPixmapProxy
@@ -1537,6 +1533,17 @@ public:
     virtual void release(BonesPixmap * pm) = 0;
 };
 
+class BonesResourceProxy
+{
+public:
+    virtual void add(const char * key, BonesPixmap & pm) = 0;
+
+    virtual void remove(const char * key) = 0;
+
+    virtual void clean() = 0;
+
+    virtual bool get(const char * key, BonesPixmap & pm) = 0;
+};
 
 //class BonesObjectListener
 //{
@@ -1595,7 +1602,7 @@ BONES_API(void) BonesContextTerm(BonesContext * ctx);
 class BonesContext
 {
 public:
-    //virtual BonesResourceManager * getResourceManager() = 0;
+    virtual BonesResourceProxy * getResourceProxy() = 0;
 
     virtual BonesPathProxy * getPathProxy() = 0;
     

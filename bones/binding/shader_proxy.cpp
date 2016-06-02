@@ -44,8 +44,8 @@ static int CreateLinearGradient(lua_State * l)
 
         std::vector<BonesScalar> pos;
         std::vector<BonesColor> colors;
-        auto pos_len = LuaUtils::ToInt(luaL_len(l, 4));
-        auto color_len = LuaUtils::ToInt(luaL_len(l, 3));
+        auto pos_len = LuaUtils::IntFromLen(l, 4);
+        auto color_len = LuaUtils::IntFromLen(l, 3);
         auto len = pos_len > color_len ? color_len : pos_len;
         if (len > 0)
         {
@@ -82,8 +82,8 @@ static int CreateRadialGradient(lua_State * l)
 
         std::vector<BonesScalar> pos;
         std::vector<BonesColor> colors;
-        auto pos_len = LuaUtils::ToInt(luaL_len(l, 4));
-        auto color_len = LuaUtils::ToInt(luaL_len(l, 3));
+        auto pos_len = LuaUtils::IntFromLen(l, 4);
+        auto color_len = LuaUtils::IntFromLen(l, 3);
         auto len = pos_len > color_len ? color_len : pos_len;
         if (len > 0)
         {
@@ -92,7 +92,7 @@ static int CreateRadialGradient(lua_State * l)
             LuaUtils::PopScalarArray(l, &pos[0], len);
             LuaUtils::PopColorArray(l, &colors[0], len);
 
-            auto radius = LuaUtils::ToScalar(lua_tonumber(l, 2));
+            auto radius = LuaUtils::ScalarFromNumber(l, 2);
             lua_pop(l, 1);
             BonesPoint center;
             LuaUtils::PopPoint(l, center);

@@ -10,6 +10,7 @@ namespace bones
 class PathProxy;
 class ShaderProxy;
 class PixmapProxy;
+class ResourceProxy;
 
 class ScriptContext : public BonesContext, public EngineContext
 {
@@ -20,9 +21,13 @@ public:
 
     lua_State * State() override;
 
+    BonesResourceProxy * getResourceProxy() override;
+
     BonesPathProxy * getPathProxy() override;
 
     BonesShaderProxy * getShaderProxy() override;
+
+    BonesPixmapProxy * getPixmapProxy() override;
 
     bool loadXMLString(const char * data) override;
 
@@ -37,6 +42,7 @@ private:
     void FiniState();
 private:
     lua_State * state_;
+    ResourceProxy * resource_proxy_;
     PathProxy * path_proxy_;
     ShaderProxy * shader_proxy_;
     PixmapProxy * pixmap_proxy_;

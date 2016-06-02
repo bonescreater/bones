@@ -18,11 +18,13 @@ public:
 
     static void DestroyContext(lua_State * l);
 
-    static BonesScalar ToScalar(lua_Number t);
+    static BonesScalar ScalarFromNumber(lua_State * l, int idx);
 
     static BonesColor ToColor(lua_Integer t);
 
-    static int ToInt(lua_Integer t);
+    static int IntFromInteger(lua_State * l, int idx);
+
+    static int IntFromLen(lua_State * l, int idx);
     //
     static int SafePCall(lua_State * l, int nargs);
     //create table rect
