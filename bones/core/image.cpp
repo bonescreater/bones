@@ -1,5 +1,5 @@
 ﻿#include "image.h"
-#include "core_imp.h"
+#include "core.h"
 #include "helper.h"
 #include "rect.h"
 #include "res_manager.h"
@@ -10,7 +10,8 @@
 namespace bones
 {
 
-Image::Image() :style_(kDirect), delegate_(nullptr), color_filter_(nullptr)
+Image::Image(ThreadContext & context) 
+:Area(context), style_(kDirect), delegate_(nullptr), color_filter_(nullptr)
 {
     
 }

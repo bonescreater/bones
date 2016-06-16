@@ -3,11 +3,12 @@
 #include "helper.h"
 #include "SkCanvas.h"
 #include "css_utils.h"
-#include "logging.h"
+
 
 namespace bones
 {
-View::View() :group_id_(-1), children_count_(0), opacity_(1.0f)
+
+View::View(ThreadContext & context) :context_(&context), group_id_(-1), children_count_(0), opacity_(1.0f)
 {
     
     flag_.focusable = true;
@@ -18,6 +19,11 @@ View::View() :group_id_(-1), children_count_(0), opacity_(1.0f)
 View::~View()
 {
     
+}
+
+ThreadContext & View::getContext() const
+{
+    return *context_;
 }
 
 void View::setOpacity(float opacity)
@@ -217,6 +223,10 @@ void View::attachChildAt(View * child, size_t index)
 {
     if (!child)
         return;
+    //子跟父不在同一个Thread中
+    if (child->context_ != this->context_)
+        return;
+
     //child 不能是自己或者自己的父
     if (child->contains(this))
         return;

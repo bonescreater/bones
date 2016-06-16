@@ -40,7 +40,7 @@ public:
 
     };
 public:
-    Text();
+    Text(ThreadContext & context);
 
     ~Text();
 

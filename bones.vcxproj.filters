@@ -171,6 +171,12 @@
     <ClCompile Include="bones\binding\bitmap.cpp">
       <Filter>binding\proxy</Filter>
     </ClCompile>
+    <ClCompile Include="bones\core\mutex.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
+    <ClCompile Include="bones\core\thread_dispatcher.cpp">
+      <Filter>core\base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bones\bones.h" />
@@ -366,6 +372,12 @@
     </ClInclude>
     <ClInclude Include="bones\binding\bitmap.h">
       <Filter>binding\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\mutex.h">
+      <Filter>core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="bones\core\thread_dispatcher.h">
+      <Filter>core\base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

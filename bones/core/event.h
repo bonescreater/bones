@@ -268,7 +268,7 @@ public:
 private:
     long index_;
     unsigned int dbcs_;
-    const wchar_t * str_;
+    std::wstring str_;
     long cursor_;
 };
 

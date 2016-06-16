@@ -32,6 +32,8 @@ public:
 
         virtual void changeCaretPos(Root * sender, const Point & pt) = 0;
     };
+
+    
 private:
     struct DirtyRect
     {
@@ -45,15 +47,13 @@ private:
         Rect rect;
     };
 public:
-    Root();
+    Root(ThreadContext & context);
 
     ~Root();
 
     void setDelegate(Delegate * delegate);
 
     void setColor(Color color);
-
-    void attachTo(Widget widget);
 
     void draw();
 
@@ -75,8 +75,6 @@ public:
 
     void sendComposition(CompositionEvent & e);
 
-    Widget getWidget();
-
     void restoreCaret();
 
     void restoreCursor();
@@ -84,6 +82,12 @@ public:
     void shiftFocus(View * focus);
 
     void update();
+
+    void handMsg(Event * msg);
+
+    void handMsg(bool focus);
+
+    void handMsg(View * who);
 
     bool isVisible() const override;
 
@@ -146,7 +150,8 @@ private:
     void setColor(const CSSParams & params);
 private:
     Delegate * delegate_;
-    Widget widget_;
+    
+
     FocusController focus_;
     MouseController mouse_;
     AcceleratorManager accelerators_;

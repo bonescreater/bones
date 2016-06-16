@@ -279,7 +279,8 @@ CompositionEvent::CompositionEvent(EventType type, View * target,
     target_.reset(target);
     index_ = index;
     dbcs_ = dbcs;
-    str_ = str;
+    if (str)
+        str_ = str;
     cursor_ = cursor;
 }
 
@@ -295,7 +296,7 @@ unsigned int CompositionEvent::dbcs() const
 
 const wchar_t * CompositionEvent::str() const
 {
-    return str_;
+    return str_.data();
 }
 
 long CompositionEvent::cursor() const

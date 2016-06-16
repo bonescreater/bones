@@ -2,20 +2,21 @@
 #include "helper.h"
 #include "SkShader.h"
 #include "SkCanvas.h"
-#include "core_imp.h"
+#include "SkDashPathEffect.h"
 
 namespace bones
 {
 
-Input::Input()
-:delegate_(nullptr), max_scroll_(0), current_scroll_(0),
+Input::Input(ThreadContext & context)
+:Area(context), delegate_(nullptr), max_scroll_(0), current_scroll_(0),
 composition_start_(0), composition_length_(0),
 caret_(0), color_(BONES_RGB_BLACK), shader_(nullptr),
 select_begin_(0), status_(kSelect),
 password_(L'*'), pw_valid_(false),
 left_down_(false)
 {
-
+    Scalar interval[2] = { 2, 2 };
+    path_effect_ = SkDashPathEffect::Create(interval, 2, 0);
 }
 
 Input::~Input()
@@ -466,7 +467,7 @@ void Input::drawCompositionUnderline(SkCanvas & canvas, float opacity)
     Scalar underline = getHeight() / 2 + text_height / 2;
     if (fm.hasUnderlinePosition(&underline))
         underline += baseline;
-    paint.setPathEffect(Core::getDashEffectCache());
+    paint.setPathEffect(path_effect_);
     canvas.drawLine(start, underline, end, underline, paint);
 }
 

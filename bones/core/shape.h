@@ -93,7 +93,7 @@ public:
 
     };
 public:
-    Shape();
+    Shape(ThreadContext & context);
 
     ~Shape();
 

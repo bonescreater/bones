@@ -31,7 +31,7 @@ private:
         Scalar total;
     };
 public:
-    Scroller();
+    Scroller(ThreadContext & context);
 
     ~Scroller();
 

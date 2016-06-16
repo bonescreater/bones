@@ -6,6 +6,7 @@
 
 class SkShader;
 class SkPaint;
+class SkPathEffect;
 
 namespace bones
 {
@@ -24,7 +25,7 @@ private:
         kSelect,
     };
 public:
-    Input();
+    Input(ThreadContext & context);
 
     ~Input();
 
@@ -132,6 +133,7 @@ private:
     Point getCaretPoint();
 private:
     Delegate * delegate_;
+    SkPathEffect * path_effect_;
     Scalar max_scroll_;//文本滚动支持
     Scalar current_scroll_;
 

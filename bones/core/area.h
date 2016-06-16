@@ -11,6 +11,11 @@ template <class T>
 class Area : public View
 {
 public:
+    Area(ThreadContext & context)
+        :View(context)
+    {
+
+    }
     class DelegateBase
     {
     public:

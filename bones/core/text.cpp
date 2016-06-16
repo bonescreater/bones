@@ -35,8 +35,8 @@ static SkPaint::Align ToSkPaintStyle(Text::Align align)
     return skalign;
 }
 
-Text::Text()
-:delegate_(nullptr), cache_dirty_(false), align_(kCenter),
+Text::Text(ThreadContext & context)
+:Area(context), delegate_(nullptr), cache_dirty_(false), align_(kCenter),
 color_(BONES_RGB_BLACK), shader_(nullptr), mode_(kAuto), line_space_(0),
 pts_(nullptr), path_(nullptr), ellipsis_(false)
 {

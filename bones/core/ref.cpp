@@ -1,7 +1,7 @@
 ﻿
 #include "ref.h"
-#include "logging.h"
 
+#include <intrin.h>
 namespace bones
 {
 
@@ -18,13 +18,13 @@ Ref::~Ref()
 void Ref::retain()
 {
     assert(count_ > 0);
-    ++count_;
+    ::_InterlockedIncrement(&count_);
 }
 
 void Ref::release()
 {
     assert(count_ > 0);
-    --count_;
+    ::_InterlockedDecrement(&count_);
     if (0 == count_)       
         delete this;      
 }

@@ -8,19 +8,18 @@
 #include "SkBitmap.h"
 #include "device.h"
 #include "SkDevice.h"
-#include "logging.h"
 #include <windowsx.h>
 #include "css_utils.h"
-#include "core_imp.h"
+#include "core.h"
 #include "animation_manager.h"
-#include "res_manager.h"
+#include "thread_dispatcher.h"
 
 namespace bones
 {
 
-Root::Root()
-:mouse_(this), focus_(this), view_device_(nullptr), delegate_(nullptr),
-widget_(NULL), color_(0), bits_(nullptr), pitch_(0),
+Root::Root(ThreadContext & context)
+:Area(context), mouse_(this), focus_(this), view_device_(nullptr), delegate_(nullptr),
+color_(0), bits_(nullptr), pitch_(0),
 caret_show_(false), caret_display_(false), caret_ani_(nullptr),
 force_caret_display_(false)
 {
@@ -45,16 +44,13 @@ void Root::setColor(Color color)
     inval();
 }
 
-void Root::attachTo(Widget widget)
-{
-    widget_ = widget;
-}
-
 void Root::sendMouse(MouseEvent & e)
 {
     if (e.target() != this)
         return;
-    mouse_.handleEvent(e);
+    ThreadMsgEvent msg(this);
+    msg.e.reset(new MouseEvent(e));
+    context_->getDispatcher().push(ThreadDispatcher::Wrap(msg));
 }
 
 void Root::sendKey(KeyEvent & e)
@@ -63,60 +59,34 @@ void Root::sendKey(KeyEvent & e)
     if (e.target() != this)
         return;
 
-    bool handle = false;
-    View * fv = focus_.current();
-    KeyEvent ke(e.type(), fv, e.key(), e.state(), e.system(), e.getFlags());
-    if (kET_CHAR != ke.type())
-    {//非字符
-        bool skip = false;        
-        if (fv)
-            skip = fv->skipDefaultKeyEventProcessing(ke);
-        //焦点管理器会询问是否skip
-        if (!skip)
-        {//skip == false;
-            //焦点管理器
-            handle = focus_.handleKeyEvent(ke);
-            if (!handle)//焦点管理器不处理 看快捷键管理器是否处理
-                handle = accelerators_.process(Accelerator::make(ke));
-        }
-    }
-    if (!handle && fv)
-    {//都不处理
-        EventDispatcher::Push(ke);
-        handle = true;
-    }
-    
+    ThreadMsgEvent msg(this);
+    msg.e.reset(new KeyEvent(e));
+    context_->getDispatcher().push(ThreadDispatcher::Wrap(msg));   
 }
 
 void Root::sendFocus(bool focus)
 {
-    focus_.setFocus(focus);
+    ThreadMsgSetFocus msg(this);
+    msg.focus = focus;
+    context_->getDispatcher().push(ThreadDispatcher::Wrap(msg));
 }
 
 void Root::sendComposition(CompositionEvent &e)
 {
     if (e.target() != this)
         return;
-
-    View * focus = focus_.current();
-    if (!focus)
-        return;
-    CompositionEvent ce(e.type(), focus, e.index(), e.dbcs(), e.str(), e.cursor());
-    EventDispatcher::Push(ce);
-    //return ( kClassWebView != focus->getClassName())
-    //    || e.type() != kET_COMPOSITION_UPDATE;
+    ThreadMsgEvent msg(this);
+    msg.e.reset(new CompositionEvent(e));
+    context_->getDispatcher().push(ThreadDispatcher::Wrap(msg));
 }
 
 void Root::sendWheel(WheelEvent & e)
 {
     if (e.target() != this)
         return;
-    mouse_.handleWheel(e);
-}
-
-Widget Root::getWidget()
-{
-    return widget_;
+    ThreadMsgEvent msg(this);
+    msg.e.reset(new WheelEvent(e));
+    context_->getDispatcher().push(ThreadDispatcher::Wrap(msg));
 }
 
 void Root::restoreCaret()
@@ -156,6 +126,82 @@ void Root::update()
     wait_dirty_.rect.setEmpty();
 
     delegate_ ? delegate_->invalidRect(this, dirty_.rect) : 0;
+}
+
+void Root::handMsg(Event * msg)
+{
+    if (!msg)
+        return;
+    switch (msg->type())
+    {
+    case kET_MOUSE_ENTER:
+    case kET_MOUSE_MOVE:
+    case kET_MOUSE_DOWN:
+    case kET_MOUSE_UP:
+    case kET_MOUSE_CLICK:
+    case kET_MOUSE_DCLICK:
+    case kET_MOUSE_LEAVE:
+    //case kET_MOUSE_WHEEL:
+    {
+        mouse_.handleEvent(*MouseEvent::From(*msg));
+    }
+        break;
+    case kET_KEY_DOWN:
+    case kET_CHAR:
+    case kET_KEY_UP:
+    {
+        bool handle = false;
+        View * fv = focus_.current();
+        KeyEvent & ke = *KeyEvent::From(*msg);
+        if (kET_CHAR != ke.type())
+        {//非字符
+            bool skip = false;
+            if (fv)
+                skip = fv->skipDefaultKeyEventProcessing(ke);
+            //焦点管理器会询问是否skip
+            if (!skip)
+            {//skip == false;
+                //焦点管理器
+                handle = focus_.handleKeyEvent(ke);
+                if (!handle)//焦点管理器不处理 看快捷键管理器是否处理
+                    handle = accelerators_.process(Accelerator::make(ke));
+            }
+        }
+        if (!handle && fv)
+        {//都不处理
+            EventDispatcher::Push(ke);
+            handle = true;
+        }
+    }
+        break;
+    case kET_COMPOSITION_START:
+    case kET_COMPOSITION_UPDATE:
+    case kET_COMPOSITION_END:
+    {
+        View * focus = focus_.current();
+        if (!focus)
+            return;
+        EventDispatcher::Push(*CompositionEvent::From(*msg));
+        //return ( kClassWebView != focus->getClassName())
+        //    || e.type() != kET_COMPOSITION_UPDATE;
+    }
+        break;
+    case kET_MOUSE_WHEEL:
+        mouse_.handleWheel(*WheelEvent::From(*msg));
+        break;
+    }
+}
+void Root::handMsg(bool focus)
+{
+    if (focus_.hasFocus() != focus)
+        focus_.setFocus(focus);
+}
+
+void Root::handMsg(View * who)
+{
+    if (!focus_.hasFocus())
+        delegate_ ? delegate_->requestFocus(this) : 0;
+    shiftFocus(who);
 }
 
 bool Root::isVisible() const
@@ -321,10 +367,11 @@ bool Root::notifyVisibleChanged(View * n)
 }
 
 bool Root::notifySetFocus(View * n)
-{
-    if (!focus_.hasFocus())
-        delegate_ ? delegate_->requestFocus(this) : 0;
-    focus_.shift(n);
+{//引发focus事件 防止重入 添加到队列中去
+    ThreadMsgNeedFocus msg(this);
+    msg.who.reset(n);
+    context_->getDispatcher().push(ThreadDispatcher::Wrap(msg));
+    //focus_.shift(n);
     return true;
 }
 
@@ -342,11 +389,11 @@ bool Root::notifyShowCaret(View * n, bool show)
         caret_show_ = show;
         if (caret_show_)//定时器继续运行
         {
-            Core::GetAnimationManager()->resume(caret_ani_);
+            context_->getAnimationManager().resume(caret_ani_);
         }
         else
         {//暂停定时器 隐藏光标显示
-            Core::GetAnimationManager()->pause(caret_ani_);
+            context_->getAnimationManager().pause(caret_ani_);
             caret_display_ = false;
             force_caret_display_ = false;
             invalCaret();
@@ -411,9 +458,9 @@ bool Root::notifyCreateCaret(View * n)
         caret_ani_->bind(Animation::kStart,
             BONES_CLASS_CALLBACK_2(&Root::onCaretStart, this));
 
-        Core::GetAnimationManager()->add(caret_ani_);
+        context_->getAnimationManager().add(caret_ani_);
         //光标闪烁暂停
-        Core::GetAnimationManager()->pause(caret_ani_);
+        context_->getAnimationManager().pause(caret_ani_);
     }
     return true;
 }
@@ -424,7 +471,7 @@ bool Root::notifyDestroyCaret(View * n)
     //如果光标存在则移除光标
     if (caret_ani_)
     {
-        Core::GetAnimationManager()->remove(caret_ani_, false);
+        context_->getAnimationManager().remove(caret_ani_, false);
         caret_ani_->release();
         caret_ani_ = nullptr;
     }
@@ -526,6 +573,8 @@ void Root::invalCaret()
     wait_dirty_.flag_ |= DirtyRect::kCaret;
     wait_dirty_.rect.join(rect);
 }
+
+
 
 
 BONES_CSS_TABLE_BEGIN(Root, View)

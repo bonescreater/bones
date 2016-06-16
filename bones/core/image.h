@@ -26,7 +26,7 @@ private:
         kNine,//九宫格拉伸
     };
 public:
-    Image();
+    Image(ThreadContext & context);
 
     ~Image();
 

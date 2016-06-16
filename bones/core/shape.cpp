@@ -5,15 +5,15 @@
 #include "css_utils.h"
 #include "SkDashPathEffect.h"
 #include "SkShader.h"
-#include "core_imp.h"
+#include "core.h"
 
 #include <vector>
 
 namespace bones
 {
 
-Shape::Shape()
-:category_(kNone), style_(kFill), color_(BONES_RGB_BLACK), stroke_width_(1),
+Shape::Shape(ThreadContext & context)
+:Area(context), category_(kNone), style_(kFill), color_(BONES_RGB_BLACK), stroke_width_(1),
 effect_(nullptr), delegate_(nullptr), shader_(nullptr), path_(nullptr)
 {
     //param 未初始化 category= kNone用不到param
@@ -205,7 +205,7 @@ void Shape::drawBackground(SkCanvas & canvas, float opacity)
         return;
 
     SkPaint paint;
-    paint.setAntiAlias(Core::AntiAliasEnable());
+    paint.setAntiAlias(true);
     paint.setColor(color_);
     paint.setShader(shader_);
     paint.setAlpha(ClampAlpha(opacity, ColorGetA(color_)));

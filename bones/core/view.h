@@ -40,7 +40,6 @@ public:
         kAppStarting,
         kHelp,
 
-        kNative,//光标句柄
         kCustom,
     };
 private:
@@ -51,9 +50,12 @@ private:
         uint32_t mouseable : 1;//true则接收target鼠标事件
     };
 public:
-    View();
+    //每一个view都属于指定线程 不能与其他线程交互
+    View(ThreadContext & context);
 
     virtual ~View();
+
+    ThreadContext & getContext() const;
 
     void setOpacity(float opacity);//0~1.f
 
@@ -327,6 +329,7 @@ protected:
     int group_id_;
 
     float opacity_;
+    ThreadContext * context_;
     friend class EventDispatcher;
     friend class Root;
 

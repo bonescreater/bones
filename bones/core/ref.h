@@ -6,15 +6,6 @@
 namespace bones
 {
 
-class NoncopyableObject
-{
-protected:
-    NoncopyableObject();
-private:
-    NoncopyableObject(const NoncopyableObject&);
-    NoncopyableObject& operator=(const NoncopyableObject&);
-};
-
 class Ref : public NoncopyableObject
 {
 public:
@@ -28,7 +19,7 @@ public:
 
     int getRefCount() const;
 private:
-    mutable int count_;
+    mutable volatile long count_;
 };
 
 template<typename T>

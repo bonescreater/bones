@@ -22,6 +22,8 @@ FocusController::~FocusController()
 
 void FocusController::setFocus(bool focus)
 {
+    if (has_focus_ == focus)
+        return;
     has_focus_ = focus;
     if (has_focus_)
     {

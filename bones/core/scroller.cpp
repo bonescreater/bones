@@ -5,10 +5,10 @@ namespace bones
 {
 
 
-Scroller::Scroller()
-:delegate_(nullptr)
+Scroller::Scroller(ThreadContext & context)
+:Area(context), delegate_(nullptr)
 {
-    container_ = new View;
+    container_ = new View(context);
     attachChildToBack(container_);
     memset(&v_info_, 0, sizeof(v_info_));
     memset(&h_info_, 0, sizeof(h_info_));

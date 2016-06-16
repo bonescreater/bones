@@ -3,7 +3,7 @@
 
 #include "core.h"
 #include "color.h"
-#include "logging.h"
+
 
 class SkShader;
 class SkPathEffect;
