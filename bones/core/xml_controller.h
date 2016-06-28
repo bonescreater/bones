@@ -68,7 +68,7 @@ public:
 
     static std::string GetRealPath(const char * file_value, const char * module_path);
 public:
-    XMLController();
+    XMLController(ThreadContext & context);
 
     virtual ~XMLController();
 
@@ -169,6 +169,7 @@ private:
 private:
     //delegate
     Delegate * delegate_;
+    ThreadContext * context_;
     //存放所有的view 
     std::map<RefPtr<View>, NodeAttrs> ob2node_;
     //模块的描述

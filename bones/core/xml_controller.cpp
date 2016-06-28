@@ -4,16 +4,12 @@
 #include "helper.h"
 #include "root.h"
 #include "area.h"
-#include "rich_edit.h"
 #include "image.h"
 #include "text.h"
 #include "input.h"
-
 #include "shape.h"
-#include "web_view.h"
 #include "scroller.h"
 
-#include "logging.h"
 #include "css_manager.h"
 #include "res_manager.h"
 #include "animation_manager.h"
@@ -61,8 +57,8 @@ void attachToParentBack(View * parent, View * child)
     parent->attachChildToBack(child);
 }
 
-XMLController::XMLController()
-:delegate_(nullptr)
+XMLController::XMLController(ThreadContext & context)
+:delegate_(nullptr), context_(&context)
 {
     ;
 }

@@ -17,8 +17,6 @@ extern const char * kClassImage;
 extern const char * kClassShape;
 extern const char * kClassText;
 extern const char * kClassInput;
-extern const char * kClassRichEdit;
-extern const char * kClassWebView;
 extern const char * kClassScroller;
 
 typedef float Scalar;
@@ -46,6 +44,7 @@ private:
 
 class ThreadDispatcher;
 class AnimationManager;
+class ResourceManager;
 
 class ThreadContext
 {
@@ -53,6 +52,8 @@ public:
     virtual ThreadDispatcher & getDispatcher() = 0;
 
     virtual AnimationManager & getAnimationManager() = 0;
+
+    virtual ResourceManager & getManager() = 0;
 };
 
 }
